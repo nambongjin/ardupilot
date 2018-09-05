@@ -47,15 +47,6 @@ Fields:
     MagicV      -   'magic' value used to determine whether State structure
                     was correctly initialized.
 *************************************************************************/
-/************************************************* *************************
-휴대용 고품질의 난수 생성기 상태.
-HQRNDRandomize () 또는 HQRNDSeed ()로 초기화됩니다.
-전지:
-    S1, S2 - 시드 값
-    V - 사전 계산 된 값
-    MagicV - 국가 구조의 결정 여부를 결정하는 데 사용되는 '마법'값
-                    올바르게 초기화되었습니다.
-**************************************************************************/
 _hqrndstate_owner::_hqrndstate_owner()
 {
     p_struct = (alglib_impl::hqrndstate*)alglib_impl::ae_malloc(sizeof(alglib_impl::hqrndstate), NULL);
@@ -126,12 +117,6 @@ RNG.
   -- ALGLIB --
      Copyright 02.12.2009 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-HQRNDState 초기화 (표준에서 오는 임의의 값 사용)
-RNG.
-  - ALGLIB -
-     저작권 02.12.2009 Bochkanov Sergey
-**************************************************************************/
 void hqrndrandomize(hqrndstate &state)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -154,11 +139,6 @@ HQRNDState initialization with seed values
   -- ALGLIB --
      Copyright 02.12.2009 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-시드 값을 사용하는 HQRNDState 초기화
-  - ALGLIB -
-     저작권 02.12.2009 Bochkanov Sergey
-**************************************************************************/
 void hqrndseed(const ae_int_t s1, const ae_int_t s2, hqrndstate &state)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -184,13 +164,6 @@ State structure must be initialized with HQRNDRandomize() or HQRNDSeed().
   -- ALGLIB --
      Copyright 02.12.2009 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-이 함수는 (0,1)에 임의의 실수를 생성합니다.
-간격 경계를 포함하지 않음
-상태 구조는 HQRNDRandomize () 또는 HQRNDSeed ()로 초기화해야합니다.
-  - ALGLIB -
-     저작권 02.12.2009 Bochkanov Sergey
-**************************************************************************/
 double hqrnduniformr(const hqrndstate &state)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -219,16 +192,6 @@ This function generates random integer number in [0, N)
   -- ALGLIB --
      Copyright 02.12.2009 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-이 함수는 [0, N]에 임의의 정수를 생성하고,
-1. 상태 구조는 HQRNDRandomize () 또는 HQRNDSeed ()로 초기화되어야합니다.
-2. N은 매우 큰 숫자를 제외하고는 양수 일 수 있습니다.
-   * 32 비트 시스템에서 2 ^ 31에 가깝습니다.
-   * 64 비트 시스템에서는 2 ^ 62에 가깝습니다.
-   N이 너무 큰 경우 예외가 생성됩니다.
-  - ALGLIB -
-     저작권 02.12.2009 Bochkanov Sergey
-**************************************************************************/
 ae_int_t hqrnduniformi(const hqrndstate &state, const ae_int_t n)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -256,14 +219,6 @@ State structure must be initialized with HQRNDRandomize() or HQRNDSeed().
   -- ALGLIB --
      Copyright 02.12.2009 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-난수 생성기 : 정상 수
-이 함수는 정규 분포에서 하나의 난수를 생성합니다.
-그 성능은 HQRNDNormal2 ()의 성능과 같습니다.
-상태 구조는 HQRNDRandomize () 또는 HQRNDSeed ()로 초기화해야합니다.
-  - ALGLIB -
-     저작권 02.12.2009 Bochkanov Sergey
-**************************************************************************/
 double hqrndnormal(const hqrndstate &state)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -288,12 +243,6 @@ State structure must be initialized with HQRNDRandomize() or HQRNDSeed().
   -- ALGLIB --
      Copyright 02.12.2009 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-난수 생성기 : X ^ 2 + Y ^ 2 = 1과 같은 임의의 X와 Y
-상태 구조는 HQRNDRandomize () 또는 HQRNDSeed ()로 초기화해야합니다.
-  - ALGLIB -
-     저작권 02.12.2009 Bochkanov Sergey
-**************************************************************************/
 void hqrndunit2(const hqrndstate &state, double &x, double &y)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -321,14 +270,6 @@ State structure must be initialized with HQRNDRandomize() or HQRNDSeed().
   -- ALGLIB --
      Copyright 02.12.2009 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-난수 생성기 : 정상 수
-이 함수는 법선으로부터 2 개의 독립 난수를 생성합니다.
-분포. 그 성능은 HQRNDNormal ()과 동일합니다.
-상태 구조는 HQRNDRandomize () 또는 HQRNDSeed ()로 초기화해야합니다.
-  - ALGLIB -
-     저작권 02.12.2009 Bochkanov Sergey
-**************************************************************************/
 void hqrndnormal2(const hqrndstate &state, double &x1, double &x2)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -353,12 +294,6 @@ State structure must be initialized with HQRNDRandomize() or HQRNDSeed().
   -- ALGLIB --
      Copyright 11.08.2007 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-난수 생성기 : 지수 분포
-상태 구조는 HQRNDRandomize () 또는 HQRNDSeed ()로 초기화해야합니다.
-  - ALGLIB -
-     저작권 2007 년 11 월 8 일 Bochkanov Sergey
-**************************************************************************/
 double hqrndexponential(const hqrndstate &state, const double lambdav)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -391,19 +326,6 @@ RESULT
   -- ALGLIB --
      Copyright 08.11.2011 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-이 함수는에 의해 주어진 이산 분포로부터 난수를 생성합니다.
-유한 샘플 X
-입력 매개 변수
-    상태 - 고품질 난수 생성기, 있어야합니다.
-                HQRNDRandomize () 또는 HQRNDSeed ()로 초기화됩니다.
-        X - 유한 샘플
-        N - 사용할 요소 수, N> = 1
-결과
-    이 함수는 random i = 0..N-1에 대해 X [i] 중 하나를 반환합니다.
-  - ALGLIB -
-     저작권 08.11.2011 Bochkanov Sergey
-**************************************************************************/
 double hqrnddiscrete(const hqrndstate &state, const real_1d_array &x, const ae_int_t n)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -439,22 +361,6 @@ RESULT
   -- ALGLIB --
      Copyright 08.11.2011 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-이 함수는 주어진 연속 분포로부터 난수를 생성합니다.
-유한 샘플 X로.
-입력 매개 변수
-    상태 - 고품질 난수 생성기, 있어야합니다.
-                HQRNDRandomize () 또는 HQRNDSeed ()로 초기화됩니다.
-        X - 유한 샘플, 배열 [N] (이 경우에만 더 클 수 있습니다.
-                선두의 N 요소가 사용된다). 이 배열은에 의해 정렬되어야합니다
-                승천.
-        N - 사용할 요소 수, N> = 1
-결과
-    이 함수는 연속적인 분포에서 난수를 반환한다.
-    X를 최대한 근사해 보려고합니다. min (X) <= Result <= max (X).
-  - ALGLIB -
-     저작권 08.11.2011 Bochkanov Sergey
-**************************************************************************/
 double hqrndcontinuous(const hqrndstate &state, const real_1d_array &x, const ae_int_t n)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -558,25 +464,6 @@ Important properties of s_out:
   serialize  it  in  C++ version of ALGLIB and unserialize in C# one, 
   and vice versa.
 *************************************************************************/
-/**************************************************************************
-이 함수는 데이터 구조를 문자열로 serialize합니다.
-s_out의 중요한 속성 :
-* 영숫자, 점, 밑줄, 빼기 부호가 포함되어 있습니다.
-*이 기호는 공백으로 구분 된 단어로 그룹화됩니다.
-  및 Windows 스타일 (CR + LF) 개행
-* serializer는 공백과 CR + LF를 구분 기호로 사용하지만 
-  공백을 임의로 조합하여 구분 문자를 대체하십시오.
-  탭, Windows 또는 Unix 개행. 유연한 재 포맷이 가능합니다.
-  텍스트 또는 XML 파일에 포함하려는 경우의 문자열입니다. 
-  그러나 "단어"의 중간에 구분 기호를 삽입해서는 안됩니다.
-  편지의 대소 문자를 변경해서는 안됩니다.
-* s_out은 32 비트와 64 비트 시스템 사이에서 자유롭게 이동할 수 있습니다.
-  빅 엔디안 머신 등이 있습니다. 구조를 직렬화 할 수 있습니다.
-  32 비트 컴퓨터에서 실행하고 64 비트 컴퓨터에서 직렬화 해제하거나 그 반대의 경우
-  SPARC에서 직렬화하고 x86에서 직렬화 해제하십시오. 당신은 또한 수
-  ALGLIB의 C ++ 버전에서 직렬화하고 C # 하나에서 직렬화 해제하십시오. 
-  그 반대.
-**************************************************************************/
 void kdtreeserialize(kdtree &obj, std::string &s_out)
 {
     alglib_impl::ae_state state;
@@ -608,9 +495,6 @@ void kdtreeserialize(kdtree &obj, std::string &s_out)
 /*************************************************************************
 This function unserializes data structure from string.
 *************************************************************************/
-/**************************************************************************
-이 함수는 문자열에서 데이터 구조를 unserializes.
-**************************************************************************/
 void kdtreeunserialize(std::string &s_in, kdtree &obj)
 {
     alglib_impl::ae_state state;
@@ -667,34 +551,6 @@ NOTES
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-KD- 트리 생성
-이 서브 루틴은 X 값의 집합과 선택적인 Y 값으로부터 KD 트리를 생성합니다
-입력 매개 변수
-    XY-dataset, array [0..N-1,0..NX + NY-1].
-                한 행은 한 점에 해당합니다.
-                첫 번째 NX 열에는 X 값이 포함되고 다음 NY (NY는 0이 될 수 있음)
-                열은 연관된 Y 값을 포함 할 수 있습니다.
-    N - 포인트 수, N> = 0.
-    NX - 공간 차원, NX> = 1.
-    NY - 선택적 Y 값의 수, NY> = 0.
-    NormType- 노름 유형 :
-                * 0은 무한대 - 표준을 나타냅니다.
-                * 1은 1- 노름을 나타냅니다.
-                * 2는 2- 노름 (유클리드 기준)
-출력 매개 변수
-    KDT - KD 트리
-노트
-1. KD 트리 생성은 O (N * logN) 복잡도와 O (N * (2 * NX + NY)) 메모리를 갖는다.
-   요구 사항.
-2. KD- 나무는 N과 NX의 조합과 함께 사용될 수 있지만,
-   N >> 4 ^ NX 일 때만 무차별 강제 검색보다 더 효율적입니다. 그래서 그들은
-   저 차원 작업 (NX = 2, NX = 3)에서 가장 유용합니다. NX = 1은 또 다른 것입니다.
-   비효율적 인 경우, 간단한 이진 검색 (추가하지 않음
-   구조)는 KD- 나무보다 훨씬 효율적입니다.
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
 void kdtreebuild(const real_2d_array &xy, const ae_int_t n, const ae_int_t nx, const ae_int_t ny, const ae_int_t normtype, kdtree &kdt)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -746,34 +602,6 @@ NOTES
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-KD- 트리 생성
-이 서브 루틴은 X 값의 집합과 선택적인 Y 값으로부터 KD 트리를 생성합니다
-입력 매개 변수
-    XY-dataset, array [0..N-1,0..NX + NY-1].
-                한 행은 한 점에 해당합니다.
-                첫 번째 NX 열에는 X 값이 포함되고 다음 NY (NY는 0이 될 수 있음)
-                열은 연관된 Y 값을 포함 할 수 있습니다.
-    N - 포인트 수, N> = 0.
-    NX - 공간 차원, NX> = 1.
-    NY - 선택적 Y 값의 수, NY> = 0.
-    NormType- 노름 유형 :
-                * 0은 무한대 - 표준을 나타냅니다.
-                * 1은 1- 노름을 나타냅니다.
-                * 2는 2- 노름 (유클리드 기준)
-출력 매개 변수
-    KDT - KD 트리
-노트
-1. KD 트리 생성은 O (N * logN) 복잡도와 O (N * (2 * NX + NY)) 메모리를 갖는다.
-   요구 사항.
-2. KD- 나무는 N과 NX의 조합과 함께 사용될 수 있지만,
-   N >> 4 ^ NX 일 때만 무차별 강제 검색보다 더 효율적입니다. 그래서 그들은
-   저 차원 작업 (NX = 2, NX = 3)에서 가장 유용합니다. NX = 1은 또 다른 것입니다.
-   비효율적 인 경우, 간단한 이진 검색 (추가하지 않음
-   구조)는 KD- 나무보다 훨씬 효율적입니다.
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
 void kdtreebuild(const real_2d_array &xy, const ae_int_t nx, const ae_int_t ny, const ae_int_t normtype, kdtree &kdt)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -831,37 +659,6 @@ NOTES
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-KD- 트리 생성
-이 서브 루틴은 일련의 X 값, 정수 태그 및
-선택적 Y 값
-입력 매개 변수
-    XY-dataset, array [0..N-1,0..NX + NY-1].
-                한 행은 한 점에 해당합니다.
-                첫 번째 NX 열에는 X 값이 포함되고 다음 NY (NY는 0이 될 수 있음)
-                열은 연관된 Y 값을 포함 할 수 있습니다.
-    태그 - 태그, 배열 [0..N-1], 관련 정수 태그 포함
-                포인트로.
-    N - 포인트 수, N> = 0
-    NX - 공간 차원, NX> = 1.
-    NY - 선택적 Y 값의 수, NY> = 0.
-    NormType- 노름 유형 :
-                * 0은 무한대 - 표준을 나타냅니다.
-                * 1은 1- 노름을 나타냅니다.
-                * 2는 2- 노름 (유클리드 기준)
-출력 매개 변수
-    KDT - KD 트리
-노트
-1. KD 트리 생성은 O (N * logN) 복잡도와 O (N * (2 * NX + NY)) 메모리를 갖는다.
-   요구 사항.
-2. KD- 나무는 N과 NX의 조합과 함께 사용될 수 있지만,
-   N >> 4 ^ NX 일 때만 무차별 강제 검색보다 더 효율적입니다. 그래서 그들은
-   저 차원 작업 (NX = 2, NX = 3)에서 가장 유용합니다. NX = 1은 또 다른 것입니다.
-   비효율적 인 경우, 간단한 이진 검색 (추가하지 않음
-   구조)는 KD- 나무보다 훨씬 효율적입니다.
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
 void kdtreebuildtagged(const real_2d_array &xy, const integer_1d_array &tags, const ae_int_t n, const ae_int_t nx, const ae_int_t ny, const ae_int_t normtype, kdtree &kdt)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -915,37 +712,6 @@ NOTES
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-KD- 트리 생성
-이 서브 루틴은 일련의 X 값, 정수 태그 및
-선택적 Y 값
-입력 매개 변수
-    XY-dataset, array [0..N-1,0..NX + NY-1].
-                한 행은 한 점에 해당합니다.
-                첫 번째 NX 열에는 X 값이 포함되고 다음 NY (NY는 0이 될 수 있음)
-                열은 연관된 Y 값을 포함 할 수 있습니다.
-    태그 - 태그, 배열 [0..N-1], 관련 정수 태그 포함
-                포인트로.
-    N - 포인트 수, N> = 0
-    NX - 공간 차원, NX> = 1.
-    NY - 선택적 Y 값의 수, NY> = 0.
-    NormType- 노름 유형 :
-                * 0은 무한대 - 표준을 나타냅니다.
-                * 1은 1- 노름을 나타냅니다.
-                * 2는 2- 노름 (유클리드 기준)
-출력 매개 변수
-    KDT - KD 트리
-노트
-1. KD 트리 생성은 O (N * logN) 복잡도와 O (N * (2 * NX + NY)) 메모리를 갖는다.
-   요구 사항.
-2. KD- 나무는 N과 NX의 조합과 함께 사용될 수 있지만,
-   N >> 4 ^ NX 일 때만 무차별 강제 검색보다 더 효율적입니다. 그래서 그들은
-   저 차원 작업 (NX = 2, NX = 3)에서 가장 유용합니다. NX = 1은 또 다른 것입니다.
-   비효율적 인 경우, 간단한 이진 검색 (추가하지 않음
-   구조)는 KD- 나무보다 훨씬 효율적입니다.
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
 void kdtreebuildtagged(const real_2d_array &xy, const integer_1d_array &tags, const ae_int_t nx, const ae_int_t ny, const ae_int_t normtype, kdtree &kdt)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -995,30 +761,6 @@ these results:
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-K-NN 질의 : K 개의 가장 가까운 이웃
-입력 매개 변수
-    KDT - KD 트리
-    X- 점, 배열 [0..NX-1].
-    K - 반환 할 이웃 수, K> = 1
-    SelfMatch - 자기 일치가 허용되는지 여부 :
-                    * 참이면 가장 가까운 이웃이 포인트 자체 일 수 있습니다.
-                      (원래 데이터 집합에있는 경우)
-                    * 거짓이면 거리가 0이 아닌 점만 나타냅니다.
-                      돌아왔다
-                    * 주어지지 않았다면 True로 간주
-결과
-    발견 된 실제 이웃의 수 (K> N 인 경우 K 또는 N 중 하나)
-이 서브 루틴은 쿼리를 수행하고 결과를 내부에 저장합니다.
-KD- 트리의 구조. 다음과 같은 서브 루틴을 사용하여
-이러한 결과는 다음과 같습니다.
-* X 값을 가져 오는 KDTreeQueryResultsX ()
-* X 및 Y 값을 가져 오는 KDTreeQueryResultsXY ()
-* 태그 값을 가져 오는 KDTreeQueryResultsTags ()
-* 거리를 얻기위한 KDTreeQueryResultsDistances ()
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
 ae_int_t kdtreequeryknn(const kdtree &kdt, const real_1d_array &x, const ae_int_t k, const bool selfmatch)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -1063,30 +805,6 @@ these results:
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-K-NN 질의 : K 개의 가장 가까운 이웃
-입력 매개 변수
-    KDT - KD 트리
-    X- 점, 배열 [0..NX-1].
-    K - 반환 할 이웃 수, K> = 1
-    SelfMatch - 자기 일치가 허용되는지 여부 :
-                    * 참이면 가장 가까운 이웃이 포인트 자체 일 수 있습니다.
-                      (원래 데이터 집합에있는 경우)
-                    * 거짓이면 거리가 0이 아닌 점만 나타냅니다.
-                      돌아왔다
-                    * 주어지지 않았다면 True로 간주
-결과
-    발견 된 실제 이웃의 수 (K> N 인 경우 K 또는 N 중 하나)
-이 서브 루틴은 쿼리를 수행하고 결과를 내부에 저장합니다.
-KD- 트리의 구조. 다음과 같은 서브 루틴을 사용하여
-이러한 결과는 다음과 같습니다.
-* X 값을 가져 오는 KDTreeQueryResultsX ()
-* X 및 Y 값을 가져 오는 KDTreeQueryResultsXY ()
-* 태그 값을 가져 오는 KDTreeQueryResultsTags ()
-* 거리를 얻기위한 KDTreeQueryResultsDistances ()
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
 ae_int_t kdtreequeryknn(const kdtree &kdt, const real_1d_array &x, const ae_int_t k)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -1135,30 +853,6 @@ actual results:
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-R-NN 질의 : X를 중심으로 R- 구 내의 모든 점
-입력 매개 변수
-    KDT - KD 트리
-    X- 점, 배열 [0..NX-1].
-    R - 구의 반경 (해당 표준에서), R> 0
-    SelfMatch - 자기 일치가 허용되는지 여부 :
-                    * 참이면 가장 가까운 이웃이 포인트 자체 일 수 있습니다.
-                      (원래 데이터 집합에있는 경우)
-                    * 거짓이면 거리가 0이 아닌 점만 나타냅니다.
-                      돌아왔다
-                    * 주어지지 않았다면 True로 간주
-결과
-    발견 된 이웃의 수,> = 0
-이 서브 루틴은 쿼리를 수행하고 결과를 내부에 저장합니다.
-KD- 트리의 구조. 다음과 같은 서브 루틴을 사용하여
-실제 결과:
-* X 값을 가져 오는 KDTreeQueryResultsX ()
-* X 및 Y 값을 가져 오는 KDTreeQueryResultsXY ()
-* 태그 값을 가져 오는 KDTreeQueryResultsTags ()
-* 거리를 얻기위한 KDTreeQueryResultsDistances ()
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
 ae_int_t kdtreequeryrnn(const kdtree &kdt, const real_1d_array &x, const double r, const bool selfmatch)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -1203,30 +897,6 @@ actual results:
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-R-NN 질의 : X를 중심으로 R- 구 내의 모든 점
-입력 매개 변수
-    KDT - KD 트리
-    X- 점, 배열 [0..NX-1].
-    R - 구의 반경 (해당 표준에서), R> 0
-    SelfMatch - 자기 일치가 허용되는지 여부 :
-                    * 참이면 가장 가까운 이웃이 포인트 자체 일 수 있습니다.
-                      (원래 데이터 집합에있는 경우)
-                    * 거짓이면 거리가 0이 아닌 점만 나타냅니다.
-                      돌아왔다
-                    * 주어지지 않았다면 True로 간주
-결과
-    발견 된 이웃의 수,> = 0
-이 서브 루틴은 쿼리를 수행하고 결과를 내부에 저장합니다.
-KD- 트리의 구조. 다음과 같은 서브 루틴을 사용하여
-실제 결과:
-* X 값을 가져 오는 KDTreeQueryResultsX ()
-* X 및 Y 값을 가져 오는 KDTreeQueryResultsXY ()
-* 태그 값을 가져 오는 KDTreeQueryResultsTags ()
-* 거리를 얻기위한 KDTreeQueryResultsDistances ()
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
 ae_int_t kdtreequeryrnn(const kdtree &kdt, const real_1d_array &x, const double r)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -1282,36 +952,6 @@ these results:
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-K-NN 질의 : 근사 K 최근 접 이웃
-입력 매개 변수
-    KDT - KD 트리
-    X- 점, 배열 [0..NX-1].
-    K - 반환 할 이웃 수, K> = 1
-    SelfMatch - 자기 일치가 허용되는지 여부 :
-                    * 참이면 가장 가까운 이웃이 포인트 자체 일 수 있습니다.
-                      (원래 데이터 집합에있는 경우)
-                    * 거짓이면 거리가 0이 아닌 점만 나타냅니다.
-                      돌아왔다
-                    * 주어지지 않았다면 True로 간주
-    Eps - 근사 인수, Eps> = 0. 대략 eps- 근사치
-                    이웃은 X와 거리가 먼 이웃입니다.
-                    가장 가까운 (1 + eps) 배의 가장 가까운 이웃.
-결과
-    발견 된 실제 이웃의 수 (K> N 인 경우 K 또는 N 중 하나)
-노트
-    Eps가 켜져있을 때만 상당한 성능 향상을 얻을 수 있습니다.
-    크기의 차수는 1 이상.
-이 서브 루틴은 쿼리를 수행하고 결과를 내부에 저장합니다.
-KD- 트리의 구조. 다음과 같은 서브 루틴을 사용하여
-이러한 결과는 다음과 같습니다.
-* X 값을 가져 오는 KDTreeQueryResultsX ()
-* X 및 Y 값을 가져 오는 KDTreeQueryResultsXY ()
-* 태그 값을 가져 오는 KDTreeQueryResultsTags ()
-* 거리를 얻기위한 KDTreeQueryResultsDistances ()
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
 ae_int_t kdtreequeryaknn(const kdtree &kdt, const real_1d_array &x, const ae_int_t k, const bool selfmatch, const double eps)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -1363,36 +1003,6 @@ these results:
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-K-NN 질의 : 근사 K 최근 접 이웃
-입력 매개 변수
-    KDT - KD 트리
-    X- 점, 배열 [0..NX-1].
-    K - 반환 할 이웃 수, K> = 1
-    SelfMatch - 자기 일치가 허용되는지 여부 :
-                    * 참이면 가장 가까운 이웃이 포인트 자체 일 수 있습니다.
-                      (원래 데이터 집합에있는 경우)
-                    * 거짓이면 거리가 0이 아닌 점만 나타냅니다.
-                      돌아왔다
-                    * 주어지지 않았다면 True로 간주
-    Eps - 근사 인수, Eps> = 0. 대략 eps- 근사치
-                    이웃은 X와 거리가 먼 이웃입니다.
-                    가장 가까운 (1 + eps) 배의 가장 가까운 이웃.
-결과
-    발견 된 실제 이웃의 수 (K> N 인 경우 K 또는 N 중 하나)
-노트
-    Eps가 켜져있을 때만 상당한 성능 향상을 얻을 수 있습니다.
-    크기의 차수는 1 이상.
-이 서브 루틴은 쿼리를 수행하고 결과를 내부에 저장합니다.
-KD- 트리의 구조. 다음과 같은 서브 루틴을 사용하여
-이러한 결과는 다음과 같습니다.
-* X 값을 가져 오는 KDTreeQueryResultsX ()
-* X 및 Y 값을 가져 오는 KDTreeQueryResultsXY ()
-* 태그 값을 가져 오는 KDTreeQueryResultsTags ()
-* 거리를 얻기위한 KDTreeQueryResultsDistances ()
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
 ae_int_t kdtreequeryaknn(const kdtree &kdt, const real_1d_array &x, const ae_int_t k, const double eps)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -1442,30 +1052,6 @@ SEE ALSO
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-마지막 쿼리의 X 값
-입력 매개 변수
-    KDT - KD 트리
-    X - 사전에 할당 할 수 있었던 버퍼. X가 너무 작아서 저장할 수없는 경우
-                결과, 크기가 조정됩니다. 크기 (X)가 저장하기에 충분하면
-                결과, 변경되지 않습니다.
-출력 매개 변수
-    X - 행은 X 값으로 채워집니다.
-노트
-1. 포인트는 쿼리 포인트로부터 거리에 따라 정렬됩니다 (첫 번째 = 가장 가까운 위치).
-2. XY가 결과를 저장하는 데 필요한 것보다 큰 경우 선두 부분 만
-   덮어 쓰기; 후행 부분은 변경되지 않습니다. 따라서 입력시
-   XY = [[A, B], [C, D]]이고 결과는 [1,2]입니다.
-   XY = [[1,2], [C, D]]. 이는 성능을 향상시키기 위해 의도적으로 수행됩니다. 만약
-   결과 크기에 따라 배열의 크기를 조정하는 함수가 필요하다.
-   함수는 동일한 이름과 접미사 'I'를 사용합니다.
-관련 항목
-* KDTreeQueryResultsXY () X 및 Y 값
-* KDTreeQueryResultsTags () 태그 값
-* KDTreeQueryResultsDistances () 거리
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
 void kdtreequeryresultsx(const kdtree &kdt, real_2d_array &x)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -1512,31 +1098,6 @@ SEE ALSO
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-마지막 쿼리의 X 및 Y 값
-입력 매개 변수
-    KDT - KD 트리
-    XY - 아마도 사전 할당 된 버퍼. XY가 너무 작아서 저장할 수없는 경우
-                결과, 크기가 조정됩니다. 크기 (XY)가 저장하기에 충분하면
-                결과, 변경되지 않습니다.
-출력 매개 변수
-    XY - 행은 점으로 채워집니다. 첫 번째 NX 열은
-                X 값, 다음 NY 컬럼 - Y 값.
-노트
-1. 포인트는 쿼리 포인트로부터 거리에 따라 정렬됩니다 (첫 번째 = 가장 가까운 위치).
-2. XY가 결과를 저장하는 데 필요한 것보다 큰 경우 선두 부분 만
-   덮어 쓰기; 후행 부분은 변경되지 않습니다. 따라서 입력시
-   XY = [[A, B], [C, D]]이고 결과는 [1,2]입니다.
-   XY = [[1,2], [C, D]]. 이는 성능을 향상시키기 위해 의도적으로 수행됩니다. 만약
-   결과 크기에 따라 배열의 크기를 조정하는 함수가 필요하다.
-   함수는 동일한 이름과 접미사 'I'를 사용합니다.
-관련 항목
-* KDTreeQueryResultsX () X 값
-* KDTreeQueryResultsTags () 태그 값
-* KDTreeQueryResultsDistances () 거리
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
 void kdtreequeryresultsxy(const kdtree &kdt, real_2d_array &xy)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -1583,31 +1144,6 @@ SEE ALSO
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-마지막 쿼리의 태그
-입력 매개 변수
-    KDT - KD 트리
-    태그 - 사전 할당 된 버퍼 일 수 있습니다. X가 너무 작아서 저장할 수없는 경우
-                결과, 크기가 조정됩니다. 크기 (X)가 저장하기에 충분하면
-                결과, 변경되지 않습니다.
-출력 매개 변수
-    태그 - 포인트와 관련된 태그로 채워짐,
-                또는 태그가 제공되지 않은 경우 0으로
-노트
-1. 포인트는 쿼리 포인트로부터 거리에 따라 정렬됩니다 (첫 번째 = 가장 가까운 위치).
-2. XY가 결과를 저장하는 데 필요한 것보다 큰 경우 선두 부분 만
-   덮어 쓰기; 후행 부분은 변경되지 않습니다. 따라서 입력시
-   XY = [[A, B], [C, D]]이고 결과는 [1,2]입니다.
-   XY = [[1,2], [C, D]]. 이는 성능을 향상시키기 위해 의도적으로 수행됩니다. 만약
-   결과 크기에 따라 배열의 크기를 조정하는 함수가 필요하다.
-   함수는 동일한 이름과 접미사 'I'를 사용합니다.
-관련 항목
-* KDTreeQueryResultsX () X 값
-* KDTreeQueryResultsXY () X 및 Y 값
-* KDTreeQueryResultsDistances () 거리
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
 void kdtreequeryresultstags(const kdtree &kdt, integer_1d_array &tags)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -1653,30 +1189,6 @@ SEE ALSO
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-마지막 쿼리의 거리
-입력 매개 변수
-    KDT - KD 트리
-    R - 사전 할당 된 버퍼. X가 너무 작아서 저장할 수없는 경우
-                결과, 크기가 조정됩니다. 크기 (X)가 저장하기에 충분하면
-                결과, 변경되지 않습니다.
-출력 매개 변수
-    R - 거리로 채워짐 (해당 기준)
-노트
-1. 포인트는 쿼리 포인트로부터 거리에 따라 정렬됩니다 (첫 번째 = 가장 가까운 위치).
-2. XY가 결과를 저장하는 데 필요한 것보다 큰 경우 선두 부분 만
-   덮어 쓰기; 후행 부분은 변경되지 않습니다. 따라서 입력시
-   XY = [[A, B], [C, D]]이고 결과는 [1,2]입니다.
-   XY = [[1,2], [C, D]]. 이는 성능을 향상시키기 위해 의도적으로 수행됩니다. 만약
-   결과 크기에 따라 배열의 크기를 조정하는 함수가 필요하다.
-   함수는 동일한 이름과 접미사 'I'를 사용합니다.
-관련 항목
-* KDTreeQueryResultsX () X 값
-* KDTreeQueryResultsXY () X 및 Y 값
-* KDTreeQueryResultsTags () 태그 값
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
 void kdtreequeryresultsdistances(const kdtree &kdt, real_1d_array &r)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -1705,16 +1217,6 @@ when you call it from command line.
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-마지막 쿼리의 X 값; Python과 같은 언어를위한 'interactive'variant
-"X = KDTreeQueryResultsXI (KDT)"와 같은 구조를 지원하고
-대화식 인터프리터 모드.
-이 함수는 각 호출에 새로운 배열을 할당하므로 상당히
-'비대화 형'대응 제품보다 느리지 만 더 편리합니다.
-명령 행에서 호출 할 때.
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
 void kdtreequeryresultsxi(const kdtree &kdt, real_2d_array &x)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -1743,16 +1245,6 @@ when you call it from command line.
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-마지막 쿼리의 XY 값; Python과 같은 언어를위한 'interactive'variant
-"XY = KDTreeQueryResultsXYI (KDT)"와 같은 구문을 지원하고
-대화식 인터프리터 모드.
-이 함수는 각 호출에 새로운 배열을 할당하므로 상당히
-'비대화 형'대응 제품보다 느리지 만 더 편리합니다.
-명령 행에서 호출 할 때.
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
 void kdtreequeryresultsxyi(const kdtree &kdt, real_2d_array &xy)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -1781,16 +1273,6 @@ when you call it from command line.
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-마지막 쿼리의 태그. Python과 같은 언어를위한 'interactive'variant
-"Tags = KDTreeQueryResultsTagsI (KDT)"와 같은 구조를 지원하고
-대화식 인터프리터 모드.
-이 함수는 각 호출에 새로운 배열을 할당하므로 상당히
-'비대화 형'대응 제품보다 느리지 만 더 편리합니다.
-명령 행에서 호출 할 때.
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
 void kdtreequeryresultstagsi(const kdtree &kdt, integer_1d_array &tags)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -1819,16 +1301,6 @@ when you call it from command line.
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-마지막 쿼리로부터의 거리; Python과 같은 언어를위한 'interactive'variant
-"R = KDTreeQueryResultsDistancesI (KDT)"와 같은 구문을 지원합니다.
-인터프리터 인터랙티브 모드.
-이 함수는 각 호출에 새로운 배열을 할당하므로 상당히
-'비대화 형'대응 제품보다 느리지 만 더 편리합니다.
-명령 행에서 호출 할 때.
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
 void kdtreequeryresultsdistancesi(const kdtree &kdt, real_1d_array &r)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -1881,7 +1353,7 @@ static void nearestneighbor_kdtreequerynnrec(kdtree* kdt,
      ae_int_t offs,
      ae_state *_state);
 static void nearestneighbor_kdtreeinitbox(kdtree* kdt,
-     /* Real    *//* 실수    */ ae_vector* x,
+     /* Real    */ ae_vector* x,
      ae_state *_state);
 static void nearestneighbor_kdtreeallocdatasetindependent(kdtree* kdt,
      ae_int_t nx,
@@ -1909,12 +1381,6 @@ RNG.
   -- ALGLIB --
      Copyright 02.12.2009 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-HQRNDState 초기화 (표준에서 오는 임의의 값 사용)
-RNG.
-  - ALGLIB -
-     저작권 02.12.2009 Bochkanov Sergey
-**************************************************************************/
 void hqrndrandomize(hqrndstate* state, ae_state *_state)
 {
     ae_int_t s0;
@@ -1934,11 +1400,6 @@ HQRNDState initialization with seed values
   -- ALGLIB --
      Copyright 02.12.2009 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-시드 값을 사용하는 HQRNDState 초기화
-  - ALGLIB -
-     저작권 02.12.2009 Bochkanov Sergey
-**************************************************************************/
 void hqrndseed(ae_int_t s1,
      ae_int_t s2,
      hqrndstate* state,
@@ -1958,16 +1419,6 @@ void hqrndseed(ae_int_t s1,
      * that N<0, -N=N<0 too. (This number is equal to 0x800...000).   Need
      * to handle such seed correctly forces us to use  a  bit  complicated
      * formula.
-     */
-    /*
-     * 부정적인 종자에 대한 보호 :
-     *
-     * SEED : = - (SEED + 1)
-     *
-     * 그러한 정수 N이 있기 때문에 "-SEED"만 사용할 수 있습니다.
-     * N <0, -N = N <0. 이 숫자는 0x800 ... 000과 같습니다. 필요한 것
-     * 그러한 씨앗을 처리하기 위해 우리는 조금 복잡하게 사용하도록 강제합니다.
-     * 공식.
      */
     if( s1<0 )
     {
@@ -1992,13 +1443,6 @@ State structure must be initialized with HQRNDRandomize() or HQRNDSeed().
   -- ALGLIB --
      Copyright 02.12.2009 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-이 함수는 (0,1)에 임의의 실수를 생성합니다.
-간격 경계를 포함하지 않음
-상태 구조는 HQRNDRandomize () 또는 HQRNDSeed ()로 초기화해야합니다.
-  - ALGLIB -
-     저작권 02.12.2009 Bochkanov Sergey
-**************************************************************************/
 double hqrnduniformr(hqrndstate* state, ae_state *_state)
 {
     double result;
@@ -2021,16 +1465,6 @@ This function generates random integer number in [0, N)
   -- ALGLIB --
      Copyright 02.12.2009 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-이 함수는 [0, N]에 임의의 정수를 생성하고,
-1. 상태 구조는 HQRNDRandomize () 또는 HQRNDSeed ()로 초기화되어야합니다.
-2. N은 매우 큰 숫자를 제외하고는 양수 일 수 있습니다.
-   * 32 비트 시스템에서 2 ^ 31에 가깝습니다.
-   * 64 비트 시스템에서는 2 ^ 62에 가깝습니다.
-   N이 너무 큰 경우 예외가 생성됩니다.
-  - ALGLIB -
-     저작권 02.12.2009 Bochkanov Sergey
-**************************************************************************/
 ae_int_t hqrnduniformi(hqrndstate* state, ae_int_t n, ae_state *_state)
 {
     ae_int_t maxcnt;
@@ -2046,9 +1480,6 @@ ae_int_t hqrnduniformi(hqrndstate* state, ae_int_t n, ae_state *_state)
     /*
      * Two branches: one for N<=MaxCnt, another for N>MaxCnt.
      */
-    /*
-     * 두 개의 분기 : N <= MaxCnt, N> MaxCnt의 분기.
-     */
     if( n>maxcnt )
     {
         
@@ -2061,16 +1492,6 @@ ae_int_t hqrnduniformi(hqrndstate* state, ae_int_t n, ae_state *_state)
          *
          * In both cases we reduce problem on interval spanning [0,N)
          * to several subproblems on intervals spanning [0,MaxCnt).
-         */
-        /*
-         * N> = MaxCnt.
-         *
-         * 여기에는 두 가지 옵션이 있습니다.
-         * a) N은 MaxCnt로 정확하게 나눌 수 있습니다.
-         * b) N은 MaxCnt로 나눌 수 없습니다.
-         *
-         * 두 경우 모두 간격 스패닝 [0, N] 문제를 줄입니다.
-         * [0, MaxCnt]에 걸치는 간격에서 몇 가지 하위 문제로.
          */
         if( n%maxcnt==0 )
         {
@@ -2088,20 +1509,6 @@ ae_int_t hqrnduniformi(hqrndstate* state, ae_int_t n, ae_state *_state)
              * calling HQRNDUniformI().
              *
              * Result is equal to A+MaxCnt*B.
-             */
-            /*
-             * N은 MaxCnt로 정확하게 나눌 수 있습니다.
-             *
-             * [0, N) 범위는 N / MaxCnt bin으로 나뉘며,
-             * 각각 길이가 MaxCnt와 같습니다.
-             *
-             * 우리는 생성 :
-             * * 랜덤 빈 번호 B
-             * bin A 내의 임의의 오프셋
-             * 두 난수 모두 재귀 적으로 생성됩니다.
-             * HQRNDUniformI () 호출.
-             *
-             * 결과는 A + MaxCnt * B와 같습니다.
              */
             ae_assert(n/maxcnt<=maxcnt, "HQRNDUniformI: N is too large", _state);
             a = hqrnduniformi(state, maxcnt, _state);
@@ -2126,22 +1533,6 @@ ae_int_t hqrnduniformi(hqrndstate* state, ae_int_t n, ae_state *_state)
              *   then we repeat generation of A/B.
              *   This stage is essential in order to avoid bias in the result.
              * * otherwise, we return A*MaxCnt+N
-             */
-            /*
-             * N은 MaxCnt로 정확하게 나눌 수 없습니다.
-             *
-             * [0, N) 범위는 Ceil (N / MaxCnt) 빈으로 분할됩니다.
-             * 각각 길이가 MaxCnt와 같습니다.
-             *
-             * 우리는 생성 :
-             * [0, Ceil (N / MaxCnt) -1]의 임의의 빈 번호 B *
-             * bin A 내의 임의의 오프셋
-             * * 아래에있는 것이 모두 true 인 경우
-             * 1) 빈 번호 B는 마지막 빈의 번호입니다.
-             * 2) A> = N mod MaxCnt
-             * A / B 생성을 반복합니다.
-             *이 단계는 결과에 편향을 피하기 위해 필수적입니다.
-             * 그렇지 않으면 A * MaxCnt + N을 반환합니다.
              */
             ae_assert(n/maxcnt+1<=maxcnt, "HQRNDUniformI: N is too large", _state);
             result = -1;
@@ -2168,13 +1559,6 @@ ae_int_t hqrnduniformi(hqrndstate* state, ae_int_t n, ae_state *_state)
          * return "HQRNDIntegerBase() mod N" - it will be skewed for
          * large N's in [0.1*HQRNDMax...HQRNDMax].
          */
-        /*
-         * N <= MaxCnt
-         *
-         아래의 코드는 우리가 간단히 할 수 없기 때문에 약간 복잡합니다.
-         * "HQRNDIntegerBase () mod N"을 반환합니다. - 그것은 비뚤어 질 것입니다.
-         * 큰 N은 [0.1 * HQRNDMax ... HQRNDMax]입니다.
-         */
         mx = maxcnt-maxcnt%n;
         do
         {
@@ -2198,14 +1582,6 @@ State structure must be initialized with HQRNDRandomize() or HQRNDSeed().
   -- ALGLIB --
      Copyright 02.12.2009 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-난수 생성기 : 정상 수
-이 함수는 정규 분포에서 하나의 난수를 생성합니다.
-그 성능은 HQRNDNormal2 ()의 성능과 같습니다.
-상태 구조는 HQRNDRandomize () 또는 HQRNDSeed ()로 초기화해야합니다.
-  - ALGLIB -
-     저작권 02.12.2009 Bochkanov Sergey
-**************************************************************************/
 double hqrndnormal(hqrndstate* state, ae_state *_state)
 {
     double v1;
@@ -2227,12 +1603,6 @@ State structure must be initialized with HQRNDRandomize() or HQRNDSeed().
   -- ALGLIB --
      Copyright 02.12.2009 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-난수 생성기 : X ^ 2 + Y ^ 2 = 1과 같은 임의의 X와 Y
-상태 구조는 HQRNDRandomize () 또는 HQRNDSeed ()로 초기화해야합니다.
-  - ALGLIB -
-     저작권 02.12.2009 Bochkanov Sergey
-**************************************************************************/
 void hqrndunit2(hqrndstate* state, double* x, double* y, ae_state *_state)
 {
     double v;
@@ -2266,14 +1636,6 @@ State structure must be initialized with HQRNDRandomize() or HQRNDSeed().
   -- ALGLIB --
      Copyright 02.12.2009 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-난수 생성기 : 정상 수
-이 함수는 법선으로부터 2 개의 독립 난수를 생성합니다.
-분포. 그 성능은 HQRNDNormal ()과 동일합니다.
-상태 구조는 HQRNDRandomize () 또는 HQRNDSeed ()로 초기화해야합니다.
-  - ALGLIB -
-     저작권 02.12.2009 Bochkanov Sergey
-**************************************************************************/
 void hqrndnormal2(hqrndstate* state,
      double* x1,
      double* x2,
@@ -2298,10 +1660,6 @@ void hqrndnormal2(hqrndstate* state,
              * two Sqrt's instead of one to
              * avoid overflow when S is too small
              */
-            /*
-             * 1 대신에 2 Sqrt
-             * S가 너무 작 으면 오버플로를 피하십시오.
-             */
             s = ae_sqrt(-2*ae_log(s, _state), _state)/ae_sqrt(s, _state);
             *x1 = u*s;
             *x2 = v*s;
@@ -2319,12 +1677,6 @@ State structure must be initialized with HQRNDRandomize() or HQRNDSeed().
   -- ALGLIB --
      Copyright 11.08.2007 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-난수 생성기 : 지수 분포
-상태 구조는 HQRNDRandomize () 또는 HQRNDSeed ()로 초기화해야합니다.
-  - ALGLIB -
-     저작권 2007 년 11 월 8 일 Bochkanov Sergey
-**************************************************************************/
 double hqrndexponential(hqrndstate* state,
      double lambdav,
      ae_state *_state)
@@ -2354,21 +1706,8 @@ RESULT
   -- ALGLIB --
      Copyright 08.11.2011 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-이 함수는에 의해 주어진 이산 분포로부터 난수를 생성합니다.
-유한 샘플 X
-입력 매개 변수
-    상태 - 고품질 난수 생성기, 있어야합니다.
-                HQRNDRandomize () 또는 HQRNDSeed ()로 초기화됩니다.
-        X - 유한 샘플
-        N - 사용할 요소 수, N> = 1
-결과
-    이 함수는 random i = 0..N-1에 대해 X [i] 중 하나를 반환합니다.
-  - ALGLIB -
-     저작권 08.11.2011 Bochkanov Sergey
-**************************************************************************/
 double hqrnddiscrete(hqrndstate* state,
-     /* Real    *//* 실수    */ ae_vector* x,
+     /* Real    */ ae_vector* x,
      ae_int_t n,
      ae_state *_state)
 {
@@ -2401,24 +1740,8 @@ RESULT
   -- ALGLIB --
      Copyright 08.11.2011 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-이 함수는 주어진 연속 분포로부터 난수를 생성합니다.
-유한 샘플 X로.
-입력 매개 변수
-    상태 - 고품질 난수 생성기, 있어야합니다.
-                HQRNDRandomize () 또는 HQRNDSeed ()로 초기화됩니다.
-        X - 유한 샘플, 배열 [N] (이 경우에만 더 클 수 있습니다.
-                선두의 N 요소가 사용된다). 이 배열은에 의해 정렬되어야합니다
-                승천.
-        N - 사용할 요소 수, N> = 1
-결과
-    이 함수는 연속적인 분포에서 난수를 반환한다.  
-    X를 최대한 근사해 보려고합니다. min (X) <= Result <= max (X).
-  - ALGLIB -
-     저작권 08.11.2011 Bochkanov Sergey
-**************************************************************************/
 double hqrndcontinuous(hqrndstate* state,
-     /* Real    *//* 실수    */ ae_vector* x,
+     /* Real    */ ae_vector* x,
      ae_int_t n,
      ae_state *_state)
 {
@@ -2456,10 +1779,6 @@ This function returns random integer in [0,HQRNDMax]
 
 L'Ecuyer, Efficient and portable combined random number generators
 *************************************************************************/
-/**************************************************************************
-이 함수는 [0, HQRNDMax]에 임의의 정수를 반환합니다.
-L' Ecuyer, 효율적이고 휴대 가능한 결합 난수 생성기
-**************************************************************************/
 static ae_int_t hqrnd_hqrndintegerbase(hqrndstate* state,
      ae_state *_state)
 {
@@ -2483,9 +1802,6 @@ static ae_int_t hqrnd_hqrndintegerbase(hqrndstate* state,
     
     /*
      * Result
-     */
-    /*
-     * 결과
      */
     result = state->s1-state->s2;
     if( result<1 )
@@ -2573,38 +1889,7 @@ NOTES
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-KD- 트리 생성
-이 서브 루틴은 X 값의 집합과 선택적인 Y 값으로부터 KD 트리를 생성합니다
-입력 매개 변수
-    XY-dataset, array [0..N-1,0..NX + NY-1].
-                한 행은 한 점에 해당합니다.
-                첫 번째 NX 열에는 X 값이 포함되고 다음 NY (NY는 0이 될 수 있음)
-                열은 연관된 Y 값을 포함 할 수 있습니다.
-    N - 포인트 수, N> = 0.
-    NX - 공간 차원, NX> = 1.
-    NY - 선택적 Y 값의 수, NY> = 0.
-    NormType- 노름 유형 :
-                * 0은 무한대 - 표준을 나타냅니다.
-                * 1은 1- 노름을 나타냅니다.
-                * 2는 2- 노름 (유클리드 기준)
-                
-출력 매개 변수
-    KDT - KD 트리
-    
-    
-노트
-1. KD 트리 생성은 O (N * logN) 복잡도와 O (N * (2 * NX + NY)) 메모리를 갖는다.
-   요구 사항.
-2. KD- 나무는 N과 NX의 조합과 함께 사용될 수 있지만,
-   N >> 4 ^ NX 일 때만 무차별 강제 검색보다 더 효율적입니다. 그래서 그들은
-   저 차원 작업 (NX = 2, NX = 3)에서 가장 유용합니다. NX = 1은 또 다른 것입니다.
-   비효율적 인 경우, 간단한 이진 검색 (추가하지 않음
-   구조)는 KD- 나무보다 훨씬 효율적입니다.
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
-void kdtreebuild(/* Real    *//* 실수    */ ae_matrix* xy,
+void kdtreebuild(/* Real    */ ae_matrix* xy,
      ae_int_t n,
      ae_int_t nx,
      ae_int_t ny,
@@ -2677,39 +1962,8 @@ NOTES
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-KD- 트리 생성
-이 서브 루틴은 일련의 X 값, 정수 태그 및
-선택적 Y 값
-입력 매개 변수
-    XY-dataset, array [0..N-1,0..NX + NY-1].
-                한 행은 한 점에 해당합니다.
-                첫 번째 NX 열에는 X 값이 포함되고 다음 NY (NY는 0이 될 수 있음)
-                열은 연관된 Y 값을 포함 할 수 있습니다.
-    태그 - 태그, 배열 [0..N-1], 관련 정수 태그 포함
-                포인트로.
-    N - 포인트 수, N> = 0
-    NX - 공간 차원, NX> = 1.
-    NY - 선택적 Y 값의 수, NY> = 0.
-    NormType- 노름 유형 :
-                * 0은 무한대 - 표준을 나타냅니다.
-                * 1은 1- 노름을 나타냅니다.
-                * 2는 2- 노름 (유클리드 기준)
-출력 매개 변수
-    KDT - KD 트리
-노트
-1. KD 트리 생성은 O (N * logN) 복잡도와 O (N * (2 * NX + NY)) 메모리를 갖는다.
-   요구 사항.
-2. KD- 나무는 N과 NX의 조합과 함께 사용될 수 있지만,
-   N >> 4 ^ NX 일 때만 무차별 강제 검색보다 더 효율적입니다. 그래서 그들은
-   저 차원 작업 (NX = 2, NX = 3)에서 가장 유용합니다. NX = 1은 또 다른 것입니다.
-   비효율적 인 경우, 간단한 이진 검색 (추가하지 않음
-   구조)는 KD- 나무보다 훨씬 효율적입니다.
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
-void kdtreebuildtagged(/* Real    *//* 실수    */ ae_matrix* xy,
-     /* Integer *//* 정수 */ ae_vector* tags,
+void kdtreebuildtagged(/* Real    */ ae_matrix* xy,
+     /* Integer */ ae_vector* tags,
      ae_int_t n,
      ae_int_t nx,
      ae_int_t ny,
@@ -2736,9 +1990,6 @@ void kdtreebuildtagged(/* Real    *//* 실수    */ ae_matrix* xy,
     /*
      * initialize
      */
-    /*
-     * 초기화
-     */
     kdt->n = n;
     kdt->nx = nx;
     kdt->ny = ny;
@@ -2748,9 +1999,6 @@ void kdtreebuildtagged(/* Real    *//* 실수    */ ae_matrix* xy,
     /*
      * N=0 => quick exit
      */
-    /*
-     * N = 0 => 빠른 종료
-     */
     if( n==0 )
     {
         return;
@@ -2759,17 +2007,11 @@ void kdtreebuildtagged(/* Real    *//* 실수    */ ae_matrix* xy,
     /*
      * Allocate
      */
-    /*
-     * 할당
-     */
     nearestneighbor_kdtreeallocdatasetindependent(kdt, nx, ny, _state);
     nearestneighbor_kdtreeallocdatasetdependent(kdt, n, nx, ny, _state);
     
     /*
      * Initial fill
-     */
-    /*
-     * 초기 채우기
      */
     for(i=0; i<=n-1; i++)
     {
@@ -2780,9 +2022,6 @@ void kdtreebuildtagged(/* Real    *//* 실수    */ ae_matrix* xy,
     
     /*
      * Determine bounding box
-     */
-    /*
-     * 경계 상자 결정
      */
     ae_v_move(&kdt->boxmin.ptr.p_double[0], 1, &kdt->xy.ptr.pp_double[0][0], 1, ae_v_len(0,nx-1));
     ae_v_move(&kdt->boxmax.ptr.p_double[0], 1, &kdt->xy.ptr.pp_double[0][0], 1, ae_v_len(0,nx-1));
@@ -2799,11 +2038,6 @@ void kdtreebuildtagged(/* Real    *//* 실수    */ ae_matrix* xy,
      * prepare tree structure
      * * MaxNodes=N because we guarantee no trivial splits, i.e.
      *   every split will generate two non-empty boxes
-     */
-    /*
-     * 나무 구조 준비
-     * * 우리가 사소한 분리를 보장하지 않기 때문에 MaxNodes = N, 즉
-     * 모든 분할은 두 개의 비어 있지 않은 상자를 생성합니다.
      */
     maxnodes = n;
     ae_vector_set_length(&kdt->nodes, nearestneighbor_splitnodesize*2*maxnodes, _state);
@@ -2844,32 +2078,8 @@ these results:
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-K-NN 질의 : K 개의 가장 가까운 이웃
-입력 매개 변수
-    KDT - KD 트리
-    X- 점, 배열 [0..NX-1].
-    K - 반환 할 이웃 수, K> = 1
-    SelfMatch - 자기 일치가 허용되는지 여부 :
-                    * 참이면 가장 가까운 이웃이 포인트 자체 일 수 있습니다.
-                      (원래 데이터 집합에있는 경우)
-                    * 거짓이면 거리가 0이 아닌 점만 나타냅니다.
-                      돌아왔다
-                    * 주어지지 않았다면 True로 간주
-결과
-    발견 된 실제 이웃의 수 (K> N 인 경우 K 또는 N 중 하나)
-이 서브 루틴은 쿼리를 수행하고 결과를 내부에 저장합니다.
-KD- 트리의 구조. 다음과 같은 서브 루틴을 사용하여
-이러한 결과는 다음과 같습니다.
-* X 값을 가져 오는 KDTreeQueryResultsX ()
-* X 및 Y 값을 가져 오는 KDTreeQueryResultsXY ()
-* 태그 값을 가져 오는 KDTreeQueryResultsTags ()
-* 거리를 얻기위한 KDTreeQueryResultsDistances ()
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
 ae_int_t kdtreequeryknn(kdtree* kdt,
-     /* Real    *//* 실수     */ ae_vector* x,
+     /* Real    */ ae_vector* x,
      ae_int_t k,
      ae_bool selfmatch,
      ae_state *_state)
@@ -2913,32 +2123,8 @@ actual results:
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-R-NN 질의 : X를 중심으로 R- 구 내의 모든 점
-입력 매개 변수
-    KDT - KD 트리
-    X- 점, 배열 [0..NX-1].
-    R - 구의 반경 (해당 표준에서), R> 0
-    SelfMatch - 자기 일치가 허용되는지 여부 :
-                    * 참이면 가장 가까운 이웃이 포인트 자체 일 수 있습니다.
-                      (원래 데이터 집합에있는 경우)
-                    * 거짓이면 거리가 0이 아닌 점만 나타냅니다.
-                      돌아왔다
-                    * 주어지지 않았다면 True로 간주
-결과
-    발견 된 이웃의 수,> = 0
-이 서브 루틴은 쿼리를 수행하고 결과를 내부에 저장합니다.
-KD- 트리의 구조. 다음과 같은 서브 루틴을 사용하여
-실제 결과:
-* X 값을 가져 오는 KDTreeQueryResultsX ()
-* X 및 Y 값을 가져 오는 KDTreeQueryResultsXY ()
-* 태그 값을 가져 오는 KDTreeQueryResultsTags ()
-* 거리를 얻기위한 KDTreeQueryResultsDistances ()
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
 ae_int_t kdtreequeryrnn(kdtree* kdt,
-     /* Real    *//* 실수     */ ae_vector* x,
+     /* Real    */ ae_vector* x,
      double r,
      ae_bool selfmatch,
      ae_state *_state)
@@ -2955,9 +2141,6 @@ ae_int_t kdtreequeryrnn(kdtree* kdt,
     /*
      * Handle special case: KDT.N=0
      */
-    /*
-     * 특수 케이스 취급 : KDT.N = 0
-     */
     if( kdt->n==0 )
     {
         kdt->kcur = 0;
@@ -2967,9 +2150,6 @@ ae_int_t kdtreequeryrnn(kdtree* kdt,
     
     /*
      * Prepare parameters
-     */
-    /*
-     * 매개 변수 준비
      */
     kdt->kneeded = 0;
     if( kdt->normtype!=2 )
@@ -2987,18 +2167,11 @@ ae_int_t kdtreequeryrnn(kdtree* kdt,
     /*
      * calculate distance from point to current bounding box
      */
-    /*
-     * 점에서 현재 경계 상자까지의 거리를 계산합니다.
-     */
     nearestneighbor_kdtreeinitbox(kdt, x, _state);
     
     /*
      * call recursive search
      * results are returned as heap
-     */
-    /*
-     * 재귀 호출 호출
-     * 결과는 힙으로 반환됩니다.
      */
     nearestneighbor_kdtreequerynnrec(kdt, 0, _state);
     
@@ -3007,12 +2180,6 @@ ae_int_t kdtreequeryrnn(kdtree* kdt,
      *
      * last element is not pop'ed because it is already in
      * its place
-     */
-    /*
-     * 힙에서 팝하여 정렬 된 표현을 생성합니다.
-     *
-     * 마지막 요소는 이미 있기 때문에 pop'ed되지 않습니다.
-     * 그 장소
      */
     result = kdt->kcur;
     j = kdt->kcur;
@@ -3059,39 +2226,8 @@ these results:
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-K-NN 질의 : 근사 K 최근 접 이웃
-입력 매개 변수
-    KDT - KD 트리
-    X- 점, 배열 [0..NX-1].
-    K - 반환 할 이웃 수, K> = 1
-    SelfMatch - 자기 일치가 허용되는지 여부 :
-                    * 참이면 가장 가까운 이웃이 포인트 자체 일 수 있습니다.
-                      (원래 데이터 집합에있는 경우)
-                    * 거짓이면 거리가 0이 아닌 점만 나타냅니다.
-                      돌아왔다
-                    * 주어지지 않았다면 True로 간주
-    Eps - 근사 인수, Eps> = 0. 대략 eps- 근사치
-                    이웃은 X와 거리가 먼 이웃입니다.
-                    가장 가까운 (1 + eps) 배의 가장 가까운 이웃.
-결과
-    발견 된 실제 이웃의 수 (K> N 인 경우 K 또는 N 중 하나)
-    
-노트
-    Eps가 켜져있을 때만 상당한 성능 향상을 얻을 수 있습니다.
-    크기의 차수는 1 이상.
-이 서브 루틴은 쿼리를 수행하고 결과를 내부에 저장합니다.
-KD- 트리의 구조. 다음과 같은 서브 루틴을 사용하여
-이러한 결과는 다음과 같습니다.
-* X 값을 가져 오는 KDTreeQueryResultsX ()
-* X 및 Y 값을 가져 오는 KDTreeQueryResultsXY ()
-* 태그 값을 가져 오는 KDTreeQueryResultsTags ()
-* 거리를 얻기위한 KDTreeQueryResultsDistances ()
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
 ae_int_t kdtreequeryaknn(kdtree* kdt,
-     /* Real    *//* 실수     */ ae_vector* x,
+     /* Real    */ ae_vector* x,
      ae_int_t k,
      ae_bool selfmatch,
      double eps,
@@ -3110,9 +2246,6 @@ ae_int_t kdtreequeryaknn(kdtree* kdt,
     /*
      * Handle special case: KDT.N=0
      */
-    /*
-     * 특수 케이스 취급 : KDT.N = 0
-     */
     if( kdt->n==0 )
     {
         kdt->kcur = 0;
@@ -3122,9 +2255,6 @@ ae_int_t kdtreequeryaknn(kdtree* kdt,
     
     /*
      * Prepare parameters
-     */
-    /*
-     * 매개 변수 준비
      */
     k = ae_minint(k, kdt->n, _state);
     kdt->kneeded = k;
@@ -3143,18 +2273,11 @@ ae_int_t kdtreequeryaknn(kdtree* kdt,
     /*
      * calculate distance from point to current bounding box
      */
-    /*
-     * 점에서 현재 경계 상자까지의 거리를 계산합니다.
-     */
     nearestneighbor_kdtreeinitbox(kdt, x, _state);
     
     /*
      * call recursive search
      * results are returned as heap
-     */
-    /*
-     * 재귀 호출 호출
-     * 결과는 힙으로 반환됩니다.
      */
     nearestneighbor_kdtreequerynnrec(kdt, 0, _state);
     
@@ -3163,12 +2286,6 @@ ae_int_t kdtreequeryaknn(kdtree* kdt,
      *
      * last element is non pop'ed because it is already in
      * its place
-     */
-    /*
-     * 힙에서 팝하여 정렬 된 표현을 생성합니다.
-     *
-     * 마지막 요소는 이미 poped되어 있기 때문에 pop'ed가 아닙니다.
-     * 그 장소
      */
     result = kdt->kcur;
     j = kdt->kcur;
@@ -3209,32 +2326,8 @@ SEE ALSO
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-마지막 쿼리의 X 값
-입력 매개 변수
-    KDT - KD 트리
-    X - 사전에 할당 할 수 있었던 버퍼. X가 너무 작아서 저장할 수없는 경우
-                결과, 크기가 조정됩니다. 크기 (X)가 저장하기에 충분하면
-                결과, 변경되지 않습니다.
-출력 매개 변수
-    X - 행은 X 값으로 채워집니다.
-노트
-1. 포인트는 쿼리 포인트로부터 거리에 따라 정렬됩니다 (첫 번째 = 가장 가까운 위치).
-2. XY가 결과를 저장하는 데 필요한 것보다 큰 경우 선두 부분 만
-   덮어 쓰기; 후행 부분은 변경되지 않습니다. 따라서 입력시
-   XY = [[A, B], [C, D]]이고 결과는 [1,2]입니다.
-   XY = [[1,2], [C, D]]. 이는 성능을 향상시키기 위해 의도적으로 수행됩니다. 만약
-   결과 크기에 따라 배열의 크기를 조정하는 함수가 필요하다.
-   함수는 동일한 이름과 접미사 'I'를 사용합니다.
-관련 항목
-* KDTreeQueryResultsXY () X 및 Y 값
-* KDTreeQueryResultsTags () 태그 값
-* KDTreeQueryResultsDistances () 거리
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
 void kdtreequeryresultsx(kdtree* kdt,
-     /* Real    *//* 실수     */ ae_matrix* x,
+     /* Real    */ ae_matrix* x,
      ae_state *_state)
 {
     ae_int_t i;
@@ -3287,33 +2380,8 @@ SEE ALSO
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-마지막 쿼리의 X 및 Y 값
-입력 매개 변수
-    KDT - KD 트리
-    XY - 아마도 사전 할당 된 버퍼. XY가 너무 작아서 저장할 수없는 경우
-                결과, 크기가 조정됩니다. 크기 (XY)가 저장하기에 충분하면
-                결과, 변경되지 않습니다.
-출력 매개 변수
-    XY - 행은 점으로 채워집니다. 첫 번째 NX 열은
-                X 값, 다음 NY 컬럼 - Y 값.
-노트
-1. 포인트는 쿼리 포인트로부터 거리에 따라 정렬됩니다 (첫 번째 = 가장 가까운 위치).
-2. XY가 결과를 저장하는 데 필요한 것보다 큰 경우 선두 부분 만
-   덮어 쓰기; 후행 부분은 변경되지 않습니다. 따라서 입력시
-   XY = [[A, B], [C, D]]이고 결과는 [1,2]입니다.
-   XY = [[1,2], [C, D]]. 이는 성능을 향상시키기 위해 의도적으로 수행됩니다. 만약
-   결과 크기에 따라 배열의 크기를 조정하는 함수가 필요하다.
-   함수는 동일한 이름과 접미사 'I'를 사용합니다.
-관련 항목
-* KDTreeQueryResultsX () X 값
-* KDTreeQueryResultsTags () 태그 값
-* KDTreeQueryResultsDistances () 거리
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
 void kdtreequeryresultsxy(kdtree* kdt,
-     /* Real    *//* 실수     */ ae_matrix* xy,
+     /* Real    */ ae_matrix* xy,
      ae_state *_state)
 {
     ae_int_t i;
@@ -3366,33 +2434,8 @@ SEE ALSO
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-마지막 쿼리의 태그
-입력 매개 변수
-    KDT - KD 트리
-    태그 - 사전 할당 된 버퍼 일 수 있습니다. X가 너무 작아서 저장할 수없는 경우
-                결과, 크기가 조정됩니다. 크기 (X)가 저장하기에 충분하면
-                결과, 변경되지 않습니다.
-출력 매개 변수
-    태그 - 포인트와 관련된 태그로 채워짐,
-                또는 태그가 제공되지 않은 경우 0으로
-노트
-1. 포인트는 쿼리 포인트로부터 거리에 따라 정렬됩니다 (첫 번째 = 가장 가까운 위치).
-2. XY가 결과를 저장하는 데 필요한 것보다 큰 경우 선두 부분 만
-   덮어 쓰기; 후행 부분은 변경되지 않습니다. 따라서 입력시
-   XY = [[A, B], [C, D]]이고 결과는 [1,2]입니다.
-   XY = [[1,2], [C, D]]. 이는 성능을 향상시키기 위해 의도적으로 수행됩니다. 만약
-   결과 크기에 따라 배열의 크기를 조정하는 함수가 필요하다.
-   함수는 동일한 이름과 접미사 'I'를 사용합니다.
-관련 항목
-* KDTreeQueryResultsX () X 값
-* KDTreeQueryResultsXY () X 및 Y 값
-* KDTreeQueryResultsDistances () 거리
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
 void kdtreequeryresultstags(kdtree* kdt,
-     /* Integer *//* 정수 */ ae_vector* tags,
+     /* Integer */ ae_vector* tags,
      ae_state *_state)
 {
     ae_int_t i;
@@ -3444,32 +2487,8 @@ SEE ALSO
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-마지막 쿼리의 거리
-입력 매개 변수
-    KDT - KD 트리
-    R - 사전 할당 된 버퍼. X가 너무 작아서 저장할 수없는 경우
-                결과, 크기가 조정됩니다. 크기 (X)가 저장하기에 충분하면
-                결과, 변경되지 않습니다.
-출력 매개 변수
-    R - 거리로 채워짐 (해당 기준)
-노트
-1. 포인트는 쿼리 포인트로부터 거리에 따라 정렬됩니다 (첫 번째 = 가장 가까운 위치).
-2. XY가 결과를 저장하는 데 필요한 것보다 큰 경우 선두 부분 만
-   덮어 쓰기; 후행 부분은 변경되지 않습니다. 따라서 입력시
-   XY = [[A, B], [C, D]]이고 결과는 [1,2]입니다.
-   XY = [[1,2], [C, D]]. 이는 성능을 향상시키기 위해 의도적으로 수행됩니다. 만약
-   결과 크기에 따라 배열의 크기를 조정하는 함수가 필요하다.
-   함수는 동일한 이름과 접미사 'I'를 사용합니다.
-관련 항목
-* KDTreeQueryResultsX () X 값
-* KDTreeQueryResultsXY () X 및 Y 값
-* KDTreeQueryResultsTags () 태그 값
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
 void kdtreequeryresultsdistances(kdtree* kdt,
-     /* Real    *//* 실수     */ ae_vector* r,
+     /* Real    */ ae_vector* r,
      ae_state *_state)
 {
     ae_int_t i;
@@ -3491,12 +2510,6 @@ void kdtreequeryresultsdistances(kdtree* kdt,
      *
      * Abs() call is used to handle cases with negative norms
      * (generated during KFN requests)
-     */
-    /*
-     * 언로드 규범
-     *
-     * Abs () 호출은 부정적인 규범을 가진 사례를 처리하는 데 사용됩니다.
-     * (KFN 요청시 생성)
      */
     if( kdt->normtype==0 )
     {
@@ -3534,18 +2547,8 @@ when you call it from command line.
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-마지막 쿼리의 X 값; Python과 같은 언어를위한 'interactive'variant
-"X = KDTreeQueryResultsXI (KDT)"와 같은 구조를 지원하고
-대화식 인터프리터 모드.
-이 함수는 각 호출에 새로운 배열을 할당하므로 상당히
-'비대화 형'대응 제품보다 느리지 만 더 편리합니다.
-명령 행에서 호출 할 때.
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
 void kdtreequeryresultsxi(kdtree* kdt,
-     /* Real    *//* 실수    */ ae_matrix* x,
+     /* Real    */ ae_matrix* x,
      ae_state *_state)
 {
 
@@ -3567,18 +2570,8 @@ when you call it from command line.
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-마지막 쿼리의 XY 값; Python과 같은 언어를위한 'interactive'variant
-"XY = KDTreeQueryResultsXYI (KDT)"와 같은 구문을 지원하고
-대화식 인터프리터 모드.
-이 함수는 각 호출에 새로운 배열을 할당하므로 상당히
-'비대화 형'대응 제품보다 느리지 만 더 편리합니다.
-명령 행에서 호출 할 때.
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
 void kdtreequeryresultsxyi(kdtree* kdt,
-     /* Real    *//* 실수    */ ae_matrix* xy,
+     /* Real    */ ae_matrix* xy,
      ae_state *_state)
 {
 
@@ -3600,18 +2593,8 @@ when you call it from command line.
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-마지막 쿼리의 태그. Python과 같은 언어를위한 'interactive'variant
-"Tags = KDTreeQueryResultsTagsI (KDT)"와 같은 구조를 지원하고
-대화식 인터프리터 모드.
-이 함수는 각 호출에 새로운 배열을 할당하므로 상당히
-'비대화 형'대응 제품보다 느리지 만 더 편리합니다.
-명령 행에서 호출 할 때.
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
 void kdtreequeryresultstagsi(kdtree* kdt,
-     /* Integer *//* 정수 */ ae_vector* tags,
+     /* Integer */ ae_vector* tags,
      ae_state *_state)
 {
 
@@ -3633,18 +2616,8 @@ when you call it from command line.
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-마지막 쿼리로부터의 거리; Python과 같은 언어를위한 'interactive'variant
-"R = KDTreeQueryResultsDistancesI (KDT)"와 같은 구문을 지원합니다.
-인터프리터 인터랙티브 모드.
-이 함수는 각 호출에 새로운 배열을 할당하므로 상당히
-'비대화 형'대응 제품보다 느리지 만 더 편리합니다.
-명령 행에서 호출 할 때.
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
 void kdtreequeryresultsdistancesi(kdtree* kdt,
-     /* Real    *//* 실수    */ ae_vector* r,
+     /* Real    */ ae_vector* r,
      ae_state *_state)
 {
 
@@ -3660,11 +2633,6 @@ Serializer: allocation
   -- ALGLIB --
      Copyright 14.03.2011 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-직렬화 기 : 할당
-  - ALGLIB -
-     Copyright 14.03.2011 Bochkanov Sergey
-**************************************************************************/
 void kdtreealloc(ae_serializer* s, kdtree* tree, ae_state *_state)
 {
 
@@ -3673,17 +2641,11 @@ void kdtreealloc(ae_serializer* s, kdtree* tree, ae_state *_state)
     /*
      * Header
      */
-    /*
-     * 머리글
-     */
     ae_serializer_alloc_entry(s);
     ae_serializer_alloc_entry(s);
     
     /*
      * Data
-     */
-    /*
-     * 데이터
      */
     ae_serializer_alloc_entry(s);
     ae_serializer_alloc_entry(s);
@@ -3704,11 +2666,6 @@ Serializer: serialization
   -- ALGLIB --
      Copyright 14.03.2011 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-직렬화 기 : 직렬화
-  - ALGLIB -
-     Copyright 14.03.2011 Bochkanov Sergey
-**************************************************************************/
 void kdtreeserialize(ae_serializer* s, kdtree* tree, ae_state *_state)
 {
 
@@ -3717,17 +2674,11 @@ void kdtreeserialize(ae_serializer* s, kdtree* tree, ae_state *_state)
     /*
      * Header
      */
-    /*
-     * 머리글
-     */
     ae_serializer_serialize_int(s, getkdtreeserializationcode(_state), _state);
     ae_serializer_serialize_int(s, nearestneighbor_kdtreefirstversion, _state);
     
     /*
      * Data
-     */
-    /*
-     * 데이터
      */
     ae_serializer_serialize_int(s, tree->n, _state);
     ae_serializer_serialize_int(s, tree->nx, _state);
@@ -3748,11 +2699,6 @@ Serializer: unserialization
   -- ALGLIB --
      Copyright 14.03.2011 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-직렬화 기 : 직렬화 해제
-  - ALGLIB -
-     Copyright 14.03.2011 Bochkanov Sergey
-**************************************************************************/
 void kdtreeunserialize(ae_serializer* s, kdtree* tree, ae_state *_state)
 {
     ae_int_t i0;
@@ -3764,9 +2710,6 @@ void kdtreeunserialize(ae_serializer* s, kdtree* tree, ae_state *_state)
     /*
      * check correctness of header
      */
-    /*
-     * 헤더의 정확성 검사
-     */
     ae_serializer_unserialize_int(s, &i0, _state);
     ae_assert(i0==getkdtreeserializationcode(_state), "KDTreeUnserialize: stream header corrupted", _state);
     ae_serializer_unserialize_int(s, &i1, _state);
@@ -3774,9 +2717,6 @@ void kdtreeunserialize(ae_serializer* s, kdtree* tree, ae_state *_state)
     
     /*
      * Unserialize data
-     */
-    /*
-     * 데이터 병합 해제
      */
     ae_serializer_unserialize_int(s, &tree->n, _state);
     ae_serializer_unserialize_int(s, &tree->nx, _state);
@@ -3798,11 +2738,6 @@ Returns split position I3: [I1,I3) and [I3,I2) are created as result.
 
 This subroutine doesn't create tree structures, just rearranges nodes.
 *************************************************************************/
-/**************************************************************************
-임계 값을 S로하는 D 차원의 분할 영역을 사용하여 노드 [I1, I2]를 다시 정렬합니다.
-분할 위치 I3을 반환합니다 : [I1, I3) 및 [I3, I2]가 결과로 생성됩니다.
-이 서브 루틴은 트리 구조를 생성하지 않고 단지 노드를 재정렬합니다.
-**************************************************************************/
 static void nearestneighbor_kdtreesplit(kdtree* kdt,
      ae_int_t i1,
      ae_int_t i2,
@@ -3831,16 +2766,6 @@ static void nearestneighbor_kdtreesplit(kdtree* kdt,
      * After this, [I1,ILeft) contains left part, and [ILeft,I2)
      * contains right part.
      */
-    /*
-     * 두 부분으로 XY / 태그 분할 :
-     * * [ILeft, IRight]는 XY / 태그의 처리되지 않은 부분입니다.
-     *
-     * 사이클이 끝나면 Ileft = IRight가됩니다. 우리는
-     *이 요소는 별도로.
-     *
-     * 이후, [I1, ILeft]는 왼쪽 부분을 포함하고 [ILeft, I2]
-     * 오른쪽 부분을 포함합니다.
-     */
     ileft = i1;
     iright = i2-1;
     while(ileft<iright)
@@ -3852,10 +2777,6 @@ static void nearestneighbor_kdtreesplit(kdtree* kdt,
              * XY[ILeft] is on its place.
              * Advance ILeft.
              */
-            /*
-             * XY [ILeft]가 있습니다.
-             * 사전 ILeft.
-             */
             ileft = ileft+1;
         }
         else
@@ -3864,10 +2785,6 @@ static void nearestneighbor_kdtreesplit(kdtree* kdt,
             /*
              * XY[ILeft,..] must be at IRight.
              * Swap and advance IRight.
-             */
-            /*
-             * XY [ILeft, ..]는 IRight에 있어야합니다.
-             * 스왑 및 IRight 사전.
              */
             for(i=0; i<=2*kdt->nx+kdt->ny-1; i++)
             {
@@ -3907,18 +2824,6 @@ NodesOffs[] and SplitsOffs[] must be large enough.
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-재귀 kd 트리 생성 서브 루틴.
-매개 변수
-    KDT 트리
-    노드는 트리로 채워야하는 노드 []의 사용되지 않는 부분을 비 웁니다.
-    Splits []의 사용하지 않는 부분을 SplitsOffs합니다.
-    I1, [I1, I2]로부터의 I2 포인트는
-    
-NodesOffs []와 SplitsOffs []는 충분히 커야합니다.
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
 static void nearestneighbor_kdtreegeneratetreerec(kdtree* kdt,
      ae_int_t* nodesoffs,
      ae_int_t* splitsoffs,
@@ -3954,9 +2859,6 @@ static void nearestneighbor_kdtreegeneratetreerec(kdtree* kdt,
     /*
      * Generate leaf if needed
      */
-    /*
-     * 필요한 경우 리프 생성
-     */
     if( i2-i1<=maxleafsize )
     {
         kdt->nodes.ptr.p_int[*nodesoffs+0] = i2-i1;
@@ -3968,9 +2870,6 @@ static void nearestneighbor_kdtreegeneratetreerec(kdtree* kdt,
     /*
      * Load values for easier access
      */
-    /*
-     *보다 쉽게 ​​액세스 할 수 있도록로드 값
-     */
     nx = kdt->nx;
     ny = kdt->ny;
     
@@ -3978,11 +2877,6 @@ static void nearestneighbor_kdtreegeneratetreerec(kdtree* kdt,
      * Select dimension to split:
      * * D is a dimension number
      * In case bounding box has zero size, we enforce creation of the leaf node.
-     */
-    /*
-     * 분할 할 차원 선택 :
-     * * D는 치수 숫자입니다.
-     * 경계 상자의 크기가 0 인 경우 리프 노드 생성을 시행합니다.
      */
     d = 0;
     ds = kdt->curboxmax.ptr.p_double[0]-kdt->curboxmin.ptr.p_double[0];
@@ -4010,14 +2904,6 @@ static void nearestneighbor_kdtreegeneratetreerec(kdtree* kdt,
      * In case all points has same value of D-th component
      * (MinV=MaxV) we enforce D-th dimension of bounding
      * box to become exactly zero and repeat tree construction.
-     */
-    /*
-     * 슬라이딩 중간 점 규칙을 사용하여 분할 위치 S 선택,
-     * [I1, I3) 및 [I3, I2]로 포인트 재배치.
-     *
-     * 모든 점의 D 번째 성분 값이 같은 경우
-     * (MinV = MaxV) 경계의 D 번째 차원을 시행합니다.
-     * 상자가 정확히 0이되고 트리 구조가 반복됩니다.
      */
     s = kdt->curboxmin.ptr.p_double[d]+0.5*ds;
     ae_v_move(&kdt->buf.ptr.p_double[0], 1, &kdt->xy.ptr.pp_double[i1][d], kdt->xy.stride, ae_v_len(0,i2-i1-1));
@@ -4058,11 +2944,6 @@ static void nearestneighbor_kdtreegeneratetreerec(kdtree* kdt,
          * (MinV=MaxV) we enforce D-th dimension of bounding
          * box to become exactly zero and repeat tree construction.
          */
-        /*
-         * 모든 점의 D 번째 성분 값이 같은 경우
-         * (MinV = MaxV) 경계의 D 번째 차원을 시행합니다.
-         * 상자가 정확히 0이되고 트리 구조가 반복됩니다.
-         */
         v0 = kdt->curboxmin.ptr.p_double[d];
         v1 = kdt->curboxmax.ptr.p_double[d];
         kdt->curboxmin.ptr.p_double[d] = minv;
@@ -4078,9 +2959,6 @@ static void nearestneighbor_kdtreegeneratetreerec(kdtree* kdt,
         /*
          * normal midpoint split
          */
-        /*
-         * 정상 중간 점 분리
-         */
         nearestneighbor_kdtreesplit(kdt, i1, i2, d, s, &i3, _state);
     }
     else
@@ -4089,9 +2967,6 @@ static void nearestneighbor_kdtreegeneratetreerec(kdtree* kdt,
         /*
          * sliding midpoint
          */
-        /*
-         * 미끄럼 중점
-         */
         if( cntless==0 )
         {
             
@@ -4099,11 +2974,6 @@ static void nearestneighbor_kdtreegeneratetreerec(kdtree* kdt,
              * 1. move split to MinV,
              * 2. place one point to the left bin (move to I1),
              *    others - to the right bin
-             */
-            /*
-             * 1. MinV로 분할 이동,
-             * 2. 왼쪽 빈에 1 포인트를 놓습니다 (I1로 이동).
-             * 기타 - 오른쪽 빈에
              */
             s = minv;
             if( minidx!=i1 )
@@ -4128,11 +2998,6 @@ static void nearestneighbor_kdtreegeneratetreerec(kdtree* kdt,
              * 2. place one point to the right bin (move to I2-1),
              *    others - to the left bin
              */
-            /*
-             * 1. MaxV로 분할 이동,
-             * 2. 하나의 점을 오른쪽 bin에 놓습니다 (I2-1로 이동).
-             * 다른 사람 - 왼쪽 빈에
-             */
             s = maxv;
             if( maxidx!=i2-1 )
             {
@@ -4153,9 +3018,6 @@ static void nearestneighbor_kdtreegeneratetreerec(kdtree* kdt,
     /*
      * Generate 'split' node
      */
-    /*
-     * '분할'노드 생성
-     */
     kdt->nodes.ptr.p_int[*nodesoffs+0] = 0;
     kdt->nodes.ptr.p_int[*nodesoffs+1] = d;
     kdt->nodes.ptr.p_int[*nodesoffs+2] = *splitsoffs;
@@ -4169,12 +3031,6 @@ static void nearestneighbor_kdtreegeneratetreerec(kdtree* kdt,
      * * update CurBox
      * * call subroutine
      * * restore CurBox
-     */
-    /*
-     * 재순환 세대 :
-     * * CurBox 업데이트
-     * * call 서브 루틴
-     * * CurBox 복원
      */
     kdt->nodes.ptr.p_int[oldoffs+3] = *nodesoffs;
     v = kdt->curboxmax.ptr.p_double[d];
@@ -4195,11 +3051,6 @@ Recursive subroutine for NN queries.
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-NN 쿼리를위한 재귀 서브 루틴.
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
 static void nearestneighbor_kdtreequerynnrec(kdtree* kdt,
      ae_int_t offs,
      ae_state *_state)
@@ -4229,10 +3080,6 @@ static void nearestneighbor_kdtreequerynnrec(kdtree* kdt,
      * Leaf node.
      * Process points.
      */
-    /*
-     * 리프 노드.
-     * 프로세스 포인트.
-     */
     if( kdt->nodes.ptr.p_int[offs]>0 )
     {
         i1 = kdt->nodes.ptr.p_int[offs+1];
@@ -4242,9 +3089,6 @@ static void nearestneighbor_kdtreequerynnrec(kdtree* kdt,
             
             /*
              * Calculate distance
-             */
-            /*
-             * 거리 계산
              */
             ptdist = 0;
             nx = kdt->nx;
@@ -4273,9 +3117,6 @@ static void nearestneighbor_kdtreequerynnrec(kdtree* kdt,
             /*
              * Skip points with zero distance if self-matches are turned off
              */
-            /*
-             * 자기 일치가 해제 된 경우 거리가 0 인 지점 건너 뛰기
-             */
             if( ae_fp_eq(ptdist,0)&&!kdt->selfmatch )
             {
                 continue;
@@ -4284,10 +3125,6 @@ static void nearestneighbor_kdtreequerynnrec(kdtree* kdt,
             /*
              * We CAN'T process point if R-criterion isn't satisfied,
              * i.e. (RNeeded<>0) AND (PtDist>R).
-             */
-            /*
-             * R- 기준이 충족되지 않으면 포인트를 처리 할 수 ​​없습니다.
-             * 즉 (RNeeded <> 0) AND (PtDist> R).
              */
             if( ae_fp_eq(kdt->rneeded,0)||ae_fp_less_eq(ptdist,kdt->rneeded) )
             {
@@ -4298,20 +3135,11 @@ static void nearestneighbor_kdtreequerynnrec(kdtree* kdt,
                  *   (or skip, if worst point is better)
                  * * add point without replacement otherwise
                  */
-                /*
-                 * R- 기준이 충족되면 다음 중 하나를 수행해야합니다.
-                 * (KNeeded <> 0) AND (KCur = KNeeded) 인 경우 * 최악의 점을 바꿉니다.
-                 * (또는 최악의 점이 더 좋으면 건너 뜁니다.)
-                 * * 그렇지 않으면 교체하지 않고 점을 추가합니다.
-                 */
                 if( kdt->kcur<kdt->kneeded||kdt->kneeded==0 )
                 {
                     
                     /*
                      * add current point to heap without replacement
-                     */
-                    /*
-                     * 현재 위치를 교체하지 않고 힙에 추가합니다.
                      */
                     tagheappushi(&kdt->r, &kdt->idx, &kdt->kcur, ptdist, i, _state);
                 }
@@ -4321,10 +3149,6 @@ static void nearestneighbor_kdtreequerynnrec(kdtree* kdt,
                     /*
                      * New points are added or not, depending on their distance.
                      * If added, they replace element at the top of the heap
-                     */
-                    /*
-                     * 거리에 따라 새로운 포인트가 추가되거나 삭제됩니다.
-                     * 추가 된 경우 힙의 맨 위에있는 요소를 대체합니다.
                      */
                     if( ae_fp_less(ptdist,kdt->r.ptr.p_double[0]) )
                     {
@@ -4347,9 +3171,6 @@ static void nearestneighbor_kdtreequerynnrec(kdtree* kdt,
     /*
      * Simple split
      */
-    /*
-     * 단순 분할
-     */
     if( kdt->nodes.ptr.p_int[offs]==0 )
     {
         
@@ -4358,11 +3179,6 @@ static void nearestneighbor_kdtreequerynnrec(kdtree* kdt,
          * * D  dimension to split
          * * S  split position
          */
-        /*
-         *로드 :
-         * * 분할 할 차원
-         * * 분할 위치
-         */
         d = kdt->nodes.ptr.p_int[offs+1];
         s = kdt->splits.ptr.p_double[kdt->nodes.ptr.p_int[offs+2]];
         
@@ -4370,11 +3186,6 @@ static void nearestneighbor_kdtreequerynnrec(kdtree* kdt,
          * Calculate:
          * * ChildBestOffs      child box with best chances
          * * ChildWorstOffs     child box with worst chances
-         */
-        /*
-         * 계산하다:
-         * 기회가 가장 많은 ChildBestOffs 자식 상자
-         최악의 기회를 가진 * ChildWorstOffs 자식 상자
          */
         if( ae_fp_less_eq(kdt->x.ptr.p_double[d],s) )
         {
@@ -4392,9 +3203,6 @@ static void nearestneighbor_kdtreequerynnrec(kdtree* kdt,
         /*
          * Navigate through childs
          */
-        /*
-         * 차일드 탐색
-         */
         for(i=0; i<=1; i++)
         {
             
@@ -4403,12 +3211,6 @@ static void nearestneighbor_kdtreequerynnrec(kdtree* kdt,
              * * ChildOffs      current child offset in Nodes[]
              * * UpdateMin      whether minimum or maximum value
              *                  of bounding box is changed on update
-             */
-            /*
-             * 처리 할 아동을 선택하십시오 :
-             * * ChildOffs 노드에서 현재 자식 오프셋 []
-             * * UpdateMin 최소값 또는 최대 값
-             업데이트시 테두리 상자의 *가 변경됩니다.
              */
             if( i==0 )
             {
@@ -4423,9 +3225,6 @@ static void nearestneighbor_kdtreequerynnrec(kdtree* kdt,
             
             /*
              * Update bounding box and current distance
-             */
-            /*
-             * 경계 상자 및 현재 거리 업데이트
              */
             if( updatemin )
             {
@@ -4475,9 +3274,6 @@ static void nearestneighbor_kdtreequerynnrec(kdtree* kdt,
             /*
              * Decide: to dive into cell or not to dive
              */
-            /*
-             * 결정 : 세포에 뛰어 들거나 잠수하지 마라.
-             */
             if( ae_fp_neq(kdt->rneeded,0)&&ae_fp_greater(kdt->curdist,kdt->rneeded) )
             {
                 todive = ae_false;
@@ -4490,9 +3286,6 @@ static void nearestneighbor_kdtreequerynnrec(kdtree* kdt,
                     /*
                      * KCur<KNeeded (i.e. not all points are found)
                      */
-                    /*
-                     * KCur <KNeeded (즉, 모든 포인트가 발견되지는 않음)
-                     */
                     todive = ae_true;
                 }
                 else
@@ -4501,10 +3294,6 @@ static void nearestneighbor_kdtreequerynnrec(kdtree* kdt,
                     /*
                      * KCur=KNeeded, decide to dive or not to dive
                      * using point position relative to bounding box.
-                     */
-                    /*
-                     * KCur = KNeeded, 다이빙을 결정하거나 다이빙하지 않기로 결정
-                     * 경계 상자를 기준으로 점 위치를 사용합니다.
                      */
                     todive = ae_fp_less_eq(kdt->curdist,kdt->r.ptr.p_double[0]*kdt->approxf);
                 }
@@ -4516,9 +3305,6 @@ static void nearestneighbor_kdtreequerynnrec(kdtree* kdt,
             
             /*
              * Restore bounding box and distance
-             */
-            /*
-             * 경계 상자 및 거리 복원
              */
             if( updatemin )
             {
@@ -4543,15 +3329,8 @@ Initializes CurBox[].
   -- ALGLIB --
      Copyright 28.02.2010 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-X []를 KDT.X []에 복사합니다.
-X []에서 경계 상자까지의 거리를로드합니다.
-CurBox []를 초기화합니다.
-  - ALGLIB -
-     Copyright 28.02.2010 Bochkanov Sergey
-**************************************************************************/
 static void nearestneighbor_kdtreeinitbox(kdtree* kdt,
-     /* Real    *//* 실수     */ ae_vector* x,
+     /* Real    */ ae_vector* x,
      ae_state *_state)
 {
     ae_int_t i;
@@ -4564,9 +3343,6 @@ static void nearestneighbor_kdtreeinitbox(kdtree* kdt,
     
     /*
      * calculate distance from point to current bounding box
-     */
-    /*
-     * 점에서 현재 경계 상자까지의 거리를 계산합니다.
      */
     kdt->curdist = 0;
     if( kdt->normtype==0 )
@@ -4651,14 +3427,6 @@ This function do not sets KDT.NX or KDT.NY - it just allocates arrays
   -- ALGLIB --
      Copyright 14.03.2011 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-이 함수는 KDTree의 모든 데이터 집합 독립 배열 필드를 할당하며,
-즉, 차원이 데이터 집합에 의존하지 않는 배열 필드
-크기.
-이 함수는 KDT.NX 또는 KDT.NY를 설정하지 않습니다. 단지 배열을 할당합니다.
-  - ALGLIB -
-     Copyright 14.03.2011 Bochkanov Sergey
-**************************************************************************/
 static void nearestneighbor_kdtreeallocdatasetindependent(kdtree* kdt,
      ae_int_t nx,
      ae_int_t ny,
@@ -4685,14 +3453,6 @@ it just allocates arrays.
   -- ALGLIB --
      Copyright 14.03.2011 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-이 함수는 KDTree의 모든 데이터 집합 종속 배열 필드를 할당합니다.
-차원이 데이터 집합 크기에 의존하는 배열 필드
-이 함수는 KDT.N, KDT.NX 또는 KDT.NY를 설정하지 않습니다.
-그냥 배열을 할당합니다.
-  - ALGLIB -
-     Copyright 14.03.2011 Bochkanov Sergey
-**************************************************************************/
 static void nearestneighbor_kdtreeallocdatasetdependent(kdtree* kdt,
      ae_int_t n,
      ae_int_t nx,
@@ -4722,13 +3482,6 @@ it just allocates arrays.
   -- ALGLIB --
      Copyright 14.03.2011 by Bochkanov Sergey
 *************************************************************************/
-/**************************************************************************
-이 함수는 임시 변수를 할당합니다.
-이 함수는 KDT.N, KDT.NX 또는 KDT.NY를 설정하지 않습니다.
-그냥 배열을 할당합니다.
-  - ALGLIB -
-     Copyright 14.03.2011 Bochkanov Sergey
-**************************************************************************/
 static void nearestneighbor_kdtreealloctemporaries(kdtree* kdt,
      ae_int_t n,
      ae_int_t nx,
