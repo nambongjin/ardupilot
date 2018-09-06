@@ -33,6 +33,13 @@ using namespace std;
 // THIS SECTION CONTAINS IMPLEMENTATION OF C++ INTERFACE
 //
 /////////////////////////////////////////////////////////////////////////
+
+/*// ///////////////////////////////////////////////////////////////////////////// /////////////////////////////////////////////
+//
+// 이 섹션은 C ++ 인터페이스의 구현을 포함한다.
+//
+// ///////////////////////////////////////////////////////////////////////////// /////////////////////////////////////////////*/
+
 namespace alglib
 {
 
@@ -217,6 +224,49 @@ SEE ALSO
   -- ALGLIB --
      Copyright 01.09.2009 by Bochkanov Sergey
 *************************************************************************/
+
+/*/ * ************************************************ *************************
+Cash-Karp 적응 형 ODE 해석기.
+이 서브 루틴은 초기 조건 Y (xs) = Ys로 ODE Y '= f (Y, x)
+(여기서 Y는 단일 변수 또는 N 변수의 벡터 일 수 있음).
+입력 매개 변수 :
+    Y - 초기 조건, 배열 [0..N-1].
+                X [0]에 Y []의 값을 포함한다.
+    N - 시스템 크기
+    X - Y를 표로 만들어야하는 배열, array [0..M-1]
+                적분은 X [0]에서 시작하고 X [M-1]에서 종료, 중간
+                X [i]의 값도 반환됩니다.
+                오름차순 또는 오름차순으로 주문해야합니다 !!!!
+    M - 중간 지점 수 + 첫 번째 점 + 마지막 점 :
+                * M> 2는 Y (X [M-1])와 M-2 값이 모두 필요하다는 것을 의미합니다.
+                  중간 지점
+                * M = 2는 X [0]에서
+                  X [1]이고 중간 값에 관심이 없다.
+                * M = 1은 통합하고 싶지 않다는 것을 의미합니다. :)
+                  퇴보 한 경우지만 올바르게 처리됩니다.
+                * M <1은 오류를 의미합니다.
+    Eps - tolerance (각 단계의 절대 / 상대 오차)
+                미만 Eps). 전달할 때 :
+                * Eps> 0, 원하는 ABSOLUTE 오류를 의미합니다.
+                * Eps <0, 원하는 RELATIVE 오류를 의미합니다. 상대 오류
+                  Y의 최대 값에 대하여 계산된다
+                  지금까지. 시작시이 기준을 사용하도록주의하십시오.
+                  0에 가까운 Y []로부터.
+    H - 첫 번째 단계는 자동으로 조정됩니다.
+                첫 번째 단계 후. H = 0이면 단계가 선택됩니다.
+                자동으로 (일반적으로 0.001 of
+                min (x [i] -x [j]))를 계산한다.
+출력 매개 변수
+    상태 - 후속 작업 사이에 알고리즘 상태를 저장하는 구조
+                OdeSolverIteration의 호출. 역방향 통신에 사용됩니다.
+                이 구조체는 OdeSolverIteration에 전달되어야합니다.
+                서브 루틴.
+관련 항목
+    AutoGKSmoothW, AutoGKSingular, AutoGKIteration, AutoGKResults.
+  - ALGLIB -
+     Bochkanov Sergey의 01.09.2009 저작권
+*************************************************** ********************** * /*/
+
 void odesolverrkck(const real_1d_array &y, const ae_int_t n, const real_1d_array &x, const ae_int_t m, const double eps, const double h, odesolverstate &state)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -280,6 +330,49 @@ SEE ALSO
   -- ALGLIB --
      Copyright 01.09.2009 by Bochkanov Sergey
 *************************************************************************/
+
+/*/ * ************************************************ *************************
+Cash-Karp 적응 형 ODE 해석기.
+이 서브 루틴은 초기 조건 Y (xs) = Ys로 ODE Y '= f (Y, x)
+(여기서 Y는 단일 변수 또는 N 변수의 벡터 일 수 있음).
+입력 매개 변수 :
+    Y - 초기 조건, 배열 [0..N-1].
+                X [0]에 Y []의 값을 포함한다.
+    N - 시스템 크기
+    X - Y를 표로 만들어야하는 배열, array [0..M-1]
+                적분은 X [0]에서 시작하고 X [M-1]에서 종료, 중간
+                X [i]의 값도 반환됩니다.
+                오름차순 또는 오름차순으로 주문해야합니다 !!!!
+    M - 중간 지점 수 + 첫 번째 점 + 마지막 점 :
+                * M> 2는 Y (X [M-1])와 M-2 값이 모두 필요하다는 것을 의미합니다.
+                  중간 지점
+                * M = 2는 X [0]에서
+                  X [1]이고 중간 값에 관심이 없다.
+                * M = 1은 통합하고 싶지 않다는 것을 의미합니다. :)
+                  퇴보 한 경우지만 올바르게 처리됩니다.
+                * M <1은 오류를 의미합니다.
+    Eps - tolerance (각 단계의 절대 / 상대 오차)
+                미만 Eps). 전달할 때 :
+                * Eps> 0, 원하는 ABSOLUTE 오류를 의미합니다.
+                * Eps <0, 원하는 RELATIVE 오류를 의미합니다. 상대 오류
+                  Y의 최대 값에 대하여 계산된다
+                  지금까지. 시작시이 기준을 사용하도록주의하십시오.
+                  0에 가까운 Y []로부터.
+    H - 첫 번째 단계는 자동으로 조정됩니다.
+                첫 번째 단계 후. H = 0이면 단계가 선택됩니다.
+                자동으로 (일반적으로 0.001 of
+                min (x [i] -x [j]))를 계산한다.
+출력 매개 변수
+    상태 - 후속 작업 사이에 알고리즘 상태를 저장하는 구조
+                OdeSolverIteration의 호출. 역방향 통신에 사용됩니다.
+                이 구조체는 OdeSolverIteration에 전달되어야합니다.
+                서브 루틴.
+관련 항목
+    AutoGKSmoothW, AutoGKSingular, AutoGKIteration, AutoGKResults.
+  - ALGLIB -
+     Bochkanov Sergey의 01.09.2009 저작권
+*************************************************** ********************** * /*/
+
 void odesolverrkck(const real_1d_array &y, const real_1d_array &x, const double eps, const double h, odesolverstate &state)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -307,6 +400,13 @@ This function provides reverse communication interface
 Reverse communication interface is not documented or recommended to use.
 See below for functions which provide better documented API
 *************************************************************************/
+
+/*/ * ************************************************ *************************
+이 기능은 역방향 통신 인터페이스를 제공합니다.
+역방향 통신 인터페이스는 문서화되어 있지 않거나 사용하도록 권장되지 않습니다.
+보다 잘 문서화 된 API를 제공하는 함수는 아래를 참조하십시오.
+*************************************************** ********************** * /*/
+
 bool odesolveriteration(const odesolverstate &state)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -375,6 +475,27 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 01.09.2009 by Bochkanov Sergey
 *************************************************************************/
+
+/*/ * ************************************************ *************************
+ODE 해결사 결과
+OdeSolverIteration이 False를 반환 한 후에 호출됩니다.
+입력 매개 변수 :
+    상태 - 알고리즘 상태입니다 (OdeSolverIteration에서 사용).
+출력 매개 변수 :
+    M - 도표화 된 값의 수, M> = 1
+    XTbl - 배열 [0..M-1], X 값
+    YTbl- 배열 [0..M-1,0 ... N-1], X [i]의 Y 값,
+    담당자 솔버 보고서 :
+                * Rep.TerminationType 완성 코드 :
+                    * -2 X는 오름차순 / 내림차순으로 정렬되지 않습니다.
+                            비 구분 X [], 즉 X [i] = X [i + 1]
+                    * -1 잘못된 매개 변수가 지정되었습니다.
+                    * 1 과제가 해결되었습니다.
+                * Rep.NFEV는 함수 계산 횟수를 포함합니다.
+  - ALGLIB -
+     Bochkanov Sergey의 01.09.2009 저작권
+*************************************************** ********************** * /*/
+
 void odesolverresults(const odesolverstate &state, ae_int_t &m, real_1d_array &xtbl, real_2d_array &ytbl, odesolverreport &rep)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -397,6 +518,13 @@ void odesolverresults(const odesolverstate &state, ae_int_t &m, real_1d_array &x
 // THIS SECTION CONTAINS IMPLEMENTATION OF COMPUTATIONAL CORE
 //
 /////////////////////////////////////////////////////////////////////////
+
+/*// ///////////////////////////////////////////////////////////////////////////// /////////////////////////////////////////////
+//
+// 이 섹션에는 컴퓨팅 핵심 구현이 포함되어 있습니다.
+//
+// ///////////////////////////////////////////////////////////////////////////// /////////////////////////////////////////////*/
+
 namespace alglib_impl
 {
 static double odesolver_odesolvermaxgrow = 3.0;
@@ -462,6 +590,49 @@ SEE ALSO
   -- ALGLIB --
      Copyright 01.09.2009 by Bochkanov Sergey
 *************************************************************************/
+
+/*/ * ************************************************ *************************
+Cash-Karp 적응 형 ODE 해석기.
+이 서브 루틴은 초기 조건 Y (xs) = Ys로 ODE Y '= f (Y, x)
+(여기서 Y는 단일 변수 또는 N 변수의 벡터 일 수 있음).
+입력 매개 변수 :
+    Y - 초기 조건, 배열 [0..N-1].
+                X [0]에 Y []의 값을 포함한다.
+    N - 시스템 크기
+    X - Y를 표로 만들어야하는 배열, array [0..M-1]
+                적분은 X [0]에서 시작하고 X [M-1]에서 종료, 중간
+                X [i]의 값도 반환됩니다.
+                오름차순 또는 오름차순으로 주문해야합니다 !!!!
+    M - 중간 지점 수 + 첫 번째 점 + 마지막 점 :
+                * M> 2는 Y (X [M-1])와 M-2 값이 모두 필요하다는 것을 의미합니다.
+                  중간 지점
+                * M = 2는 X [0]에서
+                  X [1]이고 중간 값에 관심이 없다.
+                * M = 1은 통합하고 싶지 않다는 것을 의미합니다. :)
+                  퇴보 한 경우지만 올바르게 처리됩니다.
+                * M <1은 오류를 의미합니다.
+    Eps - tolerance (각 단계의 절대 / 상대 오차)
+                미만 Eps). 전달할 때 :
+                * Eps> 0, 원하는 ABSOLUTE 오류를 의미합니다.
+                * Eps <0, 원하는 RELATIVE 오류를 의미합니다. 상대 오류
+                  Y의 최대 값에 대하여 계산된다
+                  지금까지. 시작시이 기준을 사용하도록주의하십시오.
+                  0에 가까운 Y []로부터.
+    H - 첫 번째 단계는 자동으로 조정됩니다.
+                첫 번째 단계 후. H = 0이면 단계가 선택됩니다.
+                자동으로 (일반적으로 0.001 of
+                min (x [i] -x [j]))를 계산한다.
+출력 매개 변수
+    상태 - 후속 작업 사이에 알고리즘 상태를 저장하는 구조
+                OdeSolverIteration의 호출. 역방향 통신에 사용됩니다.
+                이 구조체는 OdeSolverIteration에 전달되어야합니다.
+                서브 루틴.
+관련 항목
+    AutoGKSmoothW, AutoGKSingular, AutoGKIteration, AutoGKResults.
+  - ALGLIB -
+     Bochkanov Sergey의 01.09.2009 저작권
+*************************************************** ********************** * /*/
+
 void odesolverrkck(/* Real    */ ae_vector* y,
      ae_int_t n,
      /* Real    */ ae_vector* x,
@@ -492,6 +663,7 @@ void odesolverrkck(/* Real    */ ae_vector* y,
   -- ALGLIB --
      Copyright 01.09.2009 by Bochkanov Sergey
 *************************************************************************/
+
 ae_bool odesolveriteration(odesolverstate* state, ae_state *_state)
 {
     ae_int_t n;
@@ -521,6 +693,18 @@ ae_bool odesolveriteration(odesolverstate* state, ae_state *_state)
      *   generation - on first subroutine call
      * * values from previous call - on subsequent calls
      */
+
+/*/ *
+     * 역방향 커뮤니케이션 준비
+     * 나는 못 생겼다는 것을 알고 있지만, 같은 방식으로 작동한다.
+     * C ++에서 Python까지 모든 곳.
+     *
+     *이 코드는 지역 주민을 다음과 같이 초기화합니다.
+     * * 코드에서 결정된 임의의 값
+     * 생성 - 첫 번째 서브 루틴 호출
+     * * 이전 통화의 값 - 이후 통화시
+     * /*/
+
     if( state->rstate.stage>=0 )
     {
         n = state->rstate.ia.ptr.p_int[0];
@@ -561,10 +745,20 @@ ae_bool odesolveriteration(odesolverstate* state, ae_state *_state)
     /*
      * Routine body
      */
+
+/*/ *
+     * 일상적인 신체
+     * /*/
+
     
     /*
      * prepare
      */
+
+/*/ *
+     * 준비하다
+     * /*/
+
     if( state->repterminationtype!=0 )
     {
         result = ae_false;
@@ -580,12 +774,23 @@ ae_bool odesolveriteration(odesolverstate* state, ae_state *_state)
      * some preliminary checks for internal errors
      * after this we assume that H>0 and M>1
      */
+
+/* / *
+     * 내부 오류에 대한 예비 검사
+     *이 후에 우리는 H> 0이고 M> 1이라고 가정합니다.
+     * /*/
+
     ae_assert(ae_fp_greater(state->h,0), "ODESolver: internal error", _state);
     ae_assert(m>1, "ODESolverIteration: internal error", _state);
     
     /*
      * choose solver
      */
+
+/* / *
+     * 솔버 선택
+     * /*/
+
     if( state->solvertype!=0 )
     {
         goto lbl_1;
@@ -596,6 +801,13 @@ ae_bool odesolveriteration(odesolverstate* state, ae_state *_state)
      * Prepare coefficients table.
      * Check it for errors
      */
+
+/*/ *
+     * Cask-Karp 솔버
+     * 계수 테이블을 준비하십시오.
+     * 오류를 확인하십시오.
+     * /*/
+
     ae_vector_set_length(&state->rka, 6, _state);
     state->rka.ptr.p_double[0] = 0;
     state->rka.ptr.p_double[1] = (double)1/(double)5;
@@ -640,6 +852,13 @@ ae_bool odesolveriteration(odesolverstate* state, ae_state *_state)
      * * outer where we travel from X[i-1] to X[i]
      * * inner where we travel inside [X[i-1],X[i]]
      */
+
+/*/ *
+     *주기는 두 번의 반복으로 구성됩니다.
+     우리가 X [i-1]에서 X [i]로 여행하는 * * 외부
+     * 내부 [X [i-1], X [i]] 내부를 여행하는 내부 *
+     * /*/
+
     ae_matrix_set_length(&state->ytbl, m, n, _state);
     ae_vector_set_length(&state->escale, n, _state);
     ae_vector_set_length(&state->yn, n, _state);
@@ -660,6 +879,11 @@ lbl_3:
     /*
      * begin inner iteration
      */
+
+/*/ *
+     * 내부 반복 시작
+     * /*/
+
 lbl_6:
     if( ae_false )
     {
@@ -670,6 +894,12 @@ lbl_6:
      * truncate step if needed (beyond right boundary).
      * determine should we store X or not
      */
+
+/*/ *
+     필요한 경우 (오른쪽 경계 너머) * 절단 단계.
+     * X를 저장해야하는지 여부를 결정합니다.
+     * /*/
+
     if( ae_fp_greater_eq(xc+h,state->xg.ptr.p_double[i]) )
     {
         h = state->xg.ptr.p_double[i]-xc;
@@ -686,6 +916,14 @@ lbl_6:
      * These maximums are initialized by zeros,
      * then updated every iterations.
      */
+
+/* / *
+     * 오류 스케일 최대 값 업데이트
+     *
+     *이 최대 값은 0으로 초기화되며,
+     * 모든 반복을 업데이트했습니다.
+     * /*/
+
     for(j=0; j<=n-1; j++)
     {
         state->escale.ptr.p_double[j] = ae_maxreal(state->escale.ptr.p_double[j], ae_fabs(state->yc.ptr.p_double[j], _state), _state);
@@ -702,6 +940,19 @@ lbl_6:
      * replaced by x=xscale*t, and dy/dx=f(y,x) is replaced
      * by dy/dt=xscale*f(y,xscale*t).
      */
+
+/* / *
+     * 한 걸음 내딛으십시오.
+     * 1. 단계를 수행하는 데 필요한 모든 정보를 계산하십시오.
+     * 2. 업데이트 오류는 값 / 파생물을 사용하여 최대 값을 조정합니다.
+     * (1)
+     *
+     * 작업을 줄이기 위해 X의 스케일링을 사용한다는 점을 고려하십시오.
+     *를 x [0] <x [1] <... <x [n-1] 인 형식으로 변환합니다. 그래서 X는
+     * x = xscale * t로 대체되고, dy / dx = f (y, x)가 대체 됨
+     * by dy / dt = xscale * f (y, xscale * t).
+     * /*/
+
     ae_v_move(&state->yn.ptr.p_double[0], 1, &state->yc.ptr.p_double[0], 1, ae_v_len(0,n-1));
     ae_v_move(&state->yns.ptr.p_double[0], 1, &state->yc.ptr.p_double[0], 1, ae_v_len(0,n-1));
     k = 0;
@@ -714,6 +965,11 @@ lbl_8:
     /*
      * prepare data for the next update of YN/YNS
      */
+
+/*/ *
+     * YN / YNS의 다음 업데이트를위한 데이터 준비
+     * /*/
+
     state->x = state->xscale*(xc+state->rka.ptr.p_double[k]*h);
     ae_v_move(&state->y.ptr.p_double[0], 1, &state->yc.ptr.p_double[0], 1, ae_v_len(0,n-1));
     for(j=0; j<=k-1; j++)
@@ -733,6 +989,11 @@ lbl_0:
     /*
      * update YN/YNS
      */
+
+/*/ *
+     * YN / YNS 업데이트
+     * /*/
+
     v = state->rkc.ptr.p_double[k];
     ae_v_addd(&state->yn.ptr.p_double[0], 1, &state->rkk.ptr.pp_double[k][0], 1, ae_v_len(0,n-1), v);
     v = state->rkcs.ptr.p_double[k];
@@ -744,6 +1005,11 @@ lbl_10:
     /*
      * estimate error
      */
+
+/*/ *
+     * 추정 오차
+     * /*/
+
     err = 0;
     for(j=0; j<=n-1; j++)
     {
@@ -753,6 +1019,11 @@ lbl_10:
             /*
              * absolute error is estimated
              */
+
+/*/ *
+             * 절대 오차 추정
+             * /*/
+
             err = ae_maxreal(err, ae_fabs(state->yn.ptr.p_double[j]-state->yns.ptr.p_double[j], _state), _state);
         }
         else
@@ -761,6 +1032,11 @@ lbl_10:
             /*
              * Relative error is estimated
              */
+
+/*/ *
+             * 상대 오차 추정
+             * /*/
+
             v = state->escale.ptr.p_double[j];
             if( ae_fp_eq(v,0) )
             {
@@ -773,6 +1049,11 @@ lbl_10:
     /*
      * calculate new step, restart if necessary
      */
+
+/*/ *
+     * 새 단계를 계산하고 필요한 경우 다시 시작합니다.
+     * /*/
+
     if( ae_fp_less_eq(maxgrowpow*err,state->eps) )
     {
         h2 = odesolver_odesolvermaxgrow*h;
@@ -794,17 +1075,32 @@ lbl_10:
     /*
      * advance position
      */
+
+/*/ *
+     * 전진 위치
+     * /*/
+
     xc = xc+h;
     ae_v_move(&state->yc.ptr.p_double[0], 1, &state->yn.ptr.p_double[0], 1, ae_v_len(0,n-1));
     
     /*
      * update H
      */
+
+/*/ *
+     * 업데이트 H
+     * /*/
+
     h = h2;
     
     /*
      * break on grid point
      */
+
+/*/ *
+     격자 점에서 중단
+     * /*/
+
     if( gridpoint )
     {
         goto lbl_7;
@@ -815,6 +1111,11 @@ lbl_7:
     /*
      * save result
      */
+
+/*/ *
+     * 결과 저장
+     * /*/
+
     ae_v_move(&state->ytbl.ptr.pp_double[i][0], 1, &state->yc.ptr.p_double[0], 1, ae_v_len(0,n-1));
     i = i+1;
     goto lbl_3;
@@ -829,6 +1130,11 @@ lbl_1:
     /*
      * Saving state
      */
+
+/*/ *
+     * 저장 상태
+     * /*/
+
 lbl_rcomm:
     result = ae_true;
     state->rstate.ia.ptr.p_int[0] = n;
@@ -871,6 +1177,27 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 01.09.2009 by Bochkanov Sergey
 *************************************************************************/
+
+/*/ * ************************************************ *************************
+ODE 해결사 결과
+OdeSolverIteration이 False를 반환 한 후에 호출됩니다.
+입력 매개 변수 :
+    상태 - 알고리즘 상태입니다 (OdeSolverIteration에서 사용).
+출력 매개 변수 :
+    M - 도표화 된 값의 수, M> = 1
+    XTbl - 배열 [0..M-1], X 값
+    YTbl- 배열 [0..M-1,0 ... N-1], X [i]의 Y 값,
+    담당자 솔버 보고서 :
+                * Rep.TerminationType 완성 코드 :
+                    * -2 X는 오름차순 / 내림차순으로 정렬되지 않습니다.
+                            비 구분 X [], 즉 X [i] = X [i + 1]
+                    * -1 잘못된 매개 변수가 지정되었습니다.
+                    * 1 과제가 해결되었습니다.
+                * Rep.NFEV는 함수 계산 횟수를 포함합니다.
+  - ALGLIB -
+     Bochkanov Sergey의 01.09.2009 저작권
+*************************************************** ********************** * /*/
+
 void odesolverresults(odesolverstate* state,
      ae_int_t* m,
      /* Real    */ ae_vector* xtbl,
@@ -910,6 +1237,11 @@ void odesolverresults(odesolverstate* state,
 /*************************************************************************
 Internal initialization subroutine
 *************************************************************************/
+
+/*/ * ************************************************ *************************
+내부 초기화 서브 루틴
+*************************************************** ********************** * /*/
+
 static void odesolver_odesolverinit(ae_int_t solvertype,
      /* Real    */ ae_vector* y,
      ae_int_t n,
@@ -929,6 +1261,11 @@ static void odesolver_odesolverinit(ae_int_t solvertype,
     /*
      * Prepare RComm
      */
+
+/*/ *
+     RComm 준비
+     * /*/
+
     ae_vector_set_length(&state->rstate.ia, 5+1, _state);
     ae_vector_set_length(&state->rstate.ba, 0+1, _state);
     ae_vector_set_length(&state->rstate.ra, 5+1, _state);
@@ -938,6 +1275,11 @@ static void odesolver_odesolverinit(ae_int_t solvertype,
     /*
      * check parameters.
      */
+
+/*/ *
+     * 매개 변수를 확인하십시오.
+     * /*/
+
     if( (n<=0||m<1)||ae_fp_eq(eps,0) )
     {
         state->repterminationtype = -1;
@@ -952,6 +1294,12 @@ static void odesolver_odesolverinit(ae_int_t solvertype,
      * quick exit if necessary.
      * after this block we assume that M>1
      */
+
+/*/ *
+     * 필요한 경우 빠른 출구.
+     *이 블록 이후에 M> 1이라고 가정합니다.
+     * /*/
+
     if( m==1 )
     {
         state->repnfev = 0;
@@ -966,6 +1314,11 @@ static void odesolver_odesolverinit(ae_int_t solvertype,
     /*
      * check again: correct order of X[]
      */
+
+/*/ *
+     * 다시 확인 : X []의 올바른 순서
+     * /*/
+
     if( ae_fp_eq(x->ptr.p_double[1],x->ptr.p_double[0]) )
     {
         state->repterminationtype = -2;
@@ -983,6 +1336,11 @@ static void odesolver_odesolverinit(ae_int_t solvertype,
     /*
      * auto-select H if necessary
      */
+
+/*/ *
+     * 필요한 경우 자동 선택
+     * /*/
+
     if( ae_fp_eq(h,0) )
     {
         v = ae_fabs(x->ptr.p_double[1]-x->ptr.p_double[0], _state);
@@ -996,6 +1354,11 @@ static void odesolver_odesolverinit(ae_int_t solvertype,
     /*
      * store parameters
      */
+
+/* / *
+     * 매개 변수 저장
+     * /*/
+
     state->n = n;
     state->m = m;
     state->h = h;
@@ -1020,6 +1383,11 @@ static void odesolver_odesolverinit(ae_int_t solvertype,
     /*
      * Allocate arrays
      */
+
+/*/ *
+     배열 할당
+     * /*/
+
     ae_vector_set_length(&state->y, n, _state);
     ae_vector_set_length(&state->dy, n, _state);
 }
