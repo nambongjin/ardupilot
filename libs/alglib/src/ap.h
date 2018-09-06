@@ -16,6 +16,7 @@ A copy of the GNU General Public License is available at
 http://www.fsf.org/licensing/licenses
 >>> END OF LICENSE >>>
 *************************************************************************/
+
 #ifndef _ap_h
 #define _ap_h
 
@@ -107,6 +108,23 @@ extern "C" {
  * out compiler can issue SSE2-capable code.
  *
  */
+/*
+ * SSE2 내장 함수
+ *
+ * 전처리 지시어 :
+ * - SSE2 내장 함수의 헤더 포함
+ * - AE_HAS_SSE2_INTRINSICS 정의 정의
+ *
+ * 이러한 조치는 다음과 같은 경우에 수행됩니다.
+ * - x86 아키텍처 정의 (AE_CPU == AE_INTEL)
+ * - 내장 함수를 지원하는 컴파일러
+ *
+ * AE_HAS_SSE2_INTRINSICS의 존재는 우리의 CPU
+ * 실제로는 SSE2를 지원합니다. 이러한 것들은 런타임에 결정되어야합니다.
+* ae_cpuid () 호출로. 인텔에서 근무하고 있다는 것을 의미합니다.
+ * out 컴파일러는 SSE2 가능 코드를 발행 할 수 있습니다.
+ *
+ */
 #if defined(AE_CPU)
 #if AE_CPU==AE_INTEL
 #if AE_COMPILER==AE_MSVC
@@ -140,6 +158,13 @@ extern "C" {
 // BETWEEN C++ AND PURE C LIBRARIES
 //
 /////////////////////////////////////////////////////////////////////////
+// /////////////////////////////////////////////////////////////////////////////
+//
+// 이 섹션에는 기본 기능에 대한 선언이 포함되어 있습니다.
+// 공유되는 벡터 / 자료에 대한 메모리 관리와 비슷합니다.
+// C ++과 순수 C 라이브러리 사이
+//
+// /////////////////////////////////////////////////////////////////////////////
 namespace alglib_impl
 {
 
@@ -234,6 +259,19 @@ x-string (zero-terminated):
 
 Members of this structure are ae_int64_t to avoid alignment problems.
 ************************************************************************/
+/* ************************************************ ************************
+x 문자열 (제로 종료 됨) :
+    소유자 OWN_CALLER 또는 OWN_AE. realloc ()에서 수행 할 작업을 결정합니다.
+                벡터가 호출자가 소유 한 경우 X 인터페이스가 설정됩니다.
+                realloc () 전에 NULL로 ptr. X가 소유 한 경우
+                ae_free / aligned_free 패밀리 함수를 호출합니다.
+    last_action ACT_UNCHANGED, ACT_SAME_LOCATION, ACT_NEW_LOCATION
+                내용은 변경되지 않고 동일한 위치에 저장되며,
+                새 위치에 저장됩니다.
+                이 필드는 X에서 돌아올 때 설정됩니다.
+    ptr 실제 데이터 포인터
+이 구조의 구성원은 정렬 문제를 피하기 위해 ae_int64_t입니다.
+*************************************************** ********************* */
 typedef struct
 {
     ae_int64_t     owner;
@@ -264,6 +302,24 @@ x-vector:
 
 Members of this structure are ae_int64_t to avoid alignment problems.
 ************************************************************************/
+/* ************************************************ ************************
+x 벡터 :
+    요소의 cnt 수
+    데이터 유형 DT_XXXX 값 중 하나
+    소유자 OWN_CALLER 또는 OWN_AE. realloc ()에서 수행 할 작업을 결정합니다.
+                벡터가 호출자가 소유 한 경우 X 인터페이스가 설정됩니다.
+                realloc () 전에 NULL로 ptr. X가 소유 한 경우
+                ae_free / aligned_free 패밀리 함수를 호출합니다.
+    last_action ACT_UNCHANGED, ACT_SAME_LOCATION, ACT_NEW_LOCATION
+                내용은 변경되지 않고 동일한 위치에 저장되며,
+                새 위치에 저장됩니다.
+                이 필드는 X 인터페이스에서 반환 될 때 설정되며
+                데이터를 어떻게 처리할지 결정할 때 힌트로 호출자가 사용합니다.
+                (ACT_UNCHANGED 또는 ACT_SAME_LOCATION 인 경우 배열 없음
+                재 할당 또는 복사가 필요함).
+    ptr 실제 데이터 포인터
+이 구조의 구성원은 정렬 문제를 피하기 위해 ae_int64_t입니다.
+*************************************************** ********************* */
 typedef struct
 {
     ae_int64_t     cnt;
@@ -301,6 +357,26 @@ x-matrix:
 
 Members of this structure are ae_int64_t to avoid alignment problems.
 ************************************************************************/
+/* ************************************************ ************************
+x- 매트릭스 :
+    rows 행 수. cols가 0 일 때만 0이 될 수 있습니다.
+    cols 열 수. 행이 0 일 때만 0이 될 수 있습니다.
+    스트라이드 스트라이드, 즉 행의 첫 번째 요소 사이의 거리 (바이트 단위)
+    데이터 유형 DT_XXXX 값 중 하나
+    소유자 OWN_CALLER 또는 OWN_AE. realloc ()에서 수행 할 작업을 결정합니다.
+                벡터가 호출자가 소유 한 경우 X 인터페이스가 설정됩니다.
+                realloc () 전에 NULL로 ptr. X가 소유 한 경우
+                ae_free / aligned_free 패밀리 함수를 호출합니다.
+    last_action ACT_UNCHANGED, ACT_SAME_LOCATION, ACT_NEW_LOCATION
+                내용은 변경되지 않고 동일한 위치에 저장되며,
+                새 위치에 저장됩니다.
+                이 필드는 X 인터페이스에서 반환 될 때 설정되며
+                데이터를 어떻게 처리할지 결정할 때 힌트로 호출자가 사용합니다.
+                (ACT_UNCHANGED 또는 ACT_SAME_LOCATION 인 경우 배열 없음
+                재 할당 또는 복사가 필요함).
+    ptr 실제 데이터에 대한 포인터.
+이 구조의 구성원은 정렬 문제를 피하기 위해 ae_int64_t입니다.
+*************************************************** ********************* */
 typedef struct
 {
     ae_int64_t     rows;
@@ -325,6 +401,16 @@ ptr             pointer which should be passed to the deallocator.
                 for "special" blocks (frame/stack boundaries).
 
 ************************************************************************/
+/* ************************************************ ************************
+스택 해제 중에 자동으로 할당 해제 될 수있는 동적 블록
+p_next 스택 해제 목록의 다음 블록.
+                NULL은이 블록이 목록에 없음을 의미합니다.
+블록을 할당 해제하는데 사용되어야하는 deallocator deallocator 함수.
+                "특수"블록 (프레임 / 스택 경계)의 경우 NULL
+deallocator에게 건네 져야 할 ptr 포인터.
+                null (제로 사이즈의 블록의 경우), DYN_BOTTOM 또는 DYN_FRAME
+                "특수"블록 (프레임 / 스택 경계).
+*************************************************** ********************* */
 typedef struct ae_dyn_block
 {
     struct ae_dyn_block * volatile p_next;
@@ -336,6 +422,9 @@ typedef struct ae_dyn_block
 /************************************************************************
 frame marker
 ************************************************************************/
+/* ************************************************ ************************
+프레임 마커
+*************************************************** ********************* */
 typedef struct ae_frame
 {
     ae_dyn_block db_marker;
@@ -344,6 +433,9 @@ typedef struct ae_frame
 /************************************************************************
 ALGLIB environment state
 ************************************************************************/
+/* ************************************************ ************************
+ALGLIB 환경 상태
+*************************************************** ********************* */
 typedef struct ae_state
 {
     /*
@@ -370,23 +462,30 @@ typedef struct ae_state
      * pointer to the top block in a stack of frames
      * which hold dynamically allocated objects
      */
+    /*
+     * 프레임 스택의 맨 위 블록에 대한 포인터
+     동적으로 할당 된 객체를 보유하는 *
+     */
     ae_dyn_block * volatile p_top_block;
     ae_dyn_block last_block;
     
     /*
      * jmp_buf for cases when C-style exception handling is used
+     * C 스타일 예외 처리가 사용되는 경우 jmp_buf
      */
 #ifndef AE_USE_CPP_ERROR_HANDLING
     jmp_buf * volatile break_jump;
 #endif
 
     /*
-     * ae_error_type of the last error (filled when exception is thrown)
+     * ae_error_type of the last error (filled when exception is thrown) 
+     *마지막 오류의 ae_error_type (예외가 발생하면 채워짐)
      */
     ae_error_type volatile last_error;
     
     /*
      * human-readable message (filled when exception is thrown)
+     * 사람이 읽을 수있는 메시지 (예외가 발생할 때 채워짐)
      */
     const char* volatile error_msg;
     
@@ -400,6 +499,17 @@ typedef struct ae_state
      *
      * NOTE: we use void* to store pointers in order to avoid explicit dependency on smp.h
      */
+    /*
+     * 스레딩 정보 :
+     * a) 현재 스레드 풀
+     * b) 현재 작업자 스레드
+     * c) 부모 과제 (지금 당장 해결 중)
+     * d) 스레드 예외 핸들러 (호출되어야하는 함수
+     * 예외를 발생시키기 전에 ae_assert에 의해).
+     *
+     * 참고 : smp.h에 대한 명시 적 종속성을 피하기 위해 void *를 사용하여 포인터를 저장합니다.
+     */
+
     void *worker_thread;
     void *parent_task;
     void (*thread_exception_handler)(void*);
@@ -409,6 +519,9 @@ typedef struct ae_state
 /************************************************************************
 Serializer
 ************************************************************************/
+/* ************************************************ ************************
+시리얼 화기
+*************************************************** ********************* */
 typedef struct
 {
     ae_int_t mode;
@@ -462,22 +575,29 @@ typedef struct ae_matrix
 typedef struct ae_smart_ptr
 {
     /* pointer to subscriber; all changes in ptr are translated to subscriber */
+    /* 가입자 포인터; ptr의 모든 변경 사항은 subscriber */
     void **subscriber;
     
     /* pointer to object */
+    /* 객체에 대한 포인터 */
     void *ptr;
     
     /* whether smart pointer owns ptr */
+    /* 스마트 포인터가 ptr을 소유하는지 여부 */
     ae_bool is_owner;
     
     /* whether object pointed by ptr is dynamic - clearing such object requires BOTH
        calling destructor function AND calling ae_free for memory occupied by object. */
+    /* ptr이 가리키는 객체가 동적인지 여부 - 그러한 객체를 지우려면 양쪽 모두가 필요합니다.
+       소멸자 함수 호출 및 객체에 의해 점유 된 메모리에 대해 ae_free 호출. */
     ae_bool is_dynamic;
     
     /* destructor function for pointer; clears all dynamically allocated memory */
+    /* 포인터 소멸자 함수; 동적으로 할당 된 모든 메모리를 지 웁니다. */
     void (*destroy)(void*);
     
     /* frame entry; used to ensure automatic deallocation of smart pointer in case of exception/exit */
+    /* 프레임 엔트리; 예외 / 종료시 스마트 포인터의 자동 할당 해제에 사용 */
     ae_dyn_block frame_entry;
 } ae_smart_ptr;
 
@@ -495,6 +615,18 @@ This structure provides OS-independent non-reentrant lock:
   d) when thread acquires busy lock, program is terminated
      (because lock is already acquired and no one else can free it)
 *************************************************************************/
+/* ************************************************ *************************
+자물쇠.
+이 구조체는 OS 독립적 인 재진입 불가능한 잠금을 제공합니다.
+* Windows / Posix 시스템에서는 시스템 제공 잠금을 사용합니다.
+* Boost에서는 Boost 패키지에서 제공하는 OS 독립적 잠금을 사용합니다.
+* OS가 정의되어 있지 않은 경우, "fake lock"(쓰레드에 안전하지 않은 스텁)을 사용합니다 :
+  a) "가짜 잠금 장치"는 잠긴 모드 또는 자유 모드 일 수 있습니다.
+  b) "가짜 잠금"은 하나의 스레드에서만 사용할 수 있습니다 - 잠금을 생성 한 스레드
+  c) 스레드가 자유 잠금을 획득하면 즉시 반환합니다.
+  d) 쓰레드가 busy lock을 획득하면 프로그램은 종료된다.
+     (잠금은 이미 획득되었으므로 잠금을 해제 할 수 없기 때문에)
+*************************************************** ********************** */
 typedef struct
 {
 #if AE_OS==AE_WINDOWS
@@ -512,6 +644,10 @@ typedef struct
 Shared pool: data structure used to provide thread-safe access to pool  of
 temporary variables.
 *************************************************************************/
+/* ************************************************ *************************
+공유 풀 : 풀에 대한 스레드 안전 액세스를 제공하는 데 사용되는 데이터 구조
+임시 변수.
+*************************************************** ********************** */
 typedef struct ae_shared_pool_entry
 {
     void * volatile obj;
@@ -521,9 +657,11 @@ typedef struct ae_shared_pool_entry
 typedef struct ae_shared_pool
 {
     /* lock object which protects pool */
+    /* 풀을 보호하는 객체 잠금 */
     ae_lock pool_lock;
     
     /* seed object (used to create new instances of temporaries) */
+    /* 시드 객체 (임시 객체의 새 인스턴스를 만드는 데 사용됨) */
     void                    * volatile seed_object;
     
     /*
@@ -531,6 +669,12 @@ typedef struct ae_shared_pool
      * 1. entries in this list store pointers to recycled objects
      * 2. every time we retrieve object, we retrieve first entry from this list,
      *    move it to recycled_entries and return its obj field to caller/
+     */
+    /*
+     * 재생 된 대상 목록 :
+     * 1.이 목록의 항목은 재생 된 객체에 대한 포인터를 저장합니다.
+     * 2. 우리는 객체를 가져올 때마다이 목록에서 첫 번째 항목을 가져옵니다.
+     * recycled_entries로 이동하고 obj 필드를 호출자 /
      */
     ae_shared_pool_entry    * volatile recycled_objects;
     
@@ -541,24 +685,37 @@ typedef struct ae_shared_pool
      * 2. every time object is recycled, we try to fetch entry for him from this list
      *    before allocating it with malloc()
      */
+    /* 
+     * 재활용 된 항목 목록 :
+     * 1.이 목록에는 재활용품을 보관하는 데 사용되지 않는 항목이 있습니다.
+     * 재활용 된 물체가 회수 될 때마다 그 물체는이 목록으로 옮겨집니다.
+     * 2. 개체가 재활용 될 때마다이 목록에서 해당 항목을 가져옵니다.
+     * malloc ()으로 할당하기 전에
+     */
     ae_shared_pool_entry    * volatile recycled_entries;
     
     /* enumeration pointer, points to current recycled object*/
+    /* 열거 포인터, 현재 재활용 된 객체를 가리킴 */
     ae_shared_pool_entry    * volatile enumeration_counter;
     
     /* size of object; this field is used when we call malloc() for new objects */
+    /* 객체의 크기; 이 필드는 새로운 객체에 대해 malloc ()을 호출 할 때 사용된다. */
     ae_int_t                size_of_object;
     
     /* initializer function; accepts pointer to malloc'ed object, initializes its fields */
+    /* 초기화 함수. malloc 객체에 대한 포인터를 받아들이고, 필드를 초기화한다. */
     ae_bool (*init)(void* dst, ae_state* state, ae_bool make_automatic);
     
     /* copy constructor; accepts pointer to malloc'ed, but not initialized object */
+    /* 복사 생성자; malloc 된 객체에 대한 포인터를 받지만 초기화되지 않은 객체 */
     ae_bool (*init_copy)(void* dst, void* src, ae_state* state, ae_bool make_automatic);
     
     /* destructor function; */
+    /* 소멸자 함수; */
     void (*destroy)(void* ptr);
     
     /* frame entry; contains pointer to the pool object itself */
+    /* 프레임 엔트리; 풀 객체 자체에 대한 포인터를 포함합니다. */
     ae_dyn_block frame_entry;
 } ae_shared_pool;
  
@@ -605,7 +762,7 @@ void ae_matrix_destroy(ae_matrix *dst);
 void ae_swap_matrices(ae_matrix *mat1, ae_matrix *mat2);
 
 ae_bool ae_smart_ptr_init(ae_smart_ptr *dst, void **subscriber, ae_state *state, ae_bool make_automatic);
-void ae_smart_ptr_clear(void *_dst); /* accepts ae_smart_ptr* */
+void ae_smart_ptr_clear(void *_dst); /* accepts ae_smart_ptr* ae_smart_ptr을 수락합니다 */
 void ae_smart_ptr_destroy(void *_dst);
 void ae_smart_ptr_assign(ae_smart_ptr *dst, void *new_ptr, ae_bool is_owner, ae_bool is_dynamic, void (*destroy)(void*));
 void ae_smart_ptr_release(ae_smart_ptr *dst);
@@ -694,6 +851,9 @@ void ae_serializer_stop(ae_serializer *serializer);
 /************************************************************************
 Service functions
 ************************************************************************/
+/* ************************************************ ************************
+서비스 기능
+*************************************************** ********************* */
 void ae_assert(ae_bool cond, const char *msg, ae_state *state);
 ae_int_t ae_cpuid();
 
@@ -702,6 +862,11 @@ Real math functions:
 * IEEE-compliant floating point comparisons
 * standard functions
 ************************************************************************/
+/* ************************************************ ************************
+실제 수학 함수 :
+* IEEE 호환 부동 소수점 비교
+* 표준 함수
+*************************************************** ********************* */
 ae_bool ae_fp_eq(double v1, double v2);
 ae_bool ae_fp_neq(double v1, double v2);
 ae_bool ae_fp_less(double v1, double v2);
@@ -761,6 +926,11 @@ Complex math functions:
 * basic arithmetic operations
 * standard functions
 ************************************************************************/
+/* ************************************************ ************************
+복잡한 수학 함수 :
+* 기본 산술 연산
+* 표준 함수
+*************************************************** ********************* */
 ae_complex ae_complex_from_d(double v);
 
 ae_complex ae_c_neg(ae_complex lhs);
@@ -786,6 +956,9 @@ double     ae_c_abs(ae_complex z, ae_state *state);
 /************************************************************************
 Complex BLAS operations
 ************************************************************************/
+/* ************************************************ ************************
+복잡한 BLAS 운영
+*************************************************** ********************* */
 ae_complex ae_v_cdotproduct(const ae_complex *v0, ae_int_t stride0, const char *conj0, const ae_complex *v1, ae_int_t stride1, const char *conj1, ae_int_t n);
 void ae_v_cmove(ae_complex *vdst,    ae_int_t stride_dst, const ae_complex* vsrc, ae_int_t stride_src, const char *conj_src, ae_int_t n);
 void ae_v_cmoveneg(ae_complex *vdst, ae_int_t stride_dst, const ae_complex* vsrc, ae_int_t stride_src, const char *conj_src, ae_int_t n);
@@ -803,6 +976,9 @@ void ae_v_cmulc(ae_complex *vdst, ae_int_t stride_dst, ae_int_t n, ae_complex al
 /************************************************************************
 Real BLAS operations
 ************************************************************************/
+/* ************************************************ ************************
+실제 BLAS 운영
+*************************************************** ********************* */
 double ae_v_dotproduct(const double *v0, ae_int_t stride0, const double *v1, ae_int_t stride1, ae_int_t n);
 void ae_v_move(double *vdst,    ae_int_t stride_dst, const double* vsrc,  ae_int_t stride_src, ae_int_t n);
 void ae_v_moveneg(double *vdst, ae_int_t stride_dst, const double* vsrc,  ae_int_t stride_src, ae_int_t n);
@@ -816,6 +992,9 @@ void ae_v_muld(double *vdst,  ae_int_t stride_dst, ae_int_t n, double alpha);
 /************************************************************************
 Other functions
 ************************************************************************/
+/* ************************************************ ************************
+기타 기능
+*************************************************** ********************* */
 ae_int_t ae_v_len(ae_int_t a, ae_int_t b);
 
 /*
@@ -859,6 +1038,14 @@ debug functions (must be turned on by preprocessor definitions):
 * ae_set_seed(), sets seed of the debug RNG (NON-THREAD-SAFE!!!)
 * ae_get_seed(), returns two seed values of the debug RNG (NON-THREAD-SAFE!!!)
 ************************************************************************/
+/* ************************************************ ************************
+디버그 기능 (선처리기 정의에 의해 켜져 있어야 함) :
+* TickCount () : GetTickCount () 주위의 래퍼입니다.
+* flushconsole (), fluches 콘솔
+* ae_debugrng ()는 고품질 난수 생성기로 생성 된 난수를 반환합니다.
+* ae_set_seed (), 디버그 RNG의 시드 (NON-THREAD-SAFE !!!)를 설정합니다.
+* ae_get_seed ()는 디버그 RNG의 시드 값 두 개를 반환합니다 (NON-THREAD-SAFE !!!).
+*************************************************** ********************* */
 #ifdef AE_DEBUG4WINDOWS
 #define flushconsole(s) fflush(stdout)
 #define tickcount(s) _tickcount()
@@ -884,6 +1071,11 @@ void ae_get_seed(ae_int_t *s0, ae_int_t *s1);
 // THIS SECTION CONTAINS DECLARATIONS FOR C++ RELATED FUNCTIONALITY
 //
 /////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////
+//
+// 이 절에는 C ++ 관련 기능에 대한 선언이 포함되어 있습니다.
+//
+// //////////////////////////////////////////////////////////////////////
 
 namespace alglib
 {
@@ -893,6 +1085,9 @@ typedef alglib_impl::ae_int_t ae_int_t;
 /********************************************************************
 Class forwards
 ********************************************************************/
+/* ************************************************ *******************
+클래스 전달
+*************************************************** **************** */
 class complex;
 
 ae_int_t vlen(ae_int_t n1, ae_int_t n2);
@@ -900,6 +1095,9 @@ ae_int_t vlen(ae_int_t n1, ae_int_t n2);
 /********************************************************************
 Exception class.
 ********************************************************************/
+/* ************************************************ *******************
+예외 클래스.
+*************************************************** **************** */
 class ap_error
 {
 public:
@@ -915,6 +1113,9 @@ private:
 /********************************************************************
 Complex number with double precision.
 ********************************************************************/
+/* ************************************************ *******************
+배정 밀도의 복소수
+*************************************************** **************** */
 class complex
 {
 public:
@@ -978,6 +1179,18 @@ NOTES:
   values will result in conjugation of input, but it is recommended
   to use "Conj" in such cases.
 ********************************************************************/
+/* ************************************************ *******************
+레벨 1 BLAS 기능
+노트:
+* 대상과 소스가 겹치지 않아야합니다.
+* 보폭은 양수로 가정되지만, 그렇지 않습니다. 
+  함수 내에서 assert'ed
+* conj_src 매개 변수는 복합 원본을 공액으로 처리할지 여부를 지정합니다. 
+  처리하기 전에. 'N'또는 'n'으로 시작하는 패스 문자열
+  (예 : "conj") 수정되지 않은 매개 변수를 사용합니다. 그 외 모든 것들
+  값은 입력의 컨쥬 게이션을 가져 오지만 권장됩니다
+  그런 경우에는 "Conj"를 사용하십시오.
+*************************************************** **************** */
 double vdotproduct(const double *v0, ae_int_t stride0, const double *v1, ae_int_t stride1, ae_int_t n);
 double vdotproduct(const double *v1, const double *v2, ae_int_t N);
 
@@ -1049,10 +1262,16 @@ void vmul(alglib::complex *vdst, ae_int_t N, alglib::complex alpha);
 /********************************************************************
 string conversion functions !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ********************************************************************/
+/* ************************************************ *******************
+문자열 변환 함수 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+*************************************************** **************** */
 
 /********************************************************************
 1- and 2-dimensional arrays
 ********************************************************************/
+/* ************************************************ *******************
+1 차원 및 2 차원 배열
+*************************************************** **************** */
 class ae_vector_wrapper
 {
 public:
@@ -1076,6 +1295,12 @@ protected:
     // Current object is considered empty (this function should be
     // called from copy constructor).
     //
+    //
+    // 소스 벡터 RHS를 현재 객체에 복사합니다.
+    //
+    // 현재 객체는 비어있는 것으로 간주됩니다 (이 함수는
+    // 복사 생성자에서 호출 됨).
+    //
     void create(const ae_vector_wrapper &rhs);
     
     //
@@ -1085,6 +1310,14 @@ protected:
     //
     // Current object is considered empty (this function should be
     // called from copy constructor).
+    //
+    //
+    // string에 지정된 배열을 현재 객체에 복사합니다. 추가
+    // DATATYPE 매개 변수에는 데이터 유형에 대한 정보가 들어 있습니다.
+    // S로, 작성하는 배열의 형태.
+    //
+    // 현재 객체는 비어있는 것으로 간주됩니다 (이 함수는
+    // 복사 생성자에서 호출 됨).
     //
     void create(const char *s, alglib_impl::ae_datatype datatype);
     
@@ -1099,6 +1332,18 @@ protected:
     //   and a copy of RHS is created in target.
     //
     // NOTE: this function correctly handles assignments of the object to itself.
+    //
+    //
+    // 현재 객체에 RHS를 지정합니다.
+    //
+    // 대상 객체 상태에 따라 여러 개의 분기가 있습니다.
+    // 프록시 객체 인 경우, 데이터가 가리키는 메모리로 복사됩니다.
+    //    proxy. 원본이 대상과 정확히 같은 크기인지 기능을 검사합니다.
+    //    (실패시 예외가 발생 함).
+    // * 비 프록시 객체 인 경우 객체에 의해 할당 된 데이터는 지워진다.
+    //    타겟에 RHS 복사본이 생성됩니다.
+    //
+    // 참고 :이 함수는 객체 자체의 할당을 올바르게 처리합니다.
     //
     void assign(const ae_vector_wrapper &rhs);
     
@@ -1225,6 +1470,12 @@ protected:
     // Current object is considered empty (this function should be
     // called from copy constructor).
     //
+    //
+    // 소스 행렬 RHS를 현재 객체에 복사합니다.
+    //
+    // 현재 객체는 비어있는 것으로 간주됩니다 (이 함수는
+    // 복사 생성자에서 호출 됨).
+    //
     void create(const ae_matrix_wrapper &rhs);
     
     //
@@ -1234,6 +1485,14 @@ protected:
     //
     // Current object is considered empty (this function should be
     // called from copy constructor).
+    //
+    //
+    // string에 지정된 배열을 현재 객체에 복사합니다. 추가
+    // DATATYPE 매개 변수에는 데이터 유형에 대한 정보가 들어 있습니다.
+    // S로, 작성하는 배열의 형태.
+    //
+    // 현재 객체는 비어있는 것으로 간주됩니다 (이 함수는
+    // 복사 생성자에서 호출 됨).
     //
     void create(const char *s, alglib_impl::ae_datatype datatype);
     
@@ -1248,6 +1507,18 @@ protected:
     //   and a copy of RHS is created in target.
     //
     // NOTE: this function correctly handles assignments of the object to itself.
+    //
+    //
+    // 현재 객체에 RHS를 지정합니다.
+    //
+    // 대상 객체 상태에 따라 여러 개의 분기가 있습니다.
+    // 프록시 객체 인 경우, 데이터가 가리키는 메모리로 복사됩니다.
+    //    proxy. 원본이 대상과 정확히 같은 크기인지 기능을 검사합니다.
+    //    (실패시 예외가 발생 함).
+    // * 비 프록시 객체 인 경우 객체에 의해 할당 된 데이터는 지워진다.
+    //    타겟에 RHS 복사본이 생성됩니다.
+    //
+    // 참고 :이 함수는 객체 자체의 할당을 올바르게 처리합니다.
     //
     void assign(const ae_matrix_wrapper &rhs);
     
@@ -1346,6 +1617,14 @@ task:
 * nout>0 && nclasses==0 means regression task
 * nout>0 && nclasses>0 means classification task
 ********************************************************************/
+/* ************************************************ *******************
+데이터 세트 정보.
+회귀 데이터 집합, 분류 데이터 집합 또는 레이블이 지정되지 않은 데이터를 저장할 수 있습니다.
+태스크:
+* nout == 0은 레이블이 지정되지 않은 작업을 의미합니다 (예 : 클러스터링).
+* nout> 0 && nclasses == 0은 회귀 작업을 의미합니다.
+* nout> 0 && nclasses> 0은 분류 작업을 의미합니다.
+*************************************************** **************** */
 /*class dataset
 {
 public:
@@ -1378,6 +1657,9 @@ std::string xtrim(std::string s);*/
 /********************************************************************
 Constants and functions introduced for compatibility with AlgoPascal
 ********************************************************************/
+/* ************************************************ *******************
+AlgoPascal과의 호환성을 위해 도입 된 상수 및 함수
+*************************************************** **************** */
 extern const double machineepsilon;
 extern const double maxrealnumber;
 extern const double minrealnumber;
@@ -1423,7 +1705,11 @@ bool fp_isfinite(double x);
 // IT IS SHARED BETWEEN C++ AND PURE C LIBRARIES
 //
 /////////////////////////////////////////////////////////////////////////
-
+//
+// 이 섹션에는 최적화 된 선형 대수 코드의 선언이 포함되어 있습니다.
+// C ++과 순수 C 라이브러리간에 공유됩니다.
+//
+/////////////////////////////////////////////////////////////////////////
 namespace alglib_impl
 {
 #define ALGLIB_INTERCEPTS_ABLAS
@@ -1566,6 +1852,11 @@ ae_bool _ialglib_i_rmatrixrank1f(ae_int_t m,
 // THIS SECTION CONTAINS PARALLEL SUBROUTINES
 //
 /////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////
+//
+// 이 섹션에는 여러 하위 그룹이 포함되어 있습니다.
+//
+// //////////////////////////////////////////////////////////////////////
 
 namespace alglib_impl
 {
