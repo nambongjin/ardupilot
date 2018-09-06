@@ -53,12 +53,12 @@ and zeroth moment Mu0
 Mu0 = integral(W(x)dx,a,b)
 
 INPUT PARAMETERS:
-    Alpha   �   array[0..N-1], alpha coefficients
-    Beta    �   array[0..N-1], beta coefficients
+    Alpha      array[0..N-1], alpha coefficients
+    Beta       array[0..N-1], beta coefficients
                 Zero-indexed element is not used and may be arbitrary.
                 Beta[I]>0.
-    Mu0     �   zeroth moment of the weight function.
-    N       �   number of nodes of the quadrature formula, N>=1
+    Mu0        zeroth moment of the weight function.
+    N          number of nodes of the quadrature formula, N>=1
 
 OUTPUT PARAMETERS:
     Info    -   error code:
@@ -73,6 +73,35 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 2005-2009 by Bochkanov Sergey
 *************************************************************************/
+/**************************************************************************
+가우스 구적법에 대한 노드와 가중치의 계산
+이 알고리즘은 가중치가있는 N 포인트 가우스 직교 수식을 생성합니다.
+반복 관계의 계수 α 및 β에 의해 ​​주어진 함수
+직교 다항식의 시스템을 생성하는 :
+P-1 (x) = 0
+P0 (x) = 1
+Pn + 1 (x) = (x-α (n)) * Pn (x) - β (n) * Pn-
+0 차 모멘트 Mu0
+Mu0 = 적분 (W (x) dx, a, b)
+입력 매개 변수 :
+    알파 - 배열 [0..N-1], 알파 계수
+    베타 - 배열 [0..N-1], 베타 계수
+                0으로 색인 된 요소는 사용되지 않으며 임의적 일 수 있습니다.
+                베타 [I]> 0.
+    Mu0 - 가중치 함수의 0 차 순간.
+    N - 직교 공식의 노드 수, N> = 1
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                * -3 내부 고유 문제 해결사가 수렴하지 않았습니다.
+                * -2 베타 [i] <= 0
+                * -1 잘못된 N이 전달되었습니다.
+                * 1 OK
+    X- 배열 [0..N-1] - 직교 노드의 배열,
+                오름차순으로
+    W - 배열 [0..N-1] - 직교 가중치의 배열.
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 2005-2009
+**************************************************************************/
 void gqgeneraterec(const real_1d_array &alpha, const real_1d_array &beta, const double mu0, const ae_int_t n, ae_int_t &info, real_1d_array &x, real_1d_array &w)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -105,14 +134,14 @@ and zeroth moment Mu0
 Mu0 = integral(W(x)dx,a,b)
 
 INPUT PARAMETERS:
-    Alpha   �   array[0..N-2], alpha coefficients
-    Beta    �   array[0..N-2], beta coefficients.
+    Alpha      array[0..N-2], alpha coefficients
+    Beta       array[0..N-2], beta coefficients.
                 Zero-indexed element is not used, may be arbitrary.
                 Beta[I]>0
-    Mu0     �   zeroth moment of the weighting function.
-    A       �   left boundary of the integration interval.
-    B       �   right boundary of the integration interval.
-    N       �   number of nodes of the quadrature formula, N>=3
+    Mu0        zeroth moment of the weighting function.
+    A          left boundary of the integration interval.
+    B          right boundary of the integration interval.
+    N          number of nodes of the quadrature formula, N>=3
                 (including the left and right boundary nodes).
 
 OUTPUT PARAMETERS:
@@ -128,6 +157,38 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 2005-2009 by Bochkanov Sergey
 *************************************************************************/
+/* ************************************************ *************************
+Gauss-Lobatto 직교 수식의 노드 및 가중치 계산
+이 알고리즘은 다음과 같이 N 포인트 Gauss-Lobatto 직교 위상 공식을 생성합니다.
+반복 함수의 계수 α와 β에 의해 ​​주어진 가중치 함수.
+직교 다항식의 시스템을 생성합니다.
+P-1 (x) = 0
+P0 (x) = 1
+Pn + 1 (x) = (x-α (n)) * Pn (x) - β (n) * Pn-
+0 차 모멘트 Mu0
+Mu0 = 적분 (W (x) dx, a, b)
+입력 매개 변수 :
+    알파 - 배열 [0..N-2], 알파 계수
+    베타 - 배열 [0..N-2], 베타 계수.
+                0으로 색인 된 요소는 사용되지 않으며 임의적 일 수 있습니다.
+                베타 [I]> 0
+    Mu0 - 가중치 함수의 0 차 순간.
+    A - 적분 간격의 왼쪽 경계.
+    B - 적분 간격의 오른쪽 경계.
+    N - 직교 공식의 노드 수, N> = 3
+                (왼쪽 및 오른쪽 경계 노드 포함).
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                * -3 내부 고유 문제 해결사가 수렴하지 않았습니다.
+                * -2 베타 [i] <= 0
+                * -1 잘못된 N이 전달되었습니다.
+                * 1 OK
+    X- 배열 [0..N-1] - 직교 노드의 배열,
+                오름차순으로
+    W - 배열 [0..N-1] - 직교 가중치의 배열.
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 2005-2009
+*************************************************** ********************** */
 void gqgenerategausslobattorec(const real_1d_array &alpha, const real_1d_array &beta, const double mu0, const double a, const double b, const ae_int_t n, ae_int_t &info, real_1d_array &x, real_1d_array &w)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -160,13 +221,13 @@ and zeroth moment Mu0
 Mu0 = integral(W(x)dx,a,b)
 
 INPUT PARAMETERS:
-    Alpha   �   array[0..N-2], alpha coefficients.
-    Beta    �   array[0..N-1], beta coefficients
+    Alpha      array[0..N-2], alpha coefficients.
+    Beta       array[0..N-1], beta coefficients
                 Zero-indexed element is not used.
                 Beta[I]>0
-    Mu0     �   zeroth moment of the weighting function.
-    A       �   left boundary of the integration interval.
-    N       �   number of nodes of the quadrature formula, N>=2
+    Mu0        zeroth moment of the weighting function.
+    A          left boundary of the integration interval.
+    N          number of nodes of the quadrature formula, N>=2
                 (including the left boundary node).
 
 OUTPUT PARAMETERS:
@@ -183,6 +244,37 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 2005-2009 by Bochkanov Sergey
 *************************************************************************/
+/* ************************************************ *************************
+Gauss-Radau 직각 위상 수식의 노드와 가중치 계산
+이 알고리즘은 다음과 같이 N 포인트 Gauss-Radau 직교 위상 공식을 생성합니다.
+재발의 계수 α와 β에 의해 ​​주어진 가중치 함수
+이것은 직교 다항식의 시스템을 생성한다.
+P-1 (x) = 0
+P0 (x) = 1
+Pn + 1 (x) = (x-α (n)) * Pn (x) - β (n) * Pn-
+0 차 모멘트 Mu0
+Mu0 = 적분 (W (x) dx, a, b)
+입력 매개 변수 :
+    알파 - 배열 [0..N-2], 알파 계수.
+    베타 - 배열 [0..N-1], 베타 계수
+                인덱스가없는 요소는 사용되지 않습니다.
+                베타 [I]> 0
+    Mu0 - 가중치 함수의 0 차 순간.
+    A - 적분 간격의 왼쪽 경계.
+    N - 직교 공식의 노드 수, N> = 2
+                (왼쪽 경계 노드 포함).
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                * -3 내부 고유 문제 해결사가 수렴하지 않았습니다.
+                * -2 베타 [i] <= 0
+                * -1 잘못된 N이 전달되었습니다.
+                * 1 OK
+    X- 배열 [0..N-1] - 직교 노드의 배열,
+                오름차순으로
+    W - 배열 [0..N-1] - 직교 가중치의 배열.
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 2005-2009
+*************************************************** ********************** */
 void gqgenerategaussradaurec(const real_1d_array &alpha, const real_1d_array &beta, const double mu0, const double a, const ae_int_t n, ae_int_t &info, real_1d_array &x, real_1d_array &w)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -223,6 +315,26 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 12.05.2009 by Bochkanov Sergey
 *************************************************************************/
+/* ************************************************ *************************
+[-1,1]에서 Gauss-Legendre 구적법의 노드 / 가중치를 N으로 반환합니다.
+노드.
+입력 매개 변수 :
+    N - 노드 수,> = 1
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                    * -4 계산시 오류가 감지되었습니다.
+                            가중치 / 노드. N은 얻기에는 너무 큽니다.
+                            정확도가 높은 가중치 / 노드
+                            여러 정밀 버전을 사용해보십시오.
+                    * -3 내부 고유 문제 해결사가 수렴하지 않았습니다.
+                    * -1 잘못된 N이 전달되었습니다.
+                    * +1 OK
+    X- 배열 [0..N-1] - 직교 노드의 배열,
+                    오름차순으로
+    W - 배열 [0..N-1] - 직교 가중치의 배열.
+  - ALGLIB -
+     Copyright 12.05.2009 Bochkanov Sergey
+*************************************************** ********************** */
 void gqgenerategausslegendre(const ae_int_t n, ae_int_t &info, real_1d_array &x, real_1d_array &w)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -266,6 +378,29 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 12.05.2009 by Bochkanov Sergey
 *************************************************************************/
+/* ************************************************ *************************
+[-1,1]에서 Gauss-Jacobi 구적법에 대한 노드 / 가중치를 가중치로 반환합니다.
+함수 W (x) = 힘 (1-x, 알파) * 힘 (1 + x, 베타).
+입력 매개 변수 :
+    N - 노드 수,> = 1
+    알파 - 지수 법 계수, 알파> -1
+    베타 - 전력 법 계수, 베타> -1
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                    * -4 계산시 오류가 감지되었습니다.
+                            가중치 / 노드. 알파 또는 베타가 너무 가까이 있습니다.
+                            -1로 충분히 가중치 / 노드를 얻으려면 -1로 설정하십시오.
+                            정확도 또는 N이 너무 클 수 있습니다. 하려고 노력하다
+                            다중 정밀도 버전을 사용하십시오.
+                    * -3 내부 고유 문제 해결사가 수렴하지 않았습니다.
+                    * -1 잘못된 N / Alpha / Beta가 전달되었습니다.
+                    * +1 OK
+    X- 배열 [0..N-1] - 직교 노드의 배열,
+                    오름차순으로
+    W - 배열 [0..N-1] - 직교 가중치의 배열.
+  - ALGLIB -
+     Copyright 12.05.2009 Bochkanov Sergey
+*************************************************** ********************** */
 void gqgenerategaussjacobi(const ae_int_t n, const double alpha, const double beta, ae_int_t &info, real_1d_array &x, real_1d_array &w)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -308,6 +443,28 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 12.05.2009 by Bochkanov Sergey
 *************************************************************************/
+/* ************************************************ *************************
+[0, + inf]에 Gauss-Laguerre 구적법의 노드 / 가중치를 반환합니다.
+무게 함수 W (x) = 힘 (x, 알파) * Exp (-x)
+입력 매개 변수 :
+    N - 노드 수,> = 1
+    알파 - 지수 법 계수, 알파> -1
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                    * -4 계산시 오류가 감지되었습니다.
+                            가중치 / 노드. 알파가 -1에 너무 가깝습니다.
+                            충분히 높은 정확도를 가진 가중치 / 노드를 얻는다.
+                            또는 N이 너무 클 수 있습니다. 사용하려고 시도하십시오.
+                            다중 정밀도 버전.
+                    * -3 내부 고유 문제 해결사가 수렴하지 않았습니다.
+                    * -1 잘못된 N / Alpha가 전달되었습니다.
+                    * +1 OK
+    X- 배열 [0..N-1] - 직교 노드의 배열,
+                    오름차순으로
+    W - 배열 [0..N-1] - 직교 가중치의 배열.
+  - ALGLIB -
+     Copyright 12.05.2009 Bochkanov Sergey
+*************************************************** ********************** */
 void gqgenerategausslaguerre(const ae_int_t n, const double alpha, ae_int_t &info, real_1d_array &x, real_1d_array &w)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -347,6 +504,25 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 12.05.2009 by Bochkanov Sergey
 *************************************************************************/
+/* ************************************************ *************************
+Gauss-Hermite 구적법의 노드 / 가중치 (-inf, + inf)를 반환합니다.
+가중치 함수 W (x) = Exp (-x * x)
+입력 매개 변수 :
+    N - 노드 수,> = 1
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                    * -4 계산시 오류가 감지되었습니다.
+                            가중치 / 노드. N은 너무 큽니다. 하려고 노력하다
+                            다중 정밀도 버전을 사용하십시오.
+                    * -3 내부 고유 문제 해결사가 수렴하지 않았습니다.
+                    * -1 잘못된 N / Alpha가 전달되었습니다.
+                    * +1 OK
+    X- 배열 [0..N-1] - 직교 노드의 배열,
+                    오름차순으로
+    W - 배열 [0..N-1] - 직교 가중치의 배열.
+  - ALGLIB -
+     Copyright 12.05.2009 Bochkanov Sergey
+*************************************************** ********************** */
 void gqgenerategausshermite(const ae_int_t n, ae_int_t &info, real_1d_array &x, real_1d_array &w)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -380,12 +556,12 @@ and zero moment Mu0
 
 
 INPUT PARAMETERS:
-    Alpha       �   alpha coefficients, array[0..floor(3*K/2)].
-    Beta        �   beta coefficients,  array[0..ceil(3*K/2)].
+    Alpha          alpha coefficients, array[0..floor(3*K/2)].
+    Beta           beta coefficients,  array[0..ceil(3*K/2)].
                     Beta[0] is not used and may be arbitrary.
                     Beta[I]>0.
-    Mu0         �   zeroth moment of the weight function.
-    N           �   number of nodes of the Gauss-Kronrod quadrature formula,
+    Mu0            zeroth moment of the weight function.
+    N              number of nodes of the Gauss-Kronrod quadrature formula,
                     N >= 3,
                     N =  2*K+1.
 
@@ -409,6 +585,44 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 08.05.2009 by Bochkanov Sergey
 *************************************************************************/
+/* ************************************************ *************************
+가우스 - 크로로드 직교 수식의 노드 및 가중치 계산
+알고리즘은 다음과 같이 N 포인트 Gauss-Kronrod 직교 공식을 생성합니다.
+재발의 계수 α와 beta에 의해 주어진 가중치 함수
+직교 다항식의 시스템을 생성하는 관계 :
+    P-1 (x) = 0
+    P0 (x) = 1
+    Pn + 1 (x) = (x-α (n)) * Pn (x) - β (n) * Pn-
+0 차 모멘트 Mu0
+    Mu0 = 적분 (W (x) dx, a, b)
+입력 매개 변수 :
+    알파 - 알파 계수, 배열 [0..floor (3 * K / 2)].
+    베타 - 베타 계수, 배열 [0..ceil (3 * K / 2)].
+                    베타 [0]은 사용되지 않으며 임의적 일 수 있습니다.
+                    베타 [I]> 0.
+    Mu0 - 가중치 함수의 0 차 순간.
+    N - Gauss-Kronrod 구적 공식의 노드 수,
+                    N> = 3,
+                    N = 2 * K + 1이다.
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                    * -5 실제 ​​및 양의 Gauss-Kronrod 수식은 없습니다.
+                            그러한 가중치 함수에 대해
+                            주어진 수의 노드.
+                    * -4 N이 너무 크면 작업을 조절할 수 없습니다.
+                            x [i] = x [i + 1]가 발견되었다.
+                    * -3 내부 고유 문제 해결사가 수렴하지 않았습니다.
+                    * -2 베타 [i] <= 0
+                    * -1 잘못된 N이 전달되었습니다.
+                    * +1 OK
+    X- 배열 [0..N-1] - 직교 노드의 배열,
+                    오름차순으로
+    WKronrod - 배열 [0..N-1] - Kronrod 가중치
+    WGauss - 배열 [0..N-1] - 가우스 가중치 (0으로 인터리브 됨)
+                    확장 된 Kronrod 노드에 해당).
+  - ALGLIB -
+     저작권 08.05.2009 Bochkanov Sergey
+*************************************************** ********************** */
 void gkqgeneraterec(const real_1d_array &alpha, const real_1d_array &beta, const double mu0, const ae_int_t n, ae_int_t &info, real_1d_array &x, real_1d_array &wkronrod, real_1d_array &wgauss)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -454,6 +668,30 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 12.05.2009 by Bochkanov Sergey
 *************************************************************************/
+/* ************************************************ *************************
+Gauss-Legendre에 대한 Gauss 및 Gauss-Kronrod 노드 / 가중치를 반환합니다.
+N 점을 가진 구적법.
+GKQLegendreCalc (계산) 또는 GKQLegendreTbl (사전 계산 된 표)
+기계 정밀도 및 노드 수에 따라 사용됩니다.
+입력 매개 변수 :
+    N - 숫자의 Kronrod 노드는 홀수 여야하며> = 3이어야합니다.
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                    * -4 계산시 오류가 감지되었습니다.
+                            가중치 / 노드. N은 얻기에는 너무 큽니다.
+                            정확도가 높은 가중치 / 노드
+                            여러 정밀 버전을 사용해보십시오.
+                    * -3 내부 고유 문제 해결사가 수렴하지 않았습니다.
+                    * -1 잘못된 N이 전달되었습니다.
+                    * +1 OK
+    X- 배열 [0..N-1] - 직교 노드의 배열.
+                    오름차순.
+    WKronrod - 배열 [0..N-1] - Kronrod 가중치
+    WGauss - 배열 [0..N-1] - 가우스 가중치 (0으로 인터리브 됨)
+                    확장 된 Kronrod 노드에 해당).
+  - ALGLIB -
+     Copyright 12.05.2009 Bochkanov Sergey
+*************************************************** ********************** */
 void gkqgenerategausslegendre(const ae_int_t n, ae_int_t &info, real_1d_array &x, real_1d_array &wkronrod, real_1d_array &wgauss)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -506,6 +744,37 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 12.05.2009 by Bochkanov Sergey
 *************************************************************************/
+/* ************************************************ *************************
+Gauss-Jacobi에 대한 Gauss 및 Gauss-Kronrod 노드 / 가중치를 반환합니다.
+가중치 함수가있는 [-1,1]의 구적법
+    W (x) = 힘 (1-x, 알파) * 힘 (1 + x, 베타).
+입력 매개 변수 :
+    N - 숫자의 Kronrod 노드는 홀수 여야하며> = 3이어야합니다.
+    알파 - 지수 법 계수, 알파> -1
+    베타 - 전력 법 계수, 베타> -1
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                    * -5 실제 ​​및 양의 Gauss-Kronrod 수식은 없습니다.
+                            그러한 가중치 함수에 대해
+                            주어진 수의 노드.
+                    * -4 계산시 오류가 감지되었습니다.
+                            가중치 / 노드. 알파 또는 베타가 너무 가까이 있습니다.
+                            -1로 충분히 가중치 / 노드를 얻으려면 -1로 설정하십시오.
+                            정확도 또는 N이 너무 클 수 있습니다. 하려고 노력하다
+                            다중 정밀도 버전을 사용하십시오.
+                    * -3 내부 고유 문제 해결사가 수렴하지 않았습니다.
+                    * -1 잘못된 N이 전달되었습니다.
+                    * +1 OK
+                    * +2 OK, 구적 법칙은 외부 노드를 가지고 있지만,
+                            x [0] <- 1 또는 x [n-1]> +1
+    X- 배열 [0..N-1] - 직교 노드의 배열.
+                    오름차순.
+    WKronrod - 배열 [0..N-1] - Kronrod 가중치
+    WGauss - 배열 [0..N-1] - 가우스 가중치 (0으로 인터리브 됨)
+                    확장 된 Kronrod 노드에 해당).
+  - ALGLIB -
+     Copyright 12.05.2009 Bochkanov Sergey
+*************************************************** ********************** */
 void gkqgenerategaussjacobi(const ae_int_t n, const double alpha, const double beta, ae_int_t &info, real_1d_array &x, real_1d_array &wkronrod, real_1d_array &wgauss)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -548,6 +817,28 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 12.05.2009 by Bochkanov Sergey
 *************************************************************************/
+/* ************************************************ *************************
+N 포인트가있는 구적법에 대해 Gauss 및 Gauss-Kronrod 노드를 반환합니다.
+tridiagonal 고유 값 감소가 사용됩니다.
+입력 매개 변수 :
+    N - 숫자의 Kronrod 노드는 홀수 여야하며> = 3이어야합니다.
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                    * -4 계산시 오류가 감지되었습니다.
+                            가중치 / 노드. N은 얻기에는 너무 큽니다.
+                            정확도가 높은 가중치 / 노드
+                            여러 정밀 버전을 사용해보십시오.
+                    * -3 내부 고유 문제 해결사가 수렴하지 않았습니다.
+                    * -1 잘못된 N이 전달되었습니다.
+                    * +1 OK
+    X- 배열 [0..N-1] - 직교 노드의 배열.
+                    오름차순.
+    WKronrod - 배열 [0..N-1] - Kronrod 가중치
+    WGauss - 배열 [0..N-1] - 가우스 가중치 (0으로 인터리브 됨)
+                    확장 된 Kronrod 노드에 해당).
+  - ALGLIB -
+     Copyright 12.05.2009 Bochkanov Sergey
+*************************************************** ********************** */
 void gkqlegendrecalc(const ae_int_t n, ae_int_t &info, real_1d_array &x, real_1d_array &wkronrod, real_1d_array &wgauss)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -586,6 +877,24 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 12.05.2009 by Bochkanov Sergey
 *************************************************************************/
+/* ************************************************ *************************
+를 사용하여 N 포인트가있는 구적법에 대해 Gauss 및 Gauss-Kronrod 노드를 반환합니다.
+사전 계산 된 테이블. 노드 / 가중치는 다음과 같은 정확도로 계산되었습니다.
+1.0E-32 (ALGLIB의 MPFR 버전이 사용되는 경우). 표준 배정 밀도
+정확도는 2.0E-16 정도가 될 것입니다 (컴파일러의
+긴 부동 소수점 상수의 처리).
+입력 매개 변수 :
+    N 개의 Kronrod 노드.
+                    N은 15, 21, 31, 41, 51, 61 일 수 있습니다.
+출력 매개 변수 :
+    X- 배열 [0..N-1] - 직교 노드의 배열.
+                    오름차순.
+    WKronrod - 배열 [0..N-1] - Kronrod 가중치
+    WGauss - 배열 [0..N-1] - 가우스 가중치 (0으로 인터리브 됨)
+                    확장 된 Kronrod 노드에 해당).
+  - ALGLIB -
+     Copyright 12.05.2009 Bochkanov Sergey
+*************************************************** ********************** */
 void gkqlegendretbl(const ae_int_t n, real_1d_array &x, real_1d_array &wkronrod, real_1d_array &wgauss, double &eps)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -613,6 +922,17 @@ Integration report:
 * Rep.NIntervals contains number of intervals [a,b]
   was partitioned into.
 *************************************************************************/
+/* ************************************************ *************************
+통합 보고서 :
+* TerminationType = 완성 코드 :
+    * -5 Gauss-Kronrod 노드의 비 수렴
+            계산 서브 루틴.
+    * -1 잘못된 매개 변수가 지정되었습니다.
+    * 1 OK
+* Rep.NFEV 함수 계산 횟수 계산
+* Rep.NIntervals에는 간격 수 [a, b]가 포함됩니다.
+  분할되었습니다.
+*************************************************** ********************** */
 _autogkreport_owner::_autogkreport_owner()
 {
     p_struct = (alglib_impl::autogkreport*)alglib_impl::ae_malloc(sizeof(alglib_impl::autogkreport), NULL);
@@ -686,6 +1006,14 @@ use. You should use ALGLIB functions to work with this class:
 * autogkintegrate() to begin integration
 * autogkresults() to get results
 *************************************************************************/
+/* ************************************************ *************************
+이 구조체는 통합 알고리즘의 상태를 저장합니다.
+이 클래스에는 public 필드가 있지만 외부 용 필드는 아닙니다.
+용도. 이 클래스로 작업하려면 ALGLIB 함수를 사용해야합니다.
+* autogksmooth () / AutoGKSmoothW () / ... 객체를 만드는 방법
+통합을 시작하려면 * autogkintegrate ()
+* 결과를 얻으려면 autogkresults ()
+*************************************************** ********************** */
 _autogkstate_owner::_autogkstate_owner()
 {
     p_struct = (alglib_impl::autogkstate*)alglib_impl::ae_malloc(sizeof(alglib_impl::autogkstate), NULL);
@@ -775,6 +1103,24 @@ SEE ALSO
   -- ALGLIB --
      Copyright 06.05.2009 by Bochkanov Sergey
 *************************************************************************/
+/* ************************************************ *************************
+유한 구간 [a, b]에서의 부드러운 함수 F (x)의 적분.
+Gauss-Kronrod 공식을 기반으로 한 빠른 수렴 알고리즘이 사용됩니다. 결과
+기계 정밀도에 가까운 정확도로 계산됩니다.
+알고리즘은 원활한 적분에서만 잘 작동합니다. 그것은 다음과 함께 사용될 수있다.
+연속적인 비 매끄러 운 적분을 제공하지만 성능은 떨어집니다.
+적분 특이점을 갖는 적분 함수와 절대로 사용해서는 안됩니다.
+하한 또는 상한선에서 - 알고리즘이 중단 될 수 있습니다. 그런 용도로 AutoGKSingular 사용
+사례.
+입력 매개 변수 :
+    A, B - 간격 경계 (A <B, A = B 또는 A> B)
+출력 매개 변수
+    State - 알고리즘 상태를 저장하는 구조
+관련 항목
+    AutoGKSmoothW, AutoGKSingular, AutoGKResults.
+  - ALGLIB -
+     저작권 06.05.2009 Bochkanov Sergey
+*************************************************** ********************** */
 void autogksmooth(const double a, const double b, autogkstate &state)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -814,6 +1160,22 @@ SEE ALSO
   -- ALGLIB --
      Copyright 06.05.2009 by Bochkanov Sergey
 *************************************************************************/
+/* ************************************************ *************************
+유한 구간 [a, b]에서의 부드러운 함수 F (x)의 적분.
+이 서브 루틴은 AutoGKSmooth ()와 동일하지만, 그 간격
+[a, b]는 너비 XWidth 이하의 서브 인터벌로 분할됩니다.
+거의 일정한 함수를 다음과 같이 통합 할 때 서브 루틴을 사용할 수 있습니다.
+좁은 "범프"(약 X 폭 너비). "범프"가 너무 좁은 경우 AutoGKSmooth
+서브 루틴은 그것들을 간과 할 수 있습니다.
+입력 매개 변수 :
+    A, B - 간격 경계 (A <B, A = B 또는 A> B)
+출력 매개 변수
+    State - 알고리즘 상태를 저장하는 구조
+관련 항목
+    AutoGKSmooth, AutoGKSingular, AutoGKResults.
+  - ALGLIB -
+     저작권 06.05.2009 Bochkanov Sergey
+*************************************************** ********************** */
 void autogksmoothw(const double a, const double b, const double xwidth, autogkstate &state)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -862,6 +1224,30 @@ SEE ALSO
   -- ALGLIB --
      Copyright 06.05.2009 by Bochkanov Sergey
 *************************************************************************/
+/* ************************************************ *************************
+유한 구간에 대한 적분 [A, B].
+Integrand는 A / B에서 적분 특이점을 갖는다.
+F (X)는 A에서 "(xA) ^ alpha"로, B에서는 "(Bx) ^ beta"
+알파 / 베타 (alpha> -1, beta> -1). 알파 / 베타가 알려지지 않은 경우 견적
+아래에서 사용할 수 있습니다 (하지만이 추정치는 -1보다 커야합니다).
+알파 / 베타 변수 중 하나 (또는 ​​알파 / 베타 모두)는 0과 같을 수 있지만,
+이는 함수 F (x)가 A / B에서 비 특이 적이라는 것을 의미합니다. 어쨌든 (단수
+bounds or not), 함수 F (x)는 연속 (A, B)로 가정된다.
+Gauss-Kronrod 공식을 기반으로 한 빠른 수렴 알고리즘이 사용됩니다. 결과
+기계 정밀도에 가까운 정확도로 계산됩니다.
+입력 매개 변수 :
+    A, B - 간격 경계 (A <B, A = B 또는 A> B)
+    α에서의 F (x)의 알파 - 지수 법 계수,
+                알파> -1
+    베타 - B에서의 F (x)의 지수 함수 계수,
+                베타> -1
+출력 매개 변수
+    State - 알고리즘 상태를 저장하는 구조
+관련 항목
+    AutoGKSmooth, AutoGKSmoothW, AutoGKResults.
+  - ALGLIB -
+     저작권 06.05.2009 Bochkanov Sergey
+*************************************************** ********************** */
 void autogksingular(const double a, const double b, const double alpha, const double beta, autogkstate &state)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -883,6 +1269,11 @@ This function provides reverse communication interface
 Reverse communication interface is not documented or recommended to use.
 See below for functions which provide better documented API
 *************************************************************************/
+/* ************************************************ *************************
+이 기능은 역방향 통신 인터페이스를 제공합니다.
+역방향 통신 인터페이스는 문서화되어 있지 않거나 사용하도록 권장되지 않습니다.
+보다 잘 문서화 된 API를 제공하는 함수는 아래를 참조하십시오.
+*************************************************** ********************** */
 bool autogkiteration(const autogkstate &state)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -943,6 +1334,17 @@ Output parameters:
   -- ALGLIB --
      Copyright 14.11.2007 by Bochkanov Sergey
 *************************************************************************/
+/* ************************************************ *************************
+적응 형 통합 결과
+AutoGKIteration 이후에 호출되어 False를 반환했습니다.
+입력 매개 변수 :
+    상태 - 알고리즘 상태 (AutoGKIteration에 의해 사용됨).
+출력 매개 변수 :
+    V - 적분 (f (x) dx, a, b)
+    담당자 최적화 보고서 (AutoGKReport 설명 참조)
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 14.11.2007
+*************************************************** ********************** */
 void autogkresults(const autogkstate &state, double &v, autogkreport &rep)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -1014,12 +1416,12 @@ and zeroth moment Mu0
 Mu0 = integral(W(x)dx,a,b)
 
 INPUT PARAMETERS:
-    Alpha   �   array[0..N-1], alpha coefficients
-    Beta    �   array[0..N-1], beta coefficients
+    Alpha      array[0..N-1], alpha coefficients
+    Beta       array[0..N-1], beta coefficients
                 Zero-indexed element is not used and may be arbitrary.
                 Beta[I]>0.
-    Mu0     �   zeroth moment of the weight function.
-    N       �   number of nodes of the quadrature formula, N>=1
+    Mu0        zeroth moment of the weight function.
+    N          number of nodes of the quadrature formula, N>=1
 
 OUTPUT PARAMETERS:
     Info    -   error code:
@@ -1034,6 +1436,35 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 2005-2009 by Bochkanov Sergey
 *************************************************************************/
+/* ************************************************ *************************
+가우스 구적법에 대한 노드와 가중치의 계산
+이 알고리즘은 가중치가있는 N 포인트 가우스 직교 수식을 생성합니다.
+반복 관계의 계수 α 및 β에 의해 ​​주어진 함수
+직교 다항식의 시스템을 생성하는 :
+P-1 (x) = 0
+P0 (x) = 1
+Pn + 1 (x) = (x-α (n)) * Pn (x) - β (n) * Pn-
+0 차 모멘트 Mu0
+Mu0 = 적분 (W (x) dx, a, b)
+입력 매개 변수 :
+    알파 - 배열 [0..N-1], 알파 계수
+    베타 - 배열 [0..N-1], 베타 계수
+                0으로 색인 된 요소는 사용되지 않으며 임의적 일 수 있습니다.
+                베타 [I]> 0.
+    Mu0 - 가중치 함수의 0 차 순간.
+    N - 직교 공식의 노드 수, N> = 1
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                * -3 내부 고유 문제 해결사가 수렴하지 않았습니다.
+                * -2 베타 [i] <= 0
+                * -1 잘못된 N이 전달되었습니다.
+                * 1 OK
+    X- 배열 [0..N-1] - 직교 노드의 배열,
+                오름차순으로
+    W - 배열 [0..N-1] - 직교 가중치의 배열.
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 2005-2009
+*************************************************** ********************** */
 void gqgeneraterec(/* Real    */ ae_vector* alpha,
      /* Real    */ ae_vector* beta,
      double mu0,
@@ -1068,6 +1499,9 @@ void gqgeneraterec(/* Real    */ ae_vector* alpha,
     /*
      * Initialize
      */
+    /*
+     * 초기화
+     */
     ae_vector_set_length(&d, n, _state);
     ae_vector_set_length(&e, n, _state);
     for(i=1; i<=n-1; i++)
@@ -1096,6 +1530,9 @@ void gqgeneraterec(/* Real    */ ae_vector* alpha,
     /*
      * Generate
      */
+    /*
+     * 생성
+     */
     ae_vector_set_length(x, n, _state);
     ae_vector_set_length(w, n, _state);
     for(i=1; i<=n; i++)
@@ -1123,14 +1560,14 @@ and zeroth moment Mu0
 Mu0 = integral(W(x)dx,a,b)
 
 INPUT PARAMETERS:
-    Alpha   �   array[0..N-2], alpha coefficients
-    Beta    �   array[0..N-2], beta coefficients.
+    Alpha      array[0..N-2], alpha coefficients
+    Beta       array[0..N-2], beta coefficients.
                 Zero-indexed element is not used, may be arbitrary.
                 Beta[I]>0
-    Mu0     �   zeroth moment of the weighting function.
-    A       �   left boundary of the integration interval.
-    B       �   right boundary of the integration interval.
-    N       �   number of nodes of the quadrature formula, N>=3
+    Mu0        zeroth moment of the weighting function.
+    A          left boundary of the integration interval.
+    B          right boundary of the integration interval.
+    N          number of nodes of the quadrature formula, N>=3
                 (including the left and right boundary nodes).
 
 OUTPUT PARAMETERS:
@@ -1146,6 +1583,38 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 2005-2009 by Bochkanov Sergey
 *************************************************************************/
+/* ************************************************ *************************
+Gauss-Lobatto 직교 수식의 노드 및 가중치 계산
+이 알고리즘은 다음과 같이 N 포인트 Gauss-Lobatto 직교 위상 공식을 생성합니다.
+반복 함수의 계수 α와 β에 의해 ​​주어진 가중치 함수.
+직교 다항식의 시스템을 생성합니다.
+P-1 (x) = 0
+P0 (x) = 1
+Pn + 1 (x) = (x-α (n)) * Pn (x) - β (n) * Pn-
+0 차 모멘트 Mu0
+Mu0 = 적분 (W (x) dx, a, b)
+입력 매개 변수 :
+    알파 - 배열 [0..N-2], 알파 계수
+    베타 - 배열 [0..N-2], 베타 계수.
+                0으로 색인 된 요소는 사용되지 않으며 임의적 일 수 있습니다.
+                베타 [I]> 0
+    Mu0 - 가중치 함수의 0 차 순간.
+    A - 적분 간격의 왼쪽 경계.
+    B - 적분 간격의 오른쪽 경계.
+    N - 직교 공식의 노드 수, N> = 3
+                (왼쪽 및 오른쪽 경계 노드 포함).
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                * -3 내부 고유 문제 해결사가 수렴하지 않았습니다.
+                * -2 베타 [i] <= 0
+                * -1 잘못된 N이 전달되었습니다.
+                * 1 OK
+    X- 배열 [0..N-1] - 직교 노드의 배열,
+                오름차순으로
+    W - 배열 [0..N-1] - 직교 가중치의 배열.
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 2005-2009
+*************************************************** ********************** */
 void gqgenerategausslobattorec(/* Real    */ ae_vector* alpha,
      /* Real    */ ae_vector* beta,
      double mu0,
@@ -1200,6 +1669,9 @@ void gqgenerategausslobattorec(/* Real    */ ae_vector* alpha,
     
     /*
      * Initialize, D[1:N+1], E[1:N]
+     */
+    /*
+     * 초기화, D [1 : N + 1], E [1 : N]
      */
     n = n-2;
     ae_vector_set_length(&d, n+2, _state);
@@ -1290,6 +1762,9 @@ void gqgenerategausslobattorec(/* Real    */ ae_vector* alpha,
     /*
      * Generate
      */
+    /*
+     * 생성
+     */
     ae_vector_set_length(x, n+2, _state);
     ae_vector_set_length(w, n+2, _state);
     for(i=1; i<=n+2; i++)
@@ -1317,13 +1792,13 @@ and zeroth moment Mu0
 Mu0 = integral(W(x)dx,a,b)
 
 INPUT PARAMETERS:
-    Alpha   �   array[0..N-2], alpha coefficients.
-    Beta    �   array[0..N-1], beta coefficients
+    Alpha      array[0..N-2], alpha coefficients.
+    Beta       array[0..N-1], beta coefficients
                 Zero-indexed element is not used.
                 Beta[I]>0
-    Mu0     �   zeroth moment of the weighting function.
-    A       �   left boundary of the integration interval.
-    N       �   number of nodes of the quadrature formula, N>=2
+    Mu0        zeroth moment of the weighting function.
+    A          left boundary of the integration interval.
+    N          number of nodes of the quadrature formula, N>=2
                 (including the left boundary node).
 
 OUTPUT PARAMETERS:
@@ -1340,6 +1815,37 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 2005-2009 by Bochkanov Sergey
 *************************************************************************/
+/* ************************************************ *************************
+Gauss-Radau 직각 위상 수식의 노드와 가중치 계산
+이 알고리즘은 다음과 같이 N 포인트 Gauss-Radau 직교 위상 공식을 생성합니다.
+재발의 계수 α와 β에 의해 ​​주어진 가중치 함수
+이것은 직교 다항식의 시스템을 생성한다.
+P-1 (x) = 0
+P0 (x) = 1
+Pn + 1 (x) = (x-α (n)) * Pn (x) - β (n) * Pn-
+0 차 모멘트 Mu0
+Mu0 = 적분 (W (x) dx, a, b)
+입력 매개 변수 :
+    알파 - 배열 [0..N-2], 알파 계수.
+    베타 - 배열 [0..N-1], 베타 계수
+                인덱스가없는 요소는 사용되지 않습니다.
+                베타 [I]> 0
+    Mu0 - 가중치 함수의 0 차 순간.
+    A - 적분 간격의 왼쪽 경계.
+    N - 직교 공식의 노드 수, N> = 2
+                (왼쪽 경계 노드 포함).
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                * -3 내부 고유 문제 해결사가 수렴하지 않았습니다.
+                * -2 베타 [i] <= 0
+                * -1 잘못된 N이 전달되었습니다.
+                * 1 OK
+    X- 배열 [0..N-1] - 직교 노드의 배열,
+                오름차순으로
+    W - 배열 [0..N-1] - 직교 가중치의 배열.
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 2005-2009
+*************************************************** ********************** */
 void gqgenerategaussradaurec(/* Real    */ ae_vector* alpha,
      /* Real    */ ae_vector* beta,
      double mu0,
@@ -1461,6 +1967,26 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 12.05.2009 by Bochkanov Sergey
 *************************************************************************/
+/* ************************************************ *************************
+[-1,1]에서 Gauss-Legendre 구적법의 노드 / 가중치를 N으로 반환합니다.
+노드.
+입력 매개 변수 :
+    N - 노드 수,> = 1
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                    * -4 계산시 오류가 감지되었습니다.
+                            가중치 / 노드. N은 얻기에는 너무 큽니다.
+                            정확도가 높은 가중치 / 노드
+                            여러 정밀 버전을 사용해보십시오.
+                    * -3 내부 고유 문제 해결사가 수렴하지 않았습니다.
+                    * -1 잘못된 N이 전달되었습니다.
+                    * +1 OK
+    X- 배열 [0..N-1] - 직교 노드의 배열,
+                    오름차순으로
+    W - 배열 [0..N-1] - 직교 가중치의 배열.
+  - ALGLIB -
+     Copyright 12.05.2009 Bochkanov Sergey
+*************************************************** ********************** */
 void gqgenerategausslegendre(ae_int_t n,
      ae_int_t* info,
      /* Real    */ ae_vector* x,
@@ -1500,6 +2026,9 @@ void gqgenerategausslegendre(ae_int_t n,
     
     /*
      * test basic properties to detect errors
+     */
+    /*
+     오류를 감지하기위한 기본 속성 테스트
      */
     if( *info>0 )
     {
@@ -1546,6 +2075,29 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 12.05.2009 by Bochkanov Sergey
 *************************************************************************/
+/* ************************************************ *************************
+[-1,1]에서 Gauss-Jacobi 구적법에 대한 노드 / 가중치를 가중치로 반환합니다.
+함수 W (x) = 힘 (1-x, 알파) * 힘 (1 + x, 베타).
+입력 매개 변수 :
+    N - 노드 수,> = 1
+    알파 - 지수 법 계수, 알파> -1
+    베타 - 전력 법 계수, 베타> -1
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                    * -4 계산시 오류가 감지되었습니다.
+                            가중치 / 노드. 알파 또는 베타가 너무 가까이 있습니다.
+                            -1로 충분히 가중치 / 노드를 얻으려면 -1로 설정하십시오.
+                            정확도 또는 N이 너무 클 수 있습니다. 하려고 노력하다
+                            다중 정밀도 버전을 사용하십시오.
+                    * -3 내부 고유 문제 해결사가 수렴하지 않았습니다.
+                    * -1 잘못된 N / Alpha / Beta가 전달되었습니다.
+                    * +1 OK
+    X- 배열 [0..N-1] - 직교 노드의 배열,
+                    오름차순으로
+    W - 배열 [0..N-1] - 직교 가중치의 배열.
+  - ALGLIB -
+     Copyright 12.05.2009 Bochkanov Sergey
+*************************************************** ********************** */
 void gqgenerategaussjacobi(ae_int_t n,
      double alpha,
      double beta,
@@ -1606,6 +2158,9 @@ void gqgenerategaussjacobi(ae_int_t n,
     /*
      * test basic properties to detect errors
      */
+    /*
+     오류를 감지하기위한 기본 속성 테스트
+     */
     if( *info>0 )
     {
         if( ae_fp_less(x->ptr.p_double[0],-1)||ae_fp_greater(x->ptr.p_double[n-1],1) )
@@ -1650,6 +2205,28 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 12.05.2009 by Bochkanov Sergey
 *************************************************************************/
+/* ************************************************ *************************
+[0, + inf]에 Gauss-Laguerre 구적법의 노드 / 가중치를 반환합니다.
+무게 함수 W (x) = 힘 (x, 알파) * Exp (-x)
+입력 매개 변수 :
+    N - 노드 수,> = 1
+    알파 - 지수 법 계수, 알파> -1
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                    * -4 계산시 오류가 감지되었습니다.
+                            가중치 / 노드. 알파가 -1에 너무 가깝습니다.
+                            충분히 높은 정확도를 가진 가중치 / 노드를 얻는다.
+                            또는 N이 너무 클 수 있습니다. 사용하려고 시도하십시오.
+                            다중 정밀도 버전.
+                    * -3 내부 고유 문제 해결사가 수렴하지 않았습니다.
+                    * -1 잘못된 N / Alpha가 전달되었습니다.
+                    * +1 OK
+    X- 배열 [0..N-1] - 직교 노드의 배열,
+                    오름차순으로
+    W - 배열 [0..N-1] - 직교 가중치의 배열.
+  - ALGLIB -
+     Copyright 12.05.2009 Bochkanov Sergey
+*************************************************** ********************** */
 void gqgenerategausslaguerre(ae_int_t n,
      double alpha,
      ae_int_t* info,
@@ -1701,6 +2278,9 @@ void gqgenerategausslaguerre(ae_int_t n,
     /*
      * test basic properties to detect errors
      */
+    /*
+     오류를 감지하기위한 기본 속성 테스트
+     */
     if( *info>0 )
     {
         if( ae_fp_less(x->ptr.p_double[0],0) )
@@ -1742,6 +2322,25 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 12.05.2009 by Bochkanov Sergey
 *************************************************************************/
+/* ************************************************ *************************
+Gauss-Hermite 구적법의 노드 / 가중치 (-inf, + inf)를 반환합니다.
+가중치 함수 W (x) = Exp (-x * x)
+입력 매개 변수 :
+    N - 노드 수,> = 1
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                    * -4 계산시 오류가 감지되었습니다.
+                            가중치 / 노드. N은 너무 큽니다. 하려고 노력하다
+                            다중 정밀도 버전을 사용하십시오.
+                    * -3 내부 고유 문제 해결사가 수렴하지 않았습니다.
+                    * -1 잘못된 N / Alpha가 전달되었습니다.
+                    * +1 OK
+    X- 배열 [0..N-1] - 직교 노드의 배열,
+                    오름차순으로
+    W - 배열 [0..N-1] - 직교 가중치의 배열.
+  - ALGLIB -
+     Copyright 12.05.2009 Bochkanov Sergey
+*************************************************** ********************** */
 void gqgenerategausshermite(ae_int_t n,
      ae_int_t* info,
      /* Real    */ ae_vector* x,
@@ -1785,6 +2384,9 @@ void gqgenerategausshermite(ae_int_t n,
     /*
      * test basic properties to detect errors
      */
+    /*
+     오류를 감지하기위한 기본 속성 테스트
+     */
     if( *info>0 )
     {
         for(i=0; i<=n-2; i++)
@@ -1818,12 +2420,12 @@ and zero moment Mu0
 
 
 INPUT PARAMETERS:
-    Alpha       �   alpha coefficients, array[0..floor(3*K/2)].
-    Beta        �   beta coefficients,  array[0..ceil(3*K/2)].
+    Alpha          alpha coefficients, array[0..floor(3*K/2)].
+    Beta           beta coefficients,  array[0..ceil(3*K/2)].
                     Beta[0] is not used and may be arbitrary.
                     Beta[I]>0.
-    Mu0         �   zeroth moment of the weight function.
-    N           �   number of nodes of the Gauss-Kronrod quadrature formula,
+    Mu0            zeroth moment of the weight function.
+    N              number of nodes of the Gauss-Kronrod quadrature formula,
                     N >= 3,
                     N =  2*K+1.
 
@@ -1847,6 +2449,44 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 08.05.2009 by Bochkanov Sergey
 *************************************************************************/
+/* ************************************************ *************************
+가우스 - 크로로드 직교 수식의 노드 및 가중치 계산
+알고리즘은 다음과 같이 N 포인트 Gauss-Kronrod 직교 공식을 생성합니다.
+재발의 계수 α와 beta에 의해 주어진 가중치 함수
+직교 다항식의 시스템을 생성하는 관계 :
+    P-1 (x) = 0
+    P0 (x) = 1
+    Pn + 1 (x) = (x-α (n)) * Pn (x) - β (n) * Pn-
+0 차 모멘트 Mu0
+    Mu0 = 적분 (W (x) dx, a, b)
+입력 매개 변수 :
+    알파 - 알파 계수, 배열 [0..floor (3 * K / 2)].
+    베타 - 베타 계수, 배열 [0..ceil (3 * K / 2)].
+                    베타 [0]은 사용되지 않으며 임의적 일 수 있습니다.
+                    베타 [I]> 0.
+    Mu0 - 가중치 함수의 0 차 순간.
+    N - Gauss-Kronrod 구적 공식의 노드 수,
+                    N> = 3,
+                    N = 2 * K + 1이다.
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                    * -5 실제 ​​및 양의 Gauss-Kronrod 수식은 없습니다.
+                            그러한 가중치 함수에 대해
+                            주어진 수의 노드.
+                    * -4 N이 너무 크면 작업을 조절할 수 없습니다.
+                            x [i] = x [i + 1]가 발견되었다.
+                    * -3 내부 고유 문제 해결사가 수렴하지 않았습니다.
+                    * -2 베타 [i] <= 0
+                    * -1 잘못된 N이 전달되었습니다.
+                    * +1 OK
+    X- 배열 [0..N-1] - 직교 노드의 배열,
+                    오름차순으로
+    WKronrod - 배열 [0..N-1] - Kronrod 가중치
+    WGauss - 배열 [0..N-1] - 가우스 가중치 (0으로 인터리브 됨)
+                    확장 된 Kronrod 노드에 해당).
+  - ALGLIB -
+     저작권 08.05.2009 Bochkanov Sergey
+*************************************************** ********************** */
 void gkqgeneraterec(/* Real    */ ae_vector* alpha,
      /* Real    */ ae_vector* beta,
      double mu0,
@@ -1909,11 +2549,17 @@ void gkqgeneraterec(/* Real    */ ae_vector* alpha,
     /*
      * from external conventions about N/Beta/Mu0 to internal
      */
+    /*
+     * N / Beta / Mu0에 대한 내부 규약에서 내부 규약으로
+     */
     n = n/2;
     beta->ptr.p_double[0] = mu0;
     
     /*
      * Calculate Gauss nodes/weights, save them for later processing
+     */
+    /*
+     * Gauss 노드 / 가중치를 계산하고 나중에 처리하기 위해 저장합니다.
      */
     gqgeneraterec(alpha, beta, mu0, n, info, &xgtmp, &wgtmp, _state);
     if( *info<0 )
@@ -1926,6 +2572,11 @@ void gkqgeneraterec(/* Real    */ ae_vector* alpha,
      * Resize:
      * * A from 0..floor(3*n/2) to 0..2*n
      * * B from 0..ceil(3*n/2)  to 0..2*n
+     */
+    /*
+     * 크기 조정 :
+     * * 0. 0.floor (3 * n / 2)에서 0..2 * n
+     * * 0..ceil (3 * n / 2)에서 0..2 * n까지
      */
     ae_vector_set_length(&ta, ae_ifloor((double)(3*n)/(double)2, _state)+1, _state);
     ae_v_move(&ta.ptr.p_double[0], 1, &alpha->ptr.p_double[0], 1, ae_v_len(0,ae_ifloor((double)(3*n)/(double)2, _state)));
@@ -1947,6 +2598,9 @@ void gkqgeneraterec(/* Real    */ ae_vector* alpha,
     /*
      * Initialize T, S
      */
+    /*
+     * T, S 초기화
+     */
     wlen = 2+n/2;
     ae_vector_set_length(&t, wlen, _state);
     ae_vector_set_length(&s, wlen, _state);
@@ -1960,6 +2614,9 @@ void gkqgeneraterec(/* Real    */ ae_vector* alpha,
     
     /*
      * Algorithm from Dirk P. Laurie, "Calculation of Gauss-Kronrod quadrature rules", 1997.
+     */
+    /*
+     * Dirk P. Laurie의 알고리즘, "Gauss-Kronrod 구적 법칙 계산", 1997.
      */
     t.ptr.p_double[woffs+0] = beta->ptr.p_double[n+1];
     for(m=0; m<=n-2; m++)
@@ -2007,6 +2664,9 @@ void gkqgeneraterec(/* Real    */ ae_vector* alpha,
     
     /*
      * calculation of Kronrod nodes and weights, unpacking of Gauss weights
+     */
+    /*
+     Kronrod 노드와 가중치의 계산, Gauss 가중치의 언팩
      */
     gqgeneraterec(alpha, beta, mu0, 2*n+1, info, x, wkronrod, _state);
     if( *info==-2 )
@@ -2072,6 +2732,30 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 12.05.2009 by Bochkanov Sergey
 *************************************************************************/
+/* ************************************************ *************************
+Gauss-Legendre에 대한 Gauss 및 Gauss-Kronrod 노드 / 가중치를 반환합니다.
+N 점을 가진 구적법.
+GKQLegendreCalc (계산) 또는 GKQLegendreTbl (사전 계산 된 표)
+기계 정밀도 및 노드 수에 따라 사용됩니다.
+입력 매개 변수 :
+    N - 숫자의 Kronrod 노드는 홀수 여야하며> = 3이어야합니다.
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                    * -4 계산시 오류가 감지되었습니다.
+                            가중치 / 노드. N은 얻기에는 너무 큽니다.
+                            정확도가 높은 가중치 / 노드
+                            여러 정밀 버전을 사용해보십시오.
+                    * -3 내부 고유 문제 해결사가 수렴하지 않았습니다.
+                    * -1 잘못된 N이 전달되었습니다.
+                    * +1 OK
+    X- 배열 [0..N-1] - 직교 노드의 배열.
+                    오름차순.
+    WKronrod - 배열 [0..N-1] - Kronrod 가중치
+    WGauss - 배열 [0..N-1] - 가우스 가중치 (0으로 인터리브 됨)
+                    확장 된 Kronrod 노드에 해당).
+  - ALGLIB -
+     Copyright 12.05.2009 Bochkanov Sergey
+*************************************************** ********************** */
 void gkqgenerategausslegendre(ae_int_t n,
      ae_int_t* info,
      /* Real    */ ae_vector* x,
@@ -2134,6 +2818,37 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 12.05.2009 by Bochkanov Sergey
 *************************************************************************/
+/* ************************************************ *************************
+Gauss-Jacobi에 대한 Gauss 및 Gauss-Kronrod 노드 / 가중치를 반환합니다.
+가중치 함수가있는 [-1,1]의 구적법
+    W (x) = 힘 (1-x, 알파) * 힘 (1 + x, 베타).
+입력 매개 변수 :
+    N - 숫자의 Kronrod 노드는 홀수 여야하며> = 3이어야합니다.
+    알파 - 지수 법 계수, 알파> -1
+    베타 - 전력 법 계수, 베타> -1
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                    * -5 실제 ​​및 양의 Gauss-Kronrod 수식은 없습니다.
+                            그러한 가중치 함수에 대해
+                            주어진 수의 노드.
+                    * -4 계산시 오류가 감지되었습니다.
+                            가중치 / 노드. 알파 또는 베타가 너무 가까이 있습니다.
+                            -1로 충분히 가중치 / 노드를 얻으려면 -1로 설정하십시오.
+                            정확도 또는 N이 너무 클 수 있습니다. 하려고 노력하다
+                            다중 정밀도 버전을 사용하십시오.
+                    * -3 내부 고유 문제 해결사가 수렴하지 않았습니다.
+                    * -1 잘못된 N이 전달되었습니다.
+                    * +1 OK
+                    * +2 OK, 구적 법칙은 외부 노드를 가지고 있지만,
+                            x [0] <- 1 또는 x [n-1]> +1
+    X- 배열 [0..N-1] - 직교 노드의 배열.
+                    오름차순.
+    WKronrod - 배열 [0..N-1] - Kronrod 가중치
+    WGauss - 배열 [0..N-1] - 가우스 가중치 (0으로 인터리브 됨)
+                    확장 된 Kronrod 노드에 해당).
+  - ALGLIB -
+     Copyright 12.05.2009 Bochkanov Sergey
+*************************************************** ********************** */
 void gkqgenerategaussjacobi(ae_int_t n,
      double alpha,
      double beta,
@@ -2208,6 +2923,9 @@ void gkqgenerategaussjacobi(ae_int_t n,
     /*
      * test basic properties to detect errors
      */
+    /*
+     오류를 감지하기위한 기본 속성 테스트
+     */
     if( *info>0 )
     {
         if( ae_fp_less(x->ptr.p_double[0],-1)||ae_fp_greater(x->ptr.p_double[n-1],1) )
@@ -2252,6 +2970,28 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 12.05.2009 by Bochkanov Sergey
 *************************************************************************/
+/* ************************************************ *************************
+N 포인트가있는 구적법에 대해 Gauss 및 Gauss-Kronrod 노드를 반환합니다.
+tridiagonal 고유 값 감소가 사용됩니다.
+입력 매개 변수 :
+    N - 숫자의 Kronrod 노드는 홀수 여야하며> = 3이어야합니다.
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                    * -4 계산시 오류가 감지되었습니다.
+                            가중치 / 노드. N은 얻기에는 너무 큽니다.
+                            정확도가 높은 가중치 / 노드
+                            여러 정밀 버전을 사용해보십시오.
+                    * -3 내부 고유 문제 해결사가 수렴하지 않았습니다.
+                    * -1 잘못된 N이 전달되었습니다.
+                    * +1 OK
+    X- 배열 [0..N-1] - 직교 노드의 배열.
+                    오름차순.
+    WKronrod - 배열 [0..N-1] - Kronrod 가중치
+    WGauss - 배열 [0..N-1] - 가우스 가중치 (0으로 인터리브 됨)
+                    확장 된 Kronrod 노드에 해당).
+  - ALGLIB -
+     Copyright 12.05.2009 Bochkanov Sergey
+*************************************************** ********************** */
 void gkqlegendrecalc(ae_int_t n,
      ae_int_t* info,
      /* Real    */ ae_vector* x,
@@ -2301,6 +3041,9 @@ void gkqlegendrecalc(ae_int_t n,
     /*
      * test basic properties to detect errors
      */
+    /*
+     오류를 감지하기위한 기본 속성 테스트
+     */
     if( *info>0 )
     {
         if( ae_fp_less(x->ptr.p_double[0],-1)||ae_fp_greater(x->ptr.p_double[n-1],1) )
@@ -2341,6 +3084,24 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 12.05.2009 by Bochkanov Sergey
 *************************************************************************/
+/* ************************************************ *************************
+를 사용하여 N 포인트가있는 구적법에 대해 Gauss 및 Gauss-Kronrod 노드를 반환합니다.
+사전 계산 된 테이블. 노드 / 가중치는 다음과 같은 정확도로 계산되었습니다.
+1.0E-32 (ALGLIB의 MPFR 버전이 사용되는 경우). 표준 배정 밀도
+정확도는 2.0E-16 정도가 될 것입니다 (컴파일러의
+긴 부동 소수점 상수의 처리).
+입력 매개 변수 :
+    N 개의 Kronrod 노드.
+                    N은 15, 21, 31, 41, 51, 61 일 수 있습니다.
+출력 매개 변수 :
+    X- 배열 [0..N-1] - 직교 노드의 배열.
+                    오름차순.
+    WKronrod - 배열 [0..N-1] - Kronrod 가중치
+    WGauss - 배열 [0..N-1] - 가우스 가중치 (0으로 인터리브 됨)
+                    확장 된 Kronrod 노드에 해당).
+  - ALGLIB -
+     Copyright 12.05.2009 Bochkanov Sergey
+*************************************************** ********************** */
 void gkqlegendretbl(ae_int_t n,
      /* Real    */ ae_vector* x,
      /* Real    */ ae_vector* wkronrod,
@@ -2368,10 +3129,17 @@ void gkqlegendretbl(ae_int_t n,
      * these initializers are not really necessary,
      * but without them compiler complains about uninitialized locals
      */
+    /*
+     *이 이니셜 라이저는 실제로 필요하지 않습니다.
+     * 컴파일러가 없으면 컴파일러가 초기화되지 않은 것에 대해 불평합니다.
+     */
     ng = 0;
     
     /*
      * Process
+     */
+    /*
+     * 프로세스
      */
     ae_assert(((((n==15||n==21)||n==31)||n==41)||n==51)||n==61, "GKQNodesTbl: incorrect N!", _state);
     ae_vector_set_length(x, n, _state);
@@ -2693,6 +3461,9 @@ void gkqlegendretbl(ae_int_t n,
     /*
      * copy nodes
      */
+    /*
+     * 사본 노드
+     */
     for(i=n-1; i>=n/2; i--)
     {
         x->ptr.p_double[i] = -x->ptr.p_double[n-1-i];
@@ -2701,6 +3472,9 @@ void gkqlegendretbl(ae_int_t n,
     /*
      * copy Kronrod weights
      */
+    /*
+     * Kronrod 무게 복사
+     */
     for(i=n-1; i>=n/2; i--)
     {
         wkronrod->ptr.p_double[i] = wkronrod->ptr.p_double[n-1-i];
@@ -2708,6 +3482,9 @@ void gkqlegendretbl(ae_int_t n,
     
     /*
      * copy Gauss weights
+     */
+    /*
+     * 가중치 가중치 복사
      */
     for(i=ng-1; i>=0; i--)
     {
@@ -2721,6 +3498,9 @@ void gkqlegendretbl(ae_int_t n,
     
     /*
      * reorder
+     */
+    /*
+     * 재주문
      */
     tagsort(x, n, &p1, &p2, _state);
     for(i=0; i<=n-1; i++)
@@ -2764,6 +3544,26 @@ SEE ALSO
   -- ALGLIB --
      Copyright 06.05.2009 by Bochkanov Sergey
 *************************************************************************/
+/* ************************************************ *************************
+유한 구간 [a, b]에서의 부드러운 함수 F (x)의 적분.
+Gauss-Kronrod 공식을 기반으로 한 빠른 수렴 알고리즘이 사용됩니다. 결과
+기계 정밀도에 가까운 정확도로 계산됩니다.
+알고리즘은 원활한 적분에서만 잘 작동합니다. 그것은 다음과 함께 사용될 수있다.
+연속적인 비 매끄러 운 적분을 제공하지만 성능은 떨어집니다.
+적분 특이점을 갖는 적분 함수와 절대로 사용해서는 안됩니다.
+하한 또는 상한선에서 - 알고리즘이 중단 될 수 있습니다. 그런 용도로 AutoGKSingular 사용
+사례.
+입력 매개 변수 :
+    A, B - 간격 경계 (A <B, A = B 또는 A> B)
+    
+출력 매개 변수
+    State - 알고리즘 상태를 저장하는 구조
+관련 항목
+    AutoGKSmoothW, AutoGKSingular, AutoGKResults.
+    
+  - ALGLIB -
+     저작권 06.05.2009 Bochkanov Sergey
+*************************************************** ********************** */
 void autogksmooth(double a,
      double b,
      autogkstate* state,
@@ -2801,6 +3601,22 @@ SEE ALSO
   -- ALGLIB --
      Copyright 06.05.2009 by Bochkanov Sergey
 *************************************************************************/
+/* ************************************************ *************************
+유한 구간 [a, b]에서의 부드러운 함수 F (x)의 적분.
+이 서브 루틴은 AutoGKSmooth ()와 동일하지만, 그 간격
+[a, b]는 너비 XWidth 이하의 서브 인터벌로 분할됩니다.
+거의 일정한 함수를 다음과 같이 통합 할 때 서브 루틴을 사용할 수 있습니다.
+좁은 "범프"(약 X 폭 너비). "범프"가 너무 좁은 경우 AutoGKSmooth
+서브 루틴은 그것들을 간과 할 수 있습니다.
+입력 매개 변수 :
+    A, B - 간격 경계 (A <B, A = B 또는 A> B)
+출력 매개 변수
+    State - 알고리즘 상태를 저장하는 구조
+관련 항목
+    AutoGKSmooth, AutoGKSingular, AutoGKResults.
+  - ALGLIB -
+     저작권 06.05.2009 Bochkanov Sergey
+*************************************************** ********************** */
 void autogksmoothw(double a,
      double b,
      double xwidth,
@@ -2855,6 +3671,30 @@ SEE ALSO
   -- ALGLIB --
      Copyright 06.05.2009 by Bochkanov Sergey
 *************************************************************************/
+/* ************************************************ *************************
+유한 구간에 대한 적분 [A, B].
+Integrand는 A / B에서 적분 특이점을 갖는다.
+F (X)는 A에서 "(xA) ^ alpha"로, B에서는 "(Bx) ^ beta"
+알파 / 베타 (alpha> -1, beta> -1). 알파 / 베타가 알려지지 않은 경우 견적
+아래에서 사용할 수 있습니다 (하지만이 추정치는 -1보다 커야합니다).
+알파 / 베타 변수 중 하나 (또는 ​​알파 / 베타 모두)는 0과 같을 수 있지만,
+이는 함수 F (x)가 A / B에서 비 특이 적이라는 것을 의미합니다. 어쨌든 (단수
+bounds or not), 함수 F (x)는 연속 (A, B)로 가정된다.
+Gauss-Kronrod 공식을 기반으로 한 빠른 수렴 알고리즘이 사용됩니다. 결과
+기계 정밀도에 가까운 정확도로 계산됩니다.
+입력 매개 변수 :
+    A, B - 간격 경계 (A <B, A = B 또는 A> B)
+    α에서의 F (x)의 알파 - 지수 법 계수,
+                알파> -1
+    베타 - B에서의 F (x)의 지수 함수 계수,
+                베타> -1
+출력 매개 변수
+    State - 알고리즘 상태를 저장하는 구조
+관련 항목
+    AutoGKSmooth, AutoGKSmoothW, AutoGKResults.
+  - ALGLIB -
+     저작권 06.05.2009 Bochkanov Sergey
+*************************************************** ********************** */
 void autogksingular(double a,
      double b,
      double alpha,
@@ -2913,6 +3753,16 @@ ae_bool autogkiteration(autogkstate* state, ae_state *_state)
      *   generation - on first subroutine call
      * * values from previous call - on subsequent calls
      */
+    /*
+     * 역방향 커뮤니케이션 준비
+     * 나는 못 생겼다는 것을 알고 있지만, 같은 방식으로 작동한다.
+     * C ++에서 Python까지 모든 곳.
+     *
+     *이 코드는 지역 주민을 다음과 같이 초기화합니다.
+     * * 코드에서 결정된 임의의 값
+     * 생성 - 첫 번째 서브 루틴 호출
+     * * 이전 통화의 값 - 이후 통화시
+     */
     if( state->rstate.stage>=0 )
     {
         s = state->rstate.ra.ptr.p_double[0];
@@ -2957,6 +3807,9 @@ ae_bool autogkiteration(autogkstate* state, ae_state *_state)
     /*
      * Routine body
      */
+    /*
+     * 일상적인 신체
+     */
     eps = 0;
     a = state->a;
     b = state->b;
@@ -2969,6 +3822,9 @@ ae_bool autogkiteration(autogkstate* state, ae_state *_state)
     /*
      * smooth function  at a finite interval
      */
+    /*
+     유한 구간에서 부드러운 기능
+     */
     if( state->wrappermode!=0 )
     {
         goto lbl_3;
@@ -2976,6 +3832,9 @@ ae_bool autogkiteration(autogkstate* state, ae_state *_state)
     
     /*
      * special case
+     */
+    /*
+     * 특별한 경우
      */
     if( ae_fp_eq(a,b) )
     {
@@ -2987,6 +3846,9 @@ ae_bool autogkiteration(autogkstate* state, ae_state *_state)
     
     /*
      * general case
+     */
+    /*
+     * 일반적인 경우
      */
     autogk_autogkinternalprepare(a, b, eps, state->xwidth, &state->internalstate, _state);
 lbl_5:
@@ -3017,6 +3879,9 @@ lbl_3:
     /*
      * function with power-law singularities at the ends of a finite interval
      */
+    /*
+     * 유한 구간의 끝에서 승법 특이성을 갖는 함수
+     */
     if( state->wrappermode!=1 )
     {
         goto lbl_7;
@@ -3024,6 +3889,9 @@ lbl_3:
     
     /*
      * test coefficients
+     */
+    /*
+     * 시험 계수
      */
     if( ae_fp_less_eq(alpha,-1)||ae_fp_less_eq(beta,-1) )
     {
@@ -3036,6 +3904,9 @@ lbl_3:
     /*
      * special cases
      */
+    /*
+     * 특수한 상황들
+     */
     if( ae_fp_eq(a,b) )
     {
         state->terminationtype = 1;
@@ -3046,6 +3917,9 @@ lbl_3:
     
     /*
      * reduction to general form
+     */
+    /*
+     일반적인 형태로 축소
      */
     if( ae_fp_less(a,b) )
     {
@@ -3069,6 +3943,11 @@ lbl_3:
      *     integral(f(x)dx, a, (b+a)/2) =
      *     = 1/(1+alpha) * integral(t^(-alpha/(1+alpha))*f(a+t^(1/(1+alpha)))dt, 0, (0.5*(b-a))^(1+alpha))
      */
+    /*
+     * 첫째, [a, b]의 왼쪽 절반을 통합합니다.
+     * 적분 (f (x) dx, a, (b + a) / 2) =
+     (1 + α)) dt, 0, (0.5 * (ba (1 + α) )) ^ (1 + α))
+     */
     autogk_autogkinternalprepare(0, ae_pow(0.5*(b-a), 1+alpha, _state), eps, state->xwidth, &state->internalstate, _state);
 lbl_9:
     if( !autogk_autogkinternaliteration(&state->internalstate, _state) )
@@ -3079,6 +3958,10 @@ lbl_9:
     /*
      * Fill State.X, State.XMinusA, State.BMinusX.
      * Latter two are filled correctly even if B<A.
+     */
+    /*
+     * 채우기 State.X, State.XMinusA, State.BMinusX.
+     * B <A 인 경우에도 후자 두 개가 올바르게 채워집니다.
      */
     x = state->internalstate.x;
     t = ae_pow(x, 1/(1+alpha), _state);
@@ -3117,6 +4000,11 @@ lbl_10:
      *     integral(f(x)dx, (b+a)/2, b) =
      *     = 1/(1+beta) * integral(t^(-beta/(1+beta))*f(b-t^(1/(1+beta)))dt, 0, (0.5*(b-a))^(1+beta))
      */
+    /*
+     * 그런 다음 [a, b]의 오른쪽 절반을 통합합니다.
+     * 적분 (f (x) dx, (b + a) / 2, b) =
+     0, (0.5 * (ba)) = 1 / (1 + β) * 적분 (t ^ (1 + β)) * f ^ (1 + β))
+     */
     autogk_autogkinternalprepare(0, ae_pow(0.5*(b-a), 1+beta, _state), eps, state->xwidth, &state->internalstate, _state);
 lbl_11:
     if( !autogk_autogkinternaliteration(&state->internalstate, _state) )
@@ -3127,6 +4015,10 @@ lbl_11:
     /*
      * Fill State.X, State.XMinusA, State.BMinusX.
      * Latter two are filled correctly (X-A, B-X) even if B<A.
+     */
+    /*
+     * 채우기 State.X, State.XMinusA, State.BMinusX.
+     * B <A 인 경우에도 후자 두 개가 올바르게 채워집니다 (XA, BX).
      */
     x = state->internalstate.x;
     t = ae_pow(x, 1/(1+beta), _state);
@@ -3163,6 +4055,9 @@ lbl_12:
     /*
      * final result
      */
+    /*
+     * 최종 결과
+     */
     state->v = s*(v1+v2);
     state->terminationtype = 1;
     result = ae_false;
@@ -3173,6 +4068,9 @@ lbl_7:
     
     /*
      * Saving state
+     */
+    /*
+     * 저장 상태
      */
 lbl_rcomm:
     result = ae_true;
@@ -3206,6 +4104,17 @@ Output parameters:
   -- ALGLIB --
      Copyright 14.11.2007 by Bochkanov Sergey
 *************************************************************************/
+/* ************************************************ *************************
+적응 형 통합 결과
+AutoGKIteration 이후에 호출되어 False를 반환했습니다.
+입력 매개 변수 :
+    상태 - 알고리즘 상태 (AutoGKIteration에 의해 사용됨).
+출력 매개 변수 :
+    V - 적분 (f (x) dx, a, b)
+    담당자 최적화 보고서 (AutoGKReport 설명 참조)
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 14.11.2007
+*************************************************** ********************** */
 void autogkresults(autogkstate* state,
      double* v,
      autogkreport* rep,
@@ -3231,6 +4140,13 @@ eps=0   - automatic eps selection
 width<0 -   error
 width=0 -   no width requirements
 *************************************************************************/
+/* ************************************************ *************************
+내부 AutoGK 서브 루틴
+eps <0 - 오류
+eps = 0 - 자동 eps 선택
+너비 <0 - 오류
+width = 0 - 너비 요구 없음
+*************************************************** ********************** */
 static void autogk_autogkinternalprepare(double a,
      double b,
      double eps,
@@ -3244,6 +4160,9 @@ static void autogk_autogkinternalprepare(double a,
     /*
      * Save settings
      */
+    /*
+     * 설정 저장
+     */
     state->a = a;
     state->b = b;
     state->eps = eps;
@@ -3251,6 +4170,9 @@ static void autogk_autogkinternalprepare(double a,
     
     /*
      * Prepare RComm structure
+     */
+    /*
+     RComm 구조 준비
      */
     ae_vector_set_length(&state->rstate.ia, 3+1, _state);
     ae_vector_set_length(&state->rstate.ra, 8+1, _state);
@@ -3261,6 +4183,9 @@ static void autogk_autogkinternalprepare(double a,
 /*************************************************************************
 Internal AutoGK subroutine
 *************************************************************************/
+/* ************************************************ *************************
+내부 AutoGK 서브 루틴
+*************************************************** ********************** */
 static ae_bool autogk_autogkinternaliteration(autogkinternalstate* state,
      ae_state *_state)
 {
@@ -3290,6 +4215,16 @@ static ae_bool autogk_autogkinternaliteration(autogkinternalstate* state,
      * * random values determined during code
      *   generation - on first subroutine call
      * * values from previous call - on subsequent calls
+     */
+    /*
+     * 역방향 커뮤니케이션 준비
+     * 나는 못 생겼다는 것을 알고 있지만, 같은 방식으로 작동한다.
+     * C ++에서 Python까지 모든 곳.
+     *
+     *이 코드는 지역 주민을 다음과 같이 초기화합니다.
+     * * 코드에서 결정된 임의의 값
+     * 생성 - 첫 번째 서브 루틴 호출
+     * * 이전 통화의 값 - 이후 통화시
      */
     if( state->rstate.stage>=0 )
     {
@@ -3339,10 +4274,17 @@ static ae_bool autogk_autogkinternaliteration(autogkinternalstate* state,
     /*
      * Routine body
      */
+    /*
+     * 일상적인 신체
+     */
     
     /*
      * initialize quadratures.
      * use 15-point Gauss-Kronrod formula.
+     */
+    /*
+     * 쿼드 러처를 초기화합니다.
+     * 15 포인트 Gauss-Kronrod 공식을 사용하십시오.
      */
     state->n = 15;
     gkqgenerategausslegendre(state->n, &info, &state->qn, &state->wk, &state->wg, _state);
@@ -3372,6 +4314,9 @@ static ae_bool autogk_autogkinternaliteration(autogkinternalstate* state,
     /*
      * special case
      */
+    /*
+     * 특별한 경우
+     */
     if( ae_fp_eq(state->a,state->b) )
     {
         state->info = 1;
@@ -3382,6 +4327,9 @@ static ae_bool autogk_autogkinternaliteration(autogkinternalstate* state,
     
     /*
      * test parameters
+     */
+    /*
+     * 테스트 매개 변수
      */
     if( ae_fp_less(state->eps,0)||ae_fp_less(state->xwidth,0) )
     {
@@ -3404,6 +4352,14 @@ static ae_bool autogk_autogkinternaliteration(autogkinternalstate* state,
      * * column 3   -   left boundary of a subinterval
      * * column 4   -   right boundary of a subinterval
      */
+    /*
+     * 첫째, 힙 준비
+     * * 열 0 - 절대 오류
+     * * 열 1 - F (x)의 적분 (Kronrod 확장 노드를 사용하여 계산 됨)
+     * * 열 2 - a의 적분 | F (x) | (수정 된 직사각형 방법을 사용하여 계산 됨)
+     * * 열 3 - 서브 간격의 왼쪽 경계
+     * * 열 4 - 서브 간격의 오른쪽 경계
+     */
     if( ae_fp_neq(state->xwidth,0) )
     {
         goto lbl_3;
@@ -3412,6 +4368,10 @@ static ae_bool autogk_autogkinternaliteration(autogkinternalstate* state,
     /*
      * no maximum width requirements
      * start from one big subinterval
+     */
+    /*
+     * 최대 폭 요구 사항 없음
+     하나의 큰 하위 구간부터 시작
      */
     state->heapwidth = 5;
     state->heapsize = 1;
@@ -3441,6 +4401,9 @@ lbl_0:
     /*
      * Gauss-Kronrod formula
      */
+    /*
+     * Gauss-Kronrod 공식
+     */
     intk = intk+v*state->wk.ptr.p_double[i];
     if( i%2==1 )
     {
@@ -3450,6 +4413,10 @@ lbl_0:
     /*
      * Integral |F(x)|
      * Use rectangles method
+     */
+    /*
+     * 적분 | F (x) |
+     * 직사각형 방법 사용
      */
     inta = inta+ae_fabs(v, _state)*state->wr.ptr.p_double[i];
     i = i+1;
@@ -3471,6 +4438,10 @@ lbl_3:
     /*
      * maximum subinterval should be no more than XWidth.
      * so we create Ceil((B-A)/XWidth)+1 small subintervals
+     */
+    /*
+     * 최대 부 간격은 XWidth보다 커야합니다.
+     * 그래서 우리는 Ceil ((BA) / XWidth) +1 작은 부분 간격을 만듭니다.
      */
     ns = ae_iceil(ae_fabs(state->b-state->a, _state)/state->xwidth, _state)+1;
     state->heapsize = ns;
@@ -3511,6 +4482,9 @@ lbl_1:
     /*
      * Gauss-Kronrod formula
      */
+    /*
+     * Gauss-Kronrod 공식
+     */
     intk = intk+v*state->wk.ptr.p_double[i];
     if( i%2==1 )
     {
@@ -3520,6 +4494,10 @@ lbl_1:
     /*
      * Integral |F(x)|
      * Use rectangles method
+     */
+    /*
+     * 적분 | F (x) |
+     * 직사각형 방법 사용
      */
     inta = inta+ae_fabs(v, _state)*state->wr.ptr.p_double[i];
     i = i+1;
@@ -3543,6 +4521,9 @@ lbl_4:
     /*
      * method iterations
      */
+    /*
+     * 메소드 반복
+     */
 lbl_14:
     if( ae_false )
     {
@@ -3552,6 +4533,9 @@ lbl_14:
     /*
      * additional memory if needed
      */
+    /*
+     필요한 경우 추가 메모리 *
+     */
     if( state->heapused==state->heapsize )
     {
         autogk_mheapresize(&state->heap, &state->heapsize, 4*state->heapsize, state->heapwidth, _state);
@@ -3559,6 +4543,9 @@ lbl_14:
     
     /*
      * TODO: every 20 iterations recalculate errors/sums
+     */
+    /*
+     * TODO : 매 20 회 반복마다 오류 / 합계를 다시 계산합니다.
      */
     if( ae_fp_less_eq(state->sumerr,state->eps*state->sumabs)||state->heapused>=autogk_maxsubintervals )
     {
@@ -3574,12 +4561,18 @@ lbl_14:
     /*
      * Exclude interval with maximum absolute error
      */
+    /*
+     * 최대 절대 오류가있는 간격 제외
+     */
     autogk_mheappop(&state->heap, state->heapused, state->heapwidth, _state);
     state->sumerr = state->sumerr-state->heap.ptr.pp_double[state->heapused-1][0];
     state->sumabs = state->sumabs-state->heap.ptr.pp_double[state->heapused-1][2];
     
     /*
      * Divide interval, create subintervals
+     */
+    /*
+     * 간격을 나누고, 하위 간격을 만듭니다.
      */
     ta = state->heap.ptr.pp_double[state->heapused-1][3];
     tb = state->heap.ptr.pp_double[state->heapused-1][4];
@@ -3617,6 +4610,9 @@ lbl_2:
     /*
      * Gauss-Kronrod formula
      */
+    /*
+     * Gauss-Kronrod 공식
+     */
     intk = intk+v*state->wk.ptr.p_double[i];
     if( i%2==1 )
     {
@@ -3626,6 +4622,10 @@ lbl_2:
     /*
      * Integral |F(x)|
      * Use rectangles method
+     */
+    /*
+     * 적분 | F (x) |
+     * 직사각형 방법 사용
      */
     inta = inta+ae_fabs(v, _state)*state->wr.ptr.p_double[i];
     i = i+1;
@@ -3652,6 +4652,9 @@ lbl_15:
     
     /*
      * Saving state
+     */
+    /*
+     * 저장 상태
      */
 lbl_rcomm:
     result = ae_true;

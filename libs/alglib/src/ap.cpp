@@ -33,6 +33,7 @@ using namespace std;
 #endif
 
 // disable some irrelevant warnings
+// 관련없는 경고를 해제
 #if (AE_COMPILER==AE_MSVC)
 #pragma warning(disable:4100)
 #pragma warning(disable:4127)
@@ -47,10 +48,18 @@ using namespace std;
 // SHARED BETWEEN C++ AND PURE C LIBRARIES
 //
 /////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////
+//
+// 기본 기능을 구현
+// C++ 및 C라이브러리간 백터/메모리에 대한 메모리관리
+//
+//
+/////////////////////////////////////////////////////////////////////////
 namespace alglib_impl
 {
 /*
  * local definitions
+ * 지역 정의
  */
 #define x_nb 16
 #define AE_DATA_ALIGN 16
@@ -94,6 +103,11 @@ __declspec(align(AE_LOCK_ALIGNMENT)) volatile ae_int64_t _ae_dbg_lock_yields = 0
 /*
  * This variable is used to prevent some tricky optimizations which may degrade multithreaded performance.
  * It is touched once in the ae_init_pool() function from smp.c in order to prevent optimizations.
+ *
+ */
+/*
+ * 다중 스레드 성능을 저하시킬 수 있는 최적화를 방지하는 데 사용
+ * 최적화방지를위해 최적화방지를위해 smp.c의 ae_init_pool () 함수를 거친다.
  *
  */
 static volatile ae_int_t ae_never_change_it = 1;
@@ -207,6 +221,13 @@ Error handling:
 * if state is NULL, returns NULL on allocation error
 * if state is not NULL, calls ae_break() on allocation error
 ************************************************************************/
+/************************************************************************
+Malloc의 자동 정렬
+크기가 0 인 경우 NULL을 반환
+오류 처리:
+* state가 NULL이면 할당 오류시 NULL을 반환합니다.
+* state가 NULL이 아닌 경우 할당 오류시 ae_break ()를 호출합니다.
+************************************************************************/
 void* ae_malloc(size_t size, ae_state *state)
 {
     void *result;
@@ -237,6 +258,14 @@ Sets pointers to the matrix rows.
 * dst->ptr - undefined (initialized during algorithm processing)
 * storage parameter points to the beginning of actual storage
 ************************************************************************/
+/************************************************************************
+  행렬에 대한 포인터를 설정
+* dst는 올바르게 초기화 된 행렬이어야함
+* dst-> data.ptr은 행 포인터에 할당 된 메모리 블록의 시작을 가리 킵니다.
+
+* dst-> ptr - undefined (알고리즘 처리 중에 초기화 됨)
+* 저장소 매개 변수는 실제 저장소의 시작을 나타냄
+************************************************************************/
 void ae_matrix_update_row_pointers(ae_matrix *dst, void *storage)
 {
     char *p_base;
@@ -257,6 +286,10 @@ void ae_matrix_update_row_pointers(ae_matrix *dst, void *storage)
 /************************************************************************
 Returns size of datatype.
 Zero for dynamic types like strings or multiple precision types.
+************************************************************************/
+/************************************************************************
+데이터 형의 사이즈를 돌려줍니다.
+문자열 또는 여러 정밀도 유형과 같은 동적 유형의 경우 0입니다.
 ************************************************************************/
 ae_int_t ae_sizeof(ae_datatype datatype)
 {
@@ -279,6 +312,12 @@ It makes nothing - just accepts pointer, "touches" it - and that is  all.
 It performs several tricky operations without side effects which  confuse
 compiler so it does not compain about unused locals in THIS function.
 ************************************************************************/
+/************************************************************************
+이 더미 함수는 사용되지 않는 것에 대한 컴파일러 메시지를 방지하는 데 사용됩니다.
+포인터만 받아들이면 터치하십시오
+혼동하는 부작용없이 작업을 수행합니다.
+컴파일러는이 함수에서 사용하지 않는 지역 정보를 보완하지 않습니다.
+************************************************************************/
 void ae_touch_ptr(void *p)
 {
     void * volatile fake_variable0 = p;
@@ -294,6 +333,13 @@ NOTES:
   attaching dynamic blocks. Without it ae_leave_frame() will cycle
   forever (which is intended behavior).
 ************************************************************************/
+/************************************************************************
+ALGLIB 환경 상태를 초기화합니다.
+
+NOTES:
+* 스택에는 프레임이 없으므로 동적 블록을 첨부하기 전에
+ ae_make_frame ()을 호출해야합니다. (없다면 무한루프)
+************************************************************************/
 void ae_state_init(ae_state *state)
 {
     ae_int32_t *vp;
@@ -304,6 +350,12 @@ void ae_state_init(ae_state *state)
      *   by looking at the ptr field.
      * * NULL p_next may be used to distinguish automatic blocks
      *   (in the list) from non-automatic (not in the list)
+     */
+    /*
+     * p_next가 자신을 가르키는 이유
+     * * 올바른 프로그램은 ptr 필드를보고 목록의 끝을 감지 할 수 있어야함
+     * *  NULL p_next는 목록에있는 자동 블록과 목록에없는 자동 블록을
+     *    구별하는 데 사용할 수 있습니다.
      */
     state->last_block.p_next = &(state->last_block);
     state->last_block.deallocator = NULL;
@@ -316,6 +368,9 @@ void ae_state_init(ae_state *state)
     
     /*
      * determine endianness and initialize precomputed IEEE special quantities.
+     */
+    /*
+     * endianness를 결정하고 사전 계산 된 IEEE 특수 수량을 초기화합니다.
      */
     state->endianness = ae_get_endianness();
     if( state->endianness==AE_LITTLE_ENDIAN )
@@ -348,6 +403,9 @@ void ae_state_init(ae_state *state)
     /*
      * set threading information
      */
+    /*
+     * 쓰레드정보
+     */
     state->worker_thread = NULL;
     state->parent_task = NULL;
     state->thread_exception_handler = NULL;
@@ -357,6 +415,10 @@ void ae_state_init(ae_state *state)
 /************************************************************************
 This function clears ALGLIB environment state.
 All dynamic data controlled by state are freed.
+************************************************************************/
+/************************************************************************
+이 함수는 ALGLIB 환경 상태를 지 웁니다.
+상태에 의해 제어되는 모든 동적 데이터가 해제됩니다.
 ************************************************************************/
 void ae_state_clear(ae_state *state)
 {
@@ -370,6 +432,10 @@ void ae_state_clear(ae_state *state)
 This function sets jump buffer for error handling.
 
 buf may be NULL.
+************************************************************************/
+/************************************************************************
+이 함수는 오류 처리를 위해 점프 버퍼를 설정합니다.
+buf는 NULL 일 것이다.
 ************************************************************************/
 void ae_state_set_break_jump(ae_state *state, jmp_buf *buf)
 {
@@ -387,6 +453,14 @@ This dynamic block must be initialized by caller and mustn't  be changed/
 deallocated/reused till ae_leave_frame called. It may be global or  local
 variable (local is even better).
 ************************************************************************/
+/************************************************************************
+이 함수는 새로운 스택 프레임을 만듭니다.
+이 함수는 두 개의 매개 변수를 취합니다 : 환경 상태와 프레임 시작의 표시기로 사용될
+동적 블록
+동적 블록은 호출자에 의해 초기화되어야하며 be changed /deallocated / ae_leave_frame이
+호출 될 때까지 재사용됩니다. 
+글로벌 변수나 지역변수로 바꿀 수 있습니다.(지역 변수가 더 좋다).
+************************************************************************/
 void ae_frame_make(ae_state *state, ae_frame *tmp)
 {
     tmp->db_marker.p_next = state->p_top_block;
@@ -399,6 +473,10 @@ void ae_frame_make(ae_state *state, ae_frame *tmp)
 /************************************************************************
 This function leaves current stack frame and deallocates all automatic
 dynamic blocks which were attached to this frame.
+************************************************************************/
+/************************************************************************
+이 함수는 현재 스택 프레임을 남겨두고이 프레임에 연결된 모든 자동 동적 블록을 할당
+해제합니다.
 ************************************************************************/
 void ae_frame_leave(ae_state *state)
 {
@@ -420,6 +498,13 @@ state               ALGLIB environment state
 
 NOTES:
 * never call it for special blocks which marks frame boundaries!
+************************************************************************/
+/************************************************************************
+이 함수는 블록을 동적 블록 목록에 연결합니다.
+블록 블록
+상태 ALGLIB 환경 상태
+노트:
+* 프레임 경계를 나타내는 특수 블록을 호출하지 마십시오!
 ************************************************************************/
 void ae_db_attach(ae_dyn_block *block, ae_state *state)
 {
@@ -445,6 +530,20 @@ Error handling:
 
 NOTES:
 * never call it for blocks which are already in the list
+************************************************************************/
+/************************************************************************
+이 함수는 malloc의 동적 블록입니다 :
+블록 대상 블록, 초기화되지 않은 것으로 가정
+크기 크기 (바이트)
+상태 ALGLIB 환경 상태. NULL 일 수 있습니다.
+make_automatic true 인 경우 벡터가 동적 차단 목록에 추가됩니다.
+블록이 초기화되지 않은 것으로 가정되면 해당 필드는 무시됩니다.
+오류 처리:
+* state가 NULL이면 할당 오류시 ae_false를 반환합니다.
+* state가 NULL이 아닌 경우 할당 오류시 ae_break ()를 호출합니다.
+* 성공시 ae_true를 반환합니다.
+노트:
+* 이미 목록에있는 블록에 대해서는 호출하지 마십시오.
 ************************************************************************/
 ae_bool ae_db_malloc(ae_dyn_block *block, ae_int_t size, ae_state *state, ae_bool make_automatic)
 {
@@ -489,6 +588,22 @@ Error handling:
 NOTES:
 * never call it for special blocks which mark frame boundaries!
 ************************************************************************/
+/************************************************************************
+이 함수는 realloc의 동적 블록입니다.
+블록 대상 블록 (초기화 됨)
+크기 새 크기 (바이트)
+상태 ALGLIB 환경 상태
+블록이 초기화되었다고 가정합니다.
+이 기능은 다음과 같습니다.
+* 오래된 내용 삭제
+* 자동 상태 유지
+오류 처리:
+* state가 NULL이면 할당 오류시 ae_false를 반환합니다.
+* state가 NULL이 아닌 경우 할당 오류시 ae_break ()를 호출합니다.
+* 성공시 ae_true를 반환합니다.
+노트:
+* 프레임 경계를 나타내는 특수 블록을 호출하지 마십시오!
+************************************************************************/
 ae_bool ae_db_realloc(ae_dyn_block *block, ae_int_t size, ae_state *state)
 {
     /* ensure that size is >=0
@@ -519,6 +634,13 @@ block               destination block (initialized)
 NOTES:
 * never call it for special blocks which marks frame boundaries!
 ************************************************************************/
+/************************************************************************
+이 함수는 동적 블록을 지우고 (동적으로 할당 된 모든 것을 해제한다.)
+동적 블록이 자동 관리 목록에 -이 있을 경우 목록에서 제거되지 않습니다.
+블록 대상 블록 (초기화 됨)
+노트:
+* 프레임 경계를 나타내는 특수 블록을 호출하지 마십시오!
+************************************************************************/
 void ae_db_free(ae_dyn_block *block)
 {
     if( block->ptr!=NULL )
@@ -534,6 +656,13 @@ etc.) unchanged.
 
 NOTES:
 * never call it for special blocks which marks frame boundaries!
+************************************************************************/
+
+/************************************************************************
+이 함수는 두 개의 동적 블록 (포인터와 할당 취소 자)
+다른 매개 변수 (자동 관리 설정,등) 바뀌지 않는다
+노트:
+* 프레임 경계를 나타내는 특수 블록을 호출하지 마십시오!
 ************************************************************************/
 void ae_db_swap(ae_dyn_block *block1, ae_dyn_block *block2)
 {
@@ -564,6 +693,20 @@ Error handling:
 * returns ae_true on success
 
 dst is assumed to be uninitialized, its fields are ignored.
+************************************************************************/
+/************************************************************************
+이 함수는 ae_vector를 생성합니다.
+벡터 크기는 0 일 것이다. 벡터 내용이 초기화되지 않았습니다.
+dst                 destination vector
+size                vector size, may be zero
+datatype            guess what...
+state               ALGLIB environment state
+make_automatic가 true 인 경우 벡터가 동적 차단 목록에 추가됩니다.
+오류 처리:
+* state가 NULL이면 할당 오류시 ae_false를 반환합니다.
+* state가 NULL이 아닌 경우 할당 오류시 ae_break ()를 호출합니다.
+* 성공시 ae_true를 반환합니다.
+dst는 초기화되지 않은 것으로 간주되며 해당 필드는 무시됩니다.
 ************************************************************************/
 ae_bool ae_vector_init(ae_vector *dst, ae_int_t size, ae_datatype datatype, ae_state *state, ae_bool make_automatic)
 {
@@ -599,6 +742,18 @@ Error handling:
 
 dst is assumed to be uninitialized, its fields are ignored.
 ************************************************************************/
+/************************************************************************
+이 함수는 ae_vector의 복사본을 생성합니다.
+dst                 destination vector
+src                 well, it is source
+state               ALGLIB environment state
+make_automatic가 true 인 경우 벡터가 동적 차단 목록에 추가됩니다.
+오류 처리:
+* state가 NULL이면 할당 오류시 ae_false를 반환합니다.
+* state가 NULL이 아닌 경우 할당 오류시 ae_break ()를 호출합니다.
+* 성공시 ae_true를 반환합니다.
+dst는 초기화되지 않은 것으로 간주되며 해당 필드는 무시됩니다.
+************************************************************************/
 ae_bool ae_vector_init_copy(ae_vector *dst, ae_vector *src, ae_state *state, ae_bool make_automatic)
 {
     if( !ae_vector_init(dst, src->cnt, src->datatype, state, make_automatic) )
@@ -617,6 +772,14 @@ state               ALGLIB environment state
 make_automatic      if true, vector is added to the dynamic block list
 
 dst is assumed to be uninitialized, its fields are ignored.
+************************************************************************/
+/************************************************************************
+이 함수는 x_vector에서 ae_vector를 생성합니다 :
+dst                 destination vector
+src                 source, vector in x-format
+state               ALGLIB environment state
+make_automatic true 인 경우 벡터가 동적 차단 목록에 추가됩니다.
+dst는 초기화되지 않은 것으로 간주되며 해당 필드는 무시됩니다.
 ************************************************************************/
 void ae_vector_init_from_x(ae_vector *dst, x_vector *src, ae_state *state, ae_bool make_automatic)
 {
@@ -642,6 +805,20 @@ NOTES:
 * vector must be initialized
 * all contents is destroyed during setlength() call
 * new size may be zero.
+************************************************************************/
+/************************************************************************
+이 함수는 ae_vector의 길이를 변경합니다.
+dst                 destination vector
+newsize             vector size, may be zero
+state               ALGLIB environment state
+오류 처리:
+* state가 NULL이면 할당 오류시 ae_false를 반환합니다.
+* state가 NULL이 아닌 경우 할당 오류시 ae_break ()를 호출합니다.
+* 성공시 ae_true를 반환합니다.
+노트:
+* 벡터를 초기화해야합니다.
+* setlength () 호출 동안 모든 내용이 파괴됩니다.
+* 새 크기는 0 일 수 있습니다.
 ************************************************************************/
 ae_bool ae_vector_set_length(ae_vector *dst, ae_int_t newsize, ae_state *state)
 {
@@ -677,6 +854,16 @@ ae_vector_set_length().
 
 dst                 destination vector
 ************************************************************************/
+/************************************************************************
+이 함수는 vector에 "CLEAR"기능을 제공합니다 (내용은 클리어되었지만 구조가 유효한
+상태로 남아 있음).
+이 함수는 벡터 내용을 지웁니다. (동적으로 할당 된 모든 메모리를 해제합니다)
+벡터는 자동 관리 목록에 있을 수 있습니다.이 경우에는 목록에서 삭제되지 않습니다.
+중요 : 이 함수는 dst를 무효화하지 않습니다. 동적으로 할당 된 모든 저장소를 해제하지만
+dst는 ae_vector_set_length ()를 호출 후 사용할 수 있습니다.
+
+dst 대상 벡터
+************************************************************************/
 void ae_vector_clear(ae_vector *dst)
 {
     dst->cnt = 0;
@@ -692,6 +879,11 @@ as CLEAR.
 
 dst                 destination vector
 ************************************************************************/
+/************************************************************************
+이 함수는 벡터에 대해 "DESTROY"기능을 제공합니다 (내용이 지워지고 모든 내부 구조가 파괴됩니다). 벡터의 경우 동일합니다.
+
+dst 대상 벡터
+************************************************************************/
 void ae_vector_destroy(ae_vector *dst)
 {
     ae_vector_clear(dst);
@@ -701,6 +893,11 @@ void ae_vector_destroy(ae_vector *dst)
 /************************************************************************
 This function efficiently swaps contents of two vectors, leaving other
 pararemeters (automatic management, etc.) unchanged.
+************************************************************************/
+/************************************************************************
+이 함수는 두 매개 변수의 내용을 효율적으로 교환하므로 다른 매개 변수
+(자동 관리 등)는 변경되지 않습니다.
+
 ************************************************************************/
 void ae_swap_vectors(ae_vector *vec1, ae_vector *vec2)
 {
@@ -740,6 +937,22 @@ Error handling:
 * returns ae_true on success
 
 dst is assumed to be uninitialized, its fields are ignored.
+************************************************************************/
+/************************************************************************
+이 함수는 ae_matrix를 만듭니다.
+행렬과 크기가 모두 0 인 경우 행렬 크기는 0 일 수 있습니다.
+매트릭스 내용이 초기화되지 않았습니다.
+DST                 destination natrix
+rows                rows count
+cols                cols count
+datatype            element type
+state               ALGLIB environment state
+make_automatic true 인 경우, 행렬이 동적 블록 목록에 추가됩니다.
+오류 처리:
+* state가 NULL이면 할당 오류시 ae_false를 반환합니다.
+* state가 NULL이 아닌 경우 할당 오류시 ae_break ()를 호출합니다.
+* 성공시 ae_true를 반환합니다.
+dst는 초기화되지 않은 것으로 간주되며 해당 필드는 무시됩니다.
 ************************************************************************/
 ae_bool ae_matrix_init(ae_matrix *dst, ae_int_t rows, ae_int_t cols, ae_datatype datatype, ae_state *state, ae_bool make_automatic)
 {
@@ -785,6 +998,21 @@ Error handling:
 * returns ae_true on success
 
 dst is assumed to be uninitialized, its fields are ignored.
+************************************************************************/
+/************************************************************************
+이 함수는 ae_matrix의 복사본을 생성합니다.
+
+
+dst                 destination matrix
+src                 well, it is source
+state               ALGLIB environment state
+make_automatic      if true, matrix is added to the dynamic block list
+
+오류 처리:
+* state가 NULL이면 할당 오류시 ae_false를 반환합니다.
+* state가 NULL이 아닌 경우 할당 오류시 ae_break ()를 호출합니다.
+* 성공시 ae_true를 반환합니다.
+dst는 초기화되지 않은 것으로 간주되며 해당 필드는 무시됩니다.
 ************************************************************************/
 ae_bool ae_matrix_init_copy(ae_matrix *dst, ae_matrix *src, ae_state *state, ae_bool make_automatic)
 {
@@ -839,6 +1067,23 @@ NOTES:
 * all contents is destroyed during setlength() call
 * new size may be zero.
 ************************************************************************/
+/************************************************************************
+이 함수는 ae_matrix의 길이를 변경합니다.
+
+dst                 destination matrix
+rows                size, may be zero
+cols                size, may be zero
+state               ALGLIB environment state
+
+오류 처리:
+* state가 NULL이면 할당 오류시 ae_false를 반환합니다.
+* state가 NULL이 아닌 경우 할당 오류시 ae_break ()를 호출합니다.
+* 성공시 ae_true를 반환합니다.
+노트:
+* 행렬을 초기화해야합니다.
+* setlength () 호출 동안 모든 내용이 파괴됩니다.
+* 새 크기는 0 일 수 있습니다.
+************************************************************************/
 ae_bool ae_matrix_set_length(ae_matrix *dst, ae_int_t rows, ae_int_t cols, ae_state *state)
 {
     /* ensure that size is >=0
@@ -876,6 +1121,14 @@ ae_matrix_set_length().
 
 dst                 destination matrix
 ************************************************************************/
+/************************************************************************
+이 함수는 벡터에 대해 "지우기"기능을 제공합니다 
+(내용은 지워지지만 구조는 유효한 상태로 남아 있습니다).
+이 함수는 행렬 내용을 지웁니다 (동적으로 할당 된 모든 메모리를 해제)
+매트릭스가 자동 관리 목록에 있을 경우 목록에서 제거되지 않습니다.
+중요 :이 함수는 dst를 무효화하지 않습니다. 동적으로 할당 된 모든 저장소를 해제하지만 dst는 여전히 ae_matrix_set_length ()를 호출 한 후에 사용할 수 있습니다
+dst                 destination matrix
+************************************************************************/
 void ae_matrix_clear(ae_matrix *dst)
 {
     dst->rows = 0;
@@ -894,6 +1147,13 @@ For matrices it is same as CLEAR.
 
 dst                 destination matrix
 ************************************************************************/
+/************************************************************************
+이 함수는 행렬에 대해 "DESTROY"기능을 제공합니다 
+(내용은 지워지지 만 구조는 유효한 상태로 남아 있습니다)
+행렬의 경우 CLEAR와 동일합니다.
+
+dst                 destination matrix
+************************************************************************/
 void ae_matrix_destroy(ae_matrix *dst)
 {
     ae_matrix_clear(dst);
@@ -903,6 +1163,10 @@ void ae_matrix_destroy(ae_matrix *dst)
 /************************************************************************
 This function efficiently swaps contents of two vectors, leaving other
 pararemeters (automatic management, etc.) unchanged.
+************************************************************************/
+/************************************************************************
+이 함수는 두 매개 변수의 내용을 효율적으로 교환하므로 다른 매개 변수 
+(자동 관리 등)는 변경되지 않습니다.
 ************************************************************************/
 void ae_swap_matrices(ae_matrix *mat1, ae_matrix *mat2)
 {
@@ -952,6 +1216,24 @@ Error handling:
 * if state is not NULL, calls ae_break() on allocation error
 * returns ae_true on success
 ************************************************************************/
+/************************************************************************
+이 함수는 스마트 포인터 구조를 만듭니다.
+
+dst                 destination smart pointer.
+                    already allocated, but not initialized.
+subscriber          pointer to pointer which receives updates in the
+                    internal object stored in ae_smart_ptr. Any update to
+                    dst->ptr is translated to subscriber. Can be NULL.
+state               ALGLIB environment state
+make_automatic true 인 경우 스마트 포인터가 동적 차단 목록에 추가됩니다.
+
+초기화 후 스마트 포인터는 NULL 포인터를 저장합니다.
+
+오류 처리:
+* state가 NULL이면 할당 오류시 ae_false를 반환합니다.
+* state가 NULL이 아닌 경우 할당 오류시 ae_break ()를 호출합니다.
+* 성공시 ae_true를 반환합니다.
+************************************************************************/
 ae_bool ae_smart_ptr_init(ae_smart_ptr *dst, void **subscriber, ae_state *state, ae_bool make_automatic)
 {
     dst->subscriber = subscriber;
@@ -977,6 +1259,14 @@ After call to this function smart pointer contains NULL reference,  which
 is  propagated  to  its  subscriber  (in  cases  non-NULL  subscruber was
 specified during pointer creation).
 ************************************************************************/
+/************************************************************************
+이 함수는 스마트 포인터 구조를 지 웁니다.
+
+dst                 destination smart pointer.
+
+이 함수를 호출 한 후 스마트 포인터에는 NULL 참조가 포함되어 있습니다
+(포인터 생성 중에 NULL이 아닌 가입자를 지정한 경우).
+************************************************************************/
 void ae_smart_ptr_clear(void *_dst)
 {
     ae_smart_ptr *dst = (ae_smart_ptr*)_dst;
@@ -997,6 +1287,11 @@ void ae_smart_ptr_clear(void *_dst)
 
 /************************************************************************
 This function dstroys smart pointer structure (same as clearing it).
+
+dst                 destination smart pointer.
+************************************************************************/
+/************************************************************************
+이 함수는 스마트 포인터 구조를 변형 (지우는 것과 같다.)
 
 dst                 destination smart pointer.
 ************************************************************************/
@@ -1024,6 +1319,23 @@ Changes in pointer are propagated to its  subscriber  (in  case  non-NULL
 subscriber was specified during pointer creation).
 
 You can specify NULL new_ptr, in which case is_owner/destroy are ignored.
+************************************************************************/
+/************************************************************************
+이 함수는 포인터를 ae_smart_ptr 구조체에 할당합니다.
+dst                 destination smart pointer.
+new_ptr             new pointer to assign
+is_owner            whether smart pointer owns new_ptr
+is_dynamic          whether object is dynamic - clearing such object
+                    requires BOTH calling destructor function AND calling
+
+                    ae_free() for memory occupied by object.
+destroy             destructor function
+
+스마트 포인터에 이미 NULL이 아닌 값이 포함되어 있고이 값을 소유하고있는 경우 새 포인터를 할당하기 전에 해제됩니다
+
+포인터의 변경 사항은 해당 구독자에게 전달됩니다 (포인터 생성 도중 NULL이 아닌 구독자가 지정된 경우).
+
+NULL new_ptr을 지정할 수 있습니다.이 경우 is_owner / destroy는 무시됩니다.
 ************************************************************************/
 void ae_smart_ptr_assign(ae_smart_ptr *dst, void *new_ptr, ae_bool is_owner, ae_bool is_dynamic, void (*destroy)(void*))
 {
@@ -1059,6 +1371,16 @@ This function releases pointer owned by ae_smart_ptr structure:
 
 dst                 destination smart pointer.
 ************************************************************************/
+/************************************************************************
+이 함수는 ae_smart_ptr 구조체가 소유 한 포인터를 해제합니다.
+* 모든 내부 필드가 NULL로 설정됩니다.
+* 내부 포인터에 대한 소멸자 함수는 우리가이 포인터를 소유하고 있다고하더라도 호출되지 
+  않습니다. 이 호출 후에 ae_smart_ptr은 포인터의 소유권을 해제하고 호출자에게 전달합니다.
+* 포인터 변경은 해당 구독자에게 전파됩니다 
+  (포인터 생성 중에 NULL이 아닌 구독자가 지정된 경우)
+
+dst                 destination smart pointer.
+************************************************************************/
 void ae_smart_ptr_release(ae_smart_ptr *dst)
 {
     dst->is_owner = ae_false;
@@ -1080,6 +1402,17 @@ NOTES:
 * dst is assumed to be initialized. Its contents is freed before  copying
   data  from src  (if  size / type  are  different)  or  overwritten  (if
   possible given destination size).
+************************************************************************/
+/************************************************************************
+이 함수는 x_vector를 ae_vector의 내용으로 채 웁니다.
+
+dst                 destination vector
+src                 source, vector in x-format
+state               ALGLIB environment state
+
+노트:
+* dst는 초기화되었다고 가정합니다. src (size / type이 다른 경우) 또는 overwrite
+ (가능하면 주어진 대상 크기)에서 데이터를 복사하기 전에 내용이 해제됩니다.
 ************************************************************************/
 void ae_x_set_vector(x_vector *dst, ae_vector *src, ae_state *state)
 {
@@ -1111,6 +1444,16 @@ NOTES:
   data  from src  (if  size / type  are  different)  or  overwritten  (if
   possible given destination size).
 ************************************************************************/
+/************************************************************************
+이 함수는 x_matrix를 ae_matrix의 내용으로 채 웁니다
+
+dst                 destination vector
+src                 source, matrix in x-format
+state               ALGLIB environment state
+
+노트:
+* dst는 초기화되었다고 가정합니다. src (size / type이 다른 경우) 또는 overwrite (가능하면 주어진 대상 크기)에서 데이터를 복사하기 전에 내용이 해제됩니다.
+************************************************************************/
 void ae_x_set_matrix(x_matrix *dst, ae_matrix *src, ae_state *state)
 {
     char *p_src_row;
@@ -1141,8 +1484,10 @@ void ae_x_set_matrix(x_matrix *dst, ae_matrix *src, ae_state *state)
     }
 }
 
+
 /************************************************************************
 This function attaches x_vector to ae_vector's contents.
+
 Ownership of memory allocated is not changed (it is still managed by
 ae_matrix).
 
@@ -1155,6 +1500,21 @@ NOTES:
   attaching to src.
 * this function doesn't need ae_state parameter because it can't fail
   (assuming correctly initialized src)
+************************************************************************/
+/************************************************************************
+이 함수는 x_vector를 ae_vector의 내용에 붙입니다. 할당 된 메모리의 소유권은 변경되지
+ 않습니다 (여전히 ae_matrix에 의해 관리됩니다).
+
+dst                 destination vector
+src                 source, vector in x-format
+state               ALGLIB environment state
+
+NOTES:
+* dst는 초기화되었다고 가정합니다. 그 내용은 src에 연결하기 전에 해제됩니다.
+
+* 이 함수는 실패 할 수 없기 때문에 ae_state 매개 변수를 필요로하지 않습니다
+ (올바르게 초기화 된 src라고 가정)
+
 ************************************************************************/
 void ae_x_attach_to_vector(x_vector *dst, ae_vector *src)
 {
@@ -1182,6 +1542,22 @@ NOTES:
 * this function doesn't need ae_state parameter because it can't fail
   (assuming correctly initialized src)
 ************************************************************************/
+/************************************************************************
+이 함수는 x_vector를 ae_vector의 내용에 붙입니다. 할당 된 메모리의 소유권은 변경되지
+ 않습니다 (여전히 ae_matrix에 의해 관리됩니다).
+
+dst                 destination vector
+src                 source, matrix in x-format
+state               ALGLIB environment state
+
+NOTES:
+
+* dst는 초기화되었다고 가정합니다. 그 내용은 src에 연결하기 전에 해제됩니다.
+* 이 함수는 실패 할 수 없기 때문에 ae_state 매개 변수를 필요로하지 않습니다 
+(올바르게 초기화 된 src라고 가정)
+
+
+************************************************************************/
 void ae_x_attach_to_matrix(x_matrix *dst, ae_matrix *src)
 {
     if( dst->owner==OWN_AE )
@@ -1201,6 +1577,12 @@ ALGLIB environment.
 
 dst                 vector
 ************************************************************************/
+/************************************************************************
+이 함수는 x_vector를 지웁니다. vector가 ALGLIB 환경에 의해 소유되어 있지 않으면
+아무것도하지 않습니다.
+
+dst                 vector
+************************************************************************/
 void x_vector_clear(x_vector *dst)
 {
     if( dst->owner==OWN_AE )
@@ -1211,6 +1593,9 @@ void x_vector_clear(x_vector *dst)
 
 /************************************************************************
 Assertion
+************************************************************************/
+/************************************************************************
+역설
 ************************************************************************/
 void ae_assert(ae_bool cond, const char *msg, ae_state *state)
 {
@@ -1229,6 +1614,15 @@ You must tell ALGLIB what CPU family is used by defining AE_CPU symbol
 Note: results of this function depend on both CPU and compiler;
 if compiler doesn't support SSE intrinsics, function won't set 
 corresponding flag.
+************************************************************************/
+/************************************************************************
+CPUID
+
+CPU 및 컴파일러 지원 기능에 대한 정보를 반환합니다.
+ALGLIB에 AE_CPU 심볼을 정의하여 어떤 CPU 제품군이 사용되는지 알려야합니다 (이 힌트 0이 반환되지 않음).
+
+
+참고 :이 함수의 결과는 CPU와 컴파일러에 따라 다릅니다. 컴파일러가 SSE 내장 함수를 지원하지 않으면 함수는 해당 플래그를 설정하지 않습니다.
 ************************************************************************/
 static volatile ae_bool _ae_cpuid_initialized = ae_false;
 static volatile ae_bool _ae_cpuid_has_sse2 = ae_false;
@@ -1470,6 +1864,15 @@ ae_int_t ae_get_endianness()
      * 1983 is used as magic number because its non-periodic double 
      * representation allow us to easily distinguish between upper 
      * and lower halfs and to detect mixed endian hardware.
+     *
+     */
+    /*
+     * 엔디안을 결정하십시오
+     * 빅 엔디안 및 리틀 엔디안의 두 가지 유형이 지원됩니다.
+     * 혼합 엔디안 하드웨어는 지원되지 않습니다.     *
+     * 1983은 마법의 숫자로 사용됩니다.
+     * representation allow us to easily distinguish between upper 
+     * 및 하위 하프 (halfs)를 검색하고 혼합 엔디 언 하드웨어를 감지합니다
      *
      */
     u.a = 1.0/1983.0; 
@@ -1772,6 +2175,21 @@ static double x_safepythag2(double x, double y)
  *  b) err      componentwise difference between elements of BL and BU^T
  *
  */
+/*
+ *이 함수는 대각선 블록 BL과 BU의 차이를 검사합니다
+* (아래 참조). 블록 BL은 오프셋 (offset0, offset1) 및
+ * 크기 (len0, len1).
+ *
+* [. ]
+ * [A0 BU]
+ * A = [BL A1]
+* [. ]
+ *
+ *이 서브 루틴은 다음의 현재 값을 업데이트합니다 :
+ * a) mx 지금까지 발견 된 A [i, j]의 최대 값
+ * b) BL과 BU ^ T 요소의 구성 요소 간 오차
+ *
+ */
 static void is_symmetric_rec_off_stat(x_matrix *a, ae_int_t offset0, ae_int_t offset1, ae_int_t len0, ae_int_t len1, ae_bool *nonfinite, double *mx, double *err, ae_state *_state)
 {
     /* try to split problem into two smaller ones */
@@ -1840,6 +2258,20 @@ static void is_symmetric_rec_off_stat(x_matrix *a, ae_int_t offset0, ae_int_t of
  *  b) err      componentwise difference between A0 and A0^T
  *
  */
+/*
+ *이 함수는 대각선 블록 A0이 대칭임을 검사합니다.
+ * 블록 A0은 오프셋과 크기로 지정됩니다.
+ *
+* [. ]
+ * [A0]
+* A = [. ]
+* [. ]
+ *
+ *이 서브 루틴은 다음의 현재 값을 업데이트합니다 :
+ * a) mx 지금까지 발견 된 A [i, j]의 최대 값
+ * b) A0와 A0 ^ T의 오차
+ *
+ */
 static void is_symmetric_rec_diag_stat(x_matrix *a, ae_int_t offset, ae_int_t len, ae_bool *nonfinite, double *mx, double *err, ae_state *_state)
 {
     double *p, *prow, *pcol;
@@ -1896,6 +2328,21 @@ static void is_symmetric_rec_diag_stat(x_matrix *a, ae_int_t offset, ae_int_t le
  *  this subroutine updates current values of:
  *  a) mx       maximum value of A[i,j] found so far
  *  b) err      componentwise difference between elements of BL and BU^H
+ *
+ */
+/*
+ *이 함수는 대각선 블록 BL과 BU의 차이를 검사합니다
+* (아래 참조). 블록 BL은 오프셋 (offset0, offset1) 및
+ * 크기 (len0, len1).
+ *
+* [. ]
+ * [A0 BU]
+ * A = [BL A1]
+* [. ]
+ *
+ *이 서브 루틴은 다음의 현재 값을 업데이트합니다 :
+ * a) mx 지금까지 발견 된 A [i, j]의 최대 값
+ * b) BL과 BU ^ H 요소의 구성 요소 간 오차
  *
  */
 static void is_hermitian_rec_off_stat(x_matrix *a, ae_int_t offset0, ae_int_t offset1, ae_int_t len0, ae_int_t len1, ae_bool *nonfinite, double *mx, double *err, ae_state *_state)
@@ -1966,6 +2413,20 @@ static void is_hermitian_rec_off_stat(x_matrix *a, ae_int_t offset0, ae_int_t of
  *  b) err      componentwise difference between A0 and A0^H
  *
  */
+/*
+ *이 함수는 대각선 블록 A0이 Hermitian인지 확인합니다.
+ * 블록 A0은 오프셋과 크기로 지정됩니다.
+ *
+* [. ]
+ * [A0]
+* A = [. ]
+* [. ]
+ *
+ *이 서브 루틴은 다음의 현재 값을 업데이트합니다 :
+ * a) mx 지금까지 발견 된 A [i, j]의 최대 값
+ * b) A0와 A0의 실수로 구성 요소의 차이
+ *
+ */
 static void is_hermitian_rec_diag_stat(x_matrix *a, ae_int_t offset, ae_int_t len, ae_bool *nonfinite, double *mx, double *err, ae_state *_state)
 {
     ae_complex *p, *prow, *pcol;
@@ -2029,6 +2490,17 @@ static void is_hermitian_rec_diag_stat(x_matrix *a, ae_int_t offset, ae_int_t le
  *     [          . ]
  *
  */
+/*
+ *이 함수는 대각선 블록 BL을 그 대칭 된 사본으로 복사합니다
+* BU (아래 참조). 블록 BL은 오프셋 (offset0, offset1)에 의해 지정됩니다.
+ * 및 크기 (len0, len1).
+ *
+* [. ]
+ * [A0 BU]
+ * A = [BL A1]
+* [. ]
+ *
+ */
 static void force_symmetric_rec_off_stat(x_matrix *a, ae_int_t offset0, ae_int_t offset1, ae_int_t len0, ae_int_t len1)
 {
     /* try to split problem into two smaller ones */
@@ -2080,6 +2552,16 @@ static void force_symmetric_rec_off_stat(x_matrix *a, ae_int_t offset0, ae_int_t
  *     [          . ]
  *
  */
+/*
+ *이 함수는 대각선 블록 A0의 하단을 상단으로 복사합니다.
+ * 블록은 오프셋 및 크기로 지정됩니다.
+ *
+* [. ]
+ * [A0]
+* A = [. ]
+* [. ]
+ *
+ */
 static void force_symmetric_rec_diag_stat(x_matrix *a, ae_int_t offset, ae_int_t len)
 {
     double *p, *prow, *pcol;
@@ -2115,6 +2597,16 @@ static void force_symmetric_rec_diag_stat(x_matrix *a, ae_int_t offset, ae_int_t
  *     [   A0  BU   ]
  * A = [   BL  A1   ]
  *     [          . ]
+ */
+/*
+ *이 함수는 대각선 블록 BL의 Hermitian 전치를
+* 그것의 대칭 상대 BU (아래 참조). BL 블록은 다음에 의해 지정됩니다.
+ * 오프셋 (offset0, offset1) 및 크기 (len0, len1).
+ *
+* [. ]
+ * [A0 BU]
+ * A = [BL A1]
+* [. ]
  */
 static void force_hermitian_rec_off_stat(x_matrix *a, ae_int_t offset0, ae_int_t offset1, ae_int_t len0, ae_int_t len1)
 {
@@ -2165,6 +2657,16 @@ static void force_hermitian_rec_off_stat(x_matrix *a, ae_int_t offset0, ae_int_t
  *     [   A0       ]
  * A = [       .    ]
  *     [          . ]
+ *
+ */
+/*
+ *이 함수는 아래쪽의 Hermitian Transpose를 복사합니다.
+ * 대각선 블록 A0의 상단 블록은 오프셋 및 크기로 지정됩니다.
+ *
+* [. ]
+ * [A0]
+* A = [. ]
+* [. ]
  *
  */
 static void force_hermitian_rec_diag_stat(x_matrix *a, ae_int_t offset, ae_int_t len)
@@ -2298,6 +2800,11 @@ digits, lowercase and uppercase letters, minus and underscore are used).
 
 If v is negative or greater than 63, this function returns '?'.
 ************************************************************************/
+/* ************************************************ ************************
+이 함수는 6 비트 값 (0에서 63까지)을 문자로 변환합니다
+소문자 및 대문자, 마이너스 및 밑줄이 사용됨).
+v가 음수이거나 63보다 큰 경우이 함수는 '?'를 반환합니다.
+*************************************************** ********************* */
 static char _sixbits2char_tbl[64] = { 
         '0', '1', '2', '3', '4', '5', '6', '7',
         '8', '9', 'A', 'B', 'C', 'D', 'E', 'F',
@@ -2334,6 +2841,11 @@ This function converts character to six-bit value (from 0 to 63).
 This function is inverse of ae_sixbits2char()
 If c is not correct character, this function returns -1.
 ************************************************************************/
+/* ************************************************ ************************
+이 함수는 문자를 6 비트 값 (0에서 63까지)으로 변환합니다.
+이 함수는 ae_sixbits2char ()의 역입니다.
+c가 올바르지 않은 문자 인 경우이 함수는 -1을 반환합니다.
+*************************************************** ********************* */
 static ae_int_t _ae_char2sixbits_tbl[] = {
     -1, -1, -1, -1, -1, -1, -1, -1,
     -1, -1, -1, -1, -1, -1, -1, -1,
@@ -2363,6 +2875,12 @@ This function converts three bytes (24 bits) to four six-bit values
 src     pointer to three bytes
 dst     pointer to four ints
 ************************************************************************/
+/* ************************************************ ************************
+이 함수는 3 바이트 (24 비트)를 4 개의 6 비트 값 
+(24 비트 다시).
+src 3 바이트 포인터
+4 개의 int에 대한 dst 포인터
+*************************************************** ********************* */
 void ae_threebytes2foursixbits(const unsigned char *src, ae_int_t *dst)
 {
     dst[0] = src[0] & 0x3F;
@@ -2378,6 +2896,12 @@ This function converts four six-bit values (24 bits) to three bytes
 src     pointer to four ints
 dst     pointer to three bytes
 ************************************************************************/
+/* ************************************************ ************************
+이 함수는 4 개의 6 비트 값 (24 비트)을 3 바이트
+(24 비트 다시).
+4 개의 int에 대한 src 포인터
+3 바이트에 대한 dst 포인터
+*************************************************** ********************* */
 void ae_foursixbits2threebytes(const ae_int_t *src, unsigned char *dst)
 {
     dst[0] = (unsigned char)(     src[0] | ((src[1]&0x03)<<6));
@@ -2393,6 +2917,13 @@ buf         buffer, at least 12 characters wide
             (11 chars for value, one for trailing zero)
 state       ALGLIB environment state
 ************************************************************************/
+/* ************************************************ ************************
+이 함수는 부울 값을 버퍼에 직렬화합니다.
+v 직렬화 될 부울 값
+buf 버퍼, 12 자 이상 
+            (값은 11 문자, 후행 0은 하나)
+상태 ALGLIB 환경 상태
+*************************************************** ********************* */
 void ae_bool2str(ae_bool v, char *buf, ae_state *state)
 {
     (void)state;
@@ -2414,6 +2945,14 @@ state       ALGLIB environment state
 
 This function raises an error in case unexpected symbol is found
 ************************************************************************/
+/* ************************************************ ************************
+이 함수는 버퍼에서 boolean 값을 unserializes
+값을 포함하는 buf 버퍼; 선행 공백 / 탭 / 개행 문자는
+            무시 된 공간 / 탭 / 개행 문자는 끝으로 처리됩니다.
+            부울 값
+상태 ALGLIB 환경 상태
+이 함수는 예기치 않은 기호가 발견되면 오류를 발생시킵니다.
+*************************************************** ********************* */
 ae_bool ae_str2bool(const char *buf, ae_state *state, const char **pasttheend)
 {
     ae_bool was0, was1;
@@ -2455,6 +2994,13 @@ buf         buffer, at least 12 characters wide
             (11 chars for value, one for trailing zero)
 state       ALGLIB environment state
 ************************************************************************/
+/* ************************************************ ************************
+이 함수는 정수 값을 버퍼에 직렬화한다.
+v 직렬화 할 정수 값
+buf 버퍼, 12 자 이상 
+            (값은 11 문자, 후행 0은 하나)
+상태 ALGLIB 환경 상태
+*************************************************** ********************* */
 void ae_int2str(ae_int_t v, char *buf, ae_state *state)
 {
     union _u
@@ -2479,6 +3025,20 @@ void ae_int2str(ae_int_t v, char *buf, ae_state *state)
      * 5. additionally, we set 9th byte of u.bytes to zero in order to
      *    simplify conversion to six-bit representation
      */
+    /*
+     * 문자 v의 배열에 복사 v 그것을 확장하는 부호 
+     * 리틀 엔디 언 순서로 변환
+     *
+     * 우리는 ae_int_t의 크기를 명시 적으로 언급하고 싶지 않기 때문에, 
+     * 우리는 다음과 같이합니다 :
+     * 1. 우리는 u.bytes를 0 또는 1로 채 웁니다 (v의 부호에 따라 다름)
+     * 2. 우리는 v를 u.ival로 복사합니다.
+     * 3. 빅 엔디안 아키텍처에서 실행하면 u.bytes를 재정렬합니다.
+     * 4. 이제 u.bytes에 저장된 v의 64 비트 표현에 서명했습니다.
+     * 5. 추가로 u 바이트의 9 번째 바이트를 0으로 설정하여
+     * 6 비트 표현으로의 변환을 단순화
+     */
+
     c = v<0 ? (unsigned char)0xFF : (unsigned char)0x00;
     u.ival = v;
     for(i=sizeof(ae_int_t); i<=8; i++) /* <=8 is preferred because it avoids unnecessary compiler warnings*/
@@ -2500,6 +3060,11 @@ void ae_int2str(ae_int_t v, char *buf, ae_state *state)
      *
      * NOTE: last 12th element of sixbits is always zero, we do not output it
      */
+    /*
+     * 6 비트 표현으로 변환, 출력
+     *
+     * 참고 : sixbits의 마지막 12 번째 요소는 항상 0이므로 출력하지 않습니다.
+     */
     ae_threebytes2foursixbits(u.bytes+0, sixbits+0);
     ae_threebytes2foursixbits(u.bytes+3, sixbits+4);
     ae_threebytes2foursixbits(u.bytes+6, sixbits+8);        
@@ -2518,6 +3083,14 @@ state       ALGLIB environment state
 
 This function raises an error in case unexpected symbol is found
 ************************************************************************/
+/* ************************************************ ************************
+이 함수는 문자열로부터 정수 값을 unserialize한다.
+값을 포함하는 buf 버퍼; 선행 공백 / 탭 / 개행 문자는
+            무시 된 공간 / 탭 / 개행 문자는 끝으로 처리됩니다.
+            부울 값
+상태 ALGLIB 환경 상태
+이 함수는 예기치 않은 기호가 발견되면 오류를 발생시킵니다.
+*************************************************** ********************* */
 ae_int_t ae_str2int(const char *buf, ae_state *state, const char **pasttheend)
 {
     const char *emsg = "ALGLIB: unable to read integer value from stream";
@@ -2578,6 +3151,13 @@ buf         buffer, at least 12 characters wide
             (11 chars for value, one for trailing zero)
 state       ALGLIB environment state
 ************************************************************************/
+/* ************************************************ ************************
+이 함수는 double 값을 버퍼에 직렬화합니다.
+v 직렬화되는 double 값
+buf 버퍼, 12 자 이상 
+            (값은 11 문자, 후행 0은 하나)
+상태 ALGLIB 환경 상태
+*************************************************** ********************* */
 void ae_double2str(double v, char *buf, ae_state *state)
 {
     union _u
@@ -2619,6 +3199,15 @@ void ae_double2str(double v, char *buf, ae_state *state)
      * 4. convert to six-bit representation
      *    (last 12th element of sixbits is always zero, we do not output it)
      */
+    /*
+     * 일반적인 경우 처리 :
+     * 1. v를 문자 배열로 복사
+     * 2. u.bytes의 9 번째 바이트를 0으로 설정하여
+     * 6 비트 표현으로의 변환을 단순화
+     * 3. 리틀 엔디안으로 변환 (필요한 경우)
+     * 4. 6 비트 표현으로 변환
+     * (sixbits의 마지막 12 번째 요소는 항상 0입니다. 출력하지 않습니다)
+     */
     u.dval = v;
     u.bytes[8] = 0;
     if( state->endianness==AE_BIG_ENDIAN )
@@ -2649,6 +3238,14 @@ state       ALGLIB environment state
 
 This function raises an error in case unexpected symbol is found
 ************************************************************************/
+/* ************************************************ ************************
+이 함수는 문자열에서 double 값을 unserializes
+값을 포함하는 buf 버퍼; 선행 공백 / 탭 / 개행 문자는
+            무시 된 공간 / 탭 / 개행 문자는 끝으로 처리됩니다.
+            부울 값
+상태 ALGLIB 환경 상태
+이 함수는 예기치 않은 기호가 발견되면 오류를 발생시킵니다.
+*************************************************** ********************* */
 double ae_str2double(const char *buf, ae_state *state, const char **pasttheend)
 {
     const char *emsg = "ALGLIB: unable to read double value from stream";
@@ -2701,6 +3298,14 @@ double ae_str2double(const char *buf, ae_state *state, const char **pasttheend)
      * 4. convert to 8 bytes
      * 5. convert to big endian representation, if needed
      */
+    /* 
+     * 일반적인 경우 :
+     * 1. 6 비트 숫자 읽기 및 디코딩
+     * 2. 11 자리 모두 읽었는지 확인하십시오.
+     * 3. 마지막 12 번째 자리를 0으로 설정하십시오 (변환의 단순성을 위해 필요함)
+     * 4. 8 바이트로 변환
+     * 5. 필요한 경우 빅 엔디안 표현으로 변환
+     */
     sixbitsread = 0;
     while( *buf!=' ' && *buf!='\t' && *buf!='\n' && *buf!='\r' && *buf!=0 )
     {
@@ -2742,6 +3347,10 @@ void ae_spin_wait(ae_int_t cnt)
      * these strange operations with ae_never_change_it are necessary to
      * prevent compiler optimization of the loop.
      */
+    /*
+     * ae_never_change_it를 사용하여 이러한 이상한 작업이 필요합니다.
+     * 루프의 컴파일러 최적화를 방지합니다.
+     */
     volatile ae_int_t i;
     
     /* very unlikely because no one will wait for such amount of cycles */
@@ -2762,6 +3371,12 @@ is moved to the end of the queue and some other thread gets to run.
 NOTE: this function should NOT be called when AE_OS is AE_UNKNOWN  -  the
       whole program will be abnormally terminated.
 ************************************************************************/
+/* ************************************************ ************************
+이 함수는 호출 스레드가 CPU를 반환하도록합니다. 실
+큐의 끝으로 이동되고 다른 스레드가 실행됩니다.
+참고 : AE_OS가 AE_UNKNOWN 인 경우이 함수를 호출하면 안됩니다.
+      전체 프로그램이 비정상적으로 종료됩니다.
+*************************************************** ********************* */
 void ae_yield()
 {
 #if AE_OS==AE_WINDOWS
@@ -2777,6 +3392,9 @@ void ae_yield()
 /************************************************************************
 This function initializes ae_lock structure and sets lock in a free mode.
 ************************************************************************/
+/* ************************************************ ************************
+이 함수는 ae_lock 구조를 초기화하고 잠금을 자유 모드로 설정합니다.
+*************************************************** ********************* */
 void ae_init_lock(ae_lock *lock)
 {
 #if AE_OS==AE_WINDOWS
@@ -2794,6 +3412,10 @@ void ae_init_lock(ae_lock *lock)
 This function acquires lock. In case lock is busy, we perform several
 iterations inside tight loop before trying again.
 ************************************************************************/
+/* ************************************************ ************************
+이 함수는 잠금을 획득합니다. 자물쇠가 붐비는 경우, 우리는
+다시 시도하기 전에 꽉 루프 안에 반복.
+*************************************************** ********************* */
 void ae_acquire_lock(ae_lock *lock)
 {
 #if AE_OS==AE_WINDOWS
@@ -2840,6 +3462,9 @@ void ae_acquire_lock(ae_lock *lock)
 /************************************************************************
 This function releases lock.
 ************************************************************************/
+/* ************************************************ ************************
+이 함수는 잠금을 해제합니다.
+*************************************************** ********************* */
 void ae_release_lock(ae_lock *lock)
 {
 #if AE_OS==AE_WINDOWS
@@ -2855,6 +3480,9 @@ void ae_release_lock(ae_lock *lock)
 /************************************************************************
 This function frees ae_lock structure.
 ************************************************************************/
+/* ************************************************ ************************
+이 함수는 ae_lock 구조를 해제합니다.
+*************************************************** ********************* */
 void ae_free_lock(ae_lock *lock)
 {
 #if AE_OS==AE_POSIX
@@ -2880,6 +3508,18 @@ Error handling:
 
 dst is assumed to be uninitialized, its fields are ignored.
 ************************************************************************/
+/* ************************************************ ************************
+이 함수는 ae_shared_pool 구조체를 생성합니다.
+dst 대상 공유 풀;
+                    이미 할당되었지만 초기화되지 않았습니다.
+상태 ALGLIB 환경 상태
+make_automatic true 인 경우 풀이 동적 차단 목록에 추가됩니다.
+오류 처리:
+* state가 NULL이면 할당 오류시 ae_false를 반환합니다.
+* state가 NULL이 아닌 경우 할당 오류시 ae_break ()를 호출합니다.
+* 성공시 ae_true를 반환합니다.
+dst는 초기화되지 않은 것으로 간주되며 해당 필드는 무시됩니다.
+*************************************************** ********************* */
 ae_bool ae_shared_pool_init(void *_dst, ae_state *state, ae_bool make_automatic)
 {
     ae_shared_pool *dst;
@@ -2910,6 +3550,11 @@ for the lock. It does NOT try to acquire pool_lock.
 
 NOTE: this function is NOT thread-safe, it is not protected by lock.
 ************************************************************************/
+/* ************************************************ ************************
+이 함수는 풀의 동적으로 할당 된 모든 필드를 지우고
+자물쇠. pool_lock을 획득하려고 시도하지 않습니다.
+참고 :이 함수는 스레드로부터 안전하지 않으며 잠금으로 보호되지 않습니다.
+*************************************************** ********************* */
 static void ae_shared_pool_internalclear(ae_shared_pool *dst)
 {
     ae_shared_pool_entry *ptr, *tmp;
@@ -2962,6 +3607,20 @@ dst is assumed to be uninitialized, its fields are ignored.
 NOTE: this function is NOT thread-safe. It does not acquire pool lock, so
       you should NOT call it when lock can be used by another thread.
 ************************************************************************/
+/* ************************************************ ************************
+이 함수는 ae_shared_pool의 복사본을 생성합니다.
+할당되었지만 초기화되지 않은 dst 대상 풀
+src 소스 풀
+상태 ALGLIB 환경 상태
+make_automatic true 인 경우 풀이 동적 차단 목록에 추가됩니다.
+오류 처리:
+* state가 NULL이면 할당 오류시 ae_false를 반환합니다.
+* state가 NULL이 아닌 경우 할당 오류시 ae_break ()를 호출합니다.
+* 성공시 ae_true를 반환합니다.
+dst는 초기화되지 않은 것으로 간주되며 해당 필드는 무시됩니다.
+참고 :이 함수는 스레드로부터 안전하지 않습니다. 풀 잠금을 얻지 못합니다.
+      다른 스레드가 잠금을 사용할 수있을 때 호출하지 말아야한다.
+*************************************************** ********************* */
 ae_bool ae_shared_pool_init_copy(void *_dst, void *_src, ae_state *state, ae_bool make_automatic)
 {
     ae_shared_pool *dst, *src;
@@ -2973,6 +3632,7 @@ ae_bool ae_shared_pool_init_copy(void *_dst, void *_src, ae_state *state, ae_boo
         return ae_false;
     
     /* copy non-pointer fields */
+    /* 비 포인터 필드 복사 */
     dst->size_of_object = src->size_of_object;
     dst->init = src->init;
     dst->init_copy = src->init_copy;
@@ -2980,6 +3640,7 @@ ae_bool ae_shared_pool_init_copy(void *_dst, void *_src, ae_state *state, ae_boo
     ae_init_lock(&dst->pool_lock);    
     
     /* copy seed object */
+   
     if( src->seed_object!=NULL )
     {
         dst->seed_object = ae_malloc(dst->size_of_object, state);
@@ -2990,6 +3651,7 @@ ae_bool ae_shared_pool_init_copy(void *_dst, void *_src, ae_state *state, ae_boo
     }
     
     /* copy recycled objects */
+    /* 복사 된 객체 복사 */
     dst->recycled_objects = NULL;
     for(ptr=src->recycled_objects; ptr!=NULL; ptr=(ae_shared_pool_entry*)ptr->next_entry)
     {
@@ -3007,12 +3669,15 @@ ae_bool ae_shared_pool_init_copy(void *_dst, void *_src, ae_state *state, ae_boo
     }
     
     /* recycled entries are not copied because they do not store any information */
+    /* 정보를 저장하지 않기 때문에 재활용 된 항목이 복사되지 않습니다. */
     dst->recycled_entries = NULL;
     
     /* enumeration counter is reset on copying */
+    /* 복사시 열거 카운터가 재설정됩니다. */
     dst->enumeration_counter = NULL;
     
     /* initialize frame record */
+    /* 프레임 레코드 초기화 */
     dst->frame_entry.deallocator = ae_shared_pool_destroy;
     dst->frame_entry.ptr = dst;
     
@@ -3030,6 +3695,13 @@ IMPORTANT: this function invalidates dst, it can not be used after it  is
 NOTE: this function is NOT thread-safe. It does not acquire pool lock, so
       you should NOT call it when lock can be used by another thread.
 ************************************************************************/
+/* ************************************************ ************************
+이 함수는 풀의 내용을 지우지 만 풀은 계속 사용할 수 있습니다.
+중요 :이 함수는 dst를 무효화합니다. 사용이 끝난 후에는 사용할 수 없습니다.
+           삭제되었습니다.
+참고 :이 함수는 스레드로부터 안전하지 않습니다. 풀 잠금을 얻지 못합니다.
+      다른 스레드가 잠금을 사용할 수있을 때 호출하지 말아야한다.
+*************************************************** ********************* */
 void ae_shared_pool_clear(void *_dst)
 {
     ae_shared_pool *dst = (ae_shared_pool*)_dst;
@@ -3056,6 +3728,12 @@ dynamically allocated memory is freed).
 NOTE: this function is NOT thread-safe. It does not acquire pool lock, so
       you should NOT call it when lock can be used by another thread.
 ************************************************************************/
+/* ************************************************ ************************
+이 함수는 풀을 소멸시킵니다 (객체는 유효하지 않은 상태로 남아 있습니다.
+동적으로 할당 된 메모리가 해제됩니다).
+참고 :이 함수는 스레드로부터 안전하지 않습니다. 풀 잠금을 얻지 못합니다.
+      다른 스레드가 잠금을 사용할 수있을 때 호출하지 말아야한다.
+*************************************************** ********************* */
 void ae_shared_pool_destroy(void *_dst)
 {
     ae_shared_pool *dst = (ae_shared_pool*)_dst;
@@ -3073,6 +3751,13 @@ dst                 destination pool (initialized by constructor function)
 NOTE: this function is NOT thread-safe. It does not acquire pool lock, so
       you should NOT call it when lock can be used by another thread.
 ************************************************************************/
+/* ************************************************ ************************
+내부 시드 객체가 설정된 경우이 함수는 True를 반환합니다. 그것은
+un-seeded 풀에 대해서는 거짓.
+dst 대상 풀 (생성자 함수에 의해 초기화 됨)
+참고 :이 함수는 스레드로부터 안전하지 않습니다. 풀 잠금을 얻지 못합니다.
+      다른 스레드가 잠금을 사용할 수있을 때 호출하지 말아야한다.
+*************************************************** ********************* */
 ae_bool ae_shared_pool_is_initialized(void *_dst)
 {
     ae_shared_pool *dst = (ae_shared_pool*)_dst;
@@ -3095,6 +3780,19 @@ state               ALGLIB environment state
 NOTE: this function is NOT thread-safe. It does not acquire pool lock, so
       you should NOT call it when lock can be used by another thread.
 ************************************************************************/
+/* ************************************************ ************************
+이 함수는 내부 시드 객체를 설정합니다. 풀이 소유 한 모든 객체
+(현재 시드 객체, 재활용 된 객체)는 자동으로 해제됩니다.
+dst 대상 풀 (생성자 함수에 의해 초기화 됨)
+seed_object 새로운 시드 객체
+size_of_object sizeof (), 메모리 할당에 사용됩니다.
+초기화 생성자 함수
+init_copy 복사 생성자
+소멸자 함수 삭제
+상태 ALGLIB 환경 상태
+참고 :이 함수는 스레드로부터 안전하지 않습니다. 풀 잠금을 얻지 못합니다.
+      다른 스레드가 잠금을 사용할 수있을 때 호출하지 말아야한다.
+*************************************************** ********************* */
 void ae_shared_pool_set_seed(
     ae_shared_pool  *dst,
     void            *seed_object,
@@ -3138,6 +3836,18 @@ state               ALGLIB environment state
 NOTE: this function IS thread-safe.  It  acquires  pool  lock  during its
       operation and can be used simultaneously from several threads.
 ************************************************************************/
+/* ************************************************ ************************
+이 함수는 풀에서 시드 객체의 복사본을 검색하고
+스마트 포인터 ptr을 대상으로 저장합니다.
+타겟 포인터가 NULL이 아닌 값을 소유하고 있다면, 그 포인터는 이전에 할당 해제된다.
+풀에서 검색된 값을 저장합니다. 대상 포인터가
+풀에서 검색된 값입니다.
+수영장 풀
+pptr ae_smart_ptr 구조체에 대한 포인터
+상태 ALGLIB 환경 상태
+참고 :이 함수는 스레드로부터 안전합니다. 그 동안 풀 잠금을 얻습니다.
+      여러 스레드에서 동시에 사용할 수 있습니다.
+*************************************************** ********************* */
 void ae_shared_pool_retrieve(
     ae_shared_pool  *pool,
     ae_smart_ptr    *pptr,
@@ -3208,6 +3918,17 @@ state               ALGLIB environment state
 NOTE: this function IS thread-safe.  It  acquires  pool  lock  during its
       operation and can be used simultaneously from several threads.
 ************************************************************************/
+/* ************************************************ ************************
+이 함수는 스마트 포인터가 소유 한 객체를 다음 위치로 이동하여 재활용합니다.
+공유 풀의 내부 저장
+소스 포인터는 객체를 소유해야합니다. 함수가 끝나면 NULL을 소유합니다.
+바늘.
+수영장 풀
+pptr ae_smart_ptr 구조체에 대한 포인터
+상태 ALGLIB 환경 상태
+참고 :이 함수는 스레드로부터 안전합니다. 그 동안 풀 잠금을 얻습니다.
+      여러 스레드에서 동시에 사용할 수 있습니다.
+*************************************************** ********************* */
 void ae_shared_pool_recycle(
     ae_shared_pool  *pool,
     ae_smart_ptr    *pptr,
@@ -3272,6 +3993,14 @@ state               ALGLIB environment state
 NOTE: this function is NOT thread-safe. It does not acquire pool lock, so
       you should NOT call it when lock can be used by another thread.
 ************************************************************************/
+/*  ************************************************ ************************
+이 함수는 재활용 된 객체의 내부 목록을 지우지 만
+풀에 의해 관리되는 시드 객체 변경.
+수영장 풀
+상태 ALGLIB 환경 상태
+참고 :이 함수는 스레드로부터 안전하지 않습니다. 풀 잠금을 얻지 못합니다.
+      다른 스레드가 잠금을 사용할 수있을 때 호출하지 말아야한다.
+*************************************************** ********************* */
 void ae_shared_pool_clear_recycled(
     ae_shared_pool  *pool,
     ae_state        *state)
@@ -3312,6 +4041,23 @@ pool                pool
 pptr                pointer to ae_smart_ptr structure
 state               ALGLIB environment state
 ************************************************************************/
+/* ************************************************ ************************
+이 함수를 사용하면 공유 풀의 재활용 된 요소를 열거 할 수 있습니다.
+스마트 포인터에 첫 번째 재활용 된 개체에 대한 포인터를 저장합니다.
+중대한:
+* 타겟 포인터가 NULL이 아닌 값을 소유하고 있다면, 이전에 할당 해제된다.
+  풀에서 검색된 값을 저장합니다.
+* 재활용 된 물체는 풀에서 제거되지 않습니다.
+* 목표 포인터는 새로운 값의 소유자가되지 않습니다.
+*이 함수는 스레드로부터 안전하지 않습니다.
+* 열거 중에 공유 풀을 수정해서는 안됩니다 (
+  풀에서 검색된 객체의 상태를 수정)
+* 풀에 재활용 된 객체가없는 경우 NULL은 pptr에 저장됩니다.
+* 풀을 시드하지 않은 경우 NULL은 pptr에 저장됩니다.
+수영장 풀
+pptr ae_smart_ptr 구조체에 대한 포인터
+상태 ALGLIB 환경 상태
+*************************************************** ********************* */
 void ae_shared_pool_first_recycled(
     ae_shared_pool  *pool,
     ae_smart_ptr    *pptr,
@@ -3353,6 +4099,23 @@ pool                pool
 pptr                pointer to ae_smart_ptr structure
 state               ALGLIB environment state
 ************************************************************************/
+/* ************************************************ ************************
+이 함수를 사용하면 공유 풀의 재활용 된 요소를 열거 할 수 있습니다.
+스마트 포인터에 다음 재활용 객체에 대한 포인터를 저장합니다.
+중대한:
+* 타겟 포인터가 NULL이 아닌 값을 소유하고 있다면, 이전에 할당 해제된다.
+  풀에서 검색된 값을 저장합니다.
+* 재활용 된 물체는 풀에서 제거되지 않습니다.
+* 목표 포인터는 새로운 값의 소유자가되지 않습니다.
+*이 함수는 스레드로부터 안전하지 않습니다.
+* 열거 중에 공유 풀을 수정해서는 안됩니다 (
+  풀에서 검색된 객체의 상태를 수정)
+* 풀에 재활용 된 객체가 남아 있지 않은 경우 NULL이 저장됩니다.
+* 풀을 시드하지 않은 경우 NULL이 저장됩니다.
+수영장 풀
+pptr ae_smart_ptr 구조체에 대한 포인터
+상태 ALGLIB 환경 상태
+*************************************************** ********************* */ 
 void ae_shared_pool_next_recycled(
     ae_shared_pool  *pool,
     ae_smart_ptr    *pptr,
@@ -3393,6 +4156,14 @@ state               ALGLIB environment state
 NOTE: this function is NOT thread-safe. It does not acquire pool lock, so
       you should NOT call it when lock can be used by another thread.
 ************************************************************************/
+/* ************************************************ ************************
+이 함수는 재활용 된 객체와 시드 객체의 내부 목록을 지 웁니다.
+그러나 풀을 계속 사용할 수 있습니다 (다른 시드로 초기화 한 후).
+수영장 풀
+상태 ALGLIB 환경 상태
+참고 :이 함수는 스레드로부터 안전하지 않습니다. 풀 잠금을 얻지 못합니다.
+      다른 스레드가 잠금을 사용할 수있을 때 호출하지 말아야한다.
+*************************************************** ********************* */
 void ae_shared_pool_reset(
     ae_shared_pool  *pool,
     ae_state        *state)
@@ -3417,6 +4188,9 @@ void ae_shared_pool_reset(
 /************************************************************************
 This function initializes serializer
 ************************************************************************/
+/* ************************************************ ************************
+이 함수는 직렬화기를 초기화한다.
+*************************************************** ********************* */ 
 void ae_serializer_init(ae_serializer *serializer)
 {
     serializer->mode = AE_SM_DEFAULT;
@@ -3633,6 +4407,9 @@ void ae_serializer_stop(ae_serializer *serializer)
 /************************************************************************
 Complex math functions
 ************************************************************************/
+/* ************************************************ ************************
+복잡한 수학 함수
+*************************************************** ********************* */
 ae_complex ae_complex_from_d(double v)
 {
     ae_complex r;
@@ -3839,6 +4616,9 @@ ae_complex ae_c_d_div(double lhs,   ae_complex rhs)
 /************************************************************************
 Complex BLAS operations
 ************************************************************************/
+/* ************************************************ ************************
+복잡한 BLAS 운영
+*************************************************** ********************* */
 ae_complex ae_v_cdotproduct(const ae_complex *v0, ae_int_t stride0, const char *conj0, const ae_complex *v1, ae_int_t stride1, const char *conj1, ae_int_t n)
 {
     double rx = 0, ry = 0; 
@@ -4376,6 +5156,10 @@ void ae_v_cmulc(ae_complex *vdst, ae_int_t stride_dst, ae_int_t n, ae_complex al
 /************************************************************************
 Real BLAS operations
 ************************************************************************/
+
+/* ************************************************ ************************
+실제 BLAS 운영
+*************************************************** ********************* */
 double ae_v_dotproduct(const double *v0, ae_int_t stride0, const double *v1, ae_int_t stride1, ae_int_t n)
 {
     double result = 0;
@@ -4594,6 +5378,9 @@ void ae_v_muld(double *vdst,  ae_int_t stride_dst, ae_int_t n, double alpha)
 /************************************************************************
 Other functions
 ************************************************************************/
+/* ************************************************ ************************
+기타 기능
+*************************************************** ********************* */
 ae_int_t ae_v_len(ae_int_t a, ae_int_t b)
 {
     return b-a+1;
@@ -4602,6 +5389,9 @@ ae_int_t ae_v_len(ae_int_t a, ae_int_t b)
 /************************************************************************
 RComm functions
 ************************************************************************/
+/* ************************************************ ************************
+RComm 함수
+*************************************************** ********************* */
 ae_bool _rcommstate_init(rcommstate* p, ae_state *_state, ae_bool make_automatic)
 {
     if( !ae_vector_init(&p->ba, 0, DT_BOOL,    _state, make_automatic) )
@@ -4694,9 +5484,17 @@ void ae_get_seed(ae_int_t *s0, ae_int_t *s1)
 // THIS SECTION CONTAINS C++ RELATED FUNCTIONALITY
 //
 /////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
+//
+// 이 섹션은 C ++ 관련 함수를 포함합니다.
+//
+/////////////////////////////////////////////////////////////////////////
 /********************************************************************
 Internal forwards
 ********************************************************************/
+/* ************************************************ *******************
+내부 전달
+*************************************************** **************** */
 namespace alglib
 {
     double get_aenv_nan();
@@ -4722,6 +5520,9 @@ namespace alglib
 /********************************************************************
 Global and local constants
 ********************************************************************/
+/* ************************************************ *******************
+전역 및 로컬 상수
+*************************************************** **************** */
 const double alglib::machineepsilon = 5E-16;
 const double alglib::maxrealnumber  = 1E300;
 const double alglib::minrealnumber  = 1E-300;
@@ -4759,6 +5560,9 @@ void alglib::ap_error::make_assertion(bool bClause, const char *msg)
 /********************************************************************
 Complex number with double precision.
 ********************************************************************/
+/* ************************************************ *******************
+배정 밀도의 복소수
+*************************************************** **************** */
 alglib::complex::complex():x(0.0),y(0.0)
 {
 }
@@ -5038,6 +5842,9 @@ void alglib::setnworkers(alglib::ae_int_t nworkers)
 /********************************************************************
 Level 1 BLAS functions
 ********************************************************************/
+/* ************************************************ *******************
+레벨 1 BLAS 기능
+*************************************************** **************** */
 double alglib::vdotproduct(const double *v0, ae_int_t stride0, const double *v1, ae_int_t stride1, ae_int_t n)
 {
     double result = 0;
@@ -5895,6 +6702,9 @@ void alglib::vmul(alglib::complex *vdst, ae_int_t N, alglib::complex alpha)
 /********************************************************************
 Matrices and vectors
 ********************************************************************/
+/* ************************************************ *******************
+행렬 및 벡터
+*************************************************** **************** */
 alglib::ae_vector_wrapper::ae_vector_wrapper()
 {
     p_vec = NULL;
@@ -6798,6 +7608,9 @@ std::string alglib::complex_2d_array::tostring(int dps) const
 /********************************************************************
 Internal functions
 ********************************************************************/
+/* ************************************************ *******************
+내부 기능
+*************************************************** **************** */
 double alglib::get_aenv_nan()
 {
     double r;
@@ -6999,6 +7812,13 @@ alglib::ae_int_t alglib::parse_int_delim(const char *s, const char *delim)
     // * leading sign
     // * at least one digit
     // * delimiter
+    //
+
+    //
+    // 문자열 구조 확인 :
+    // * 선행 부호
+    // * 적어도 하나의 숫자
+    // * 구분자
     //
     if( *s=='-' || *s=='+' )
         s++;
@@ -7249,6 +8069,9 @@ std::string alglib::arraytostring(const alglib::complex *ptr, ae_int_t n, int dp
 /********************************************************************
 standard functions
 ********************************************************************/
+/* ************************************************ *******************
+표준 함수
+*************************************************** **************** */
 int alglib::sign(double x)
 {
     if( x>0 ) return  1;
@@ -7319,7 +8142,7 @@ double alglib::minreal(double m1, double m2)
 
 bool alglib::fp_eq(double v1, double v2)
 {
-    // IEEE-strict floating point comparison
+    // IEEE-strict 부동 소수점 비교
     volatile double x = v1;
     volatile double y = v2;
     return x==y;
@@ -7327,13 +8150,13 @@ bool alglib::fp_eq(double v1, double v2)
 
 bool alglib::fp_neq(double v1, double v2)
 {
-    // IEEE-strict floating point comparison
+    // IEEE-strict 부동 소수점 비교
     return !fp_eq(v1,v2);
 }
 
 bool alglib::fp_less(double v1, double v2)
 {
-    // IEEE-strict floating point comparison
+    // IEEE-strict 부동 소수점 비교
     volatile double x = v1;
     volatile double y = v2;
     return x<y;
@@ -7341,7 +8164,7 @@ bool alglib::fp_less(double v1, double v2)
 
 bool alglib::fp_less_eq(double v1, double v2)
 {
-    // IEEE-strict floating point comparison
+    // IEEE-strict 부동 소수점 비교
     volatile double x = v1;
     volatile double y = v2;
     return x<=y;
@@ -7349,7 +8172,7 @@ bool alglib::fp_less_eq(double v1, double v2)
 
 bool alglib::fp_greater(double v1, double v2)
 {
-    // IEEE-strict floating point comparison
+    // IEEE-strict 부동 소수점 비교
     volatile double x = v1;
     volatile double y = v2;
     return x>y;
@@ -7357,7 +8180,7 @@ bool alglib::fp_greater(double v1, double v2)
 
 bool alglib::fp_greater_eq(double v1, double v2)
 {
-    // IEEE-strict floating point comparison
+    // IEEE-strict 부동 소수점 비교
     volatile double x = v1;
     volatile double y = v2;
     return x>=y;
@@ -7391,6 +8214,9 @@ bool alglib::fp_isfinite(double x)
 /********************************************************************
 Dataset functions
 ********************************************************************/
+/* ************************************************ *******************
+데이터 집합 함수
+*************************************************** **************** */
 /*bool alglib::readstrings(std::string file, std::list<std::string> *pOutput)
 {
     return readstrings(file, pOutput, "");
@@ -7817,6 +8643,10 @@ alglib::ae_int_t alglib::vlen(ae_int_t n1, ae_int_t n2)
 // IT IS SHARED BETWEEN C++ AND PURE C LIBRARIES
 //
 /////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
+//이 섹션에는 최적화 된 LINEAR ALGEBRA CODE가 포함되어 있습니다.
+// C ++과 순수 C 라이브러리간에 공유됩니다.
+/////////////////////////////////////////////////////////////////////////
 namespace alglib_impl
 {
 #define alglib_simd_alignment 16
@@ -7844,6 +8674,17 @@ IMPORTANT:
 * X must be aligned on alglib_simd_alignment boundary
 * Y may be non-aligned
 ********************************************************************/
+/* ************************************************ *******************
+이 서브 루틴은 빠른 32x32 실제 행렬 - 벡터 곱을 계산합니다.
+    y : = β * y + α * A * x
+제네릭 C 코드 또는 네이티브 최적화 (사용 가능한 경우)
+중대한:
+* A는 행 우선 순서대로 저장해야하며,
+  보폭은 alglib_r_block이며,
+  alglib_simd_alignment 경계에 정렬
+* X는 alglib_simd_alignment 경계에 정렬되어야합니다.
+* Y는 정렬되지 않을 수 있습니다.
+*************************************************** **************** */
 void _ialglib_mv_32(const double *a, const double *x, double *y, ae_int_t stride, double alpha, double beta)
 {
     ae_int_t i, k;
@@ -7885,6 +8726,11 @@ void _ialglib_mv_32(const double *a, const double *x, double *y, ae_int_t stride
          * pa0 and pa1 are pointing to rows I+1 and I+2.
          * move to I+2 and I+3.
          */
+        /*
+         * 이제 행 I와 I + 1을 처리했습니다.
+         * pa0 및 pa1은 I + 1 및 I + 2 행을 가리 킵니다.
+         * I + 2와 I + 3로 이동하십시오.
+         */
         pa0 += alglib_r_block;
         pa1 += alglib_r_block;
         pb = x;
@@ -7910,12 +8756,30 @@ IMPORTANT:
 * 0<=M<=alglib_r_block, 0<=N<=alglib_r_block
 * A must be stored in row-major order with stride equal to alglib_r_block
 *************************************************************************/
+/* ************************************************ *************************
+이 함수는 MxN 실제 행렬 벡터 곱을 계산합니다.
+    y : = β * y + α * A * x
+제네릭 C 코드를 사용합니다. M = 32 및 N = 32 인 경우 _ialglib_mv_32를 호출합니다.
+베타가 0이면 이전 값인 y를 사용하지 않습니다 (덮어 쓰기됩니다).
+알파 * A * x에 의해 읽히지 않고). 알파가 0이면 행렬 벡터가 없습니다.
+제품이 계산됩니다 (베타 버전 만 업데이트 됨). 그러나이 업데이트는
+효율적인이 함수는 다음과 같은 곱셈에 사용해서는 안됩니다. 
+벡터 및 스칼라.
+중대한:
+* 0 <= M <= alglib_r_block, 0 <= N <= alglib_r_block
+* A는 스트라이드가 alglib_r_block 인 행 우선 순서로 저장해야합니다.
+*************************************************** ********************** */
 void _ialglib_rmv(ae_int_t m, ae_int_t n, const double *a, const double *x, double *y, ae_int_t stride, double alpha, double beta)
 {
     /*
      * Handle special cases:
      * - alpha is zero or n is zero
      * - m is zero
+     */
+    /*
+     * 특별한 경우 처리 :
+     * - 알파는 0이거나 n은 0입니다.
+     * - m은 0입니다.
      */
     if( m==0 )
         return;
@@ -7945,6 +8809,10 @@ void _ialglib_rmv(ae_int_t m, ae_int_t n, const double *a, const double *x, doub
      * Handle general case: nonzero alpha, n and m
      *
      */
+    /*
+     * 일반적인 경우 처리 : 0이 아닌 알파, n 및 m
+     *
+     */
     if( m==32 && n==32 )
     {
         /*
@@ -7961,6 +8829,10 @@ void _ialglib_rmv(ae_int_t m, ae_int_t n, const double *a, const double *x, doub
          * First M/2 rows of A are processed in pairs.
          * optimized code is used.
          */
+        /*
+         * A의 첫 번째 M / 2 행은 쌍으로 처리됩니다.
+         * 최적화 된 코드가 사용됩니다.
+         */
         m2 = m/2;
         n8 = n/8;
         ntrail2 = (n-8*n8)/2;
@@ -7972,6 +8844,10 @@ void _ialglib_rmv(ae_int_t m, ae_int_t n, const double *a, const double *x, doub
              * 'a' points to the part of the matrix which
              * is not processed yet
              */
+            /*
+             * 'a'는 행렬의 일부를 가리 킵니다.
+             * 아직 처리되지 않았습니다.
+             */
             pb = x;
             pa0 = a;
             pa1 = a+alglib_r_block;
@@ -7980,6 +8856,9 @@ void _ialglib_rmv(ae_int_t m, ae_int_t n, const double *a, const double *x, doub
             /*
              * 8 elements per iteration
              */
+            /*
+             * 반복 당 8 요소
+             */ 
             for(k=0; k<n8; k++)
             {
                 v0 += pa0[0]*pb[0];
@@ -8006,6 +8885,9 @@ void _ialglib_rmv(ae_int_t m, ae_int_t n, const double *a, const double *x, doub
             /*
              * 2 elements per iteration
              */
+            /*
+             반복 당 * 2 요소
+             */
             for(k=0; k<ntrail2; k++)
             {
                 v0 += pa0[0]*pb[0];
@@ -8020,6 +8902,9 @@ void _ialglib_rmv(ae_int_t m, ae_int_t n, const double *a, const double *x, doub
             /*
              * last element, if needed
              */
+            /*
+             * 필요한 경우 마지막 요소
+             */
             if( n%2!=0 )
             {
                 v0 += pa0[0]*pb[0];
@@ -8028,6 +8913,9 @@ void _ialglib_rmv(ae_int_t m, ae_int_t n, const double *a, const double *x, doub
 
             /*
              * final update
+             */
+            /*
+             * 최종 업데이트
              */
             if( beta!=0 )
             {
@@ -8043,12 +8931,18 @@ void _ialglib_rmv(ae_int_t m, ae_int_t n, const double *a, const double *x, doub
             /*
              * move to the next pair of elements
              */
+            /*
+             * 다음 요소 쌍으로 이동
+             */
             y+=2*stride;
         }
 
 
         /*
          * Last (odd) row is processed with less optimized code.
+         */
+        /*
+         * 마지막 (홀수) 행은 덜 최적화 된 코드로 처리됩니다.
          */
         if( m%2!=0 )
         {
@@ -8058,11 +8952,18 @@ void _ialglib_rmv(ae_int_t m, ae_int_t n, const double *a, const double *x, doub
              * 'a' points to the part of the matrix which
              * is not processed yet
              */
+            /*
+             * 'a'는 행렬의 일부를 가리 킵니다.
+             * 아직 처리되지 않았습니다.
+             */
             pb = x;
             pa0 = a;
 
             /*
              * 2 elements per iteration
+             */
+            /*
+             반복 당 * 2 요소
              */
             n2 = n/2;
             for(k=0; k<n2; k++)
@@ -8075,11 +8976,17 @@ void _ialglib_rmv(ae_int_t m, ae_int_t n, const double *a, const double *x, doub
             /*
              * last element, if needed
              */
+            /*
+             * 필요한 경우 마지막 요소
+             */
             if( n%2!=0 )
                 v0 += pa0[0]*pb[0];
 
             /*
              * final update
+             */
+            /*
+             * 최종 업데이트
              */
             if( beta!=0 )
                 y[0] = beta*y[0]+alpha*v0;
@@ -8123,6 +9030,32 @@ If  you  want  to  know  whether  it  is safe to call it, you should check
 results  of  ae_cpuid(). If CPU_SSE2 bit is set, this function is callable 
 and will do its work.
 *************************************************************************/
+/* ************************************************ *************************
+이 함수는 MxN 실제 행렬 벡터 곱을 계산합니다.
+    y : = β * y + α * A * x
+제네릭 C 코드를 사용합니다. M = 32 및 N = 32 인 경우 _ialglib_mv_32를 호출합니다.
+베타가 0이면 이전 값인 y를 사용하지 않습니다 (덮어 쓰기됩니다).
+알파 * A * x에 의해 읽히지 않고). 알파가 0이면 행렬 벡터가 없습니다.
+제품이 계산됩니다 (베타 버전 만 업데이트 됨). 그러나이 업데이트는
+효율적인이 함수는 다음과 같은 곱셈에 사용해서는 안됩니다. 
+벡터 및 스칼라.
+중대한:
+* 0 <= M <= alglib_r_block, 0 <= N <= alglib_r_block
+* A는 스트라이드가 alglib_r_block 인 행 우선 순서로 저장해야합니다.
+* y는 정렬되지 않을 수 있습니다.
+* A와 x 모두 16 바이트 경계에 대해 동일한 오프셋을 가져야합니다.
+  둘 다 정렬되거나 오프셋 8로 정렬됩니다.
+  잘못 정렬 된 상태로 호출하려고하면 시스템이 중단됩니다. 
+  잘못 정렬 된 데이터
+이 함수는 SSE2를 지원합니다. 다음과 같은 경우에 사용할 수 있습니다.
+1. AE_HAS_SSE2_INTRINSICS가 정의되었습니다 (컴파일시 검사 됨).
+2. ae_cpuid () 결과에 CPU_SSE2가 포함되어 있습니다 (런타임에 확인 됨)
+(1)이 실패하면이 함수는 정의되지 않습니다. (2)가 실패하면,
+이 기능을 사용하면 시스템이 손상 될 수 있습니다. 
+전화를 걸어도 안전한지 알고 싶으면 
+ae_cpuid ()의 결과. CPU_SSE2 비트가 설정되면이 함수는 호출 가능합니다
+그 일을 할 것입니다.
+*************************************************** ********************** */
 #if defined(AE_HAS_SSE2_INTRINSICS)
 void _ialglib_rmv_sse2(ae_int_t m, ae_int_t n, const double *a, const double *x, double *y, ae_int_t stride, double alpha, double beta)
 {
@@ -8137,6 +9070,11 @@ void _ialglib_rmv_sse2(ae_int_t m, ae_int_t n, const double *a, const double *x,
      * Handle special cases:
      * - alpha is zero or n is zero
      * - m is zero
+     */
+    /*
+     * 특별한 경우 처리 :
+     * - 알파는 0이거나 n은 0입니다.
+     * - m은 0입니다.
      */
     if( m==0 )
         return;
@@ -8175,6 +9113,22 @@ void _ialglib_rmv_sse2(ae_int_t m, ae_int_t n, const double *a, const double *x,
      * - nb8 1x8 blocks, aligned to 16-byte boundary
      * - nb2 1x2 blocks, aligned to 16-byte boundary
      * - ntail 1x1 blocks, aligned too (altough we don't rely on it)
+     *
+     */
+    /*
+     * 일반적인 경우 처리 : 0이 아닌 알파, n 및 m
+     *
+     * 다음과 같이 문제를 나눈다 ...
+     *
+     * 행 M은 다음과 같이 나뉩니다.
+     * - mb3 블록, 각 3xN
+     * - 각 1xN의 mtail 블록
+     *
+     * 행 내에서 요소는 다음과 같이 나뉩니다.
+     * - nhead 1x1 블록 (나머지를 정렬하는 데 사용됨, 0 또는 1)
+     * - nb8 1x8 블록, 16 바이트 경계에 정렬
+     * - nb2 1x2 블록, 16 바이트 경계에 정렬
+     * - ntail 1x1 블록도 정렬되었습니다 (우리가 의존하지는 않지만)
      *
      */
     n2 = n/2;    
@@ -8222,6 +9176,10 @@ void _ialglib_rmv_sse2(ae_int_t m, ae_int_t n, const double *a, const double *x,
             /*
              * this code is a shuffle of simultaneous dot product.
              * see below for commented unshuffled original version.
+             */
+            /*
+             *이 코드는 동시 다트 제품의 셔플입니다.
+             * 주석이 달린 unshuffled 원본 버전은 아래를 참조하십시오.
              */
             vx  = _mm_load_pd(pb);
             va0 = _mm_load_pd(pa0);
@@ -8425,6 +9383,25 @@ IMPORTANT:
   AND SET OTHER PARAMETER TO NULL.
 * both A and x must be aligned; y may be non-aligned.
 *************************************************************************/
+/* ************************************************ *************************
+이 서브 루틴은 빠른 MxN 복소 행렬 - 벡터 곱을 계산합니다.
+    y : = β * y + α * A * x
+A, x, y, 알파 및 베타가 복잡한 일반 C 코드를 사용합니다.
+베타가 0이면 이전 값인 y를 사용하지 않습니다 (덮어 쓰기됩니다).
+알파 * A * x에 의해 읽히지 않고). 그러나 알파가 0 일 때 우리는
+여전히 A * x를 계산하고 그것을 알파로 곱하십시오 (이 구별은
+A 또는 x가 무한 / NAN을 포함 할 때 중요 함).
+중대한:
+* 0 <= M <= alglib_c_block, 0 <= N <= alglib_c_block
+* A는 배의 정밀도의 순서로서 행 메이저의 순서로 격납되어있을 필요가 있습니다.
+  한 쌍. 보폭은 alglib_c_block입니다 (두 배의 쌍으로 측정됩니다.
+  복식).
+* Y는 cy (ae_complex에 대한 포인터) 또는
+  dy (배정 밀도 쌍의 배열에 대한 포인터) 
+  출력. 이 매개 변수 중 하나로 Y에 대한 포인터를 전달하고,
+  다른 매개 변수를 NULL로 설정하십시오.
+* A와 x는 모두 정렬되어야합니다. y는 정렬되지 않을 수 있습니다.
+*************************************************** ********************** */
 void _ialglib_cmv(ae_int_t m, ae_int_t n, const double *a, const double *x, ae_complex *cy, double *dy, ae_int_t stride, ae_complex alpha, ae_complex beta)
 {
     ae_int_t i, j;
@@ -8501,6 +9478,33 @@ If  you  want  to  know  whether  it  is safe to call it, you should check
 results  of  ae_cpuid(). If CPU_SSE2 bit is set, this function is callable 
 and will do its work.
 *************************************************************************/
+/* ************************************************ *************************
+이 서브 루틴은 빠른 MxN 복소 행렬 - 벡터 곱을 계산합니다.
+    y : = β * y + α * A * x
+A, x, y, 알파 및 베타가 복잡한 일반 C 코드를 사용합니다.
+베타가 0이면 이전 값인 y를 사용하지 않습니다 (덮어 쓰기됩니다).
+알파 * A * x에 의해 읽히지 않고). 그러나 알파가 0 일 때 우리는
+여전히 A * x를 계산하고 그것을 알파로 곱하십시오 (이 구별은
+A 또는 x가 무한 / NAN을 포함 할 때 중요 함).
+중대한:
+* 0 <= M <= alglib_c_block, 0 <= N <= alglib_c_block
+* A는 배의 정밀도의 순서로서 행 메이저의 순서로 격납되어있을 필요가 있습니다.
+  한 쌍. 보폭은 alglib_c_block입니다 (두 배의 쌍으로 측정됩니다.
+  복식).
+* Y는 cy (ae_complex에 대한 포인터) 또는
+  dy (배정 밀도 쌍의 배열에 대한 포인터) 
+  출력. 이 매개 변수 중 하나로 Y에 대한 포인터를 전달하고,
+  다른 매개 변수를 NULL로 설정하십시오.
+* A와 x는 모두 정렬되어야합니다. y는 정렬되지 않을 수 있습니다.
+이 함수는 SSE2를 지원합니다. 다음과 같은 경우에 사용할 수 있습니다.
+1. AE_HAS_SSE2_INTRINSICS가 정의되었습니다 (컴파일시 검사 됨).
+2. ae_cpuid () 결과에 CPU_SSE2가 포함되어 있습니다 (런타임에 확인 됨)
+(1)이 실패하면이 함수는 정의되지 않습니다. (2)가 실패하면,
+이 기능을 사용하면 시스템이 손상 될 수 있습니다. 
+전화를 걸어도 안전한지 알고 싶으면 
+ae_cpuid ()의 결과. CPU_SSE2 비트가 설정되면이 함수는 호출 가능합니다
+그 일을 할 것입니다.
+*************************************************** ********************** */
 #if defined(AE_HAS_SSE2_INTRINSICS)
 void _ialglib_cmv_sse2(ae_int_t m, ae_int_t n, const double *a, const double *x, ae_complex *cy, double *dy, ae_int_t stride, ae_complex alpha, ae_complex beta)
 {
@@ -8618,6 +9622,9 @@ void _ialglib_cmv_sse2(ae_int_t m, ae_int_t n, const double *a, const double *x,
 /********************************************************************
 This subroutine sets vector to zero
 ********************************************************************/
+/* ************************************************ *******************
+이 서브 루틴은 vector를 0으로 설정합니다.
+*************************************************** **************** */
 void _ialglib_vzero(ae_int_t n, double *p, ae_int_t stride)
 {
     ae_int_t i;
@@ -8636,6 +9643,9 @@ void _ialglib_vzero(ae_int_t n, double *p, ae_int_t stride)
 /********************************************************************
 This subroutine sets vector to zero
 ********************************************************************/
+/* ************************************************ *******************
+이 서브 루틴은 vector를 0으로 설정합니다.
+*************************************************** **************** */
 void _ialglib_vzero_complex(ae_int_t n, ae_complex *p, ae_int_t stride)
 {
     ae_int_t i;
@@ -8661,6 +9671,9 @@ void _ialglib_vzero_complex(ae_int_t n, ae_complex *p, ae_int_t stride)
 /********************************************************************
 This subroutine copies unaligned real vector
 ********************************************************************/
+/* ************************************************ *******************
+이 서브 루틴은 정렬되지 않은 실수 벡터
+*************************************************** **************** */
 void _ialglib_vcopy(ae_int_t n, const double *a, ae_int_t stridea, double *b, ae_int_t strideb)
 {
     ae_int_t i, n2;
@@ -8690,6 +9703,12 @@ This subroutine copies unaligned complex vector
 1. strideb is stride measured in complex numbers, not doubles
 2. conj may be "N" (no conj.) or "C" (conj.)
 ********************************************************************/
+/* ************************************************ *******************
+이 서브 루틴은 정렬되지 않은 복소수 벡터
+(ae_complex *로 전달됨)
+1. 보폭은 복식이 아니라 복소수로 측정됩니다.
+2. conj는 "N"(conj.) 또는 "C"(conj.) 일 수 있습니다.
+*************************************************** **************** */
 void _ialglib_vcopy_complex(ae_int_t n, const ae_complex *a, ae_int_t stridea, double *b, ae_int_t strideb, const char *conj)
 {
     ae_int_t i;
@@ -8722,6 +9741,11 @@ This subroutine copies unaligned complex vector (passed as double*)
 1. strideb is stride measured in complex numbers, not doubles
 2. conj may be "N" (no conj.) or "C" (conj.)
 ********************************************************************/
+/* ************************************************ *******************
+이 서브 루틴은 정렬되지 않은 복소수 벡터 (double *로 전달됨)
+1. 보폭은 복식이 아니라 복소수로 측정됩니다.
+2. conj는 "N"(conj.) 또는 "C"(conj.) 일 수 있습니다.
+*************************************************** **************** */
 void _ialglib_vcopy_dcomplex(ae_int_t n, const double *a, ae_int_t stridea, double *b, ae_int_t strideb, const char *conj)
 {
     ae_int_t i;
@@ -8767,6 +9791,22 @@ Transformation types:
 * 0 - no transform
 * 1 - transposition
 ********************************************************************/
+/* ************************************************ *******************
+이 서브 루틴은 정렬되지 않은 비 연속 저장소에서 행렬을 복사합니다.
+연속 된 스토리지를 정렬
+에이:
+* MxN
+* 비 정렬
+* 비 연속
+* 복사 중 변형 될 수 있음 (op에 명시된대로)
+비:
+* alglib_r_block * alglib_r_block (MxN / NxM 서브 매트릭스 만 사용됨)
+* 정렬 됨
+* 보폭은 alglib_r_block입니다.
+변환 유형 :
+* 0 - 변형 없음
+* 1 - 전치
+*************************************************** **************** */
 void _ialglib_mcopyblock(ae_int_t m, ae_int_t n, const double *a, ae_int_t op, ae_int_t stride, double *b)
 {
     ae_int_t i, j, n2;
@@ -8833,6 +9873,30 @@ If  you  want  to  know  whether  it  is safe to call it, you should check
 results  of  ae_cpuid(). If CPU_SSE2 bit is set, this function is callable 
 and will do its work.
 ********************************************************************/
+/* ************************************************ *******************
+이 서브 루틴은 정렬되지 않은 비 연속 저장소에서 행렬을 복사합니다.
+연속 된 스토리지를 정렬
+에이:
+* MxN
+* 비 정렬
+* 비 연속
+* 복사 중 변형 될 수 있음 (op에 명시된대로)
+비:
+* alglib_r_block * alglib_r_block (MxN / NxM 서브 매트릭스 만 사용됨)
+* 정렬 됨
+* 보폭은 alglib_r_block입니다.
+변환 유형 :
+* 0 - 변형 없음
+* 1 - 전치
+이 함수는 SSE2를 지원합니다. 다음과 같은 경우에 사용할 수 있습니다.
+1. AE_HAS_SSE2_INTRINSICS가 정의되었습니다 (컴파일시 검사 됨).
+2. ae_cpuid () 결과에 CPU_SSE2가 포함되어 있습니다 (런타임에 확인 됨)
+(1)이 실패하면이 함수는 정의되지 않습니다. (2)가 실패하면,
+이 기능을 사용하면 시스템이 손상 될 수 있습니다. 
+전화를 걸어도 안전한지 알고 싶으면 
+ae_cpuid ()의 결과. CPU_SSE2 비트가 설정되면이 함수는 호출 가능합니다
+그 일을 할 것입니다.
+*************************************************** **************** */
 #if defined(AE_HAS_SSE2_INTRINSICS)
 void _ialglib_mcopyblock_sse2(ae_int_t m, ae_int_t n, const double *a, ae_int_t op, ae_int_t stride, double *b)
 {
@@ -8954,6 +10018,22 @@ Transformation types:
 * 0 - no transform
 * 1 - transposition
 ********************************************************************/
+/* ************************************************ *******************
+이 서브 루틴은 정렬 된 연속 저장 장치에서 비 연속 저장 장치로 행렬을 복사합니다.
+정렬 된 비 연속 저장소
+에이:
+* MxN
+* 정렬 됨
+* contigous
+* 보폭은 alglib_r_block입니다.
+* 복사 중 변형 될 수 있음 (op에 명시된대로)
+비:
+* alglib_r_block * alglib_r_block (MxN / NxM 서브 매트릭스 만 사용됨)
+* 비 정렬, 비 연속
+변환 유형 :
+* 0 - 변형 없음
+* 1 - 전치
+*************************************************** **************** */
 void _ialglib_mcopyunblock(ae_int_t m, ae_int_t n, const double *a, ae_int_t op, double *b, ae_int_t stride)
 {
     ae_int_t i, j, n2;
@@ -9013,6 +10093,26 @@ Transformation types:
 * 2 - conjugate transposition
 * 3 - conjugate, but no  transposition
 ********************************************************************/
+/* ************************************************ *******************
+이 서브 루틴은 정렬되지 않은 비 연속 저장소에서 행렬을 복사합니다.
+연속 된 스토리지를 정렬
+에이:
+* MxN
+* 비 정렬
+* 비 연속
+* 복사 중 변형 될 수 있음 (op에 명시된대로)
+* ae_complex에 대한 포인터가 전달됩니다.
+비:
+* 2 * alglib_c_block * alglib_c_block double (MxN / NxM 서브 매트릭스 만 사용됨)
+* 정렬 됨
+* 보폭은 alglib_c_block입니다.
+* double 포인터가 전달됩니다.
+변환 유형 :
+* 0 - 변형 없음
+* 1 - 전치
+* 2 - conjugate transposition
+* 3 - 결합체, 그러나 전이 없음
+*************************************************** **************** */
 void _ialglib_mcopyblock_complex(ae_int_t m, ae_int_t n, const ae_complex *a, ae_int_t op, ae_int_t stride, double *b)
 {
     ae_int_t i, j;
@@ -9080,6 +10180,26 @@ Transformation types:
 * 2 - conjugate transposition
 * 3 - conjugate, but no  transposition
 ********************************************************************/
+/* ************************************************ *******************
+이 서브 루틴은 정렬 된 인접 저장 영역에서 행렬을
+정렬되지 않은 비 연속 저장소
+에이:
+* 2 * alglib_c_block * alglib_c_block double (MxN 서브 매트릭스 만 사용됨)
+* 정렬 됨
+* 보폭은 alglib_c_block입니다.
+* double 포인터가 전달됩니다.
+* 복사 중 변형 될 수 있음 (op에 명시된대로)
+비:
+* MxN
+* 비 정렬
+* 비 연속
+* ae_complex에 대한 포인터가 전달됩니다.
+변환 유형 :
+* 0 - 변형 없음
+* 1 - 전치
+* 2 - conjugate transposition
+* 3 - 결합체, 그러나 전이 없음
+*************************************************** **************** */
 void _ialglib_mcopyunblock_complex(ae_int_t m, ae_int_t n, const double *a, ae_int_t op, ae_complex* b, ae_int_t stride)
 {
     ae_int_t i, j;
@@ -9127,6 +10247,9 @@ void _ialglib_mcopyunblock_complex(ae_int_t m, ae_int_t n, const double *a, ae_i
 /********************************************************************
 Real GEMM kernel
 ********************************************************************/
+/* ************************************************ *******************
+진짜 GEMM 커널
+*************************************************** **************** */
 ae_bool _ialglib_rmatrixgemm(ae_int_t m,
      ae_int_t n,
      ae_int_t k,
@@ -9156,6 +10279,9 @@ ae_bool _ialglib_rmatrixgemm(ae_int_t m,
     /*
      * Check for SSE2 support
      */
+    /*
+     * SSE2 지원 확인
+     */
 #ifdef AE_HAS_SSE2_INTRINSICS
     if( ae_cpuid() & CPU_SSE2 )
     {
@@ -9175,6 +10301,10 @@ ae_bool _ialglib_rmatrixgemm(ae_int_t m,
     /*
      * multiply B by A (from the right, by rows)
      * and store result in C
+     */
+    /*
+     * A에 B를 곱하십시오 (오른쪽에서 행 기준).
+     * 결과를 C로 저장
      */
     crow  = _c;
     if( optypea==0 )
@@ -9210,6 +10340,9 @@ ae_bool _ialglib_rmatrixgemm(ae_int_t m,
 /********************************************************************
 Complex GEMM kernel
 ********************************************************************/
+/* ************************************************ *******************
+복잡한 GEMM 커널
+*************************************************** **************** */
 ae_bool _ialglib_cmatrixgemm(ae_int_t m,
      ae_int_t n,
      ae_int_t k,
@@ -9264,6 +10397,10 @@ ae_bool _ialglib_cmatrixgemm(ae_int_t m,
      * multiply B by A (from the right, by rows)
      * and store result in C
      */
+    /*
+     * A에 B를 곱하십시오 (오른쪽에서 행 기준).
+     * 결과를 C로 저장
+     */
     arow  = _a;
     crow  = _c;
     for(i=0; i<m; i++)
@@ -9295,6 +10432,9 @@ ae_bool _ialglib_cmatrixgemm(ae_int_t m,
 /********************************************************************
 complex TRSM kernel
 ********************************************************************/
+/* ************************************************ *******************
+복잡한 TRSM 커널
+*************************************************** **************** */
 ae_bool _ialglib_cmatrixrighttrsm(ae_int_t m,
      ae_int_t n,
      ae_complex *_a,
@@ -9351,6 +10491,9 @@ ae_bool _ialglib_cmatrixrighttrsm(ae_int_t m,
     /*
      * Solve Y*A^-1=X where A is upper or lower triangular
      */
+    /*
+     * Solve Y * A ^ -1 = X 여기서 A는 위 또는 아래 삼각형
+     */
     if( uppera )
     {
         for(i=0,pdiag=abuf; i<n; i++,pdiag+=2*(alglib_c_block+1))
@@ -9392,6 +10535,9 @@ ae_bool _ialglib_cmatrixrighttrsm(ae_int_t m,
 /********************************************************************
 real TRSM kernel
 ********************************************************************/
+/* ************************************************ *******************
+진짜 TRSM 커널
+*************************************************** **************** */
 ae_bool _ialglib_rmatrixrighttrsm(ae_int_t m,
      ae_int_t n,
      double *_a,
@@ -9476,6 +10622,9 @@ ae_bool _ialglib_rmatrixrighttrsm(ae_int_t m,
 /********************************************************************
 complex TRSM kernel
 ********************************************************************/
+/* ************************************************ *******************
+복잡한 TRSM 커널
+*************************************************** **************** */
 ae_bool _ialglib_cmatrixlefttrsm(ae_int_t m,
      ae_int_t n,
      ae_complex *_a,
@@ -9517,6 +10666,10 @@ ae_bool _ialglib_cmatrixlefttrsm(ae_int_t m,
      * Prepare
      * Transpose X (so we may use mv, which calculates A*x, but not x*A)
      */
+    /*
+     * 준비
+     * Transpose X (그래서 우리는 A * x는 계산하지만 x * A는 계산하지 않는 mv를 사용할 수 있습니다)
+     */
     _ialglib_mcopyblock_complex(m, m, _a, optype, _a_stride, abuf);
     _ialglib_mcopyblock_complex(m, n, _x, 1, _x_stride, xbuf);
     if( isunit )
@@ -9532,6 +10685,9 @@ ae_bool _ialglib_cmatrixlefttrsm(ae_int_t m,
 
     /*
      * Solve A^-1*Y^T=X^T where A is upper or lower triangular
+     */
+    /*
+     * Solve A ^ -1 * Y ^ T = X ^ T 여기서 A는 위 또는 아래 삼각형
      */
     if( uppera )
     {
@@ -9573,6 +10729,9 @@ ae_bool _ialglib_cmatrixlefttrsm(ae_int_t m,
 /********************************************************************
 real TRSM kernel
 ********************************************************************/
+/* ************************************************ *******************
+진짜 TRSM 커널
+*************************************************** **************** */
 ae_bool _ialglib_rmatrixlefttrsm(ae_int_t m,
      ae_int_t n,
      double *_a,
@@ -9616,6 +10775,10 @@ ae_bool _ialglib_rmatrixlefttrsm(ae_int_t m,
      * Prepare
      * Transpose X (so we may use mv, which calculates A*x, but not x*A)
      */
+    /*
+     * 준비
+     * Transpose X (그래서 우리는 A * x는 계산하지만 x * A는 계산하지 않는 mv를 사용할 수 있습니다)
+     */
     mcopyblock(m, m, _a, optype, _a_stride, abuf);
     mcopyblock(m, n, _x, 1, _x_stride, xbuf);
     if( isunit )
@@ -9628,6 +10791,9 @@ ae_bool _ialglib_rmatrixlefttrsm(ae_int_t m,
 
     /*
      * Solve A^-1*Y^T=X^T where A is upper or lower triangular
+     */
+    /*
+     * Solve A ^ -1 * Y ^ T = X ^ T 여기서 A는 위 또는 아래 삼각형
      */
     if( uppera )
     {
@@ -9657,6 +10823,9 @@ ae_bool _ialglib_rmatrixlefttrsm(ae_int_t m,
 /********************************************************************
 complex SYRK kernel
 ********************************************************************/
+/* ************************************************ *******************
+복잡한 SYRK 커널
+*************************************************** **************** */
 ae_bool _ialglib_cmatrixsyrk(ae_int_t n,
      ae_int_t k,
      double alpha,
@@ -9692,6 +10861,13 @@ ae_bool _ialglib_cmatrixsyrk(ae_int_t n,
      *
      * alpha==0 or k==0 are correctly processed (A is not referenced)
      */
+    /*
+     * 복사 A와 C는 작업이 "A * A ^ H"- 형식으로 변환됩니다.
+     * 베타 == 0 인 경우 C는 0으로 채워 집니 다 (참조되지 않음)
+     *
+     * 알파 == 0 또는 k == 0 올바르게 처리됨 (A는 참조되지 않음)
+     */
+
     c_alpha.x = alpha;
     c_alpha.y = 0;
     c_beta.x = beta;
@@ -9748,6 +10924,9 @@ ae_bool _ialglib_cmatrixsyrk(ae_int_t n,
 /********************************************************************
 real SYRK kernel
 ********************************************************************/
+/* ************************************************ *******************
+진짜 SYRK 커널
+*************************************************** **************** */
 ae_bool _ialglib_rmatrixsyrk(ae_int_t n,
      ae_int_t k,
      double alpha,
@@ -9779,6 +10958,12 @@ ae_bool _ialglib_rmatrixsyrk(ae_int_t n,
      * if beta==0, then C is filled by zeros (and not referenced)
      *
      * alpha==0 or k==0 are correctly processed (A is not referenced)
+     */
+    /*
+     * 복사 A와 C, 작업은 "A * A ^ T"- 형식으로 변환됩니다.
+     * 베타 == 0 인 경우 C는 0으로 채워 집니 다 (참조되지 않음)
+     *
+     * 알파 == 0 또는 k == 0 올바르게 처리됨 (A는 참조되지 않음)
      */
     if( alpha==0 )
         k = 0;
@@ -9830,6 +11015,9 @@ ae_bool _ialglib_rmatrixsyrk(ae_int_t n,
 /********************************************************************
 complex rank-1 kernel
 ********************************************************************/
+/* ************************************************ *******************
+복합 랭크 -1 커널
+*************************************************** **************** */
 ae_bool _ialglib_cmatrixrank1(ae_int_t m,
      ae_int_t n,
      ae_complex *_a,
@@ -9886,6 +11074,9 @@ ae_bool _ialglib_cmatrixrank1(ae_int_t m,
 /********************************************************************
 real rank-1 kernel
 ********************************************************************/
+/* ************************************************ *******************
+실제 순위 1 커널
+*************************************************** **************** */
 ae_bool _ialglib_rmatrixrank1(ae_int_t m,
      ae_int_t n,
      double *_a,
@@ -9957,6 +11148,9 @@ ae_bool _ialglib_rmatrixrank1(ae_int_t m,
 /********************************************************************
 Interface functions for efficient kernels
 ********************************************************************/
+/* ************************************************ *******************
+효율적인 커널을위한 인터페이스 함수
+*************************************************** **************** */
 ae_bool _ialglib_i_rmatrixgemmf(ae_int_t m,
      ae_int_t n,
      ae_int_t k,
@@ -10126,6 +11320,13 @@ by-row storage given by dst.
 It can handle following special cases:
 * col1==NULL    in this case second column of A is filled by zeros
 ********************************************************************/
+/* ************************************************ *******************
+이 함수는 두 개의 열 포인터로 주어진 직사각형 행렬 A를 읽습니다.
+col0 및 col1을 확장하고 src_stride를 스트라이드하여 인접한 row-
+dst에 의해 주어진 행 단위 저장.
+다음과 같은 특별한 경우를 처리 할 수 ​​있습니다.
+* col1 == NULL이 경우 A의 두 번째 열은 0으로 채워집니다.
+*************************************************** **************** */
 void _ialglib_pack_n2(
     double *col0,
     double *col1,
@@ -10192,6 +11393,22 @@ If  you  want  to  know  whether  it  is safe to call it, you should check
 results  of  ae_cpuid(). If CPU_SSE2 bit is set, this function is callable 
 and will do its work.
 *************************************************************************/
+/* ************************************************ *************************
+이 함수는 두 개의 열 포인터 col0에 의해 주어진 직사각형 행렬 A를 읽습니다. 
+및 col1 및 stride src_stride를 연속 행 단위로 이동합니다. 
+dst에 의해 주어진 저장소.
+dst는 정렬되어야하며 col0과 col1은 정렬되지 않을 수 있습니다.
+다음과 같은 특별한 경우를 처리 할 수 ​​있습니다.
+* col1 == NULL이 경우 A의 두 번째 열은 0으로 채워집니다.
+* src_stride == 1 효율적인 SSE 기반 코드 사용
+* col1-col0 == 1 효율적인 SSE 기반 코드 사용
+이 함수는 SSE2를 지원합니다. 다음과 같은 경우에 사용할 수 있습니다.
+1. AE_HAS_SSE2_INTRINSICS가 정의되었습니다 (컴파일시 검사 됨).
+2. ae_cpuid () 결과에 CPU_SSE2가 포함되어 있습니다 (런타임에 확인 됨)
+전화를 걸어도 안전한지 알고 싶으면 
+ae_cpuid ()의 결과. CPU_SSE2 비트가 설정되면이 함수는 호출 가능합니다
+그 일을 할 것입니다.
+*************************************************** ********************** */
 #if defined(AE_HAS_SSE2_INTRINSICS)
 void _ialglib_pack_n2_sse2(
     double *col0,
@@ -10310,6 +11527,21 @@ Function accepts additional parameter store_mode:
 * if 2, only first column of R is stored
 * if 3, only top left element of R is stored
 ********************************************************************/
+/* ************************************************ *******************
+이 함수는 R : = alpha * A '* B + beta * R을 계산합니다. 여기서 A와 B는 Kx2입니다. 
+연속 행 단위 저장에 저장된 행렬, R은 2x2 행렬
+비 연속적인 행 단위 저장에 저장됩니다.
+A와 B는 정렬되어야합니다. R은 정렬되지 않을 수 있습니다.
+베타가 0이면 R의 내용이 무시됩니다 (0을 곱하지 않음 -
+그냥 무시).
+그러나 알파가 0 일 때 우리는 여전히 A '* B를 계산합니다. 
+그 후에는 0을 곱합니다.
+함수는 추가 매개 변수 store_mode를 허용합니다.
+* 0이면 전체 R이 저장됩니다.
+* 1이면 R의 첫 번째 행만 저장됩니다.
+* 2 인 경우, R의 첫 번째 열만 저장됩니다.
+* 3 인 경우, R의 맨 왼쪽 요소 만 저장됩니다.
+*************************************************** **************** */
 void _ialglib_mm22(double alpha, const double *a, const double *b, ae_int_t k, double beta, double *r, ae_int_t stride, ae_int_t store_mode)
 {
     double v00, v01, v10, v11;
@@ -10419,6 +11651,30 @@ If  you  want  to  know  whether  it  is safe to call it, you should check
 results  of  ae_cpuid(). If CPU_SSE2 bit is set, this function is callable 
 and will do its work.
 ********************************************************************/
+/* ************************************************ *******************
+이 함수는 R : = alpha * A '* B + beta * R을 계산합니다. 여기서 A와 B는 Kx2입니다. 
+연속 행 단위 저장에 저장된 행렬, R은 2x2 행렬
+비 연속적인 행 단위 저장에 저장됩니다.
+A와 B는 정렬되어야합니다. R은 정렬되지 않을 수 있습니다.
+베타가 0이면 R의 내용이 무시됩니다 (0을 곱하지 않음 -
+그냥 무시).
+그러나 알파가 0 일 때 우리는 여전히 A '* B를 계산합니다. 
+그 후에는 0을 곱합니다.
+함수는 추가 매개 변수 store_mode를 허용합니다.
+* 0이면 전체 R이 저장됩니다.
+* 1이면 R의 첫 번째 행만 저장됩니다.
+* 2 인 경우, R의 첫 번째 열만 저장됩니다.
+* 3 인 경우, R의 맨 왼쪽 요소 만 저장됩니다.
+이 함수는 SSE2를 지원합니다. 다음과 같은 경우에 사용할 수 있습니다.
+1. AE_HAS_SSE2_INTRINSICS가 정의되었습니다 (컴파일시 검사 됨).
+2. ae_cpuid () 결과에 CPU_SSE2가 포함되어 있습니다 (런타임에 확인 됨)
+(1)이 실패하면이 함수는 여전히 정의되고 호출 가능하지만 
+아무것도하지 않을 것이다. (2)가 실패하면이 함수를 호출하면
+시스템을 다운시킵니다. 
+전화를 걸어도 안전한지 알고 싶으면 
+ae_cpuid ()의 결과. CPU_SSE2 비트가 설정되면이 함수는 호출 가능합니다
+그 일을 할 것입니다.
+*************************************************** **************** */
 #if defined(AE_HAS_SSE2_INTRINSICS)
 void _ialglib_mm22_sse2(double alpha, const double *a, const double *b, ae_int_t k, double beta, double *r, ae_int_t stride, ae_int_t store_mode)
 {
@@ -10430,6 +11686,13 @@ void _ialglib_mm22_sse2(double alpha, const double *a, const double *b, ae_int_t
      * A'*B = [              ]
      *        [ VE[1]  VD[1] ]
      *
+     */
+    /* 우리는 두 개의 Kx2 행렬의 결과를 계산합니다 (결과는 2x2입니다). 
+     * VA 및 VB 저장 결과는 다음과 같습니다.
+     *
+     *        [ VD[0]  VE[0] ]
+     * A'*B = [              ]
+     *        [ VE[1]  VD[1] ]
      */
     __m128d va, vb, vd, ve, vt, vt0, vt1, r0, r1, valpha, vbeta; 
     ae_int_t t, k2, k3;
@@ -10553,6 +11816,20 @@ multiplied by zero afterwards.
 Unlike mm22 functions, this function does NOT support partial  output of R 
 - we always store full 2x4 matrix.
 *************************************************************************/
+/* ************************************************ *************************
+이 함수는 R : = alpha * A '* (B0 | B1) + beta * R을 계산합니다. 여기서 A, B0 및 B1 
+Kx2 행렬은 인접한 행 단위 저장 공간에 저장되며, R은 2x4 행렬입니다. 
+비 연속적인 행 단위 저장에 저장됩니다.
+A, B0 및 B1은 정렬되어야합니다. R은 정렬되지 않을 수 있습니다.
+B0와 B1은 서로 다른 두 개의 행렬이다. 
+위치.
+베타가 0이면 R의 내용이 무시됩니다 (0을 곱하지 않음 - 그냥 
+무시 됨).
+그러나 알파가 0이면 MM 제품을 계산합니다. 
+그 후에는 0을 곱합니다.
+mm22 함수와 달리이 함수는 R의 부분 출력을 지원하지 않습니다. 
+- 우리는 항상 전체 2x4 매트릭스를 저장합니다.
+*************************************************** ********************** */
 void _ialglib_mm22x2(double alpha, const double *a, const double *b0, const double *b1, ae_int_t k, double beta, double *r, ae_int_t stride)
 {
     _ialglib_mm22(alpha, a, b0, k, beta, r, stride, 0);
@@ -10590,6 +11867,29 @@ If  you  want  to  know  whether  it  is safe to call it, you should check
 results  of  ae_cpuid(). If CPU_SSE2 bit is set, this function is callable 
 and will do its work.
 *************************************************************************/
+/* ************************************************ *************************
+이 함수는 R : = alpha * A '* (B0 | B1) + beta * R을 계산합니다. 여기서 A, B0 및 B1 
+Kx2 행렬은 인접한 행 단위 저장 공간에 저장되며, R은 2x4 행렬입니다. 
+비 연속적인 행 단위 저장에 저장됩니다.
+A, B0 및 B1은 정렬되어야합니다. R은 정렬되지 않을 수 있습니다.
+B0와 B1은 서로 다른 두 개의 행렬이다. 
+위치.
+베타가 0이면 R의 내용이 무시됩니다 (0을 곱하지 않음 - 그냥 
+무시 됨).
+그러나 알파가 0이면 MM 제품을 계산합니다. 
+그 후에는 0을 곱합니다.
+mm22 함수와 달리이 함수는 R의 부분 출력을 지원하지 않습니다. 
+- 우리는 항상 전체 2x4 매트릭스를 저장합니다.
+이 함수는 SSE2를 지원합니다. 다음과 같은 경우에 사용할 수 있습니다.
+1. AE_HAS_SSE2_INTRINSICS가 정의되었습니다 (컴파일시 검사 됨).
+2. ae_cpuid () 결과에 CPU_SSE2가 포함되어 있습니다 (런타임에 확인 됨)
+(1)이 실패하면이 함수는 여전히 정의되고 호출 가능하지만 
+아무것도하지 않을 것이다. (2)가 실패하면이 함수를 호출하면
+시스템을 다운시킵니다. 
+전화를 걸어도 안전한지 알고 싶으면 
+ae_cpuid ()의 결과. CPU_SSE2 비트가 설정되면이 함수는 호출 가능합니다
+그 일을 할 것입니다.
+*************************************************** ********************** */
 #if defined(AE_HAS_SSE2_INTRINSICS)
 void _ialglib_mm22x2_sse2(double alpha, const double *a, const double *b0, const double *b1, ae_int_t k, double beta, double *r, ae_int_t stride)
 {
@@ -10605,6 +11905,20 @@ void _ialglib_mm22x2_sse2(double alpha, const double *a, const double *b0, const
      * VB0 and VB1 are used to store two copies of 1x2 block of B0 or B1
      * (both vars store same data - either B0 or B1). Results from multiplication
      * by VA0/VA1 are stored in VB0/VB1 too.
+     * 
+     */
+    /*
+     * 우리는 두 개의 Kx2 행렬의 결과를 계산합니다 (결과는 2x2입니다). 
+     * V0, V1, V2, V3 결과는 다음과 같습니다.
+     *
+     * [V0 [0] V1 [1] V2 [0] V3 [1]]
+     * R = []
+     * [V1 [0] V0 [1] V3 [0] V2 [1]]
+     *
+     * VA0는 A의 현재 1x2 블록을 저장하고, VA1은 VA0의 셔플을 저장하고,
+     * VB0 및 VB1은 B0 또는 B1의 1x2 블록의 두 복사본을 저장하는 데 사용됩니다
+     * (둘 다 vars에 동일한 데이터가 저장 됨 - B0 또는 B1). 곱셈의 결과
+     * by VA0 / VA1도 VB0 / VB1에 저장됩니다.
      * 
      */
     __m128d v0, v1, v2, v3, va0, va1, vb0, vb1; 
@@ -10653,6 +11967,19 @@ void _ialglib_mm22x2_sse2(double alpha, const double *a, const double *b0, const
      * [ r10 r11 ]
      *
      */
+    /*
+     * 셔플 V1 및 V3 (더 편리한 저장 형식으로 변환) :
+     *
+     * [V0 [0] V1 [0] V2 [0] V3 [0]]
+     * R = []
+     * [V1 [1] V0 [1] V3 [1] V2 [1]]
+     *
+     * 결과의 압축을 풀
+     *
+     * [r00 r01]
+     * [r10 r11]
+     *
+     */
     valpha = _mm_load1_pd(&alpha);
     v1 = _mm_shuffle_pd(v1, v1, 1);
     v3 = _mm_shuffle_pd(v3, v3, 1);
@@ -10690,6 +12017,11 @@ void _ialglib_mm22x2_sse2(double alpha, const double *a, const double *b0, const
 // THIS SECTION CONTAINS PARALLEL SUBROUTINES
 //
 /////////////////////////////////////////////////////////////////////////
+// //////////////////////////////////////////////////////////////////////
+//
+// 이 섹션에는 여러 하위 그룹이 포함되어 있습니다.
+//
+// //////////////////////////////////////////////////////////////////////
 namespace alglib_impl
 {
 
