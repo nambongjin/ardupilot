@@ -15,8 +15,12 @@
 #include <QX11Info>
 #include <X11/Xlib.h>
 #ifdef Success
+<<<<<<< HEAD
 #undef Success              // Eigen library doesn't work if Success is defined 
                             // 성공이 정의되면 고유 라이브러리가 작동하지 않습니다.
+=======
+#undef Success              // Eigen library doesn't work if Success is defined// 성공이 정의되면 고유 라이브러리가 작동하지 않습니다.
+>>>>>>> 69b176a71a68ef08613991f79732c25dcaf9f2fc
 #endif //Success
 extern "C"
 {
@@ -26,8 +30,12 @@ extern "C"
 
 #ifdef MOUSE_ENABLED_WIN
 Mouse6dofInput::Mouse6dofInput(Mouse3DInput* mouseInput) :
+<<<<<<< HEAD
     mouse3DMax(0.075),   // TODO: check maximum value fot plugged device
                          // TODO : 최대 값 fot plugged device 확인
+=======
+    mouse3DMax(0.075),   // TODO: check maximum value fot plugged device// TODO : 최대 값 fot plugged device 확인
+>>>>>>> 69b176a71a68ef08613991f79732c25dcaf9f2fc
     uas(NULL),
     done(false),
     mouseActive(false),
@@ -52,8 +60,12 @@ Mouse6dofInput::Mouse6dofInput(Mouse3DInput* mouseInput) :
 
 #ifdef MOUSE_ENABLED_LINUX
 Mouse6dofInput::Mouse6dofInput(QWidget* parent) :
+<<<<<<< HEAD
     mouse3DMax(350.0),   // TODO: check maximum value fot plugged device
                          // TODO : 최대 값 fot plugged device 확인
+=======
+    mouse3DMax(350.0),   // TODO: check maximum value fot plugged device// TODO : 최대 값 fot plugged device 확인
+>>>>>>> 69b176a71a68ef08613991f79732c25dcaf9f2fc
     uas(NULL),
     done(false),
     mouseActive(false),
@@ -155,7 +167,11 @@ void Mouse6dofInput::setActiveUAS(UASInterface* uas)
     if(tmp) {
                 connect(this, SIGNAL(mouse6dofChanged(double,double,double,double,double,double)), tmp, SLOT(setManual6DOFControlCommands(double,double,double,double,double,double)));
                 // Todo: connect button mapping
+<<<<<<< HEAD
                 // Todo : 연결 버튼 매핑
+=======
+                // Todo : 버튼 매핑 연결
+>>>>>>> 69b176a71a68ef08613991f79732c25dcaf9f2fc
     }
     if (!isRunning())
     {
@@ -294,7 +310,11 @@ void Mouse6dofInput::handleX11Event(XEvent *event)
       {
         case MagellanInputMotionEvent :
              MagellanRemoveMotionEvents( display );
+<<<<<<< HEAD
              for (int i = 0; i < 6; i++) {  // Saturation // 채도
+=======
+             for (int i = 0; i < 6; i++) {  // Saturation// 채도
+>>>>>>> 69b176a71a68ef08613991f79732c25dcaf9f2fc
                  MagellanEvent.MagellanData[i] = (abs(MagellanEvent.MagellanData[i]) < mouse3DMax) ? MagellanEvent.MagellanData[i] : (mouse3DMax*MagellanEvent.MagellanData[i]/abs(MagellanEvent.MagellanData[i]));
              }
 
