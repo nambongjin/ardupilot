@@ -74,9 +74,6 @@ void APMFirmwareVersion::parseVersion(const QString &versionText)
     // successful extraction of version numbers
     // even though we could have collected the version string atleast
     // but if the parsing has faild, not much point
-    // 성공적인 버전 번호 추출
-    // atleast 버전 문자열을 수집 할 수는 있지만
-    // 하지만 구문 분석이 실패한 경우에는 별다른 문제가 아닙니다.
     _versionString = versionText;
     _vehicleType   = capturedTexts[1];
     _major         = capturedTexts[2].toInt();
