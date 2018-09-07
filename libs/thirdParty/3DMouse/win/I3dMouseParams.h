@@ -4,7 +4,9 @@
 /*
    Parameters for the 3D mouse based on the SDK from 3Dconnexion
 */
-
+/*
+3Dconnexion의 SDK 기반 3D 마우스 매개 변수
+*/
 class I3dMouseSensor
 {
 public:
