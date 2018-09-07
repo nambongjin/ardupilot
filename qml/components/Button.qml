@@ -77,6 +77,7 @@ Rectangle {
     }
 
     // Highlighting and ativation section
+    // 강조 표시 및 비활성화 섹션
     property color buttonColor: "black"
     property color onHoverbuttonColor: "black"
     property color onHoverColor: "lightGrey"
