@@ -142,14 +142,17 @@ public:
 private:
     typedef struct {
         // coordinates of principal point
+        // 주점 좌표
         double cx;
         double cy;
 
         // focal length in pixels
+        // 픽셀 단위의 초점 거리
         double fx;
         double fy;
 
         // distortion parameters
+        // 왜곡 매개 변수
         double k[5];
 
     } IntrinsicCameraParameters;
@@ -191,9 +194,11 @@ private:
     double disparityOffset;
 
     // tilt angle of Kinect camera
+    // Kinect 카메라의 기울기 각도
     int tiltAngle;
 
     // rgbd data
+    // rgbd 데이터
     char rgb[FREENECT_VIDEO_RGB_SIZE];
     QMutex rgbMutex;
 
@@ -204,16 +209,19 @@ private:
     QMutex coloredDepthMutex;
 
     // accelerometer data
+    // 가속도계 데이터
     double ax, ay, az;
     double dx, dy, dz;
 
     // gamma map
+    // 감마지도
     unsigned short gammaTable[2048];
 
     QVector3D depthProjectionMatrix[FREENECT_FRAME_PIX];
     QVector2D rgbRectificationMap[FREENECT_FRAME_PIX];
 
     // variables for use outside class
+    // 클래스 외부에서 사용하기위한 변수들
     QSharedPointer<QByteArray> rgbData;
     QSharedPointer<QByteArray> rawDepthData;
     QSharedPointer<QByteArray> coloredDepthData;

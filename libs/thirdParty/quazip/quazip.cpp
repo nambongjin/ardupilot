@@ -34,36 +34,56 @@ quazip/(un)zip.h files for details, basically it's zlib license.
   be changed without breaking binary compatibility, according to the
   Pimpl idiom.
   */
+// QuaZip 클래스의 모든 내부 항목.
+/* *
+  \내부의
+  이 클래스는 QuaZip 클래스의 모든 비공개 자료를 유지하므로
+  바이너리 호환성을 손상시키지 않으면 서 변경 될 수있다.
+  Pimpl 관용구.
+  */
 class QuaZipPrivate {
   friend class QuaZip;
   private:
     /// The pointer to the corresponding QuaZip instance.
+    // / 해당 QuaZip 인스턴스에 대한 포인터입니다.
     QuaZip *q;
     /// The codec for file names.
+    // / 파일 이름의 코덱.
     QTextCodec *fileNameCodec;
     /// The codec for comments.
+    // 코멘트의 코덱.
     QTextCodec *commentCodec;
     /// The archive file name.
+    // / 아카이브 파일 이름.
     QString zipName;
     /// The device to access the archive.
+    // 아카이브에 액세스하는 장치.
     QIODevice *ioDevice;
     /// The global comment.
+    // / 전역 주석.
     QString comment;
     /// The open mode.
+    // / 열린 모드.
     QuaZip::Mode mode;
     union {
       /// The internal handle for UNZIP modes.
+      // / UNZIP 모드의 내부 핸들.
       unzFile unzFile_f;
       /// The internal handle for ZIP modes.
+      // / ZIP 모드의 내부 핸들.
       zipFile zipFile_f;
     };
     /// Whether a current file is set.
+    // 현재 파일이 설정되어 있는지 여부.
     bool hasCurrentFile_f;
     /// The last error.
+    // / 마지막 오류.
     int zipError;
     /// Whether \ref QuaZip::setDataDescriptorWritingEnabled() "the data descriptor writing mode" is enabled.
+    // / ref를 사용할지 여부 QuaZip :: setDataDescriptorWritingEnabled () "데이터 설명자 쓰기 모드"가 사용됩니다.
     bool dataDescriptorWritingEnabled;
     /// The constructor for the corresponding QuaZip constructor.
+    // / 해당 QuaZip 생성자의 생성자.
     inline QuaZipPrivate(QuaZip *q):
         q(q),
       fileNameCodec(QTextCodec::codecForLocale()),
@@ -74,6 +94,7 @@ class QuaZipPrivate {
       zipError(UNZ_OK),
       dataDescriptorWritingEnabled(true) {}
     /// The constructor for the corresponding QuaZip constructor.
+    // / 해당 QuaZip 생성자의 생성자.
     inline QuaZipPrivate(QuaZip *q, const QString &zipName):
         q(q),
       fileNameCodec(QTextCodec::codecForLocale()),
@@ -85,6 +106,7 @@ class QuaZipPrivate {
       zipError(UNZ_OK),
       dataDescriptorWritingEnabled(true) {}
     /// The constructor for the corresponding QuaZip constructor.
+    // / 해당 QuaZip 생성자의 생성자.
     inline QuaZipPrivate(QuaZip *q, QIODevice *ioDevice):
         q(q),
       fileNameCodec(QTextCodec::codecForLocale()),
@@ -95,6 +117,7 @@ class QuaZipPrivate {
       zipError(UNZ_OK),
       dataDescriptorWritingEnabled(true) {}
     /// Returns either a list of file names or a list of QuaZipFileInfo.
+    // / 파일 이름 목록 또는 QuaZipFileInfo 목록을 반환합니다.
     template<typename TFileInfo>
         bool getFileInfoList(QList<TFileInfo> *result) const;
 };
@@ -200,6 +223,7 @@ void QuaZip::close()
       return;
   }
   // opened by name, need to delete the internal IO device
+  // 이름으로 열면 내부 IO 장치를 삭제해야합니다.
   if (!p->zipName.isEmpty()) {
       delete p->ioDevice;
       p->ioDevice = NULL;
@@ -273,6 +297,7 @@ bool QuaZip::setCurrentFile(const QString& fileName, CaseSensitivity cs)
     return true;
   }
   // Unicode-aware reimplementation of the unzLocateFile function
+  // unzLocateFile 함수의 유니 코드 인식 재 구현
   if(p->unzFile_f==NULL) {
     p->zipError=UNZ_PARAMERROR;
     return false;
@@ -419,7 +444,7 @@ QString QuaZip::getZipName() const
 
 QIODevice *QuaZip::getIoDevice() const
 {
-  if (!p->zipName.isEmpty()) // opened by name, using an internal QIODevice
+  if (!p->zipName.isEmpty()) // opened by name, using an internal QIODevice// 내부 QIODevice를 사용하여 이름으로 연다 .
     return NULL;
   return p->ioDevice;
 }

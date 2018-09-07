@@ -34,6 +34,9 @@
 /***********************************************************************
  * Return the next byte in the pseudo-random sequence
  */
+/* ************************************************ ***********************
+ * 의사 랜덤 시퀀스에서 다음 바이트를 반환합니다.
+ */
 static int decrypt_byte(unsigned long* pkeys, const unsigned long* pcrc_32_tab UNUSED)
 {
     //(void) pcrc_32_tab; /* avoid "unused parameter" warning */
@@ -47,6 +50,9 @@ static int decrypt_byte(unsigned long* pkeys, const unsigned long* pcrc_32_tab U
 
 /***********************************************************************
  * Update the encryption keys with the next byte of plain text
+ */
+/* ************************************************ ***********************
+ * 일반 텍스트의 다음 바이트로 암호화 키 업데이트
  */
 static int update_keys(unsigned long* pkeys,const unsigned long* pcrc_32_tab,int c)
 {
@@ -64,6 +70,10 @@ static int update_keys(unsigned long* pkeys,const unsigned long* pcrc_32_tab,int
 /***********************************************************************
  * Initialize the encryption keys and the random header according to
  * the given password.
+ */
+/* ************************************************ ***********************
+ *에 따라 암호화 키 및 임의 헤더를 초기화하십시오.
+ * 주어진 패스워드.
  */
 static void init_keys(const char* passwd,unsigned long* pkeys,const unsigned long* pcrc_32_tab)
 {
@@ -86,23 +96,24 @@ static void init_keys(const char* passwd,unsigned long* pkeys,const unsigned lon
 
 #define RAND_HEAD_LEN  12
    /* "last resort" source for second part of crypt seed pattern */
+   /* 암호 시드 패턴의 두 번째 부분에 대한 "최후의 수단"소스 */
 #  ifndef ZCR_SEED2
-#    define ZCR_SEED2 3141592654UL     /* use PI as default pattern */
+#    define ZCR_SEED2 3141592654UL     /* use PI as default pattern *//* PI를 기본 패턴으로 사용 */
 #  endif
 
 static int crypthead(passwd, buf, bufSize, pkeys, pcrc_32_tab, crcForCrypting)
-    const char *passwd;         /* password string */
-    unsigned char *buf;         /* where to write header */
+    const char *passwd;         /* password string *//* 암호 문자열 */
+    unsigned char *buf;         /* where to write header *//* 헤더를 쓸 곳 */
     int bufSize;
     unsigned long* pkeys;
     const unsigned long* pcrc_32_tab;
     unsigned long crcForCrypting;
 {
-    int n;                       /* index in random header */
-    int t;                       /* temporary */
-    int c;                       /* random byte */
-    unsigned char header[RAND_HEAD_LEN-2]; /* random header */
-    static unsigned calls = 0;   /* ensure different random header each time */
+    int n;                       /* index in random header *//* 임의의 헤더의 인덱스 */
+    int t;                       /* temporary *//* 임시 */
+    int c;                       /* random byte *//* 랜덤 바이트 */
+    unsigned char header[RAND_HEAD_LEN-2]; /* random header *//* 임의의 헤더 */
+    static unsigned calls = 0;   /* ensure different random header each time *//* 매번 다른 임의의 헤더를 보장 */
 
     if (bufSize<RAND_HEAD_LEN)
       return 0;
@@ -110,6 +121,10 @@ static int crypthead(passwd, buf, bufSize, pkeys, pcrc_32_tab, crcForCrypting)
     /* First generate RAND_HEAD_LEN-2 random bytes. We encrypt the
      * output of rand() to get less predictability, since rand() is
      * often poorly implemented.
+     */
+    /* 먼저 RAND_HEAD_LEN-2 랜덤 바이트를 생성합니다. 우리는
+     * rand ()의 출력은 예측 가능성이 낮습니다. 왜냐하면 rand ()가
+     * 종종 제대로 구현되지 않았습니다.
      */
     if (++calls == 1)
     {
@@ -122,6 +137,7 @@ static int crypthead(passwd, buf, bufSize, pkeys, pcrc_32_tab, crcForCrypting)
         header[n] = (unsigned char)zencode(pkeys, pcrc_32_tab, c, t);
     }
     /* Encrypt random header (last two bytes is high word of crc) */
+    /* 임의의 헤더 암호화 (마지막 2 바이트는 crc의 상위 워드) */
     init_keys(passwd, pkeys, pcrc_32_tab);
     for (n = 0; n < RAND_HEAD_LEN-2; n++)
     {
