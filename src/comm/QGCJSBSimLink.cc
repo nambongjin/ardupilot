@@ -28,6 +28,13 @@ This file is part of the QGROUNDCONTROL project
  *   @author Lorenz Meier <mavteam@student.ethz.ch>
  *
  */
+/* *
+ * @file
+ 무인 차량을위한 UDP 연결 (서버) 정의
+ * @ Flightgear Manual http://mapserver.flightgear.org/getstart.pdf를 참조하십시오.
+ * @author Lorenz Meier <mavteam@student.ethz.ch>
+ *
+ */
 
 #include "logging.h"
 #include "QGCJSBSimLink.h"
@@ -58,6 +65,8 @@ QGCJSBSimLink::QGCJSBSimLink(UASInterface* mav, QString startupArguments, QStrin
 QGCJSBSimLink::~QGCJSBSimLink()
 {   //do not disconnect unless it is connected.
     //disconnectSimulation will delete the memory that was allocated for proces, terraSync and socket
+    // 연결되어 있지 않으면 연결을 끊지 마십시오.
+    // disconnectSimulation은 proces, terraSync 및 소켓에 할당 된 메모리를 삭제합니다.
     if(connectState){
        disconnectSimulation();
     }
@@ -67,6 +76,10 @@ QGCJSBSimLink::~QGCJSBSimLink()
  * @brief Runs the thread
  *
  **/
+/* *
+ * @brief 스레드를 실행합니다.
+ *
+* */
 void QGCJSBSimLink::run()
 {
     exec();
@@ -108,6 +121,9 @@ void QGCJSBSimLink::processError(QProcess::ProcessError err)
 /**
  * @param host Hostname in standard formatting, e.g. localhost:14551 or 192.168.1.1:14551
  */
+/* *
+ * @param host 표준 형식의 호스트 명. 예 : localhost : 14551 또는 192.168.1.1:14551
+ */
 void QGCJSBSimLink::setRemoteHost(const QString& host)
 {
     if (host.contains(":"))
@@ -117,11 +133,13 @@ void QGCJSBSimLink::setRemoteHost(const QString& host)
         if (info.error() == QHostInfo::NoError)
         {
             // Add host
+            // 호스트 추가
             QList<QHostAddress> hostAddresses = info.addresses();
             QHostAddress address;
             for (int i = 0; i < hostAddresses.size(); i++)
             {
                 // Exclude loopback IPv4 and all IPv6 addresses
+                // 루프백 IPv4 및 모든 IPv6 주소 제외
                 if (!hostAddresses.at(i).toString().contains(":"))
                 {
                     address = hostAddresses.at(i);
@@ -130,6 +148,7 @@ void QGCJSBSimLink::setRemoteHost(const QString& host)
             currentHost = address;
             QLOG_DEBUG() << "Address:" << address.toString();
             // Set port according to user input
+            // 사용자 입력에 따라 포트 설정
             currentPort = host.split(":").last().toInt();
         }
     }
@@ -139,6 +158,7 @@ void QGCJSBSimLink::setRemoteHost(const QString& host)
         if (info.error() == QHostInfo::NoError)
         {
             // Add host
+            // 호스트 추가
             currentHost = info.addresses().first();
         }
     }
@@ -161,6 +181,7 @@ void QGCJSBSimLink::updateActuators(uint64_t time, float act1, float act2, float
 void QGCJSBSimLink::updateControls(uint64_t time, float rollAilerons, float pitchElevator, float yawRudder, float throttle, uint8_t systemMode, uint8_t navMode)
 {
     // magnetos,aileron,elevator,rudder,throttle\n
+    // 자석, 에일러론, 엘리베이터, 방향타, 스로틀 \ n
 
     //float magnetos = 3.0f;
     Q_UNUSED(time);
@@ -212,6 +233,12 @@ void QGCJSBSimLink::writeBytes(const char* data, qint64 size)
  * @param data Pointer to the data byte array to write the bytes to
  * @param maxLength The maximum number of bytes to write
  **/
+/* *
+ * @brief 인터페이스에서 여러 바이트를 읽습니다.
+ *
+ 파라미터 : data - 바이트 배열을 기입하는 데이터 바이트 배열의 포인터.
+ * @param maxLength 기입 해지는 최대 바이트 수
+* */
 void QGCJSBSimLink::readBytes()
 {
     const qint64 maxLength = 65536;
@@ -257,6 +284,11 @@ void QGCJSBSimLink::readBytes()
  *
  * @return The number of bytes to read
  **/
+/* *
+ * @brief 읽을 바이트 수를 가져옵니다.
+ *
+ * @return 읽을 바이트 수
+* */
 qint64 QGCJSBSimLink::bytesAvailable()
 {
     return socket->pendingDatagramSize();
@@ -267,6 +299,11 @@ qint64 QGCJSBSimLink::bytesAvailable()
  *
  * @return True if connection has been disconnected, false if connection couldn't be disconnected.
  **/
+/* *
+ * @brief 연결을 끊습니다.
+ *
+ * @return 연결이 끊어진 경우 true, 연결을 끊을 수없는 경우 false.
+* */
 bool QGCJSBSimLink::disconnectSimulation()
 {
     disconnect(process, SIGNAL(error(QProcess::ProcessError)),
@@ -299,6 +336,11 @@ bool QGCJSBSimLink::disconnectSimulation()
  *
  * @return True if connection has been established, false if connection couldn't be established.
  **/
+/* *
+ * @brief 연결을 연결하십시오.
+ *
+ * @return 접속이 확립하면 true, 접속을 확립 할 수없는 경우는 false
+* */
 bool QGCJSBSimLink::connectSimulation()
 {
     QLOG_DEBUG() << "STARTING FLIGHTGEAR LINK";
@@ -327,6 +369,7 @@ bool QGCJSBSimLink::connectSimulation()
                       this, SLOT(processError(QProcess::ProcessError)));
 
     // Start Flightgear
+    // Flightgear를 시작합니다.
     QStringList arguments;
     QString processJSB;
     QString rootJSB;
@@ -347,6 +390,7 @@ bool QGCJSBSimLink::connectSimulation()
 #endif
 
     // Sanity checks
+    // 온전한 검사
     bool sane = true;
     QFileInfo executable(processJSB);
     if (!executable.isExecutable())
@@ -365,6 +409,7 @@ bool QGCJSBSimLink::connectSimulation()
     if (!sane) return false;
 
     /*Prepare JSBSim Arguments */
+    /* JSBSim 인수 준비 */
 
     if (mav->getSystemType() == MAV_TYPE_QUADROTOR)
     {
@@ -392,6 +437,10 @@ bool QGCJSBSimLink::connectSimulation()
  * @brief Set the startup arguments used to start flightgear
  *
  **/
+/* *
+ * @brief 비행 기어를 시작하는 데 사용되는 시작 인수를 설정합니다.
+ *
+* */
 void QGCJSBSimLink::setStartupArguments(QString startupArguments)
 {
     this->startupArguments = startupArguments;
@@ -402,6 +451,11 @@ void QGCJSBSimLink::setStartupArguments(QString startupArguments)
  *
  * @return True if link is connected, false otherwise.
  **/
+/* *
+ * @brief 연결이 활성화되어 있는지 확인하십시오.
+ *
+ * @return 링크가 연결되어 있으면 true이고, 그렇지 않으면 false입니다.
+* */
 bool QGCJSBSimLink::isConnected()
 {
     return connectState;
