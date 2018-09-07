@@ -8,9 +8,11 @@
 #include <QCoreApplication>
 
 /** @brief Polling interval in ms */
+/** brief 폴링 간격 (ms) */
 #define SERIAL_POLL_INTERVAL 100
 
 /** @brief Heartbeat emission rate, in Hertz (times per second) */
+/** brief 하트 비트 방출 속도 (단위 : 초) */
 #define MAVLINK_HEARTBEAT_DEFAULT_RATE 1
 #define WITH_TEXT_TO_SPEECH 1
 
@@ -25,7 +27,7 @@
 
 #ifndef APP_TYPE
 #define APP_TYPE stable // or "daily" for master branch builds
-#endif
+#endif                  // 또는 "daily" 정의 
 
 #ifndef APP_PLATFORM
 
@@ -61,7 +63,7 @@ namespace QGC
 const QString APPNAME = "APMPLANNER2";
 const QString COMPANYNAME = "ARDUPILOT";
 const int APPLICATIONVERSION = 2026; // 2.0.26 [TODO] we should deprecate this version definition
-
+                                     // 2.0.26 [TODO]이 버전 정의를 더 이상 사용하지 말아야합니다.
     inline void close(){
         GlobalObject* global = GlobalObject::sharedInstance();
         delete global;
@@ -126,6 +128,8 @@ const int APPLICATIONVERSION = 2026; // 2.0.26 [TODO] we should deprecate this v
 
     //Returns the absolute parth to the files, data, qml support directories
     //It could be in 1 of 2 places under Linux
+    // 파일, 데이터, qml 지원 디렉토리에 절대 parth를 반환합니다.
+    // Linux에서 2 곳 중 1 곳이 될 수 있습니다.
     inline QString shareDirectory(){
         return GlobalObject::sharedInstance()->shareDirectory();
     }

@@ -60,6 +60,7 @@ Rectangle {
 
     function clearArmedMode() {
         // clear indicators from showing info
+        // 정보 표시에서 표시기 지우기
         statusDisplayId.statusText = "status"
         statusDisplayId.statusTextColor = "yellow"
         statusDisplayId.statusBackgroundColor = "black"
@@ -69,6 +70,8 @@ Rectangle {
     function setAdvancedMode(state){
         // Enable ro disable buttons based on Adv mode.
         // ie. terminalView.visible = state
+        // Adv 모드에 따라 ro 비활성화 버튼을 활성화합니다.
+        // ie. terminalView.visible = 상태
         var donate = Settings.value("USER_DONATED", "false");
         console.log("Set Advanced Mode " + state + " USER_DONATED:" + donate);
         if (donate === 'true'){
@@ -225,6 +228,7 @@ Rectangle {
 //            image: "./resources/apmplanner/toolbar/simulation.png"
 //            onClicked: globalObj.triggerSimulationView()
 //        }
+// [TODO]는 시뮬레이션이 작동 할 때까지 툴바에서 제거되었습니다.
 
         Rectangle { // Spacer
             id: statusSpacerId
@@ -268,7 +272,7 @@ Rectangle {
         }
 
 
-//            DigitalDisplay { // Information Pane
+//            DigitalDisplay { // Information Pane 
 //                title: "Speed"
 //                textValue: "11.0m/s"
 //                color: "black"

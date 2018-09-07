@@ -38,12 +38,15 @@ public:
 
 public slots:
     /** @brief Receive a MAVLink message from this MAV */
+    /** brief이 MAV로부터 MAVLink 메시지 받기 */
     void receiveMessage(LinkInterface* link, mavlink_message_t message);
 #if defined(QGC_PROTOBUF_ENABLED)
     /** @brief Receive a Protobuf message from this MAV */
+    /** brief이 MAV로부터 Protobuf 메시지 받기 */
     void receiveExtendedMessage(LinkInterface* link, std::tr1::shared_ptr<google::protobuf::Message> message);
 #endif
     /** @brief Send a command to an onboard process */
+    /** @brief 온보드 프로세스에 명령 보내기 */
     void sendProcessCommand(int watchdogId, int processId, unsigned int command);
 signals:
     void watchdogReceived(int systemId, int watchdogId, unsigned int processCount);

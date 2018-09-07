@@ -20,6 +20,7 @@ import "./components"
 
 Rectangle {
     // Property Defintions
+    // 속성 정의
     id:root
 
     function activeUasSet() {
@@ -36,6 +37,7 @@ Rectangle {
     function activeUasUnset() {
         console.log("Vibration Monitor: Active UAS is now unset");
         //Code to make display show a lack of connection here.
+        // 여기에 연결 부족이 표시되는 코드가 있습니다.
     }
 
     property color normalColor: "#32af4f"

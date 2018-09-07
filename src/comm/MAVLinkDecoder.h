@@ -30,6 +30,16 @@ This file is part of the APM_PLANNER project
  *   @author QGROUNDCONTROL PROJECT - This code has GPLv3+ snippets from QGROUNDCONTROL, (c) 2009, 2010 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
  *
  */
+/**
+ * @file
+ * @ 간단한 MAVLinkDecoder
+ *이 클래스는 수신 mavlink_message_t 패킷의 값 필드를 디코딩합니다.
+ * valueChanged를 내보내 UAS 클래스에 전달되어 UI로 전달됩니다.
+ *
+ * @author Michael Carpenter <malcom2073@gmail.com>
+ * @author QGROUNDCONTROL PROJECT -이 코드에는 QGROUNDCONTROL의 GPLv3 + 스 니펫이 있습니다. (c) 2009, 2010 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
+ *
+ */
 
 
 #ifndef NEW_MAVLINKDECODER_H
@@ -37,7 +47,7 @@ This file is part of the APM_PLANNER project
 
 #include "logging.h"
 #include <mavlink_types.h>
-extern mavlink_status_t m_mavlink_status[MAVLINK_COMM_NUM_BUFFERS]; // defined in src/main.cc
+extern mavlink_status_t m_mavlink_status[MAVLINK_COMM_NUM_BUFFERS]; // defined in src/main.cc // src / main.cc에 정의 됨
 #include "mavlink.h"
 #include "LinkInterface.h"
 
@@ -80,7 +90,8 @@ private:
     QHash<int,bool> m_componentMulti;
     QMap<quint32, bool> messageFilter;               ///< Message/field names not to emit
     QMap<quint32, bool> textMessageFilter;           ///< Message/field names not to emit in text mode
-
+                                                     /// <출력 할 메시지 / 필드 이름
+                                                     /// <텍스트 / 필드 모드에서 텍스트 모드로 나오지 않는 이름
     QHash<quint32, mavlink_message_info_t> messageInfo;
     QHash<QString, quint32> m_messageNameToID;
 
@@ -90,6 +101,8 @@ private:
 
     bool m_localDecode;   /// true if decoding logfiles.
     UASInterface *mp_uas; /// pointer to active UAS. Can be null.
+                          /// 로그 파일을 디코딩하는 경우에는 true입니다.
+                          /// 활성 UAS를 가리키는 포인터. null도 가능
 };
 
 #endif // NEW_MAVLINKDECODER_H

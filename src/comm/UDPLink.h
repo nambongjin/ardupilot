@@ -65,6 +65,9 @@ public:
     /**
      * @brief The human readable port name
      */
+    /**
+     * @brief 사람이 읽을 수있는 포트 이름
+     */
     QString getName() const;
     QString getShortName() const;
     QString getDetail() const;
@@ -82,6 +85,7 @@ public:
     }
 
     // Extensive statistics for scientific purposes
+    // 과학적 목적을위한 광범위한 통계
     qint64 getConnectionSpeed() const;
     qint64 getCurrentInDataRate() const;
     qint64 getCurrentOutDataRate() const;
@@ -96,8 +100,10 @@ public slots:
     void setAddress(QHostAddress host);
     void setPort(int port);
     /** @brief Add a new host to broadcast messages to */
+    /** @brief 메시지를 브로드 캐스트 할 새 호스트를 추가하여 */
     void addHost(const QString& host);
     /** @brief Remove a host from broadcasting messages to */
+    /** @ brief 호스트가 브로드 캐스트 메시지에서 제거하여 */
     void removeHost(const QString& host);
     //    void readPendingDatagrams();
 
@@ -107,6 +113,12 @@ public slots:
      *
      * @param data Pointer to the data byte array
      * @param size The size of the bytes array
+     **/
+    /**
+     * @brief 인터페이스에 몇 바이트를 씁니다.
+     *
+     파라미터 : data - 데이터 바이트 배열의 포인터.
+     * @param size 바이트 배열의 크기
      **/
     void writeBytes(const char* data, qint64 length);
     bool connect();
