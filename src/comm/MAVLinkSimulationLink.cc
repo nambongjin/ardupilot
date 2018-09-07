@@ -28,6 +28,13 @@ This file is part of the QGROUNDCONTROL project
  *   @author Lorenz Meier <mavteam@student.ethz.ch>
  *
  */
+/* *
+ * @file
+ 시뮬레이션 시스템 링크의 구현
+ *
+ * @author Lorenz Meier <mavteam@student.ethz.ch>
+ *
+ */
 #include "logging.h"
 #include "LinkManager.h"
 //#include "MAVLinkProtocol.h"
@@ -55,6 +62,17 @@ This file is part of the QGROUNDCONTROL project
  * @param writeFile The received messages are written to that file
  * @param rate The rate at which the messages are sent (in intervals of milliseconds)
  **/
+/* *
+* 시뮬레이션 된 링크를 만듭니다. 이 링크는 입력 및 출력 파일에 연결됩니다.
+* 링크는 한 번에 한 줄씩 지정된 전송률로 보냅니다. 타이밍은
+ * sendrate는 드리프트가 없으므로 장기적으로 안정적입니다.
+ * 그러나 약간의 편차가 섞여 센드 비율이 약간 변경됩니다.
+ * 실제 통신 링크에서의 교란을 시뮬레이션하기 위해.
+ *
+ * @param readFile 읽을 메시지가있는 파일 (ASCII 형식이어야하며 줄 바꿈은 Unix 또는 Windows 스타일 일 수 있음)
+ * @param writeFile 수신 한 메세지가 그 파일에 기입 해집니다.
+ * @param rate 메시지를 보내는 속도 (밀리 초 간격)
+* */
 MAVLinkSimulationLink::MAVLinkSimulationLink(QString readFile, QString writeFile, int rate) :
     readyBytes(0),
     timeOffset(0)
@@ -82,6 +100,7 @@ MAVLinkSimulationLink::MAVLinkSimulationLink(QString readFile, QString writeFile
     onboardParams.insert("RLL2SRV_IMAX", 500.0f);
 
     // Comments on the variables can be found in the header file
+    // 변수에 대한 주석은 헤더 파일에서 찾을 수 있습니다.
 
     simulationFile = new QFile(readFile, this);
     if (simulationFile->exists() && simulationFile->open(QIODevice::ReadOnly | QIODevice::Text))
@@ -103,6 +122,7 @@ MAVLinkSimulationLink::MAVLinkSimulationLink(QString readFile, QString writeFile
 
 
     // Initialize the pseudo-random number generator
+    // 의사 난수 생성기를 초기화합니다.
     srand(QTime::currentTime().msec());
     maxTimeNoise = 0;
     this->id = getNextLinkId();
@@ -118,6 +138,13 @@ MAVLinkSimulationLink::~MAVLinkSimulationLink()
     // need for cleanup since
     // this thread is not manipulating
     // any relevant data
+    // TODO 소멸자 검사
+    //     fileStream-> flush ();
+    //     outStream-> flush ();
+    // 강제 종료.
+    // 정리 이후에 필요한
+    // 이 스레드는 조작하지 않습니다.
+    // 관련 데이터
     terminate();
     delete simulationFile;
 }
@@ -147,6 +174,8 @@ void MAVLinkSimulationLink::run()
             {
                 // Sleep for substantially longer
                 // if not connected
+                // 실질적으로 더 오래자는
+                // 연결되지 않은 경우
                 QGC::SLEEP::msleep(500);
             }
             last = QGC::groundTimeMilliseconds();
@@ -158,10 +187,12 @@ void MAVLinkSimulationLink::run()
 void MAVLinkSimulationLink::sendMAVLinkMessage(const mavlink_message_t* msg)
 {
     // Allocate buffer with packet data
+    // 패킷 데이터로 버퍼를 할당한다.
     uint8_t buf[MAVLINK_MAX_PACKET_LEN];
     unsigned int bufferlength = mavlink_msg_to_send_buffer(buf, msg);
 
     // Pack to link buffer
+    // 링크 버퍼에 패킹한다.
     readyBufferMutex.lock();
     for (unsigned int i = 0; i < bufferlength; i++)
     {
@@ -173,9 +204,11 @@ void MAVLinkSimulationLink::sendMAVLinkMessage(const mavlink_message_t* msg)
 void MAVLinkSimulationLink::enqueue(uint8_t* stream, uint8_t* index, mavlink_message_t* msg)
 {
     // Allocate buffer with packet data
+    // 패킷 데이터로 버퍼를 할당한다.
     uint8_t buf[MAVLINK_MAX_PACKET_LEN];
     unsigned int bufferlength = mavlink_msg_to_send_buffer(buf, msg);
     //add data into datastream
+    // 데이터 스트림에 데이터 추가
     memcpy(stream+(*index),buf, bufferlength);
     (*index) += bufferlength;
 }
@@ -184,16 +217,19 @@ void MAVLinkSimulationLink::mainloop()
 {
 
     // Test for encoding / decoding packets
+    // 패킷 인코딩 / 디코딩 테스트
 
     // Test data stream
+    // 테스트 데이터 스트림
     streampointer = 0;
 
     // Fake system values
+    // 가짜 시스템 값
 
     static float fullVoltage = 4.2f * 3.0f;
     static float emptyVoltage = 3.35f * 3.0f;
     static float voltage = fullVoltage;
-    static float drainRate = 0.025f; // x.xx% of the capacity is linearly drained per second
+    static float drainRate = 0.025f; // x.xx% of the capacity is linearly drained per second// 용량의 x.xx %는 초당 선형으로 배수됩니다
 
     mavlink_attitude_t attitude;
     memset(&attitude, 0, sizeof(mavlink_attitude_t));
@@ -215,9 +251,12 @@ void MAVLinkSimulationLink::mainloop()
     static unsigned int circleCounter = 0;
 
     // Vary values
+    // 값을 다르게합니다.
 
     // VOLTAGE
     // The battery is drained constantly
+    // 전압
+    // 배터리가 끊임없이 소모됩니다.
     voltage = voltage - ((fullVoltage - emptyVoltage) * drainRate / rate);
     if (voltage < 3.550f * 3.0f) voltage = 3.550f * 3.0f;
 
@@ -236,12 +275,15 @@ void MAVLinkSimulationLink::mainloop()
         {
             if (simulationFile->atEnd()) {
                 // We reached the end of the file, start from scratch
+                // 파일의 끝에 도달했습니다. 처음부터 시작합니다.
                 simulationFile->reset();
                 simulationHeader = simulationFile->readLine();
             }
 
             // Data was made available, read one line
             // first entry is the timestamp
+            // 데이터를 사용할 수있게 한 줄을 읽습니다.
+            // 첫 번째 항목은 타임 스탬프입니다.
             QString values = QString(simulationFile->readLine());
             QStringList parts = values.split("\t");
             QStringList keys = simulationHeader.split("\t");
@@ -252,6 +294,7 @@ void MAVLinkSimulationLink::mainloop()
             static quint64 baseTime = 0;
             quint64 time = QString(parts.first()).toLongLong(&ok, 10);
             // FIXME Remove multiplicaton by 1000
+            // FIXME 곱셈을 1000 씩 제거합니다.
             time *= 1000;
 
             if (ok) {
@@ -263,6 +306,8 @@ void MAVLinkSimulationLink::mainloop()
                 if (lastTime > time) {
                     // We have wrapped around in the logfile
                     // Add the measurement time interval to the base time
+                    // 로그 파일에 랩핑되었습니다.
+                    // 기본 시간에 측정 시간 간격을 추가합니다.
                     baseTime += lastTime - timeOffset;
                 }
                 lastTime = time;
@@ -270,8 +315,10 @@ void MAVLinkSimulationLink::mainloop()
                 time = time - timeOffset + baseTime;
 
                 // Gather individual measurement values
+                // 개별 측정 값 수집
                 for (int i = 1; i < (parts.size() - 1); ++i) {
                     // Get one data field
+                    // 하나의 데이터 필드 가져 오기
                     bool res;
                     double d = QString(parts.at(i)).toDouble(&res);
                     if (!res) d = 0;
@@ -326,15 +373,20 @@ void MAVLinkSimulationLink::mainloop()
 
                 }
                 // Send out packets
+                // 패킷을 전송합니다.
 
 
                 // ATTITUDE
+                // 태도
                 attitude.time_boot_ms = time/1000;
                 // Pack message and get size of encoded byte string
+                // 메시지를 팩하고 인코딩 된 바이트 문자열의 크기를 가져옵니다.
                 mavlink_msg_attitude_encode(systemId, componentId, &msg, &attitude);
                 // Allocate buffer with packet data
+                // 패킷 데이터로 버퍼를 할당한다.
                 bufferlength = mavlink_msg_to_send_buffer(buffer, &msg);
                 //add data into datastream
+                // 데이터 스트림에 데이터 추가
                 memcpy(stream+streampointer,buffer, bufferlength);
                 streampointer += bufferlength;
 
@@ -344,10 +396,13 @@ void MAVLinkSimulationLink::mainloop()
                 rawImuValues.ymag = 0;
                 rawImuValues.zmag = 0;
                 // Pack message and get size of encoded byte string
+                // 메시지를 팩하고 인코딩 된 바이트 문자열의 크기를 가져옵니다.
                 mavlink_msg_raw_imu_encode(systemId, componentId, &msg, &rawImuValues);
                 // Allocate buffer with packet data
+                // 패킷 데이터로 버퍼를 할당한다.
                 bufferlength = mavlink_msg_to_send_buffer(buffer, &msg);
                 //add data into datastream
+             // 데이터 스트림에 데이터 추가
                 memcpy(stream+streampointer,buffer, bufferlength);
                 streampointer += bufferlength;
 
@@ -373,6 +428,7 @@ void MAVLinkSimulationLink::mainloop()
         double hackDt = 0.1f; // 100 ms
 
         // Move X Position
+        // X 위치로 이동
         x = 12.0*sin(((double)circleCounter)/200.0);
         y = 5.0*cos(((double)circleCounter)/200.0);
         z = 1.8 + 1.2*sin(((double)circleCounter)/200.0);
@@ -395,17 +451,21 @@ void MAVLinkSimulationLink::mainloop()
 //        z = (z < -3.0f) ? -3.0f : z;
 
         // Send back new setpoint
+        // 새 설정 값을 되돌려 보냅니다.
         mavlink_message_t ret;
 //        [REMOVED] mavlink_msg_local_position_setpoint_pack(systemId, componentId, &ret, MAV_FRAME_LOCAL_NED, spX, spY, spZ, spYaw); // spYaw/180.0*M_PI);
         bufferlength = mavlink_msg_to_send_buffer(buffer, &ret);
         //add data into datastream
+        // 데이터 스트림에 데이터 추가
         memcpy(stream+streampointer,buffer, bufferlength);
         streampointer += bufferlength;
 
         // Send back new position
+        // 새로운 위치로 되돌려 보내기
         mavlink_msg_local_position_ned_pack(systemId, componentId, &ret, 0, x, y, -fabs(z), xSpeed, ySpeed, zSpeed);
         bufferlength = mavlink_msg_to_send_buffer(buffer, &ret);
         //add data into datastream
+        // 데이터 스트림에 데이터 추가
         memcpy(stream+streampointer,buffer, bufferlength);
         streampointer += bufferlength;
 
@@ -417,16 +477,20 @@ void MAVLinkSimulationLink::mainloop()
 //        streampointer += bufferlength;
 
         // GLOBAL POSITION
+        // 글로벌 위치
         mavlink_msg_global_position_int_pack(systemId, componentId, &ret, 0, (473780.28137103+(x))*1E3, (85489.9892510421+(y))*1E3, (z+550.0)*1000.0, (z+550.0)*1000.0-1, xSpeed, ySpeed, zSpeed, yaw);
         bufferlength = mavlink_msg_to_send_buffer(buffer, &ret);
         //add data into datastream
+        // 데이터 스트림에 데이터 추가
         memcpy(stream+streampointer,buffer, bufferlength);
         streampointer += bufferlength;
 
         // GLOBAL POSITION VEHICLE 2
+        // 글로벌 포지션 차량 2
         mavlink_msg_global_position_int_pack(systemId+1, componentId+1, &ret, 0, (473780.28137103+(x+0.00001))*1E3, (85489.9892510421+((y/2)+0.00001))*1E3, (z+550.0)*1000.0, (z+550.0)*1000.0-1, xSpeed, ySpeed, zSpeed, yaw);
         bufferlength = mavlink_msg_to_send_buffer(buffer, &ret);
         //add data into datastream
+        // 데이터 스트림에 데이터 추가
         memcpy(stream+streampointer,buffer, bufferlength);
         streampointer += bufferlength;
 
@@ -458,8 +522,10 @@ void MAVLinkSimulationLink::mainloop()
             chan.rssi = 100;
             mavlink_msg_rc_channels_raw_encode(systemId, componentId, &msg, &chan);
             // Allocate buffer with packet data
+           // 패킷 데이터로 버퍼를 할당한다.
             bufferlength = mavlink_msg_to_send_buffer(buffer, &msg);
             //add data into datastream
+            // 데이터 스트림에 데이터 추가
             memcpy(stream+streampointer,buffer, bufferlength);
             streampointer += bufferlength;
             rcCounter = 0;
@@ -483,7 +549,7 @@ void MAVLinkSimulationLink::mainloop()
 #ifdef MAVLINK_ENABLED_PIXHAWK
             mavlink_pattern_detected_t detected;
             detected.confidence = 5.0f;
-            detected.type = 0;  // compiler confused into thinking type is used unitialized, bogus init to silence
+            detected.type = 0;  // compiler confused into thinking type is used unitialized, bogus init to silence// 사고 방식에 혼란스러워하는 컴파일러는 unitialized, bogus init을 사용하여 침묵시킨다.
 
             if (detectionCounter == 10) {
                 char fileName[] = "patterns/face5.png";
@@ -514,8 +580,10 @@ void MAVLinkSimulationLink::mainloop()
             detected.detected = 1;
             mavlink_msg_pattern_detected_encode(systemId, componentId, &msg, &detected);
             // Allocate buffer with packet data
+            // 패킷 데이터로 버퍼를 할당한다.
             bufferlength = mavlink_msg_to_send_buffer(buffer, &msg);
             //add data into datastream
+            // 데이터 스트림에 데이터 추가
             memcpy(stream+streampointer,buffer, bufferlength);
             streampointer += bufferlength;
             //detectionCounter = 0;
@@ -527,14 +595,18 @@ void MAVLinkSimulationLink::mainloop()
         status.load = 33 * detectionCounter % 1000;
 
         // Pack message and get size of encoded byte string
+        // 메시지를 팩하고 인코딩 된 바이트 문자열의 크기를 가져옵니다.
         mavlink_msg_sys_status_encode(systemId, componentId, &msg, &status);
         // Allocate buffer with packet data
+        // 패킷 데이터로 버퍼를 할당한다.
         bufferlength = mavlink_msg_to_send_buffer(buffer, &msg);
         //add data into datastream
+        // 데이터 스트림에 데이터 추가
         memcpy(stream+streampointer,buffer, bufferlength);
         streampointer += bufferlength;
 
         // Pack debug text message
+        // 디버그 텍스트 메시지 팩
         mavlink_statustext_t text;
         text.severity = 0;
         strcpy((char*)(text.text), "Text message from system 32");
@@ -553,6 +625,7 @@ void MAVLinkSimulationLink::mainloop()
         streampointer += bufferlength;*/
 
         // HEARTBEAT
+        // 심장 박동
 
         static int typeCounter = 0;
         uint8_t mavType;
@@ -567,25 +640,32 @@ void MAVLinkSimulationLink::mainloop()
         typeCounter++;
 
         // Pack message and get size of encoded byte string
+        // 메시지를 팩하고 인코딩 된 바이트 문자열의 크기를 가져옵니다.
         mavlink_msg_heartbeat_pack(systemId, componentId, &msg, mavType, MAV_AUTOPILOT_PX4, system.base_mode, system.custom_mode, system.system_status);
         // Allocate buffer with packet data
+        // 패킷 데이터로 버퍼를 할당한다.
         bufferlength = mavlink_msg_to_send_buffer(buffer, &msg);
         QLOG_TRACE() << "CRC:" << msg.checksum;
         //add data into datastream
+        // 데이터 스트림에 데이터 추가
         memcpy(stream+streampointer,buffer, bufferlength);
         streampointer += bufferlength;
 
         // Pack message and get size of encoded byte string
+        // 메시지를 팩하고 인코딩 된 바이트 문자열의 크기를 가져옵니다.
         mavlink_msg_heartbeat_pack(systemId+1, componentId+1, &msg, mavType, MAV_AUTOPILOT_GENERIC, system.base_mode, system.custom_mode, system.system_status);
         // Allocate buffer with packet data
+        // 패킷 데이터로 버퍼를 할당한다.
         bufferlength = mavlink_msg_to_send_buffer(buffer, &msg);
         QLOG_TRACE() << "CRC:" << msg.checksum;
         //add data into datastream
+        // 데이터 스트림에 데이터 추가
         memcpy(stream+streampointer,buffer, bufferlength);
         streampointer += bufferlength;
 
 
         // Send controller states
+        // 컨트롤러 상태를 보냅니다.
 
         bufferlength = mavlink_msg_to_send_buffer(buffer, &msg);
         memcpy(stream+streampointer, buffer, bufferlength);
@@ -594,6 +674,7 @@ void MAVLinkSimulationLink::mainloop()
 
 
 //        // HEARTBEAT VEHICLE 2
+//         // 심장 박동 차량 2
 
 //        // Pack message and get size of encoded byte string
 //        mavlink_msg_heartbeat_pack(54, componentId, &msg, MAV_HELICOPTER, MAV_AUTOPILOT_ARDUPILOTMEGA);
@@ -604,6 +685,7 @@ void MAVLinkSimulationLink::mainloop()
 //        streampointer += bufferlength;
 
 //        // HEARTBEAT VEHICLE 3
+//         // 심장 박동 차량 3
 
 //        // Pack message and get size of encoded byte string
 //        mavlink_msg_heartbeat_pack(60, componentId, &msg, MAV_FIXED_WING, MAV_AUTOPILOT_PX4);
@@ -614,10 +696,13 @@ void MAVLinkSimulationLink::mainloop()
 //        streampointer += bufferlength;
 
         // Pack message and get size of encoded byte string
+        // 메시지를 팩하고 인코딩 된 바이트 문자열의 크기를 가져옵니다.
         mavlink_msg_sys_status_encode(54, componentId, &msg, &status);
         // Allocate buffer with packet data
+        // 패킷 데이터로 버퍼를 할당한다.
         bufferlength = mavlink_msg_to_send_buffer(buffer, &msg);
         //add data into datastream
+        // 데이터 스트림에 데이터 추가
         memcpy(stream+streampointer,buffer, bufferlength);
         streampointer += bufferlength;
 
@@ -626,6 +711,8 @@ void MAVLinkSimulationLink::mainloop()
 
     // FULL RATE TASKS
     // Default is 50 Hz
+    // 전체 요율 작업
+    // 기본값은 50Hz입니다.
 
     /*
     // 50 HZ TASKS
@@ -654,6 +741,7 @@ void MAVLinkSimulationLink::mainloop()
     readyBufferMutex.unlock();
 
     // Increment counters after full main loop
+    // 메인 루프가 완료된 후 카운터를 증가시킵니다.
     rate1hzCounter++;
     rate10hzCounter++;
     rate50hzCounter++;
@@ -671,6 +759,7 @@ qint64 MAVLinkSimulationLink::bytesAvailable()
 void MAVLinkSimulationLink::writeBytes(const char* data, qint64 size)
 {
     // Parse bytes
+    // 바이트를 파싱합니다.
     mavlink_message_t msg;
     mavlink_status_t comm;
 
@@ -680,20 +769,24 @@ void MAVLinkSimulationLink::writeBytes(const char* data, qint64 size)
     int bufferlength = 0;
     
     // Initialize drop count to 0 so it isn't referenced uninitialized when returned at the bottom of this function
+    // 이 함수의 맨 아래에 반환 될 때 초기화되지 않은 것으로 참조되지 않도록 드롭 수를 0으로 초기화합니다.
     comm.packet_rx_drop_count = 0;
 
     // Output all bytes as hex digits
+    // 모든 바이트를 16 진수로 출력합니다.
     for (int i=0; i<size; i++)
     {
         if (mavlink_parse_char(this->id, data[i], &msg, &comm))
         {
             // MESSAGE RECEIVED!
+            // 받은 메시지!
             QLOG_TRACE() << "SIMULATION LINK RECEIVED MESSAGE!";
             emit messageReceived(msg);
 
             switch (msg.msgid)
             {
                 // SET THE SYSTEM MODE
+                // 시스템 모드 설정
             case MAVLINK_MSG_ID_SET_MODE:
             {
                 mavlink_set_mode_t mode;
@@ -722,6 +815,7 @@ void MAVLinkSimulationLink::writeBytes(const char* data, qint64 size)
 //            }
             break;
             // EXECUTE OPERATOR ACTIONS
+          // 운영자 액션 실행
             case MAVLINK_MSG_ID_COMMAND_LONG:
             {
                 mavlink_command_long_t action;
@@ -774,16 +868,22 @@ void MAVLinkSimulationLink::writeBytes(const char* data, qint64 size)
                 {
                     // Output all params
                     // Iterate through all components, through all parameters and emit them
+                    // 모든 매개 변수를 출력합니다.
+                    // 모든 매개 변수를 통해 모든 구성 요소를 반복하고이를 내 보냅니다.
                     QMap<QString, float>::iterator i;
                     // Iterate through all components / subsystems
+                    // 모든 구성 요소 / 하위 시스템을 반복합니다.
                     int j = 0;
                     for (i = onboardParams.begin(); i != onboardParams.end(); ++i) {
                         if (j != 5) {
                             // Pack message and get size of encoded byte string
+                            // 메시지를 팩하고 인코딩 된 바이트 문자열의 크기를 가져옵니다.
                             mavlink_msg_param_value_pack(read.target_system, componentId, &msg, i.key().toStdString().c_str(), i.value(), MAV_PARAM_TYPE_REAL32, onboardParams.size(), j);
                             // Allocate buffer with packet data
+                            // 패킷 데이터로 버퍼를 할당한다.
                             bufferlength = mavlink_msg_to_send_buffer(buffer, &msg);
                             //add data into datastream
+                          // 데이터 스트림에 데이터 추가
                             memcpy(stream+streampointer,buffer, bufferlength);
                             streampointer+=bufferlength;
                         }
@@ -797,6 +897,7 @@ void MAVLinkSimulationLink::writeBytes(const char* data, qint64 size)
             case MAVLINK_MSG_ID_PARAM_SET:
             {
                 // Drop on even milliseconds
+                // 밀리 초 단위로 떨어 뜨린다.
                 if (QGC::groundTimeMilliseconds() % 2 == 0)
                 {
                     QLOG_TRACE() << "SIMULATION RECEIVED COMMAND TO SET PARAMETER";
@@ -811,10 +912,13 @@ void MAVLinkSimulationLink::writeBytes(const char* data, qint64 size)
                         onboardParams.insert(key, set.param_value);
 
                         // Pack message and get size of encoded byte string
+                      // 메시지를 팩하고 인코딩 된 바이트 문자열의 크기를 가져옵니다.
                         mavlink_msg_param_value_pack(set.target_system, componentId, &msg, key.toStdString().c_str(), set.param_value, MAV_PARAM_TYPE_REAL32, onboardParams.size(), onboardParams.keys().indexOf(key));
                         // Allocate buffer with packet data
+                        // 패킷 데이터로 버퍼를 할당한다.
                         bufferlength = mavlink_msg_to_send_buffer(buffer, &msg);
                         //add data into datastream
+                        // 데이터 스트림에 데이터 추가
                         memcpy(stream+streampointer,buffer, bufferlength);
                         streampointer+=bufferlength;
                     }
@@ -834,10 +938,13 @@ void MAVLinkSimulationLink::writeBytes(const char* data, qint64 size)
                     float paramValue = onboardParams.value(key);
 
                     // Pack message and get size of encoded byte string
+                    // 메시지를 팩하고 인코딩 된 바이트 문자열의 크기를 가져옵니다.
                     mavlink_msg_param_value_pack(read.target_system, componentId, &msg, key.toStdString().c_str(), paramValue, MAV_PARAM_TYPE_REAL32, onboardParams.size(), onboardParams.keys().indexOf(key));
                     // Allocate buffer with packet data
+                    // 패킷 데이터로 버퍼를 할당한다.
                     bufferlength = mavlink_msg_to_send_buffer(buffer, &msg);
                     //add data into datastream
+                    // 데이터 스트림에 데이터 추가
                     memcpy(stream+streampointer,buffer, bufferlength);
                     streampointer+=bufferlength;
                     QLOG_TRACE() << "Sending PARAM" << key;
@@ -848,10 +955,13 @@ void MAVLinkSimulationLink::writeBytes(const char* data, qint64 size)
                     float paramValue = onboardParams.value(key);
 
                     // Pack message and get size of encoded byte string
+                 // 메시지를 팩하고 인코딩 된 바이트 문자열의 크기를 가져옵니다.
                     mavlink_msg_param_value_pack(read.target_system, componentId, &msg, key.toStdString().c_str(), paramValue, MAV_PARAM_TYPE_REAL32, onboardParams.size(), onboardParams.keys().indexOf(key));
                     // Allocate buffer with packet data
+                    // 패킷 데이터로 버퍼를 할당한다.
                     bufferlength = mavlink_msg_to_send_buffer(buffer, &msg);
                     //add data into datastream
+                   // 데이터 스트림에 데이터 추가
                     memcpy(stream+streampointer,buffer, bufferlength);
                     streampointer+=bufferlength;
                     QLOG_INFO() << "Sending PARAM #ID" << (read.param_index) << "KEY:" << key;
@@ -865,6 +975,9 @@ void MAVLinkSimulationLink::writeBytes(const char* data, qint64 size)
     // Log the amount and time written out for future data rate calculations.
     // While this interface doesn't actually write any data to external systems,
     // this data "transmit" here should still count towards the outgoing data rate.
+    // 미래의 데이터 속도 계산을 위해 기록 된 양과 시간을 기록하십시오.
+    // 이 인터페이스는 실제로 외부 시스템에 데이터를 쓰지 않지만,
+    // 여기에있는이 데이터 "전송"은 나가는 데이터 속도를 계산해야합니다.
     QMutexLocker dataRateLocker(&dataRateMutex);
     logDataRateToBuffer(outDataWriteAmounts, outDataWriteTimes, &outDataIndex, size, QDateTime::currentMSecsSinceEpoch());
 
@@ -876,6 +989,7 @@ void MAVLinkSimulationLink::writeBytes(const char* data, qint64 size)
     readyBufferMutex.unlock();
 
     // Update comm status
+    // 통신 상태 업데이트
     status.errors_comm = comm.packet_rx_drop_count;
 
 }
@@ -884,6 +998,7 @@ void MAVLinkSimulationLink::writeBytes(const char* data, qint64 size)
 void MAVLinkSimulationLink::readBytes()
 {
     // Lock concurrent resource readyBuffer
+    // 동시 리소스 잠금 readyBuffer
     readyBufferMutex.lock();
     const qint64 maxLength = 2048;
     char data[maxLength];
@@ -898,6 +1013,7 @@ void MAVLinkSimulationLink::readBytes()
     readyBufferMutex.unlock();
 
     // Log the amount and time received for future data rate calculations.
+    // 미래의 데이터 속도 계산을 위해받은 금액과 시간을 기록합니다.
     QMutexLocker dataRateLocker(&dataRateMutex);
     logDataRateToBuffer(inDataWriteAmounts, inDataWriteTimes, &inDataIndex, len, QDateTime::currentMSecsSinceEpoch());
 
@@ -909,6 +1025,12 @@ void MAVLinkSimulationLink::readBytes()
  * @return True if connection has been disconnected, false if connection
  * couldn't be disconnected.
  **/
+/* *
+ * 연결을 끊으십시오.
+ *
+ * @return 연결이 끊어진 경우 true, 연결되면 false
+ * 연결을 끊을 수 없습니다.
+* */
 bool MAVLinkSimulationLink::disconnect()
 {
 
@@ -933,6 +1055,12 @@ bool MAVLinkSimulationLink::disconnect()
  * @return True if connection has been established, false if connection
  * couldn't be established.
  **/
+/* *
+ * 링크를 연결하십시오.
+ *
+ * @return 접속이 확립되어있는 경우는 true, 접속의 경우는 false
+ * 설립 될 수 없었다.
+* */
 bool MAVLinkSimulationLink::connect()
 {
     _isConnected = true;
@@ -955,6 +1083,13 @@ bool MAVLinkSimulationLink::connect()
  * @return True if connection has been established, false if connection
  * couldn't be established.
  **/
+/* *
+ * 링크를 연결하십시오.
+ *
+ connect @ true는 링크를 연결하고, false는 연결을 끊습니다.
+ * @return 접속이 확립되어있는 경우는 true, 접속의 경우는 false
+ * 설립 될 수 없었다.
+* */
 void MAVLinkSimulationLink::connectLink()
 {
     this->connect();
@@ -967,6 +1102,13 @@ void MAVLinkSimulationLink::connectLink()
  * @return True if connection has been established, false if connection
  * couldn't be established.
  **/
+/* *
+ * 링크를 연결하십시오.
+ *
+ connect @ true는 링크를 연결하고, false는 연결을 끊습니다.
+ * @return 접속이 확립되어있는 경우는 true, 접속의 경우는 false
+ * 설립 될 수 없었다.
+* */
 bool MAVLinkSimulationLink::connectLink(bool connect)
 {
     _isConnected = connect;
@@ -983,6 +1125,11 @@ bool MAVLinkSimulationLink::connectLink(bool connect)
  *
  * @return True if link is connected, false otherwise.
  **/
+/* *
+ * 연결이 활성화되어 있는지 확인하십시오.
+ *
+ * @return 링크가 연결되어 있으면 true이고, 그렇지 않으면 false입니다.
+* */
 bool MAVLinkSimulationLink::isConnected() const
 {
     return _isConnected;
@@ -1011,6 +1158,7 @@ QString MAVLinkSimulationLink::getDetail() const
 qint64 MAVLinkSimulationLink::getConnectionSpeed() const
 {
     /* 100 Mbit is reasonable fast and sufficient for all embedded applications */
+    /* 100 Mbit는 모든 임베디드 애플리케이션에 빠르고 적합합니다 */
     return 100000000;
 }
 
