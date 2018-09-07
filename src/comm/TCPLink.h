@@ -40,6 +40,9 @@
 // Even though QAbstractSocket::SocketError is used in a signal by Qt, Qt doesn't declare it as a meta type.
 // This in turn causes debug output to be kicked out about not being able to queue the signal. We declare it
 // as a meta type to silence that.
+// Qt가 신호에 QAbstractSocket :: SocketError를 사용하더라도 Qt는 이것을 메타 타입으로 선언하지 않습니다.
+// 이것에 의해, 신호를 큐에 넣을 수없는 것에 관한 디버그 출력이 쫓겨납니다. 우리는 그것을 선언한다.
+// 메타 타입으로 침묵한다.
 #include <QMetaType>
 #include <QTcpSocket>
 #include <QTcpServer>
