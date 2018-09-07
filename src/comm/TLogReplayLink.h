@@ -32,7 +32,8 @@ public:
     void stop();
     bool toBeDeleted();
 
-    //Speed is 1-100, being slowest to fastest
+    //Speed is 1-100, being slowest to fastest 
+    // 속도는 1-100이며 가장 느린 속도입니다.
     void setSpeed(int speed);
     void setPosition(qint64 pos);
     void disableTimeouts() { }
@@ -48,6 +49,16 @@ signals:
     void communicationError(const QString& linkname, const QString& error);
     void communicationUpdate(const QString& linkname, const QString& text);
     void deleteLink(LinkInterface* const link);*/
+ /* void bytesReceived (LinkInterface * link, QByteArray data);
+    void connected ();
+    void connected (LinkInterface * linkInterface);
+    void disconnected ();
+    void disconnected (LinkInterface * linkInterface);
+    연결된 보이드 (bool connected);
+    void nameChanged (QString name);
+    void communicationError (const QString & linkname, const QString & error);
+    void communicationUpdate (const QString & linkname, const QString & text);
+    void deleteLink (LinkInterface * const 링크); */
     void logProgress(qint64 pos,qint64 total);
 public slots:
 private slots:
