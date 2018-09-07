@@ -15,7 +15,7 @@
 #include <QX11Info>
 #include <X11/Xlib.h>
 #ifdef Success
-#undef Success              // Eigen library doesn't work if Success is defined
+#undef Success              // Eigen library doesn't work if Success is defined// 성공이 정의되면 고유 라이브러리가 작동하지 않습니다.
 #endif //Success
 extern "C"
 {
@@ -25,7 +25,7 @@ extern "C"
 
 #ifdef MOUSE_ENABLED_WIN
 Mouse6dofInput::Mouse6dofInput(Mouse3DInput* mouseInput) :
-    mouse3DMax(0.075),   // TODO: check maximum value fot plugged device
+    mouse3DMax(0.075),   // TODO: check maximum value fot plugged device// TODO : 최대 값 fot plugged device 확인
     uas(NULL),
     done(false),
     mouseActive(false),
@@ -49,7 +49,7 @@ Mouse6dofInput::Mouse6dofInput(Mouse3DInput* mouseInput) :
 
 #ifdef MOUSE_ENABLED_LINUX
 Mouse6dofInput::Mouse6dofInput(QWidget* parent) :
-    mouse3DMax(350.0),   // TODO: check maximum value fot plugged device
+    mouse3DMax(350.0),   // TODO: check maximum value fot plugged device// TODO : 최대 값 fot plugged device 확인
     uas(NULL),
     done(false),
     mouseActive(false),
@@ -120,6 +120,7 @@ Mouse6dofInput::~Mouse6dofInput()
 void Mouse6dofInput::setActiveUAS(UASInterface* uas)
 {
     // Only connect / disconnect is the UAS is of a controllable UAS class
+    // 연결 만 / 연결 해제는 UAS가 제어 가능한 UAS 클래스 임
     UAS* tmp = 0;
     if (this->uas)
     {
@@ -128,6 +129,7 @@ void Mouse6dofInput::setActiveUAS(UASInterface* uas)
         {
             disconnect(this, SIGNAL(mouse6dofChanged(double,double,double,double,double,double)), tmp, SLOT(setManual6DOFControlCommands(double,double,double,double,double,double)));
             // Todo: disconnect button mapping
+            // Todo : 연결 끊기 버튼 매핑
         }
     }
 
@@ -137,6 +139,7 @@ void Mouse6dofInput::setActiveUAS(UASInterface* uas)
     if(tmp) {
                 connect(this, SIGNAL(mouse6dofChanged(double,double,double,double,double,double)), tmp, SLOT(setManual6DOFControlCommands(double,double,double,double,double,double)));
                 // Todo: connect button mapping
+                // Todo : 버튼 매핑 연결
     }
     if (!isRunning())
     {
@@ -147,6 +150,7 @@ void Mouse6dofInput::setActiveUAS(UASInterface* uas)
 void Mouse6dofInput::init()
 {
     // Make sure active UAS is set
+    // 활성 UAS가 설정되어 있는지 확인하십시오.
     setActiveUAS(UASManager::instance()->getActiveUAS());
 }
 
@@ -187,6 +191,7 @@ void Mouse6dofInput::run()
         }
 
         // Sleep, update rate of 3d mouse is approx. 50 Hz (1000 ms / 50 = 20 ms)
+        // 수면, 3d 마우스의 업데이트 속도는 약입니다. 50 Hz (1000 ms / 50 = 20 ms)
         QGC::SLEEP::msleep(20);
     }
 }
@@ -272,11 +277,12 @@ void Mouse6dofInput::handleX11Event(XEvent *event)
       {
         case MagellanInputMotionEvent :
              MagellanRemoveMotionEvents( display );
-             for (int i = 0; i < 6; i++) {  // Saturation
+             for (int i = 0; i < 6; i++) {  // Saturation// 채도
                  MagellanEvent.MagellanData[i] = (abs(MagellanEvent.MagellanData[i]) < mouse3DMax) ? MagellanEvent.MagellanData[i] : (mouse3DMax*MagellanEvent.MagellanData[i]/abs(MagellanEvent.MagellanData[i]));
              }
 
              // Check whether translational motions are enabled
+             // 번역 동작이 활성화되어 있는지 확인
              if (translationActive)
              {
                  xValue = MagellanEvent.MagellanData[ MagellanZ ] / mouse3DMax;
@@ -288,6 +294,7 @@ void Mouse6dofInput::handleX11Event(XEvent *event)
                  zValue = 0;
              }
              // Check whether rotational motions are enabled
+             // 회전 동작이 활성화되어 있는지 확인
              if (rotationActive)
              {
                  aValue = MagellanEvent.MagellanData[ MagellanC ] / mouse3DMax;
