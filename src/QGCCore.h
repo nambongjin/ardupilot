@@ -40,6 +40,7 @@ This file is part of the PIXHAWK project
 #include "LinkManager.h"
 #include "QGCMouseWheelEventFilter.h"
 /*#include "ViconTarsusProtocol.h" */
+
 #ifdef OPAL_RT
 
 #include "OpalLink.h"
@@ -52,6 +53,13 @@ This file is part of the PIXHAWK project
  * the central management unit of the groundstation application.
  *
  **/
+/**
+ * @brief 주요 응용 프로그램 및 관리 클래스.
+ *
+ *이 클래스는 main 메소드에 의해 시작되고
+ * 지상국 응용 프로그램의 중앙 관리 장치.
+ *
+**/
 class QGCCore : public QApplication
 {
     Q_OBJECT
@@ -73,6 +81,11 @@ protected:
      * @brief Start the robot managing system
      *
      * The robot manager keeps track of the configured robots.
+     **/
+    /**
+     * @brief 로봇 관리 시스템을 시작합니다.
+     *
+     * 로봇 관리자는 구성된 로봇을 추적합니다.
      **/
     void startUASManager();
 
