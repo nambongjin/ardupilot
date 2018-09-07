@@ -36,10 +36,6 @@
 ///     @brief TCP link type for SITL support
 ///
 ///     @author Don Gagne <don@thegagnes.com>
-// / @file
-// SITL 지원을위한 @brief TCP 링크 유형
-// /
-// / @author Don Gagne <don@thegagnes.com>
 
 TCPLink::TCPLink(const QHostAddress &hostAddress, const QString &hostName, quint16 socketPort, bool asServer) :
     _name(hostName),
@@ -160,7 +156,6 @@ void TCPLink::writeBytes(const char* data, qint64 size)
     _socket->write(data, size);
 
     // Log the amount and time written out for future data rate calculations.
-    // 미래의 데이터 속도 계산을 위해 기록 된 양과 시간을 기록하십시오.
     QMutexLocker dataRateLocker(&dataRateMutex);
     logDataRateToBuffer(outDataWriteAmounts, outDataWriteTimes, &outDataIndex, size, QDateTime::currentMSecsSinceEpoch());
 }
@@ -171,12 +166,6 @@ void TCPLink::writeBytes(const char* data, qint64 size)
  * @param data Pointer to the data byte array to write the bytes to
  * @param maxLength The maximum number of bytes to write
  **/
-/* *
- * @brief 인터페이스에서 여러 바이트를 읽습니다.
- *
- 파라미터 : data - 바이트 배열을 기입하는 데이터 바이트 배열의 포인터.
- * @param maxLength 기입 해지는 최대 바이트 수
-* */
 void TCPLink::readBytes()
 {
     qint64 byteCount = _socket->bytesAvailable();
@@ -191,7 +180,6 @@ void TCPLink::readBytes()
         emit bytesReceived(this, buffer);
 
         // Log the amount and time received for future data rate calculations.
-        // 미래의 데이터 속도 계산을 위해받은 금액과 시간을 기록합니다.
         QMutexLocker dataRateLocker(&dataRateMutex);
         logDataRateToBuffer(inDataWriteAmounts, inDataWriteTimes, &inDataIndex, byteCount, QDateTime::currentMSecsSinceEpoch());
 
@@ -206,11 +194,6 @@ void TCPLink::readBytes()
  *
  * @return The number of bytes to read
  **/
-/* *
- * @brief 읽을 바이트 수를 가져옵니다.
- *
- * @return 읽을 바이트 수
-* */
 qint64 TCPLink::bytesAvailable()
 {
     return _socket->bytesAvailable();
@@ -221,11 +204,6 @@ qint64 TCPLink::bytesAvailable()
  *
  * @return True if connection has been disconnected, false if connection couldn't be disconnected.
  **/
-/* *
- * @brief 연결을 끊습니다.
- *
- * @return 연결이 끊어진 경우 true, 연결을 끊을 수없는 경우 false.
-* */
 bool TCPLink::disconnect()
 {
 	quit();
@@ -260,11 +238,6 @@ void TCPLink::_socketDisconnected()
  *
  * @return True if connection has been established, false if connection couldn't be established.
  **/
-/* *
- * @brief 연결을 연결하십시오.
- *
- * @return 접속이 확립하면 true, 접속을 확립 할 수없는 경우는 false
-* */
 bool TCPLink::connect()
 {
 	if (isRunning())
@@ -312,14 +285,10 @@ bool TCPLink::_hardwareConnect(void)
         // this wait isn't necessary but it gives visual feedback
         // that the server is actually waiting for connection
         // and listen() didn't fail.
-        // 이 대기는 필요 없지만 시각적 피드백을 제공합니다.
-        // 서버가 실제로 연결을 기다리고 있음
-        // 및 listen ()이 실패하지 않았습니다.
         if (!_server.waitForNewConnection(5000))
             return false;
 
         // let the newConnection signal handle the new connection
-        // newConnection 신호가 새 연결을 처리하도록합니다.
 
         return true;
     }
@@ -336,13 +305,10 @@ bool TCPLink::_hardwareConnect(void)
         QObject::connect(_socket, SIGNAL(disconnected()), this, SLOT(_socketDisconnected()));
 
         // Give the socket five seconds to connect to the other side otherwise error out
-        // 소켓을 다른쪽에 연결하는데 5 초 준다 그렇지 않으면 에러가 난다.
         if (!_socket->waitForConnected(5000))
         {
             // Whether a failed connection emits an error signal or not is platform specific.
             // So in cases where it is not emitted, we emit one ourselves.
-            // 실패한 연결이 오류 신호를 내보내는 지 여부는 플랫폼에 따라 다릅니다.
-            // 방출되지 않는 경우, 우리는 스스로 방출합니다.
             if (errorSpy.count() == 0) {
                 emit communicationError(getName(), "Connection Failed");
             }
@@ -370,11 +336,6 @@ void TCPLink::_socketError(QAbstractSocket::SocketError socketError)
  *
  * @return True if link is connected, false otherwise.
  **/
-/* *
- * @brief 연결이 활성화되어 있는지 확인하십시오.
- *
- * @return 링크가 연결되어 있으면 true이고, 그렇지 않으면 false입니다.
-* */
 bool TCPLink::isConnected() const
 {
     return _socket ? _socket->isOpen() : false;
