@@ -33,56 +33,90 @@ This class contains all the private stuff for the QuaZipFile class, thus
 allowing to preserve binary compatibility between releases, the
 technique known as the Pimpl (private implementation) idiom.
 */
+// / QuaZip의 구현 클래스.
+/* *
+\내부의
+이 클래스는 QuaZipFile 클래스의 모든 비공개 자료를 포함하므로
+릴리스 간 바이너리 호환성을 유지하면서
+Pimpl (개인 구현) 관용구로 알려진 기술.
+*/
 class QuaZipFilePrivate {
   friend class QuaZipFile;
   private:
     /// The pointer to the associated QuaZipFile instance.
+    /// 연관된 QuaZipFile 인스턴스에 대한 포인터.
     QuaZipFile *q;
     /// The QuaZip object to work with.
+    /// 작업 할 QuaZip 객체.
     QuaZip *zip;
     /// The file name.
+    /// 파일 이름.
     QString fileName;
     /// Case sensitivity mode.
+    /// 대소 문자 구분 모드.
     QuaZip::CaseSensitivity caseSensitivity;
     /// Whether this file is opened in the raw mode.
+    /// 이 파일이 원시 모드로 열려 있는지 여부.
     bool raw;
     /// Write position to keep track of.
     /**
       QIODevice::pos() is broken for non-seekable devices, so we need
       our own position.
       */
+    // 추적 할 위치를 씁니다.
+    /* *
+      QIODevice :: pos ()가 탐색 불가능한 장치에 대해 손상되었으므로
+      우리 자신의 입장.
+      */
     qint64 writePos;
     /// Uncompressed size to write along with a raw file.
+    // 원시 파일과 함께 쓸 비 압축 크기.
     ulong uncompressedSize;
     /// CRC to write along with a raw file.
+    // 원시 파일과 함께 쓰는 CRC.
     quint32 crc;
     /// Whether \ref zip points to an internal QuaZip instance.
     /**
       This is true if the archive was opened by name, rather than by
       supplying an existing QuaZip instance.
       */
+    /// ref 지퍼가 내부 QuaZip 인스턴스를 가리키는 지 여부.
+    /* *
+      아카이브가 이름 대신에 열리는 경우에 해당됩니다.
+      기존 QuaZip 인스턴스를 제공합니다.
+      */
     bool internal;
     /// The last error.
+    /// 마지막 오류.
     int zipError;
     /// Resets \ref zipError.
     inline void resetZipError() const {setZipError(UNZ_OK);}
-    /// Sets the zip error.
+    /// Sets the zip error.    
     /**
       This function is marked as const although it changes one field.
       This allows to call it from const functions that don't change
       anything by themselves.
       */
+    /// 우편 번호 오류를 설정합니다.
+    /* *
+      이 함수는 하나의 필드를 변경하지만 const로 표시됩니다.
+      이렇게하면 변경되지 않는 const 함수에서 호출 할 수 있습니다.
+      혼자서하는 것.
+      */
     void setZipError(int zipError) const;
     /// The constructor for the corresponding QuaZipFile constructor.
+    /// 해당 QuaZipFile 생성자의 생성자.
     inline QuaZipFilePrivate(QuaZipFile *q):
       q(q), zip(NULL), internal(true), zipError(UNZ_OK) {}
     /// The constructor for the corresponding QuaZipFile constructor.
+    /// 해당 QuaZipFile 생성자의 생성자.
     inline QuaZipFilePrivate(QuaZipFile *q, const QString &zipName):
       q(q), internal(true), zipError(UNZ_OK)
       {
         zip=new QuaZip(zipName);
       }
     /// The constructor for the corresponding QuaZipFile constructor.
+    /// 해당 QuaZipFile 생성자의 생성자.  
     inline QuaZipFilePrivate(QuaZipFile *q, const QString &zipName, const QString &fileName,
         QuaZip::CaseSensitivity cs):
       q(q), internal(true), zipError(UNZ_OK)
@@ -94,9 +128,11 @@ class QuaZipFilePrivate {
         this->caseSensitivity=cs;
       }
     /// The constructor for the QuaZipFile constructor accepting a file name.
+    /// 파일 이름을 받아들이는 QuaZipFile 생성자의 생성자.
     inline QuaZipFilePrivate(QuaZipFile *q, QuaZip *zip):
       q(q), zip(zip), internal(false), zipError(UNZ_OK) {}
     /// The destructor.
+    /// 소멸자.
     inline ~QuaZipFilePrivate()
     {
       if (internal)
@@ -350,6 +386,9 @@ qint64 QuaZipFile::pos()const
       // QIODevice::pos() is broken for sequential devices,
       // but thankfully bytesAvailable() returns the number of
       // bytes buffered, so we know how far ahead we are.
+      // QIODevice :: pos ()가 순차적 장치에 대해 깨졌으며,
+      // 다행히도 bytesAvailable ()은
+      // 바이트가 버퍼링되므로 우리가 얼마나 멀리 떨어져 있는지 알 수 있습니다.
     return unztell(p->zip->getUnzFile()) - QIODevice::bytesAvailable();
   else
     return p->writePos;
@@ -367,6 +406,7 @@ bool QuaZipFile::atEnd()const
   }
   if(openMode()&ReadOnly)
       // the same problem as with pos()
+      // pos ()와 같은 문제
     return QIODevice::bytesAvailable() == 0
         && unzeof(p->zip->getUnzFile())==1;
   else
