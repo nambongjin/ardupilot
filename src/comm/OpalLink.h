@@ -26,6 +26,11 @@ This file is part of the QGROUNDCONTROL project
  *   @brief Connection to OpalRT
  *   @author Bryan Godbolt <godbolt@ualberta.ca>
  */
+/**
+ * @file
+ * OpalRT에 대한 간략한 연결
+ * @author Bryan Godbolt <godbolt@ualberta.ca>
+ */
 
 #ifndef OPALLINK_H
 #define OPALLINK_H
@@ -63,6 +68,18 @@ This file is part of the QGROUNDCONTROL project
  * @author Bryan Godbolt <godbolt@ualberta.ca>
  * @ref http://www.opal-rt.com/
  */
+/**
+ OpalRT 타겟에 대한 인터페이스
+ *
+ * 이것은 OpalRT HIL (hardware-in-the-loop) 시뮬레이터에 대한 인터페이스입니다.
+ *이 클래스는 실제 링크 인 것처럼 MAVLink 패킷을 받지만
+ *는 패킷을 내부적으로 해석하고 적절한 API 함수를 호출합니다.
+ *
+ * @author Bryan Godbolt <godbolt@ualberta.ca>
+ * @ref http://www.opal-rt.com/
+ */
+
+
 class OpalLink : public LinkInterface
 {
     Q_OBJECT
@@ -70,6 +87,8 @@ class OpalLink : public LinkInterface
 public:
     OpalLink();
     /* Connection management */
+    /* 연결 관리 */
+
 
     int getId() const;
     QString getName() const;
@@ -121,9 +140,9 @@ protected:
 
     void setName(QString name);
 
-    QTimer* heartbeatTimer;    ///< Timer to emit heartbeats
-    int heartbeatRate;         ///< Heartbeat rate, controls the timer interval
-    bool m_heartbeatsEnabled;  ///< Enabled/disable heartbeat emission
+    QTimer* heartbeatTimer;    ///< Timer to emit heartbeats                         //하트 비트를내는 타이머
+    int heartbeatRate;         ///< Heartbeat rate, controls the timer interval      //하트 비트 속도, 타이머 간격 제어
+    bool m_heartbeatsEnabled;  ///< Enabled/disable heartbeat emission               //하트 비트 방출 활성화 / 비활성화
 
     QTimer* getSignalsTimer;
     int getSignalsPeriod;
