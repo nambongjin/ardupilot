@@ -55,6 +55,13 @@ This file is part of the QGROUNDCONTROL project
  *   @author Michael Wolkstein
  *
  */
+/* *
+ * @file
+ * 오디오 출력의 정의
+ *
+ * @author Michael Wolkstein
+ *
+ */
 
 #include "AlsaAudio.h"
 
@@ -72,6 +79,8 @@ AlsaAudio* AlsaAudio::instance(QObject *par)
         _instance = new AlsaAudio();
         // Set the application as parent to ensure that this object
         // will be destroyed when the main application exits
+        // 이 객체를 보장하기 위해 응용 프로그램을 부모로 설정합니다.
+        // 메인 응용 프로그램이 종료되면 파괴됩니다
         _instance->setParent(par);
     }
     return _instance;
@@ -83,6 +92,7 @@ void AlsaAudio::enqueueFilname(QString name)
 }
 
 // main qthread
+// 주요 qthread
 void AlsaAudio::run()
 {
     while (!aa_fileNameQueue.isEmpty()){
@@ -254,6 +264,7 @@ snd_pcm_t * AlsaAudio::alsa_open (int channels, int samplerate)
     }
 
     /* extra check: if we have only one period, this code won't work */
+    /* 추가 검사 : 마침표가 하나만 있으면이 코드는 작동하지 않습니다 */
     snd_pcm_hw_params_get_period_size (hw_params, &alsa_period_size, 0);
     snd_pcm_hw_params_get_buffer_size (hw_params, &buffer_size);
     if (alsa_period_size == buffer_size)
@@ -277,6 +288,7 @@ snd_pcm_t * AlsaAudio::alsa_open (int channels, int samplerate)
     }
 
     /* note: set start threshold to delay start until the ring buffer is full */
+    /* note : 링 버퍼가 가득 찰 때까지 시작 지연을 설정하여 시작 임계 값을 설정합니다. */
     snd_pcm_sw_params_current (alsa_dev, sw_params);
     if ((err = snd_pcm_sw_params_get_xfer_align (sw_params, &xfer_align)) < 0)
     {
@@ -285,6 +297,7 @@ snd_pcm_t * AlsaAudio::alsa_open (int channels, int samplerate)
     }
 
     /* round up to closest transfer boundary */
+    /* 가장 가까운 전송 경계로 반올림 */
     start_threshold = (buffer_size / xfer_align) * xfer_align;
     if (start_threshold < 1)
         start_threshold = 1;

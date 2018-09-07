@@ -61,8 +61,8 @@
 
 namespace QGC
 {
-const static int defaultSystemId = 252; // Using 252 to 'crudely' identify a log created by APM Planner 2
-const static int defaultComponentId = MAV_COMP_ID_PRIMARY; // The main component ID is 1 for autopilot/and GCS (0 means all components)
+const static int defaultSystemId = 252; // Using 252 to 'crudely' identify a log created by APM Planner 2// 252를 사용하여 APM Planner 2에서 만든 로그를 'crudely'로 식별
+const static int defaultComponentId = MAV_COMP_ID_PRIMARY; // The main component ID is 1 for autopilot/and GCS (0 means all components)// 자동 파일럿 / 및 GCS (0은 모든 구성 요소를 의미)에 대해 주 구성 요소 ID가 1입니다.
 
 const QColor colorCyan(55, 154, 195);
 const QColor colorRed(154, 20, 20);
@@ -76,14 +76,19 @@ const QColor colorBackground("#050508");
 const QColor colorBlack(0, 0, 0);
 
 /** @brief Get the current ground time in microseconds */
+/* * brief 마이크로 초 단위로 현재 지상 시간을 구합니다. */
 quint64 groundTimeUsecs();
 /** @brief Get the current ground time in milliseconds */
+/* * brief 현재 지상 시간을 밀리 초 단위로 가져옵니다. */
 quint64 groundTimeMilliseconds();
 /** @brief Get the current ground time in seconds */
+/* * brief 현재 지상 시간을 초 단위로 얻는다. */
 qreal groundTimeSeconds();
 /** @brief Returns the angle limited to -pi - pi */
+/* * brief -pi - pi * /로 제한된 각도를 반환합니다.*/
 float limitAngleToPMPIf(float angle);
 /** @brief Returns the angle limited to -pi - pi */
+/* * brief -pi - pi * /로 제한된 각도를 반환합니다.*/
 double limitAngleToPMPId(double angle);
 int applicationVersion();
 
@@ -96,6 +101,10 @@ public:
      * @brief Set a thread to sleep for seconds
      * @param s time in seconds to sleep
      **/
+    /* *
+     * @brief 수초 동안 스레드를 잠자기 상태로 설정
+     * @param 초의 시간 (초)
+     * */
     static void sleep(unsigned long s) {
         QThread::sleep(s);
     }
@@ -103,6 +112,10 @@ public:
      * @brief Set a thread to sleep for milliseconds
      * @param ms time in milliseconds to sleep
      **/
+    /* *
+     * @brief 밀리 세컨드 동안 쓰레드를 대기 상태로 설정
+     * @param ms 시간 (밀리 세컨드 단위)
+     * */
     static void msleep(unsigned long ms) {
         QThread::msleep(ms);
     }
@@ -110,6 +123,10 @@ public:
      * @brief Set a thread to sleep for microseconds
      * @param us time in microseconds to sleep
      **/
+    /* *
+     * @brief 마이크로 세컨드 동안 스레드를 슬립 상태로 설정
+     * @param 우리는 수면 시간 (마이크로 초)
+     * */
     static void usleep(unsigned long us) {
         QThread::usleep(us);
     }
