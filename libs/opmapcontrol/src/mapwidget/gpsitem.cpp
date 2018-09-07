@@ -39,6 +39,7 @@ namespace mapcontrol
     {
         picture.load(uavPic);
        // Don't scale but trust the image we are given
+       // 주어진 이미지를 크기를 조정하지 않고 신뢰합니다.
        // pic=pic.scaled(50,33,Qt::IgnoreAspectRatio);
         core::Point localposition = map->FromLatLngToLocal(mapwidget->CurrentPosition());
         this->setPos(localposition.X(),localposition.Y());
@@ -126,6 +127,7 @@ namespace mapcontrol
             if(mapwidget->Home!=0)
             {
                 //verify if the UAV is inside the safety bouble
+                // UAV가 안전 bouble 안에 있는지 확인합니다.
                 if(Distance3D(mapwidget->Home->Coord(),mapwidget->Home->Altitude())>mapwidget->Home->SafeArea())
                 {
                     if(mapwidget->Home->safe!=false)
@@ -151,6 +153,10 @@ namespace mapcontrol
     /**
       * Rotate the UAV Icon on the map, or rotate the map
       * depending on the display mode
+      */
+    /**
+      * UAV 아이콘을지도에서 회전 시키거나지도를 회전 시키십시오.
+      * 디스플레이 모드에 따라 다름
       */
     void GPSItem::SetUAVHeading(const qreal &value)
     {
