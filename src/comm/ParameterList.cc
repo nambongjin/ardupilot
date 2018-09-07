@@ -41,6 +41,7 @@ ParameterList::ParameterList()
     settingsDir.cd("data");
 
     // Enforce a list of parameters which are necessary for flight
+    // 비행에 필요한 매개 변수 목록을 시행합니다.
     reqdServoParams->append("AIL_RIGHT_IN");
     reqdServoParams->append("AIL_CENTER_IN");
     reqdServoParams->append("AIL_LEFT_IN");
@@ -61,10 +62,12 @@ ParameterList::ParameterList()
     if ((QFile::exists(filename)) && open(filename)) {
 
         /* Get a list of the available parameters from opal-rt */
+        /* opal-rt에서 사용 가능한 매개 변수 목록 가져 오기 */
         QMap<QString, unsigned short> *opalParams = new QMap<QString, unsigned short>;
         getParameterList(opalParams);
 
         /* Iterate over the parameters we want to use in qgc and populate their ids */
+        /* qgc에서 사용할 매개 변수를 반복하고 해당 ID를 채 웁니다 */
         QMap<int, QMap<QGCParamID, Parameter> >::iterator componentIter;
         QMap<QGCParamID, Parameter>::iterator paramIter;
         QString s;
@@ -97,6 +100,12 @@ ParameterList::~ParameterList()
   get the number of paramters, then allocates the required amount of memory and then gets
   the paramter list using a second call to OpalGetParameterList.
   */
+/* *
+  Simulink 모델에서 매개 변수 목록을 가져옵니다. 이 함수는
+  매개 변수의 이전 지식. 먼저 OpalGetParameterList를 호출하여
+  매개 변수의 수를 얻은 다음 필요한 양의 메모리를 할당 한 다음 가져옵니다.
+  OpalGetParameterList에 대한 두 번째 호출을 사용하여 매개 변수 목록.
+  */
 void ParameterList::getParameterList(QMap<QString, unsigned short> *opalParams)
 {
     /* inputs */
@@ -128,7 +137,7 @@ void ParameterList::getParameterList(QMap<QString, unsigned short> *opalParams)
     }
 
     // allocate memory for parameter list
-
+    // 매개 변수 목록에 메모리 할당
     idParam = new unsigned short[numParams];
     allocatedParams = numParams;
 
@@ -180,6 +189,7 @@ void ParameterList::getParameterList(QMap<QString, unsigned short> *opalParams)
 int ParameterList::indexOf(const Parameter &p)
 {
     // incase p is a copy of the actual parameter we want (i.e., addresses differ)
+    // incase p는 우리가 원하는 실제 매개 변수의 복사본입니다 (즉, 주소가 다릅니다)
     Parameter *pPtr = &((*params)[p.getComponentID()][p.getParamID()]);
 
     QList<QList<Parameter*> >::const_iterator iter;
@@ -230,12 +240,14 @@ int ParameterList::count()
 }
 
 /* Functions related to reading the xml config file */
+/* XML 설정 파일을 읽는 것과 관련된 함수들 */
 
 bool ParameterList::open(QString filename)
 {
     QFile paramFile(filename);
     if (!paramFile.exists()) {
         /// \todo open dialog box (maybe: that could also go in  comm config window)
+        // / \ 열린 대화 상자를 열려면 (어쩌면 : comm config 창으로 갈 수도 있습니다)
         return false;
     }
 
