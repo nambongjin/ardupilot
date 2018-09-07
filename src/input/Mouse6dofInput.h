@@ -80,12 +80,15 @@ public slots:
     void setActiveUAS(UASInterface* uas);
 #ifdef MOUSE_ENABLED_WIN
     /** @brief Get a motion input from 3DMouse */
+    /** brief 3DMouse에서 모션 입력 받기 */
     void motion3DMouse(std::vector<float> &motionData);
     /** @brief Get a button input from 3DMouse */
+    /** @ brief 3DMouse에서 버튼 입력 받기 */
     void button3DMouseDown(int button);
 #endif //MOUSE_ENABLED_WIN
 #ifdef MOUSE_ENABLED_LINUX
     /** @brief Get an XEvent to check it for an 3DMouse event (motion or button) */
+    /** @ brief 3DMouse 이벤트 (동작 또는 버튼)를 확인하기 위해 XEvent를 가져옵니다. */
     void handleX11Event(XEvent* event);
 #endif //MOUSE_ENABLED_LINUX
 
