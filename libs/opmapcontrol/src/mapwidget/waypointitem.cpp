@@ -41,7 +41,7 @@ namespace mapcontrol
         reached(false),
         description(description),
         shownumber(true),
-        altitude(altitude), // sets a 10m default just in case
+        altitude(altitude), // sets a 10m default just in case  // 경우에 대비하여 기본값을 10m로 설정합니다.
         heading(0),
         number(0)
     {
@@ -115,6 +115,7 @@ namespace mapcontrol
         else if(event->button() == Qt::RightButton)
         {
             // Deselect if the right button was pressed too
+            // 오른쪽 버튼을 누른 경우 선택 취소
             text->setVisible(false);
             textBG->setVisible(false);
             RefreshToolTip();
@@ -274,6 +275,7 @@ namespace mapcontrol
     int WayPointItem::type() const
     {
         // Enable the use of qgraphicsitem_cast with this item.
+        // 이 항목과 함께 qgraphicsitem_cast 사용을 활성화합니다.
         return Type;
     }
 

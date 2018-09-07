@@ -35,10 +35,12 @@ MapRipForm::MapRipForm(QWidget *parent) :
     ui->setupUi(this);
 
     //Hide the progress bars and resize until ripping time
+    // 진행 막대를 숨기고 시간을 추출 할 때까지 크기를 조정합니다.
     ui->frame_rippingInfo->hide();
     this->resizeForm();
 
     //Grab the stopping zoom level from the spin box
+    // 스핀 상자에서 멈춤 확대 / 축소 레벨 가져 오기
     maxAutoRipZoom = ui->spnBoxLevelLimit->value();
 }
 
