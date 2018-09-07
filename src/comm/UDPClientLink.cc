@@ -26,6 +26,11 @@ This file is part of the APMPLANNER2 project
  *   @brief Definition of UDP Client connection for unmanned vehicles
  *
  */
+/* *
+ * @file
+ 무인 차량을위한 UDP 클라이언트 연결 정의
+ *
+ */
 
 #include "logging.h"
 #include "UDPClientLink.h"
@@ -44,6 +49,7 @@ UDPClientLink::UDPClientLink(QHostAddress host, quint16 port) :
     _packetsReceived(false)
 {
     // Set unique ID and add link to the list of links
+    // 고유 ID를 설정하고 링크 목록에 링크를 추가합니다.
     _linkId = getNextLinkId();
     setName(tr("UDP Client (%1:%2)").arg(_targetHost.toString()).arg(_port));
     QLOG_INFO() << "UDP Created " << _name;
@@ -64,6 +70,10 @@ UDPClientLink::~UDPClientLink()
  * @brief Runs the thread
  *
  **/
+/* *
+ * @brief 스레드를 실행합니다.
+ *
+* */
 void UDPClientLink::run()
 {
 	exec();
@@ -114,6 +124,7 @@ void UDPClientLink::writeBytes(const char* data, qint64 size)
     _socket.write(data, size);
 
     // Log the amount and time written out for future data rate calculations.
+    // 미래의 데이터 속도 계산을 위해 기록 된 양과 시간을 기록하십시오.
     QMutexLocker dataRateLocker(&dataRateMutex);
     logDataRateToBuffer(outDataWriteAmounts, outDataWriteTimes, &outDataIndex, size, QDateTime::currentMSecsSinceEpoch());
 }
@@ -124,6 +135,12 @@ void UDPClientLink::writeBytes(const char* data, qint64 size)
  * @param data Pointer to the data byte array to write the bytes to
  * @param maxLength The maximum number of bytes to write
  **/
+/* *
+ * @brief 인터페이스에서 여러 바이트를 읽습니다.
+ *
+ 파라미터 : data - 바이트 배열을 기입하는 데이터 바이트 배열의 포인터.
+ * @param maxLength 기입 해지는 최대 바이트 수
+* */
 void UDPClientLink::readBytes()
 {
     while (_socket.bytesAvailable())
@@ -137,6 +154,7 @@ void UDPClientLink::readBytes()
         emit bytesReceived(this, datagram);
 
         // Log this data reception for this timestep
+        // 이 timestep에 대해이 데이터 수신을 기록합니다.
         QMutexLocker dataRateLocker(&dataRateMutex);
         logDataRateToBuffer(inDataWriteAmounts, inDataWriteTimes, &inDataIndex, datagram.length(), QDateTime::currentMSecsSinceEpoch());
     }
@@ -148,6 +166,11 @@ void UDPClientLink::readBytes()
  *
  * @return The number of bytes to read
  **/
+/* *
+ * @brief 읽을 바이트 수를 가져옵니다.
+ *
+ * @return 읽을 바이트 수
+* */
 qint64 UDPClientLink::bytesAvailable()
 {
     return _socket.bytesAvailable();
@@ -158,6 +181,11 @@ qint64 UDPClientLink::bytesAvailable()
  *
  * @return True if connection has been disconnected, false if connection couldn't be disconnected.
  **/
+/* *
+ * @brief 연결을 끊습니다.
+ *
+ * @return 연결이 끊어진 경우 true, 연결을 끊을 수없는 경우 false.
+* */
 bool UDPClientLink::disconnect()
 {
     QLOG_INFO() << "UDP disconnect";
@@ -179,6 +207,11 @@ bool UDPClientLink::disconnect()
  *
  * @return True if connection has been established, false if connection couldn't be established.
  **/
+/* *
+ * @brief 연결을 연결하십시오.
+ *
+ * @return 접속이 확립하면 true, 접속을 확립 할 수없는 경우는 false
+* */
 bool UDPClientLink::connect()
 {
     if (_socket.isOpen())
@@ -197,7 +230,7 @@ bool UDPClientLink::_hardwareConnect()
     if (!_targetHost.isNull() && _port!=0) {
         QLOG_INFO() << "Connected UDP Client socket:" << _targetHost.toString();
         _socket.connectToHost(_targetHost,_port);
-        _socket.write(QByteArray("HELLO")); // Force Trigger connection.
+        _socket.write(QByteArray("HELLO")); // Force Trigger connection.// 강제 트리거 연결.
         emit connected(true);
         emit connected(this);
         emit connected();
@@ -243,6 +276,11 @@ void UDPClientLink::_socketDisconnected()
  *
  * @return True if link is connected, false otherwise.
  **/
+/* *
+ * @brief 연결이 활성화되어 있는지 확인하십시오.
+ *
+ * @return 링크가 연결되어 있으면 true이고, 그렇지 않으면 false입니다.
+* */
 bool UDPClientLink::isConnected() const
 {
     return _socket.isOpen();
