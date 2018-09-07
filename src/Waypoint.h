@@ -125,8 +125,10 @@ public:
         return description;
     }
     /** @brief Returns true if x, y, z contain reasonable navigation data */
+    /** brief x, y, z에 적절한 탐색 데이터가있는 경우 true를 반환합니다. */
     bool isNavigationType();
     /** @brief Returns true for waypoint witch also visible on map */
+    /** @ brief지도에서 볼 수있는 웨이 포인트 (Waypoint)에 대한 참을 반환합니다. */
     bool visibleOnMapWidget();
 
     bool isGlobalFrame() const;
@@ -165,10 +167,13 @@ public slots:
     void setLongitude(double lon);
     void setAltitude(double alt);
     /** @brief Yaw angle in COMPASS DEGREES: 0-360 */
+    /** COMPASS DEGREES의 요 각도 : 0-360 */
     void setYaw(int yaw);
     /** @brief Yaw angle in COMPASS DEGREES: 0-360 */
+    /** COMPASS DEGREES의 요 각도 : 0-360 */
     void setYaw(double yaw);
     /** @brief Set the waypoint action */
+    /** @ brief 웨이 포인트 동작 설정 */
     void setAction(int action);
     void setAction(MAV_CMD action);
     void setFrame(MAV_FRAME frame);
@@ -186,12 +191,16 @@ public slots:
     void setHoldTime(int holdTime);
     void setHoldTime(double holdTime);
     /** @brief Number of turns for loiter waypoints */
+    /** brief 중간 웨이 포인트의 턴 수 */
     void setTurns(int turns);
     /** @brief Set waypoint as reached */
+    /** brief 도달 한 웨이 포인트 설정 */
     void setReached() { reachedTime = QGC::groundTimeMilliseconds(); }
     /** @brief Wether this waypoint has been reached yet */
+    /** brief이 웨이 포인트에 아직 도달하지 못했습니다 */
     bool isReached() { return (reachedTime > 0); }
     /** @brief Get the time this waypoint was reached */
+    /** / brief이 웨이 포인트에 도달 한 시간을 구합니다. */
     quint64 getReachedTime() const { return reachedTime; }
 
 public:
@@ -199,6 +208,7 @@ public:
 
 signals:
     /** @brief Announces a change to the waypoint data */
+    /** brief 웨이 포인트 데이터를 변경 */
     void changed(Waypoint* wp);
 };
 
