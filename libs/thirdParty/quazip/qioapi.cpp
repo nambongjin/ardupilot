@@ -7,6 +7,12 @@
 
    Modified by Sergey A. Tachenov to integrate with Qt.
 */
+/* ioapi.c - 압축 / 압축 해제를위한 IO 기본 함수 헤더 .zip
+   zlib + zip 또는 unzip API를 사용하는 파일
+   버전 1.01e, 2005 년 2 월 12 일
+   Copyright (C) 1998-2005 Gilles Vollant
+   Sergey A. Tachenov가 Qt와 통합하기 위해 수정했습니다.
+*/
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -27,6 +33,7 @@
 
 
 /* I've found an old Unix (a SunOS 4.1.3_U1) without all SEEK_* defined.... */
+/* 나는 모든 SEEK_ *가 정의되지 않은 오래된 Unix (SunOS 4.1.3_U1)를 발견했다. */
 
 #ifndef SEEK_CUR
 #define SEEK_CUR    1
@@ -137,6 +144,7 @@ int ZCALLBACK qiodevice_error_file_func (
    voidpf /*stream UNUSED*/)
 {
     // can't check for error due to the QIODevice API limitation
+    // QIODevice API 제한으로 인해 오류를 확인할 수 없습니다.
     return 0;
 }
 
