@@ -48,6 +48,7 @@ MapRipper::MapRipper(internals::Core * core, const internals::RectLatLng & rect)
         progressForm->show();
 
         //Move the ripper form to the screen center
+        //리퍼 양식을 화면 중앙으로 이동하십시오.
         this->moveFormToCenter();
 
         connect(this,SIGNAL(percentageChanged(int)),progressForm,SLOT(SetPercentage(int)));
@@ -57,12 +58,15 @@ MapRipper::MapRipper(internals::Core * core, const internals::RectLatLng & rect)
         emit numberOfTilesChanged(0,0);
 
         //Start the ripping when the form button is pressed
+        //양식 버튼을 누르면 추출이 시작됩니다.
         connect(progressForm,SIGNAL(beginRip()),this,SLOT(start()));
 
         //Stop the current ripping when the form button is pressed
+        //양식 단추를 누를 때 현재 리핑 중지
         connect(progressForm,SIGNAL(cancelRip()),this,SLOT(cancelRipping()));
 
         //Connect to the form to see if should auto rip
+        //폼에 연결하여 자동 리프팅해야하는지 확인하십시오.
         connect(progressForm,SIGNAL(shouldAutoRip(bool)),this,SLOT(setAutoRip(bool)));
     }
 }
@@ -75,16 +79,19 @@ void MapRipper::moveFormToCenter()
     qDebug() << QGuiApplication::primaryScreen()->name();
 
     //Grab the current screen size
+    //현재 화면 크기를 잡아라.
     QDesktopWidget* window = QApplication::desktop();
     QRect screenRec = window->screenGeometry(window->screenNumber(QCursor::pos()));
     int screenWidth = screenRec.width();
     int screenHeight = screenRec.height();
 
     //Get and use the static form size
+    //정적 양식 크기 가져 오기 및 사용
     int formWidth = progressForm->geometry().width();
     int formHeight = progressForm->geometry().height();
 
     //Move the form to the default center or user saved location
+    //양식을 기본 센터 또는 사용자 저장 위치로 이동하십시오.
     progressForm->setGeometry((screenWidth/2)-(formWidth/2),(screenHeight/2)-(formHeight/2), formWidth, formHeight);
 }
 

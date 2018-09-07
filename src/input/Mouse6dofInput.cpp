@@ -15,7 +15,12 @@
 #include <QX11Info>
 #include <X11/Xlib.h>
 #ifdef Success
+<<<<<<< HEAD
+#undef Success              // Eigen library doesn't work if Success is defined 
+                            // 성공이 정의되면 고유 라이브러리가 작동하지 않습니다.
+=======
 #undef Success              // Eigen library doesn't work if Success is defined// 성공이 정의되면 고유 라이브러리가 작동하지 않습니다.
+>>>>>>> 69b176a71a68ef08613991f79732c25dcaf9f2fc
 #endif //Success
 extern "C"
 {
@@ -25,7 +30,12 @@ extern "C"
 
 #ifdef MOUSE_ENABLED_WIN
 Mouse6dofInput::Mouse6dofInput(Mouse3DInput* mouseInput) :
+<<<<<<< HEAD
+    mouse3DMax(0.075),   // TODO: check maximum value fot plugged device
+                         // TODO : 최대 값 fot plugged device 확인
+=======
     mouse3DMax(0.075),   // TODO: check maximum value fot plugged device// TODO : 최대 값 fot plugged device 확인
+>>>>>>> 69b176a71a68ef08613991f79732c25dcaf9f2fc
     uas(NULL),
     done(false),
     mouseActive(false),
@@ -40,6 +50,7 @@ Mouse6dofInput::Mouse6dofInput(Mouse3DInput* mouseInput) :
 {
     connect(UASManager::instance(), SIGNAL(activeUASSet(UASInterface*)), this, SLOT(setActiveUAS(UASInterface*)));
     // Connect 3DxWare SDK MotionEvent
+    // 3DxWare SDK MotionEvent를 연결합니다.
     connect(mouseInput, SIGNAL(Move3d(std::vector<float>&)), this, SLOT(motion3DMouse(std::vector<float>&)));
     connect(mouseInput, SIGNAL(On3dmouseKeyDown(int)), this, SLOT(button3DMouseDown(int)));
     //connect(mouseInput, SIGNAL(On3dmouseKeyUp(int)), this, SLOT(FUNCTION(int)));
@@ -49,7 +60,12 @@ Mouse6dofInput::Mouse6dofInput(Mouse3DInput* mouseInput) :
 
 #ifdef MOUSE_ENABLED_LINUX
 Mouse6dofInput::Mouse6dofInput(QWidget* parent) :
+<<<<<<< HEAD
+    mouse3DMax(350.0),   // TODO: check maximum value fot plugged device
+                         // TODO : 최대 값 fot plugged device 확인
+=======
     mouse3DMax(350.0),   // TODO: check maximum value fot plugged device// TODO : 최대 값 fot plugged device 확인
+>>>>>>> 69b176a71a68ef08613991f79732c25dcaf9f2fc
     uas(NULL),
     done(false),
     mouseActive(false),
@@ -78,6 +94,18 @@ Mouse6dofInput::Mouse6dofInput(QWidget* parent) :
 //    //       QLOG_DEBUG() << "... continuing without 3DxWare. May not be initialized properly!";
 //    //        QLOG_DEBUG() << "Try in terminal as user root:" << processArguments.last();
 //    //    }
+//         // man visudo -> 암호를 입력하지 않으면 성공할 수 없습니다.
+//         QLOG_DEBUG () << "3dConnexion 3dMouse를위한 3DxWare 데몬 시작";
+//         QString processProgramm = "gksudo";
+//         QStringList processArguments;
+//         processArguments << "/ etc / 3DxWare / daemon / 3dxsrv -d usb";
+//         process3dxDaemon = 새로운 QProcess ();
+//         process3dxDaemon-> start (processProgramm, processArguments);
+//     // process3dxDaemon-> waitForFinished ();
+//     // {
+//     // QLOG_DEBUG () << "... 3DxWare없이 계속합니다. 제대로 초기화되지 않을 수 있습니다!";
+//     // QLOG_DEBUG () << "사용자 root로 터미널에서 시도하십시오."<< processArguments.last ();
+//     //}
 
         Display *display = QX11Info::display();
         if(!display)
@@ -139,7 +167,11 @@ void Mouse6dofInput::setActiveUAS(UASInterface* uas)
     if(tmp) {
                 connect(this, SIGNAL(mouse6dofChanged(double,double,double,double,double,double)), tmp, SLOT(setManual6DOFControlCommands(double,double,double,double,double,double)));
                 // Todo: connect button mapping
+<<<<<<< HEAD
+                // Todo : 연결 버튼 매핑
+=======
                 // Todo : 버튼 매핑 연결
+>>>>>>> 69b176a71a68ef08613991f79732c25dcaf9f2fc
     }
     if (!isRunning())
     {
@@ -256,6 +288,7 @@ void Mouse6dofInput::button3DMouseDown(int button)
 void Mouse6dofInput::handleX11Event(XEvent *event)
 {
     //QLOG_DEBUG() << "XEvent occured...";
+    //QLOG_DEBUG () << "XEvent가 발생했습니다 ...";
     if (!mouseActive)
     {
         QLOG_DEBUG() << "3dMouse not initialized. Cancelled handling X11event for 3dMouse";
@@ -277,7 +310,11 @@ void Mouse6dofInput::handleX11Event(XEvent *event)
       {
         case MagellanInputMotionEvent :
              MagellanRemoveMotionEvents( display );
+<<<<<<< HEAD
+             for (int i = 0; i < 6; i++) {  // Saturation // 채도
+=======
              for (int i = 0; i < 6; i++) {  // Saturation// 채도
+>>>>>>> 69b176a71a68ef08613991f79732c25dcaf9f2fc
                  MagellanEvent.MagellanData[i] = (abs(MagellanEvent.MagellanData[i]) < mouse3DMax) ? MagellanEvent.MagellanData[i] : (mouse3DMax*MagellanEvent.MagellanData[i]/abs(MagellanEvent.MagellanData[i]));
              }
 

@@ -138,6 +138,7 @@ namespace internals {
                                 QByteArray img;
 
                                 // tile number inversion(BottomLeft -> TopLeft) for pergo maps
+                                //pergo maps에 대한 타일 번호 반전 (BottomLeft -> TopLeft)
                                 if(tl == MapType::PergoTurkeyMap)
                                 {
                                     img = OPMaps::Instance()->GetImageFrom(tl, Point(task.Pos.X(), maxOfTiles.Height() - task.Pos.Y()), task.Zoom);
@@ -197,7 +198,7 @@ namespace internals {
                         else
                         {
                             // emit OnTilesStillToLoad(tilesToload);
-
+                            // OnTilesStillToLoad (tilesToload)를 내 보냅니다.
                             delete t;
                             t = 0;
                             emit OnNeedInvalidation();
@@ -210,6 +211,7 @@ namespace internals {
 
                 {
                     // last buddy cleans stuff ;}
+                    // 마지막 친구가 물건을 청소하다.
                     if(last)
                     {
                         OPMaps::Instance()->kiberCacheLock.lockForWrite();
@@ -528,21 +530,25 @@ namespace internals {
     void Core::GoToCurrentPosition()
     {
         // reset stuff
+        // 물건을 재설정하다
         renderOffset = Point::Empty;
         centerTileXYLocationLast = Point::Empty;
         dragPoint = Point::Empty;
 
         // goto location
+        // 위치로 이동
         Drag(Point(-(GetcurrentPositionGPixel().X() - Width/2), -(GetcurrentPositionGPixel().Y() - Height/2)));
     }
     void Core::GoToCurrentPositionOnZoom()
     {
         // reset stuff
+        // 물건을 재설정하다
         renderOffset = Point::Empty;
         centerTileXYLocationLast = Point::Empty;
         dragPoint = Point::Empty;
 
         // goto location and centering
+        // 위치와 중심에 가라
         if(MouseWheelZooming)
         {
             if(mousewheelzoomtype != MouseWheelZoomType::MousePositionWithoutCenter)
@@ -551,14 +557,14 @@ namespace internals {
                 renderOffset.SetX(pt.X() - dragPoint.X());
                 renderOffset.SetY(pt.Y() - dragPoint.Y());
             }
-            else // without centering
+            else // without centering // 센터링하지 않고            
             {
                 renderOffset.SetX(-GetcurrentPositionGPixel().X() - dragPoint.X());
                 renderOffset.SetY(-GetcurrentPositionGPixel().Y() - dragPoint.Y());
                 renderOffset.Offset(mouseLastZoom);
             }
         }
-        else // use current map center
+        else // use current map center // 현재지도 센터 사용
         {
             mouseLastZoom = Point::Empty;
 

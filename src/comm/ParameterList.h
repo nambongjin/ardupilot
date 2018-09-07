@@ -91,6 +91,9 @@ public:
     /** Count the number of parameters in the list.
       \return Total number of parameters
       */
+    /** 목록에있는 매개 변수의 수를 센다.
+      \ return 총 매개 변수 수
+      */
     int count();
 
     /** Find p in the list and return its index.
@@ -105,12 +108,25 @@ public:
          QLOG_DEBUG() << "PID_GAIN is at index " << index;
       \endcode
       */
+    /** 목록에서 p를 찾아 색인을 반환합니다.
+      \ note이 색인을 사용하여 p를 찾으려면 구성 요소도 필요합니다.
+      \ p의 인덱스를 반환하거나 p가 없으면 -1을 반환합니다.
+      \예
+      \암호
+      int compid = OpalRT :: CONTROLLER_ID;
+      매개 변수 p ( "simulinkpath", "simulinkparamname", compid, QGCParamID ( "PID_GAIN"));
+      ParameterList pList;
+      if ((int index = pList.indexOf (p))! = -1)
+         QLOG_DEBUG () << "PID_GAIN이 인덱스에 있습니다"<< index;
+      \ endcode
+      */
     int indexOf(const Parameter& p);
     bool contains(int compid, QGCParamID paramid) const {
         return (*params)[compid].contains(paramid);
     }
 
     /// Get a parameter from the list
+    /// 목록에서 매개 변수 가져 오기
     const Parameter getParameter(int compid, QGCParamID paramid) const {
         return (*params)[compid][paramid];
     }
@@ -122,6 +138,7 @@ public:
     }
 
     /** Convenient syntax for calling OpalRT::Parameter::getParameter() */
+    /** OpalRT :: Parameter :: getParameter () 호출을위한 편리한 문법 */
     Parameter& operator()(int compid, QGCParamID paramid) {
         return getParameter(compid, paramid);
     }
@@ -141,31 +158,59 @@ protected:
        Parameter p = params[compid][paramid];
        \endcode
        */
+    /** componentid와 paramid가 매핑 한 매개 변수를 저장합니다.
+       \암호
+       // 매개 변수를 찾습니다.
+       int compid = 1;
+       QGCParamID paramid ( "PID_GAIN");
+       매개 변수 p = params [compid] [paramid];
+       \ endcode
+       */
     QMap<int, QMap<QGCParamID, Parameter> > *params;
     /**
       Store pointers to the parameters to allow fast lookup by index.
       This variable may be changed to const pointers to ensure all changes
       are made through the map container.
       */
+    /**
+      포인터를 매개 변수에 저장하여 색인별로 빨리 조회 할 수 있습니다.
+      이 변수는 모든 변경을 보장하기 위해 const 포인터로 변경 될 수 있습니다.
+      지도 컨테이너를 통해 이루어집니다.
+      */
     QList<QList<Parameter*> > *paramList;
     /**
       List of parameters which are necessary to control the servos.
+      */
+    /**
+      서보를 제어하는 ​​데 필요한 매개 변수 목록입니다.
       */
     QStringList *reqdServoParams;
     /**
       Get the list of available parameters from Opal-RT.
       \param[out] opalParams Map of parameter paths/names to ids which are valid in Opal-RT
       */
+    /**
+      Opal-RT에서 사용 가능한 매개 변수 목록을 가져옵니다.
+      \ param [out] opalParams Opal-RT에서 유효한 매개 변수 경로 / 이름의 ID에 대한 맵
+      */
     void getParameterList(QMap<QString, unsigned short>* opalParams);
 
     /**
       Open a file for reading in the xml config data
+      */
+    /**
+      xml 구성 데이터에서 읽을 파일 열기
       */
     bool open(QString filename=QString());
     /**
       Attempt to read XML configuration data from device
       \param[in] the device to read the xml data from
       \return true if the configuration was read successfully, false otherwise
+      */
+    /**
+      장치에서 XML 구성 데이터를 읽으려고합니다.
+      \ param [in] xml 데이터를 읽을 장치
+      \ 구성을 성공적으로 읽었 으면 true를 반환하고 그렇지 않으면 false를 반환합니다.
       */
     bool read(QIODevice *device);
 

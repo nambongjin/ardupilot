@@ -38,7 +38,7 @@ Item {
 
             Repeater {
                 model: ["60", "50", "40", "30", "20", "10", "0", "-10", "-20", "-30", "-40", "-50" , "-60"]
-                Rectangle { // Graticule Light
+                Rectangle { // Graticule Light // 계수 선 라이트
                     id:graticuleLight
                     width: 50
                     height: 2
