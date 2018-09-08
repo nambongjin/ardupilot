@@ -27,6 +27,12 @@ This file is part of the QGROUNDCONTROL project
  *   @author Bryan Godbolt <godbolt@ualberta.ca>
  */
 
+/*
+ * @brief mavlink에 사용되는 paramid를 저장합니다.
+ * @author Bryan Godbolt <godbolt@ualberta.ca>
+*/
+
+
 #ifndef QGCPARAMID_H
 #define QGCPARAMID_H
 
@@ -48,9 +54,16 @@ namespace OpalRT
 
   \todo Fix: warning: deprecated conversion from string constant to 'char*'
   */
+
+/*
+ * * mavlink 매개 변수 패킷에 대한 param_id를 저장합니다. 이 클래스는 편의성을 추가합니다.
+  id를 문자열로 저장하는 것 (예 : 쉬운 비교).
+  \ todo 수정 : 경고 : 사용되지 않는 문자열 상수에서 'char *'로의 변환
+*/
+
 class QGCParamID
 {
-//        friend QDataStream& operator<<(QDataStream& stream, const QGCParamID& paramid);
+//        friend QDataStream& operator<<(QDataStream& stream, const QGCParamID& paramid);	
 public:
 
     QGCParamID(const char[]);

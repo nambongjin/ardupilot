@@ -27,6 +27,12 @@ This file is part of the QGROUNDCONTROL project
  *   @author Bryan Godbolt <godbolt@ualberta.ca>
  */
 
+/*
+ opalRT :: QGCParamID 클래스의 구현
+ * @author Bryan Godbolt <godbolt@ualberta.ca>
+*/
+
+
 #include "QGCParamID.h"
 using namespace OpalRT;
 
@@ -49,3 +55,10 @@ QGCParamID::QGCParamID(const QGCParamID &other):data(other.data)
 //{
 //    return stream << paramid.data;
 //}
+
+/*
+// QDataStream & 연산자 << (QDataStream & stream, const QGCParamID & paramid)
+// {
+//     스트림을 반환합니다. << paramid.data;
+*/
+
