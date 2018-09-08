@@ -27,6 +27,13 @@ This file is part of the QGROUNDCONTROL project
  *   @author Bryan Godbolt <godbolt@ualberta.ca>
  */
 
+/*
+ * @file
+ Opal-RT 인터페이스 구성에 사용되는 유형
+ * @author Bryan Godbolt <godbolt@ualberta.ca>
+*/
+
+
 #ifndef OPALRT_H
 #define OPALRT_H
 
@@ -38,7 +45,7 @@ This file is part of the QGROUNDCONTROL project
 namespace OpalRT
 {
 /**
-  Configuration info for the model
+  Configuration info for the model	 모델의 구성 정보
  */
 
 const unsigned short NUM_OUTPUT_SIGNALS=48;
@@ -65,6 +72,30 @@ const unsigned short NUM_OUTPUT_SIGNALS=48;
 *      Port 3: Covariance matrix diagonal
 *      1-15    diagonal elements of estimation error covariance matrix P
 */
+
+/*
+*
+* 포트 1 : 탐색 상태 견적
+* 1 t [s] INS 모드가 시작된 이후 경과 한 시간
+* 2-4 p ^ n [m] 탐색 프레임 위치 (N, E, D)
+* 5-7 v ^ n [m / s] 탐색 프레임 속도 (N, E, D)
+* 8-10 오일러 각 [rad] (롤, 피치, 요우)
+* 11-13 각도 비율
+* 14-16 b_f [m / s ^ 2] 가속도계 편향
+* 17-19 b_w [rad / s] 자이로 바이어스
+*
+* 포트 2 : 내비게이션 시스템 상태
+* 1 모드 (0 : 초기화, 1 : INS)
+* 2 t_GPS 지난 유효한 GPS 측정 이후 경과 한 시간
+* 3 솔루션 상태 (0 : SOL_COMPUTED, 1 : INSUFFICIENT_OBS)
+* 4 위치 솔루션 유형 (0 : 없음, 34 : NARROW_FLOAT,
+* 49 : WIDE_INT, 50 : NARROW_INT)
+* 5 # obs (보이는 위성의 수)
+*
+* 포트 3 : 공분산 행렬 대각선
+* 1-15 추정 오차 공분산 행렬 P의 대각선 요소
+*/
+
 enum SignalPort {
     T_ELAPSED,
     X_POS,
@@ -115,6 +146,13 @@ enum SignalPort {
    to dividing them between component ids.  However this syntax is used so that this can
    easily be changed in the future.
    */
+
+/*
+   매개 변수의 구성 요소 ID입니다. 현재 그들은 아무 이점도 없기 때문에 모두 1입니다
+   구성 요소 ID간에이를 나눌 수 있습니다. 그러나이 구문을 사용하면
+   앞으로 쉽게 변경 될 수 있습니다.
+*/
+
 enum SubsystemIds {
     NAV = 1,
     LOG,
