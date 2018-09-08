@@ -33,40 +33,53 @@ quazip/(un)zip.h files for details, basically it's zlib license.
 /// Information about a file inside archive.
 /** Call QuaZip::getCurrentFileInfo() or QuaZipFile::getFileInfo() to
  * fill this structure. */
+
+/*
+// / archive 내부의 파일에 대한 정보.
+/ * * QuaZip :: getCurrentFileInfo () 또는 QuaZipFile :: getFileInfo ()를 호출하여
+*이 구조체를 채우십시오. * /
+*/
+
 struct QUAZIP_EXPORT QuaZipFileInfo {
-  /// File name.
+  /// File name.	파일 이름
   QString name;
-  /// Version created by.
+  /// Version created by.	에 의해 만들어진 버전.
   quint16 versionCreated;
-  /// Version needed to extract.
+  /// Version needed to extract.	추출 할 버전이 필요합니다.
   quint16 versionNeeded;
-  /// General purpose flags.
+  /// General purpose flags.	범용 플래그.
   quint16 flags;
-  /// Compression method.
+  /// Compression method.	압축 메소드.
   quint16 method;
-  /// Last modification date and time.
+  /// Last modification date and time.	마지막 수정 날짜 및 시간.
   QDateTime dateTime;
-  /// CRC.
+  /// CRC.	CRC.
   quint32 crc;
-  /// Compressed file size.
+  /// Compressed file size.	압축 된 파일 크기.
   quint32 compressedSize;
-  /// Uncompressed file size.
+  /// Uncompressed file size.	압축되지 않은 파일 크기.
   quint32 uncompressedSize;
-  /// Disk number start.
+  /// Disk number start.	디스크 번호 start.
   quint16 diskNumberStart;
-  /// Internal file attributes.
+  /// Internal file attributes.	내부 파일 특성.
   quint16 internalAttr;
-  /// External file attributes.
+  /// External file attributes.	외부 파일 특성.
   quint32 externalAttr;
-  /// Comment.
+  /// Comment.	주석.
   QString comment;
-  /// Extra field.
+  /// Extra field.	추가 필드.
   QByteArray extra;
-  /// Get the file permissions.
+  /// Get the file permissions.	파일 권한을 얻습니다.
   /**
     Returns the high 16 bits of external attributes converted to
     QFile::Permissions.
     */
+
+/*
+    변환 된 외부 속성의 상위 16 비트를 반환합니다.
+    QFile :: Permissions.
+*/
+
   QFile::Permissions getPermissions() const;
 };
 

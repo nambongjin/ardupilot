@@ -34,10 +34,10 @@
 #ifndef local
 #  define local static
 #endif
-/* compile with -Dlocal if your debugger can't find static symbols */
+/* compile with -Dlocal if your debugger can't find static symbols 	/ * 디버거가 정적 기호를 찾을 수없는 경우 -Dlocal로 컴파일하십시오 * /*/
 
 #ifndef VERSIONMADEBY
-# define VERSIONMADEBY   (0x031e) /* best for standard pkware crypt */
+# define VERSIONMADEBY   (0x031e) /* best for standard pkware crypt 	/ * 표준 pkware 암호문에 가장 적합 * /*/
 #endif
 
 #ifndef Z_BUFSIZE
@@ -60,7 +60,7 @@
 #define SIZEZIPLOCALHEADER (0x1e)
 */
 
-/* I've found an old Unix (a SunOS 4.1.3_U1) without all SEEK_* defined.... */
+/* I've found an old Unix (a SunOS 4.1.3_U1) without all SEEK_* defined....	/ * 나는 모든 SEEK_ *가 정의되지 않은 오래된 Unix (SunOS 4.1.3_U1)를 발견했다. * / */
 
 #ifndef SEEK_CUR
 #define SEEK_CUR    1
@@ -115,24 +115,25 @@ typedef struct linkedlist_data_s
 
 typedef struct
 {
-    z_stream stream;            /* zLib stream structure for inflate */
-    int  stream_initialised;    /* 1 is stream is initialised */
-    uInt pos_in_buffered_data;  /* last written byte in buffered_data */
+    z_stream stream;            /* zLib stream structure for inflate 	/ * zLib inflate를위한 스트림 구조 * /*/
+    int  stream_initialised;    /* 1 is stream is initialised 	/ * 1은 스트림이 초기화 됨 * /*/
+    uInt pos_in_buffered_data;  /* last written byte in buffered_data 	/ * buffered_data에 마지막으로 기록 된 바이트 * /*/
 
-    uLong pos_local_header;     /* offset of the local header of the file
-                                     currenty writing */
-    char* central_header;       /* central header data for the current file */
-    uLong size_centralheader;   /* size of the central header for cur file */
-    uLong flag;                 /* flag of the file currently writing */
+    uLong pos_local_header;     /* offset of the local header of the file 	파일의 로컬 헤더의 오프셋
+                                     currenty writing 	현재 쓰기*/
 
-    int  method;                /* compression method of file currenty wr.*/
-    int  raw;                   /* 1 for directly writing raw data */
-    Byte buffered_data[Z_BUFSIZE];/* buffer contain compressed data to be writ*/
+    char* central_header;       /* central header data for the current file 	/ * 현재 파일의 중앙 헤더 데이터 * /*/
+    uLong size_centralheader;   /* size of the central header for cur file 	/ * cur 파일의 중앙 헤더 크기 * /*/
+    uLong flag;                 /* flag of the file currently writing 	/ * 현재 쓰고있는 파일의 플래그 * /*/
+
+    int  method;                /* compression method of file currenty wr.	/ * 현재 파일의 압축 방법. * /*/
+    int  raw;                   /* 1 for directly writing raw data 	/ * 원시 데이터 직접 쓰기를위한 * 1 * /*/
+    Byte buffered_data[Z_BUFSIZE];/* buffer contain compressed data to be writ	/ * 버퍼에는 압축 된 데이터가 저장됩니다. * /*/
     uLong dosDate;
     uLong crc32;
     int  encrypt;
 #ifndef NOCRYPT
-    unsigned long keys[3];     /* keys defining the pseudo-random sequence */
+    unsigned long keys[3];     /* keys defining the pseudo-random sequence 	/ * 의사 랜덤 시퀀스를 정의하는 키 * /*/
     const unsigned long* pcrc_32_tab;
     int crypt_header_size;
 #endif
@@ -141,12 +142,12 @@ typedef struct
 typedef struct
 {
     zlib_filefunc_def z_filefunc;
-    voidpf filestream;        /* io structore of the zipfile */
-    linkedlist_data central_dir;/* datablock with central dir in construction*/
-    int  in_opened_file_inzip;  /* 1 if a file in the zip is currently writ.*/
-    curfile_info ci;            /* info on the file curretly writing */
+    voidpf filestream;        /* io structore of the zipfile 	/ * zip 파일의 구조체 * /*/
+    linkedlist_data central_dir;/* datablock with central dir in construction	/ * 건설중인 중앙 디렉토리가있는 데이터 블록 * /*/
+    int  in_opened_file_inzip;  /* 1 if a file in the zip is currently writ.	/ * zip 파일이 현재 작성된 경우 1입니다. * /*/
+    curfile_info ci;            /* info on the file curretly writing 	/ * curretly write 파일에 대한 정보 * /*/
 
-    uLong begin_pos;            /* position of the beginning of the zipfile */
+    uLong begin_pos;            /* position of the beginning of the zipfile 	/ * zip 파일의 시작 위치 * /*/
     uLong add_position_when_writting_offset;
     uLong number_entry;
 #ifndef NO_ADDFILEINEXISTINGZIP
@@ -266,6 +267,13 @@ local int add_data_in_datablock(ll,buf,len)
    nbByte == 1, 2 or 4 (byte, short or long)
 */
 
+/*
+/ * ====================================== ===============
+   주어진 파일에 LSB 순서로 long을 입력합니다.
+   nbByte == 1, 2 또는 4 (바이트, 길이 또는 길이)
+* /
+*/
+
 local int ziplocal_putValue OF((const zlib_filefunc_def* pzlib_filefunc_def,
                                 voidpf filestream, uLong x, int nbByte));
 local int ziplocal_putValue (pzlib_filefunc_def, filestream, x, nbByte)
@@ -282,7 +290,7 @@ local int ziplocal_putValue (pzlib_filefunc_def, filestream, x, nbByte)
         x >>= 8;
     }
     if (x != 0)
-      {     /* data overflow - hack for ZIP64 (X Roche) */
+      {     /* data overflow - hack for ZIP64 (X Roche) 	/ * 데이터 오버플로 - ZIP64 용 해킹 (X Roche) * /*/
       for (n = 0; n < nbByte; n++)
         {
           buf[n] = 0xff;
@@ -367,6 +375,13 @@ local int ziplocal_getByte(pzlib_filefunc_def,filestream,pi)
 /* ===========================================================================
    Reads a long in LSB order from the given gz_stream. Sets
 */
+
+/*
+/ * ====================================== ===============
+   주어진 gz_stream에서 LSB 순서로 long을 읽습니다. 세트
+* /
+*/
+
 local int ziplocal_getShort OF((
     const zlib_filefunc_def* pzlib_filefunc_def,
     voidpf filestream,
@@ -438,6 +453,14 @@ local int ziplocal_getLong (pzlib_filefunc_def,filestream,pX)
   Locate the Central directory of a zipfile (at the end, just before
     the global comment)
 */
+
+/*
+/ *
+  zip 파일의 중앙 디렉토리를 찾으십시오 (끝에, 바로 앞에
+    글로벌 코멘트)
+* /
+*/
+
 local uLong ziplocal_SearchCentralDir OF((
     const zlib_filefunc_def* pzlib_filefunc_def,
     voidpf filestream));
@@ -449,7 +472,7 @@ local uLong ziplocal_SearchCentralDir(pzlib_filefunc_def,filestream)
     unsigned char* buf;
     uLong uSizeFile;
     uLong uBackRead;
-    uLong uMaxBack=0xffff; /* maximum size of global comment */
+    uLong uMaxBack=0xffff; /* maximum size of global comment	/ * 전체 주석의 최대 크기 * / */
     uLong uPosFound=0;
 
     if (ZSEEK(*pzlib_filefunc_def,filestream,0,ZLIB_FILEFUNC_SEEK_END) != 0)
@@ -498,7 +521,7 @@ local uLong ziplocal_SearchCentralDir(pzlib_filefunc_def,filestream)
     TRYFREE(buf);
     return uPosFound;
 }
-#endif /* !NO_ADDFILEINEXISTINGZIP*/
+#endif /* !NO_ADDFILEINEXISTINGZIP	*/
 
 /************************************************************/
 extern zipFile ZEXPORT zipOpen2 (file, append, globalcomment, pzlib_filefunc_def)
@@ -542,25 +565,44 @@ extern zipFile ZEXPORT zipOpen2 (file, append, globalcomment, pzlib_filefunc_def
         return NULL;
     }
 
-    /* now we add file in a zipfile */
+    /* now we add file in a zipfile	  이제 파일을 zip 파일에 추가합니다. */
 #    ifndef NO_ADDFILEINEXISTINGZIP
     ziinit.globalcomment = NULL;
     if (append == APPEND_STATUS_ADDINZIP)
     {
-        uLong byte_before_the_zipfile;/* byte before the zipfile, (>0 for sfx)*/
+        uLong byte_before_the_zipfile;/* byte before the zipfile, (>0 for sfx)	 / * 중앙 디렉토리 크기   * /*/
 
-        uLong size_central_dir;     /* size of the central directory  */
+        uLong size_central_dir;     /* size of the central directory  	/ * 중앙 디렉토리 시작 오프셋 * /*/
         uLong offset_central_dir;   /* offset of start of central directory */
         uLong central_pos,uL;
 
-        uLong number_disk;          /* number of the current dist, used for
+        uLong number_disk;          /* number of the current dist, used for		
                                     spaning ZIP, unsupported, always 0*/
+
+/*
+ 				    / * 현재 dist의 번호.
+                                    스팬 ZIP, 지원되지 않음, 항상 0 * /
+*/
+
         uLong number_disk_with_CD;  /* number the the disk with central dir, used
                                     for spaning ZIP, unsupported, always 0*/
+
+/*
+/				    * 사용 된 중앙 디렉토리가있는 디스크의 번호를 지정합니다.
+                                    ZIP 스팬 용, 지원되지 않음, 항상 0 * /
+*/
+
         uLong number_entry;
         uLong number_entry_CD;      /* total number of entries in
                                     the central dir
                                     (same than number_entry on nospan) */
+
+/*
+/ 				    * 총 항목 수
+                                    중심 방향
+                                    (nospan의 number_entry와 동일) * /
+*/
+
         uLong size_comment;
 
         central_pos = ziplocal_SearchCentralDir(&ziinit.z_filefunc,ziinit.filestream);
@@ -571,23 +613,23 @@ extern zipFile ZEXPORT zipOpen2 (file, append, globalcomment, pzlib_filefunc_def
                                         central_pos,ZLIB_FILEFUNC_SEEK_SET)!=0)
             err=ZIP_ERRNO;
 
-        /* the signature, already checked */
+        /* the signature, already checked	/ * 이미 체크 된 서명 * / */
         if (ziplocal_getLong(&ziinit.z_filefunc, ziinit.filestream,&uL)!=ZIP_OK)
             err=ZIP_ERRNO;
 
-        /* number of this disk */
+        /* number of this disk 	 / * 이 디스크의 번호 * /*/
         if (ziplocal_getShort(&ziinit.z_filefunc, ziinit.filestream,&number_disk)!=ZIP_OK)
             err=ZIP_ERRNO;
 
-        /* number of the disk with the start of the central directory */
+        /* number of the disk with the start of the central directory 	 / * 중앙 디렉토리 시작과 함께 디스크 번호 * /*/
         if (ziplocal_getShort(&ziinit.z_filefunc, ziinit.filestream,&number_disk_with_CD)!=ZIP_OK)
             err=ZIP_ERRNO;
 
-        /* total number of entries in the central dir on this disk */
+        /* total number of entries in the central dir on this disk 	/ * 이 디스크의 중앙 디렉토리에있는 총 항목 수 * /*/
         if (ziplocal_getShort(&ziinit.z_filefunc, ziinit.filestream,&number_entry)!=ZIP_OK)
             err=ZIP_ERRNO;
 
-        /* total number of entries in the central dir */
+        /* total number of entries in the central dir 	/ * 중앙 디렉토리의 총 항목 수 * /*/
         if (ziplocal_getShort(&ziinit.z_filefunc, ziinit.filestream,&number_entry_CD)!=ZIP_OK)
             err=ZIP_ERRNO;
 
@@ -596,16 +638,22 @@ extern zipFile ZEXPORT zipOpen2 (file, append, globalcomment, pzlib_filefunc_def
             (number_disk!=0))
             err=ZIP_BADZIPFILE;
 
-        /* size of the central directory */
+        /* size of the central directory 	/ * 중앙 디렉토리 크기 * /*/
         if (ziplocal_getLong(&ziinit.z_filefunc, ziinit.filestream,&size_central_dir)!=ZIP_OK)
             err=ZIP_ERRNO;
 
         /* offset of start of central directory with respect to the
             starting disk number */
+
+/*
+        / * 해당 디렉토리에 대한 중앙 디렉토리의 시작 오프셋
+            디스크 번호 시작 * /
+*/
+
         if (ziplocal_getLong(&ziinit.z_filefunc, ziinit.filestream,&offset_central_dir)!=ZIP_OK)
             err=ZIP_ERRNO;
 
-        /* zipfile global comment length */
+        /* zipfile global comment length 	/ * zipfile 전역 주석 길이 * /*/
         if (ziplocal_getShort(&ziinit.z_filefunc, ziinit.filestream,&size_comment)!=ZIP_OK)
             err=ZIP_ERRNO;
 
@@ -799,7 +847,7 @@ extern int ZEXPORT zipOpenNewFileInZip3 (file, filename, zipfi,
     zi->ci.central_header = (char*)ALLOC((uInt)zi->ci.size_centralheader);
 
     ziplocal_putValue_inmemory(zi->ci.central_header,(uLong)CENTRALHEADERMAGIC,4);
-    /* version info */
+    /* version info 	 / * 버전 정보 * /*/
     ziplocal_putValue_inmemory(zi->ci.central_header+4,(uLong)VERSIONMADEBY,2);
     ziplocal_putValue_inmemory(zi->ci.central_header+6,(uLong)version_to_extract,2);
     ziplocal_putValue_inmemory(zi->ci.central_header+8,(uLong)zi->ci.flag,2);
@@ -838,7 +886,8 @@ extern int ZEXPORT zipOpenNewFileInZip3 (file, filename, zipfi,
     if (zi->ci.central_header == NULL)
         return ZIP_INTERNALERROR;
 
-    /* write the local header */
+    /* write the local header 	
+    / * 로컬 헤더를 쓰십시오 * /*/
     err = ziplocal_putValue(&zi->z_filefunc,zi->filestream,(uLong)LOCALHEADERMAGIC,4);
 
     if (err==ZIP_OK)
@@ -907,7 +956,9 @@ extern int ZEXPORT zipOpenNewFileInZip3 (file, filename, zipfi,
         /*init_keys(password,zi->ci.keys,zi->ci.pcrc_32_tab);*/
 
         crcForCrypting = (uLong)zi->ci.dosDate << 16; // ATTANTION! Without this row, you don't unpack your password protected archive in other app.
+						      // ATTANTION! 이 행이 없으면 다른 앱에서 비밀번호로 보호 된 보관 파일의 압축을 푸지 않습니다.
 
+																	
         sizeHead=crypthead(password,bufHead,RAND_HEAD_LEN,zi->ci.keys,zi->ci.pcrc_32_tab,crcForCrypting);
         zi->ci.crypt_header_size = sizeHead;
 
