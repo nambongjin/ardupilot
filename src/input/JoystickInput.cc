@@ -9,6 +9,14 @@
  *   @author Andreas Romer <mavteam@student.ethz.ch>
  *
  */
+/* *
+ * @file
+ * @brief 조이스틱 인터페이스
+ *
+ * @author Lorenz Meier <mavteam@student.ethz.ch>
+ * @author Andreas Romer <mavteam@student.ethz.ch>
+ *
+ */
 
 #include "logging.h"
 #include "JoystickInput.h"
@@ -31,6 +39,10 @@
 /**
  * The coordinate frame of the joystick axis is the aeronautical frame like shown on this image:
  * @image html http://pixhawk.ethz.ch/wiki/_media/standards/body-frame.png Aeronautical frame
+ */
+/* *
+ * 조이스틱 축의 좌표계는이 그림에 표시된 것과 같은 항공 프레임입니다.
+ * @image html http://pixhawk.ethz.ch/wiki/_media/standards/body-frame.png 항공 프레임
  */
 JoystickInput::JoystickInput() :
         joystick(NULL),
@@ -80,6 +92,7 @@ int JoystickInput::getNumberOfButtons() const
 void JoystickInput::loadSettings()
 {
     // Load defaults from settings
+    // 설정에서 기본값로드
     QSettings settings;
     settings.sync();
     settings.beginGroup("QGC_JOYSTICK_INPUT_" + getActiveJoystickId());
@@ -99,6 +112,7 @@ void JoystickInput::loadSettings()
 void JoystickInput::storeSettings()
 {
     // Store settings
+    // 설정 저장
     QSettings settings;
     settings.beginGroup("QGC_JOYSTICK_INPUT_" + getActiveJoystickId());
     settings.setValue("X_AXIS_MAPPING", xAxis);
@@ -119,6 +133,7 @@ void JoystickInput::storeSettings()
 void JoystickInput::setActiveUAS(UASInterface* uas)
 {
     // Only connect / disconnect is the UAS is of a controllable UAS class
+    // 연결 만 / 연결 해제는 UAS가 제어 가능한 UAS 클래스 임
     if (this->uas)
     {
         UAS* tmp = dynamic_cast<UAS*>(this->uas);
@@ -149,6 +164,7 @@ void JoystickInput::setActiveUAS(UASInterface* uas)
 void JoystickInput::init()
 {
     // INITIALIZE SDL Joystick support
+    // SDI 조이스틱 지원 초기화
     if (SDL_Init(SDL_INIT_JOYSTICK) < 0) {
         QLOG_ERROR() << "Couldn't initialize SimpleDirectMediaLayer:" << SDL_GetError();
         return;
@@ -161,12 +177,14 @@ void JoystickInput::init()
                  << ", Linked against SDL" << QString("%1.%2.%3").arg(sdlLinkedVersion.major).arg(sdlLinkedVersion.minor).arg(sdlLinkedVersion.patch);
 
     // Wait for joystick if none is connected
+    // 연결되지 않은 경우 조이스틱을 기다립니다.
     while (done.load() == 0)
     {
         int numJoysticks = SDL_NumJoysticks();
         if (numJoysticks == 0)
         {
             // no joystick detected. reset SDL.
+            // 조이스틱이 감지되지 않았습니다. SDL을 재설정하십시오.
 
             SDL_QuitSubSystem(SDL_INIT_JOYSTICK);
             QGC::SLEEP::msleep(1000);
@@ -260,6 +278,16 @@ void JoystickInput::scaleJoystickHatValue(int v, int& xHat, int& yHat)
     //    |
     //    0 ----> x
     //
+    // 모자 위치를 기술하는 벡터를 만든다.
+    //
+    // 조이스틱 모자 좌표 프레임 :
+    //
+    //     y
+    //     ^
+    //     |
+    //     |
+    //     0 ----> x
+    //
 
     if ((SDL_HAT_UP & v) != 0) yHat = 1;
     if ((SDL_HAT_DOWN & v) != 0) yHat = -1;
@@ -273,6 +301,12 @@ void JoystickInput::scaleJoystickHatValue(int v, int& xHat, int& yHat)
  * @return true if the joystick state changed "significantly" -- the axis
  *         changed by more than 1%, or a button is pressed,
  *         or more than timeout milliseconds elapsed
+ */
+/* *
+ * @brief 전화 SDL_JoystickUpdate ()
+ * @return 조이스틱 상태가 "상당히"변경된 경우 true - 축
+ * 1 % 이상 변경되거나 버튼을 누르면,
+ * 또는 초과 된 시간 초과 밀리 초
  */
 bool JoystickInput::sdlJoystickUpdate(unsigned timeout)
 {
@@ -329,6 +363,9 @@ yes:
 
 /**
  * @brief Execute the Joystick process
+ */
+/* *
+ * @brief 조이스틱 프로세스 실행
  */
 void JoystickInput::run()
 {
