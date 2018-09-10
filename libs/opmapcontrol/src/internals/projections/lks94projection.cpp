@@ -90,9 +90,9 @@ internals::PointLatLng LKS94Projection::FromPixelToLatLng(int const& x, int cons
 
 QVector <double> LKS94Projection::DTM10(const QVector <double>& lonlat)
 {
-    double es;              // Eccentricity squared : (a^2 - b^2)/a^2
-    double semiMajor = 6378137.0;		// major axis
-    double semiMinor = 6356752.3142451793;		// minor axis
+    double es;              // Eccentricity squared : (a^2 - b^2)/a^2	이심률 제곱 : (a ^ 2 - b ^ 2) / a ^ 2
+    double semiMajor = 6378137.0;		// major axis	주요 축
+    double semiMinor = 6356752.3142451793;		// minor axis	보조 축
 
     es = 1.0 - (semiMinor * semiMinor) / (semiMajor * semiMajor); //e^2
 
@@ -112,18 +112,18 @@ QVector <double> LKS94Projection::DTM10(const QVector <double>& lonlat)
 QVector <double>  LKS94Projection::MTD10(QVector <double>&  pnt)
 {
     QVector <double> ret(3);
-    const double COS_67P5 = 0.38268343236508977;    // cosine of 67.5 degrees
-    const double AD_C = 1.0026000;                  // Toms region 1 constant
+    const double COS_67P5 = 0.38268343236508977;    // cosine of 67.5 degrees	 67.5 도의 코사인
+    const double AD_C = 1.0026000;                  // Toms region 1 constant	 Toms 영역 1 상수
 
-    double es;                             // Eccentricity squared : (a^2 - b^2)/a^2
-    double semiMajor = 6378137.0;		    // major axis
-    double semiMinor = 6356752.3141403561;	// minor axis
-    double ses;            // Second eccentricity squared : (a^2 - b^2)/b^2
+    double es;                             // Eccentricity squared : (a^2 - b^2)/a^2	이심률 제곱 : (a ^ 2 - b ^ 2) / a ^ 2
+    double semiMajor = 6378137.0;		    // major axis	 주요 축	 
+    double semiMinor = 6356752.3141403561;	// minor axis	보조 축
+    double ses;            // Second eccentricity squared : (a^2 - b^2)/b^2	두 번째 이심률 제곱 : (a ^ 2 - b ^ 2) / b ^ 2
 
     es = 1.0 - (semiMinor * semiMinor) / (semiMajor * semiMajor); //e^2
     ses = (pow(semiMajor, 2) - pow(semiMinor, 2)) / pow(semiMinor, 2);
 
-    bool AtPole = false; // is location in polar region
+    bool AtPole = false; // is location in polar region	 극지 역의 위치입니다.
     double Z = pnt.count() < 3 ? 0 : (pnt[2] != pnt[2]) ? 0 : pnt[2];//TODO NaN
 
     double lon = 0;
@@ -148,16 +148,16 @@ QVector <double>  LKS94Projection::MTD10(QVector <double>&  pnt)
         {
             AtPole = true;
             lon = 0.0;
-            if(Z > 0.0) // north pole
+            if(Z > 0.0) // north pole	북극
             {
                 lat = M_PI * 0.5;
             }
             else
-                if(Z < 0.0) // south pole
+                if(Z < 0.0) // south pole	남극
                 {
                 lat = -M_PI * 0.5;
             }
-            else // center of earth
+            else // center of earth	지구 중심
             {
                 ret[0]=RadiansToDegrees(lon);
                 ret[1]=RadiansToDegrees(M_PI * 0.5);
@@ -166,19 +166,19 @@ QVector <double>  LKS94Projection::MTD10(QVector <double>&  pnt)
             }
         }
     }
-    double W2 = pnt[0] * pnt[0] + pnt[1] * pnt[1]; // Square of distance from Z axis
-    double W = sqrt(W2); // distance from Z axis
-    double T0 = Z * AD_C; // initial estimate of vertical component
-    double S0 = sqrt(T0 * T0 + W2); // initial estimate of horizontal component
-    double Sin_B0 = T0 / S0; // sin(B0), B0 is estimate of Bowring aux variable
+    double W2 = pnt[0] * pnt[0] + pnt[1] * pnt[1]; // Square of distance from Z axis	Z 축으로부터의 거리의 제곱
+    double W = sqrt(W2); // distance from Z axis	Z 축으로부터의 거리
+    double T0 = Z * AD_C; // initial estimate of vertical component	수직 구성 요소의 초기 추정
+    double S0 = sqrt(T0 * T0 + W2); // initial estimate of horizontal component	수평 성분의 초기 추정
+    double Sin_B0 = T0 / S0; // sin(B0), B0 is estimate of Bowring aux variable	 sin (B0), B0는 Bowring aux 변수의 추정치입니다.
     double Cos_B0 = W / S0; // cos(B0)
     double Sin3_B0 = pow(Sin_B0, 3);
-    double T1 = Z + semiMinor * ses * Sin3_B0; // corrected estimate of vertical component
-    double Sum = W - semiMajor * es * Cos_B0 * Cos_B0 * Cos_B0; // numerator of cos(phi1)
-    double S1 = sqrt(T1 * T1 + Sum * Sum); // corrected estimate of horizontal component
-    double Sin_p1 = T1 / S1; // sin(phi1), phi1 is estimated latitude
+    double T1 = Z + semiMinor * ses * Sin3_B0; // corrected estimate of vertical component	 수직 성분의 수정 된 추정치
+    double Sum = W - semiMajor * es * Cos_B0 * Cos_B0 * Cos_B0; // numerator of cos(phi1)	cos (phi1)의 분자
+    double S1 = sqrt(T1 * T1 + Sum * Sum); // corrected estimate of horizontal component	수평 성분의 수정 된 추정치
+    double Sin_p1 = T1 / S1; // sin(phi1), phi1 is estimated latitude	 sin (phi1), phi1은 추정 위도
     double Cos_p1 = Sum / S1; // cos(phi1)
-    double Rn = semiMajor / sqrt(1.0 - es * Sin_p1 * Sin_p1); // Earth radius at location
+    double Rn = semiMajor / sqrt(1.0 - es * Sin_p1 * Sin_p1); // Earth radius at location	위치의 지구 반경
     if(Cos_p1 >= COS_67P5)
     {
         Height = W / Cos_p1 - Rn;
@@ -205,18 +205,17 @@ QVector <double>  LKS94Projection::MTD10(QVector <double>&  pnt)
 QVector <double> LKS94Projection::DTM00(QVector <double>& lonlat)
 {
     double scaleFactor = 0.9998;	                // scale factor
-    double centralMeridian = 0.41887902047863912;	// Center qlonglongitude (projection center) */
-    double latOrigin = 0.0;	                // center latitude
-    double falseNorthing = 0.0;	            // y offset in meters
-    double falseEasting = 500000.0;	        // x offset in meters
-    double semiMajor = 6378137.0;		        // major axis
-    double semiMinor = 6356752.3141403561;		// minor axis
+    double centralMeridian = 0.41887902047863912;	// Center qlonglongitude (projection center) */	센터 qlonglongitude (투영 센터) * /
+    double latOrigin = 0.0;	                // center latitude	중심 위도
+    double falseNorthing = 0.0;	            // y offset in meters	 미터 단위 오프셋
+    double falseEasting = 500000.0;	        // x offset in meters	미터 단위의 오프셋
+    double semiMajor = 6378137.0;		        // major axis	주요 축
+    double semiMinor = 6356752.3141403561;		// minor axis	보조 축
     double metersPerUnit = 1.0;
 
-    double e0, e1, e2, e3;	// eccentricity constants
-    double es, esp;		// eccentricity constants
-    double ml0;		    // small value m
-
+    double e0, e1, e2, e3;	// eccentricity constants	이심률 상수
+    double es, esp;		// eccentricity constants	 이심률 상수
+    double ml0;		    // small value m	작은 값 m	
     es = 1.0 - pow(semiMinor / semiMajor, 2);
     e0 = e0fn(es);
     e1 = e1fn(es);
@@ -230,11 +229,11 @@ QVector <double> LKS94Projection::DTM00(QVector <double>& lonlat)
     double lon = DegreesToRadians(lonlat[0]);
     double lat = DegreesToRadians(lonlat[1]);
 
-    double delta_lon = 0.0;  // Delta qlonglongitude (Given qlonglongitude - center)
-    double sin_phi, cos_phi; // sin and cos value
-    double al, als;		  // temporary values
-    double c, t, tq;	      // temporary values
-    double con, n, ml;	      // cone constant, small m
+    double delta_lon = 0.0;  // Delta qlonglongitude (Given qlonglongitude - center)	델타 qlonglongitude (주어진 qlonglongitude - 센터)
+    double sin_phi, cos_phi; // sin and cos value	sin과 cos 값
+    double al, als;		  // temporary values	임시 값
+    double c, t, tq;	      // temporary values	임시 값
+    double con, n, ml;	      // cone constant, small m	원뿔 상수, 작은 m
 
     delta_lon = LKS94Projection::AdjustLongitude(lon - centralMeridian);
     LKS94Projection::SinCos(lat,  sin_phi,  cos_phi);
@@ -274,7 +273,7 @@ QVector <double> LKS94Projection::DTM00(QVector <double>& lonlat)
 
 QVector <double> LKS94Projection::DTM01(QVector <double>& lonlat)
 {
-    double es;                             // Eccentricity squared : (a^2 - b^2)/a^2
+    double es;                             // Eccentricity squared : (a^2 - b^2)/a^2	이심률 제곱 : (a ^ 2 - b ^ 2) / a ^ 2
     double semiMajor = 6378137.0;		    // major axis
     double semiMinor = 6356752.3141403561;	// minor axis
 
@@ -295,13 +294,13 @@ QVector <double> LKS94Projection::DTM01(QVector <double>& lonlat)
 }
 QVector <double> LKS94Projection::MTD01(QVector <double>& pnt)
 {
-    const double COS_67P5 = 0.38268343236508977; // cosine of 67.5 degrees
-    const double AD_C = 1.0026000;               // Toms region 1 constant
-
-    double es;                             // Eccentricity squared : (a^2 - b^2)/a^2
+    const double COS_67P5 = 0.38268343236508977; // cosine of 67.5 degrees	67.5 도의 코사인
+    const double AD_C = 1.0026000;               // Toms region 1 constant	Toms 영역 1 상수
+	
+    double es;                             // Eccentricity squared : (a^2 - b^2)/a^2	이심률 제곱 : (a ^ 2 - b ^ 2) / a ^ 2
     double semiMajor = 6378137.0;		    // major axis
     double semiMinor = 6356752.3142451793;	// minor axis
-    double ses;                            // Second eccentricity squared : (a^2 - b^2)/b^2
+    double ses;                            // Second eccentricity squared : (a^2 - b^2)/b^2	두 번째 이심률 제곱 : (a ^ 2 - b ^ 2) / b ^ 2
 
     es = 1.0 - (semiMinor * semiMinor) / (semiMajor * semiMajor);
     ses = (pow(semiMajor, 2) - pow(semiMinor, 2)) / pow(semiMinor, 2);
@@ -353,19 +352,19 @@ QVector <double> LKS94Projection::MTD01(QVector <double>& pnt)
         }
     }
 
-    double W2 = pnt[0] * pnt[0] + pnt[1] * pnt[1]; // Square of distance from Z axis
-    double W = sqrt(W2);                      // distance from Z axis
-    double T0 = Z * AD_C;                // initial estimate of vertical component
-    double S0 = sqrt(T0 * T0 + W2); //initial estimate of horizontal component
-    double Sin_B0 = T0 / S0;             // sin(B0), B0 is estimate of Bowring aux variable
+    double W2 = pnt[0] * pnt[0] + pnt[1] * pnt[1]; // Square of distance from Z axis	Z 축으로부터의 거리의 제곱
+    double W = sqrt(W2);                      // distance from Z axis	 Z 축으로부터의 거리
+    double T0 = Z * AD_C;                // initial estimate of vertical component	수직 구성 요소의 초기 추정
+    double S0 = sqrt(T0 * T0 + W2); //initial estimate of horizontal component	 수평 성분의 초기 추정
+    double Sin_B0 = T0 / S0;             // sin(B0), B0 is estimate of Bowring aux variable	 sin (B0), B0는 Bowring aux 변수의 추정치입니다.
     double Cos_B0 = W / S0;              // cos(B0)
     double Sin3_B0 = pow(Sin_B0, 3);
-    double T1 = Z + semiMinor * ses * Sin3_B0; //corrected estimate of vertical component
-    double Sum = W - semiMajor * es * Cos_B0 * Cos_B0 * Cos_B0; // numerator of cos(phi1)
-    double S1 = sqrt(T1 * T1 + Sum * Sum); // corrected estimate of horizontal component
-    double Sin_p1 = T1 / S1;  // sin(phi1), phi1 is estimated latitude
+    double T1 = Z + semiMinor * ses * Sin3_B0; //corrected estimate of vertical component	수직 성분의 수정 된 추정치
+    double Sum = W - semiMajor * es * Cos_B0 * Cos_B0 * Cos_B0; // numerator of cos(phi1)	cos (phi1)의 분자
+    double S1 = sqrt(T1 * T1 + Sum * Sum); // corrected estimate of horizontal component	수평 성분의 수정 된 추정치
+    double Sin_p1 = T1 / S1;  // sin(phi1), phi1 is estimated latitude	 sin (phi1), phi1은 추정 위도
     double Cos_p1 = Sum / S1; // cos(phi1)
-    double Rn = semiMajor / sqrt(1.0 - es * Sin_p1 * Sin_p1); // Earth radius at location
+    double Rn = semiMajor / sqrt(1.0 - es * Sin_p1 * Sin_p1); // Earth radius at location	 위치의 지구 반경
 
     if(Cos_p1 >= COS_67P5)
     {
@@ -394,17 +393,17 @@ QVector <double> LKS94Projection::MTD01(QVector <double>& pnt)
 QVector <double> LKS94Projection::MTD11(QVector <double>& p)
 {
     double scaleFactor = 0.9998;	                // scale factor
-    double centralMeridian = 0.41887902047863912;	// Center qlonglongitude (projection center)
-    double latOrigin = 0.0;	                   // center latitude
-    double falseNorthing = 0.0;	        // y offset in meters
-    double falseEasting = 500000.0;	    // x offset in meters
-    double semiMajor = 6378137.0;		    // major axis
-    double semiMinor = 6356752.3141403561;	// minor axis
+    double centralMeridian = 0.41887902047863912;	// Center qlonglongitude (projection center)	센터 qlonglongitude (투영 센터)
+    double latOrigin = 0.0;	                   // center latitude	중심 위도
+    double falseNorthing = 0.0;	        // y offset in meters	 미터 단위 오프셋
+    double falseEasting = 500000.0;	    // x offset in meters	미터 단위의 오프셋
+    double semiMajor = 6378137.0;		    // major axis	주요 축
+    double semiMinor = 6356752.3141403561;	// minor axis	보조 축
     double metersPerUnit = 1.0;
 
-    double e0, e1, e2, e3;	// eccentricity constants
-    double es, esp;		// eccentricity constants
-    double ml0;		    // small value m
+    double e0, e1, e2, e3;	// eccentricity constants	 이심률 상수
+    double es, esp;		// eccentricity constants	이심률 상수
+    double ml0;		    // small value m	작은 값 m
 
     es =(semiMinor * semiMinor) / (semiMajor * semiMajor);
     es=1.0-es;
@@ -476,7 +475,7 @@ QVector <double> LKS94Projection::MTD11(QVector <double>& p)
             ret[1]= RadiansToDegrees(lat);
             ret[2]=p[2];
             return ret;
-            //return new double[] { RadiansToDegrees(lon), RadiansToDegrees(lat), p[2] };
+            //return new double[] { RadiansToDegrees(lon), RadiansToDegrees(lat), p[2] };	  // 새로운 double을 반환 [] {RadiansToDegrees (lon), RadiansToDegrees (lat), p [2]};
         }
     }
     else

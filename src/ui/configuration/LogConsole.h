@@ -13,7 +13,7 @@ class QFile;
 class QTextStream;
 class Worker;
 
-/** @brief Log console widget, for dealing with logs on the UAV. */
+/** @brief Log console widget, for dealing with logs on the UAV.	 UAV의 로그를 다루기위한 로그 콘솔 위젯. */
 class LogConsole : public QWidget {
     Q_OBJECT
     
@@ -76,7 +76,7 @@ private:
     void doDelayedRefresh();
 };
 
-/** @brief worker for log extraction. */
+/** @brief worker for log extraction.	 로그 추출을위한 간단한 작업자. */
 class Worker: public QObject {
     Q_OBJECT
 

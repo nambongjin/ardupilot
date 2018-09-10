@@ -8,6 +8,12 @@
 * This class wrappers the crc32 function with the QuaChecksum32 interface.
 * See QuaChecksum32 for more info.
 */
+
+/*
+
+*이 클래스는 QuaChecksum32 인터페이스가있는 crc32 함수를 래퍼합니다.
+* 자세한 정보는 QuaChecksum32를 참조하십시오.*/
+
 class QUAZIP_EXPORT QuaCrc32 : public QuaChecksum32 {
 
 public:

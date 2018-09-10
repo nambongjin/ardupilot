@@ -22,7 +22,7 @@ This file is part of the APM_PLANNER project
 
 /**
  * @file
- *   @brief Compass sensor configuration
+ *   @brief Compass sensor configuration	  나침반 센서 구성
  *
  *   @author Michael Carpenter <malcom2073@gmail.com>
  */
@@ -112,7 +112,7 @@ private:
     int m_compassId2;
     int m_compassId3;
 
-    // Compass Mag Readings
+    // Compass Mag Readings	 나침반 글 읽기
     QVector<Vector3d> m_compass1RawImuList;
     QVector<Vector3d> m_compass2RawImuList;
     QVector<Vector3d> m_compass3RawImuList;

@@ -43,6 +43,7 @@ LogDownloadDescriptor::LogDownloadDescriptor(uint logID, uint time_utc,
     m_logID = logID;
     m_logTimeUTC = QDateTime::fromTime_t(time_utc);
     // Set time to current UTC time if time is 1970 i.e. invalid.
+    // 시간이 1970 인 경우 시간을 현재 UTC 시간으로 설정합니다. 즉, 유효하지 않습니다.
     if(m_logTimeUTC.date().year() == 1970)
         m_logTimeUTC = QDateTime::currentDateTimeUtc();
     m_logSize = logSize;
@@ -96,6 +97,7 @@ LogDownloadDialog::LogDownloadDialog(QWidget *parent) :
     connect(ui->checkAllBox, SIGNAL(clicked()), this, SLOT(checkAll()));
 
     // configure retransimission timer.
+    // 재전송 타이머를 구성합니다.
     connect(&m_timer, SIGNAL(timeout()), this, SLOT(processDownloadedLogData()));
 
     QStringList headerList;
@@ -191,7 +193,7 @@ void LogDownloadDialog::refreshList()
     if (m_uas){
         ui->tableWidget->setRowCount(0);
         m_logEntriesList.clear();
-        m_uas->logRequestList(0,0xffff); // Currently list all available logs
+        m_uas->logRequestList(0,0xffff); // Currently list all available logs// 현재 사용 가능한 모든 로그를 나열합니다.
     }
 }
 
@@ -250,9 +252,11 @@ void LogDownloadDialog::issueDownloadRequest()
 {
     QCoreApplication::processEvents(QEventLoop::AllEvents, 2000);
         // Open a file for the log to be downloaded
+        // 다운로드 할 로그 파일을 엽니 다.
     m_downloadFile = new QFile(QGC::logDirectory() +"/" + m_downloadFilename);
 
     // Append a number to the end if the filename already exists
+    // 파일 이름이 이미 있으면 끝에 숫자를 추가합니다.
     if(m_downloadFile->exists()){
         uint num_dups = 0;
         QStringList filename_spl = m_downloadFile->fileName().split('.');
@@ -268,6 +272,9 @@ void LogDownloadDialog::issueDownloadRequest()
             // Filename does not have an extension, avoid a crash and append a number on the end
             // This can not (currently) happen at runtime unless either a define goes away, or the code is otherwise broken elsewhere, but better safe with an error
             // in the log than sorry with a crash report.
+            // 파일 이름에 확장자가 없으며, 충돌을 피하고 마지막에 숫자를 추가합니다.
+            // 이것은 런타임에 정의가 사라지거나 다른 곳에서 코드가 손상되지 않는 한 (현재) 발생할 수 없지만 오류가있는 경우에는 더 안전합니다.
+            // 충돌 보고서가 유감 스럽다.
             QLOG_ERROR() << "Download filename is not properly formatted!" << m_downloadFile->fileName();
             QLOG_ERROR() << "The above should NEVER happen, please file a bug report with this log!";
             QString filename_orig = m_downloadFile->fileName();
@@ -307,8 +314,9 @@ void LogDownloadDialog::logEntry(int uasId, uint32_t time_utc, uint32_t size, ui
     m_logEntriesList.append(logItem);
 
     // append a new row.
+    // 새로운 행을 추가합니다.
     ui->tableWidget->setRowCount(m_logEntriesList.size());
-    int rowCount = m_logEntriesList.size() - 1; // index starts at 0
+    int rowCount = m_logEntriesList.size() - 1; // index starts at 0// 인덱스는 0에서 시작합니다.
 
     QTableWidgetItem *item = new QTableWidgetItem( QString::number(logItem->logID()));
     item->setFlags(Qt::NoItemFlags | Qt::ItemIsEnabled );
@@ -351,6 +359,7 @@ void LogDownloadDialog::logData(uint32_t uasId, uint32_t ofs, uint16_t id,
     }
 #ifdef SIMULATE_PACKET_LOSS
     //Simulate packet loss for testing in debug mode
+    // 디버그 모드에서 테스트 할 패킷 손실 시뮬레이션
     if ((rand() % 100) < 20){
         QLOG_DEBUG() << "Dropping Packet logId=" << id << " packetId=" << (int)ofs/90 << " ofs=" << ofs;
         return;
@@ -390,6 +399,7 @@ void LogDownloadDialog::logData(uint32_t uasId, uint32_t ofs, uint16_t id,
 
         if (m_downloadFile->size() == 0) {
             // If the file size is zero, retry
+           // 파일 크기가 0이면 다시 시도하십시오.
             QLOG_DEBUG() << "File Size is zero, retry";
             m_downloadOffset = 0;
             m_lastDownloadOffset = 0;
@@ -422,6 +432,7 @@ void LogDownloadDialog::logData(uint32_t uasId, uint32_t ofs, uint16_t id,
 void LogDownloadDialog::processDownloadedLogData()
 {
     // Process incoming log data and trigger next request for more
+    // 들어오는 로그 데이터를 처리하고 다음 요청을 더 트리거합니다.
     if (m_downloadSet==NULL || m_downloadSet->size() == 0)
         return;
 

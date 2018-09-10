@@ -22,7 +22,7 @@ This file is part of the APM_PLANNER project
 
 /**
  * @file
- *   @brief PID configuration for ArduCoptor (multi-rotor air vehicle)
+ *   @brief PID configuration for ArduCoptor (multi-rotor air vehicle)	 	 (multi-rotor air vehicle)에 대한 * @    간단한 PID 구성
  *
  *   @author Michael Carpenter <malcom2073@gmail.com>
  */
