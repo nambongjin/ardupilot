@@ -105,6 +105,7 @@ ApmSoftwareConfig::ApmSoftwareConfig(QWidget *parent) : QWidget(parent),
     activeUASSet(UASManager::instance()->getActiveUAS());
 
     // create a list of URLs/saved-filenames of parameters to fetch:
+    // 가져올 매개 변수의 URL / 저장된 파일 이름 목록을 만듭니다.
     QList<QPair<QString, QString> > pdef_vehicle_dirs;
     pdef_vehicle_dirs.append(QPair<QString,QString>(QString("ArduPlane"),
                                    QString("arduplane.pdef.xml")));
@@ -121,6 +122,7 @@ ApmSoftwareConfig::ApmSoftwareConfig(QWidget *parent) : QWidget(parent),
     }
 
     // start to fetch list of parameter files:
+    // 매개 변수 파일 목록을 가져 오기 시작합니다.
     QPair<QUrl, QString> next = pdef_urls.takeFirst();
     m_url = next.first;
     m_pdef_filename = next.second;
@@ -129,6 +131,7 @@ ApmSoftwareConfig::ApmSoftwareConfig(QWidget *parent) : QWidget(parent),
     connect(m_networkReply,SIGNAL(finished()),this,SLOT(apmParamNetworkReplyFinished()));
 
     // Setup Parameter Progress bars
+    // 설정 매개 변수 진행률 막대
     ui.globalParamProgressBar->setRange(0,100);
 
     QSettings settings;
@@ -161,6 +164,7 @@ void ApmSoftwareConfig::apmParamNetworkReplyFinished()
 
     if (reply->error()) {
         //Error condition, don't attempt to rewrite the file
+        // 오류 조건, 파일을 다시 쓰지 마십시오.
         QLOG_ERROR() << "ApmSoftwareConfig::apmParamNetworkReplyFinished()" << "Unable to retrieve pdef.xml file! Error num:" << reply->error() << ":" << reply->errorString();
         return;
 
@@ -169,6 +173,7 @@ void ApmSoftwareConfig::apmParamNetworkReplyFinished()
         m_redirectCount++;
         if ( m_redirectCount >= MAX_REDIRECT_COUNT ) {
             // Pormpt user is more than 2 redirects to avoid circular endless reidrects blowing up
+            // Pormpt 사용자가 2 회 이상 리다이렉트되어 순환하는 끝없는 재분석이 터지면 안됩니다.
             if (QMessageBox::question(this, tr("HTTP"),
                                         tr("Redirect to %1 ?").arg(newUrl.toString()),
                                         QMessageBox::Yes | QMessageBox::No) == QMessageBox::No) {
@@ -251,7 +256,7 @@ void ApmSoftwareConfig::uasConnected()
 
     if (m_uas->isFixedWing())
     {
-        ui.geoFenceButton->setVisible(false); // TODO - enable when plane geo fence implemented
+        ui.geoFenceButton->setVisible(false); // TODO - enable when plane geo fence implemented// TODO - 평면 지오 펜스 구현시 사용 가능
         ui.arduPlanePidButton->setVisible(true);
         ui.arduCopterPidButton->setVisible(false);
         ui.arduRoverPidButton->setVisible(false);
@@ -360,6 +365,8 @@ void ApmSoftwareConfig::activeUASSet(UASInterface *uas)
 
     //TODO: Testing to ensure that incorrectly formated XML won't break this.
     //Also, move this into the Param Manager, as it should handle all metadata.
+    // TODO : 부정확하게 형식화 된 XML이이를 깨뜨리지 않는지 테스트합니다.
+    // 또한 모든 메타 데이터를 처리해야하므로 Param Manager로 이동합니다.
     while (!xml.atEnd())
     {
         if (xml.isStartElement() && xml.name() == "paramfile")
@@ -368,13 +375,13 @@ void ApmSoftwareConfig::activeUASSet(UASInterface *uas)
             while ((xml.name() != "paramfile") && !xml.atEnd())
             {
                 QString valuetype = "";
-                if (xml.isStartElement() && (xml.name() == "vehicles" || xml.name() == "libraries")) //Enter into the vehicles loop
+                if (xml.isStartElement() && (xml.name() == "vehicles" || xml.name() == "libraries")) //Enter into the vehicles loop// 차량 루프에 입력
                 {
                     valuetype = xml.name().toString();
                     xml.readNext();
                     while ((xml.name() != valuetype) && !xml.atEnd())
                     {
-                        if (xml.isStartElement() && xml.name() == "parameters") //This is a parameter block
+                        if (xml.isStartElement() && xml.name() == "parameters") //This is a parameter block// 이것은 매개 변수 블록입니다.
                         {
                             QString parametersname = "";
                             if (xml.attributes().hasAttribute("name"))
@@ -397,7 +404,7 @@ void ApmSoftwareConfig::activeUASSet(UASInterface *uas)
                                     }
                                     QString docs = xml.attributes().value("documentation").toString();
 
-                                    int type = -1; //Type of item
+                                    int type = -1; //Type of item// 항목 유형
                                     QMap<QString,QString> fieldmap;
                                     QList<QPair<QString,QString> > valuemap;
                                     xml.readNext();
@@ -405,7 +412,7 @@ void ApmSoftwareConfig::activeUASSet(UASInterface *uas)
                                     {
                                         if (xml.isStartElement() && xml.name() == "values")
                                         {
-                                            type = 1; //1 is a combobox
+                                            type = 1; //1 is a combobox// 1은 콤보 박스입니다.
                                             int paramcount = 0;
                                             xml.readNext();
                                             while ((xml.name() != "values") && !xml.atEnd())
@@ -423,7 +430,7 @@ void ApmSoftwareConfig::activeUASSet(UASInterface *uas)
                                         }
                                         if (xml.isStartElement() && xml.name() == "field")
                                         {
-                                            type = 2; //2 is a slider
+                                            type = 2; //2 is a slider// 2는 슬라이더입니다.
                                             QString fieldtype = xml.attributes().value("name").toString();
                                             QString text = xml.readElementText();
                                             fieldmap[fieldtype] = text;
@@ -433,6 +440,7 @@ void ApmSoftwareConfig::activeUASSet(UASInterface *uas)
                                     if (type == -1)
                                     {
                                         //Nothing inside! Assume it's a value, give it a default range.
+                                        // 안에 아무것도 없어! 값이라고 가정하고 기본 범위를 지정하십시오.
                                         type = 2;
                                         QString fieldtype = "Range";
                                         QString text = "0 100"; //TODO: Determine a better way of figuring out default ranges.
@@ -445,6 +453,7 @@ void ApmSoftwareConfig::activeUASSet(UASInterface *uas)
                                             float min = 0;
                                             float max = 0;
                                             //Some range fields list "0-10" and some list "0 10". Handle both.
+                                            // 일부 범위 필드는 "0-10"과 일부 목록 "0 10"을 나열합니다. 둘 다 처리하십시오.
                                             if (fieldmap["Range"].split(" ").size() > 1)
                                             {
                                                 min = fieldmap["Range"].split(" ")[0].trimmed().toFloat();
@@ -465,6 +474,7 @@ void ApmSoftwareConfig::activeUASSet(UASInterface *uas)
                                     }
 
                                     //Right here we have a single param in memory
+                                    // 여기에 메모리에 단일 매개 변수가 있습니다.
                                     if (valuemap.size() > 0)
                                     {
                                         QList<QPair<int,QString> > valuelist;
@@ -503,10 +513,11 @@ void ApmSoftwareConfig::activeUASSet(UASInterface *uas)
                                     {
                                         float min = 0;
                                         float max = 65535;
-                                        float increment = 655.35; //Starting increment of 1%.
+                                        float increment = 655.35; //Starting increment of 1%.// 1 % 증가분을 시작합니다.
                                         if (fieldmap.contains("Range"))
                                         {
                                             //Some range fields list "0-10" and some list "0 10". Handle both.
+                                            // 일부 범위 필드는 "0-10"과 일부 목록 "0 10"을 나열합니다. 둘 다 처리하십시오.
                                             if (fieldmap["Range"].split(" ").size() > 1)
                                             {
                                                 min = fieldmap["Range"].split(" ")[0].trimmed().toFloat();
@@ -517,7 +528,7 @@ void ApmSoftwareConfig::activeUASSet(UASInterface *uas)
                                                 min = fieldmap["Range"].split("-")[0].trimmed().toFloat();
                                                 max = fieldmap["Range"].split("-")[1].trimmed().toFloat();
                                             }
-                                            increment = (max - min) / 100.0; //1% of total range increment
+                                            increment = (max - min) / 100.0; //1% of total range increment// 전체 범위 증가분의 1 %
                                             range = QString("%1 to %2").arg(min).arg(max);
                                         }
                                         if (compare == parametersname || valuetype == "libraries")
@@ -581,10 +592,14 @@ void ApmSoftwareConfig::populateTimerTick()
             //Set all the new parameters to their proper values.
             //By the time this is hit, the param manager already has a full set of parameters from the vehicle,
             //no need to re-request them.
+            // 모든 새 매개 변수를 적절한 값으로 설정합니다.
+            // 이것이 타격을받을 때까지, param manager는 이미 차량으로부터의 완전한 매개 변수 세트를 가지고있다.
+            // 다시 요청할 필요가 없습니다.
             QList<QString> paramnames = m_uas->getParamManager()->getParameterNames(1);
             if (paramnames.size() == 0)
             {
                 //No param names, params are likely not yet done. Wait a second and refresh.
+                // 매개 변수 이름이 없습니다. 매개 변수는 아직 완료되지 않은 것 같습니다. 잠시 기다렸다가 새로 고침하십시오.
                 QLOG_DEBUG() << "ApmSoftwareConfig::populateTimerTick() - No Param names from param manager. Sleeping for one second...";
                 m_populateTimer.start(1000);
                 return;
@@ -630,19 +645,23 @@ void ApmSoftwareConfig::parameterChanged(int uas, int component, int parameterCo
 
     QString countString;
     // Create progress of downloading all parameters for UI
+    // UI의 모든 매개 변수를 다운로드하는 과정을 만듭니다.
     switch (m_paramDownloadState){
     case none:
         if (parameterId == UINT16_MAX){
             // This is an ACK package, not a full read
+            // 이것은 ACK 패키지이며 전체 읽기는 아닙니다.
             break;
         } else if ((parameterId == 0) && (parameterCount != UINT16_MAX)) {
             // Its a new download List, Start from zero.
+            // 새로운 다운로드 목록, 0부터 시작합니다.
             ui.globalParamStateLabel->setText(tr("Downloading Params..."));
         } else {
             break;
         }
 
         // Otherwise, trigger progress bar update.
+        // 그렇지 않으면 진행률 표시 줄 업데이트를 트리거합니다.
     case startRead:
         QLOG_INFO() << "Starting Global Param Progress Bar Updating sys:" << uas;
         m_paramDownloadCount = 1;
@@ -680,7 +699,7 @@ void ApmSoftwareConfig::parameterChanged(int uas, int component, int parameterCo
         break;
 
     default:
-        ; // Do Nothing
+        ; // Do Nothing// 아무것도하지 마라.
     }
 }
 
@@ -693,10 +712,12 @@ void ApmSoftwareConfig::reloadView()
 {
     if (m_uas){
         // Detects if we are using new copter PIDS or old ones
+        // 우리가 새로운 헬기 PIDS 또는 오래된 것들을 사용하고 있는지 탐지한다.
         QVariant returnValue;
         if (m_uas->getParamManager()->getParameterValue(1, QString("POS_XY_P"), returnValue) ||
             m_uas->getParamManager()->getParameterValue(1, QString("PSC_POSXY_P"), returnValue)){
             // Use New Copter PID UI
+            // 새 헬기 PID UI 사용
             if (m_arduCopterPidConfig){
                 QLOG_DEBUG() << "Destroy Ext Tuning (m_arduCopterPidConfig)";
                 ui.stackedWidget->removeWidget(m_arduCopterPidConfig);
@@ -714,6 +735,7 @@ void ApmSoftwareConfig::reloadView()
 
         } else if (m_uas->getParamManager()->getParameterValue(1, "HLD_LAT_P", returnValue)){
             // Use old ArduCopter PID UI,
+            // 오래된 ArduCopter PID UI를 사용합니다.
             if (m_copterPidConfig){
                 QLOG_DEBUG() << "Destroy Ext Tuning (m_copterPidConfig)";
                 ui.stackedWidget->removeWidget(m_copterPidConfig);
