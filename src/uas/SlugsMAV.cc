@@ -46,12 +46,22 @@ SlugsMAV::SlugsMAV(MAVLinkProtocol* mavlink, int id) :
  *             messages can be sent back to the system via this link
  * @param message MAVLink message, as received from the MAVLink protocol stack
  */
+
+/*
+ *이 기능은 MAVLink가 완전하고 손상되지 않은 (CRC 검사 유효)
+ * mavlink 패킷이 수신되었습니다.
+ *
+ * @param link 메시지가 나온 하드웨어 링크 (예 : / dev / ttyUSB0 또는 UDP 포트).
+ *이 링크를 통해 메시지를 시스템에 다시 보낼 수 있습니다.
+ * @param message MAVLink 프로토콜 스택으로부터받은 MAVLink 메시지
+*/
+
 void SlugsMAV::receiveMessage(LinkInterface* link, mavlink_message_t message)
 {
-    UAS::receiveMessage(link, message);// Let UAS handle the default message set
+    UAS::receiveMessage(link, message);// Let UAS handle the default message set	 UAS가 기본 메시지 세트를 처리하도록합니다.  
 
     if (message.sysid == uasId) {
-#ifdef MAVLINK_ENABLED_SLUGS// Handle your special messages mavlink_message_t* msg = &message;
+#ifdef MAVLINK_ENABLED_SLUGS// Handle your special messages mavlink_message_t* msg = &message;	 특수 메시지 처리 mavlink_message_t * msg = & message;  
 
         switch (message.msgid) {
         case MAVLINK_MSG_ID_RAW_IMU:
@@ -204,7 +214,7 @@ void SlugsMAV::emitSignals (void)
     emit slugsRawImu(uasId, mlRawImuData);
 
 
-    // wrap around
+    // wrap around	 둘러보기  
     updateRoundRobin = updateRoundRobin > 10? 1: updateRoundRobin + 1;
 
 
@@ -214,10 +224,10 @@ void SlugsMAV::emitSignals (void)
 void SlugsMAV::emitGpsSignals (void)
 {
 
-    // QLOG_DEBUG()<<"After Emit GPS Signal"<<mlGpsData.fix_type;
+    // QLOG_DEBUG()<<"After Emit GPS Signal"<<mlGpsData.fix_type;	 QLOG_DEBUG () << "GPS 신호 방출 후"<< mlGpsData.fix_type;  
 
 
-    //ToDo Uncomment if. it was comment only to test
+    //ToDo Uncomment if. it was comment only to test	  ToDo 주석 처리를 취소하십시오. 그것은 단지 테스트에 대한 코멘트였습니다.  
 
 // if (mlGpsData.fix_type > 0){
     emit globalPositionChanged(this,

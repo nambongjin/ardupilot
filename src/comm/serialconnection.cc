@@ -49,7 +49,7 @@ SerialConnection::SerialConnection() : SerialLinkInterface(),
     loadSettings();
 
     if (m_portName.length() == 0) {
-        // Create a new serial link
+        // Create a new serial link	 새로운 시리얼 링크를 만든다.  
         getCurrentPorts();
         if (!m_portList.isEmpty())
             m_portName = m_portList.first().trimmed();
@@ -78,12 +78,18 @@ void SerialConnection::portError(QSerialPort::SerialPortError serialPortError)
     QLOG_ERROR() << "serial connection: error " << serialPortError;
 
     switch(serialPortError){
-    case QSerialPort::ReadError: // Required for commands when the port is open.
+    case QSerialPort::ReadError: // Required for commands when the port is open.	 포트가 열려있을 때 명령에 필요합니다.  
     case QSerialPort::WriteError:
     case QSerialPort::DeviceNotFoundError:
         {
             //Windows triggers this when the port disappears
             //Break out if we're not connected, could be a genuine error.
+
+/*
+            // 포트가 사라지면 Windows가이를 트리거합니다.
+            // 우리가 연결되어 있지 않으면 탈옥한다. 진짜 오류 일 수있다.
+*/
+
             if (!m_isConnected)
             {
                 break;
@@ -94,6 +100,12 @@ void SerialConnection::portError(QSerialPort::SerialPortError serialPortError)
         {
             // In case of error disconnect from error signal to avoid endless looping
             // if another error is signalled while disconnecting
+
+/*
+            // 에러가 끊어진 루프를 피하기 위해 에러 신호와의 연결이 끊어지는 경우
+            // 연결을 끊는 동안 다른 오류가 발생하는 경우
+*/
+
             QObject::disconnect(m_port, SIGNAL(error(QSerialPort::SerialPortError)),
                                 this, SLOT(portError(QSerialPort::SerialPortError)));
             disconnect();
@@ -102,7 +114,7 @@ void SerialConnection::portError(QSerialPort::SerialPortError serialPortError)
     case QSerialPort::NotOpen:
     case QSerialPort::OpenError:
     default:
-        ;// Do nothing
+        ;// Do nothing	 아무것도하지 않습니다.  
     }
 }
 
@@ -110,7 +122,7 @@ void SerialConnection::timeoutTimerTick()
 {
     if (!m_isConnected || !m_timeoutsEnabled)
     {
-        //Don't care if we're not connected
+        //Don't care if we're not connected	  우리가 연결되어 있지 않다면 신경 쓰지 마라.  
         return;
     }
     if (QDateTime::currentMSecsSinceEpoch() > (m_lastTimeoutMessage + SERIAL_TIMEOUT_MILLISECONDS))
@@ -233,7 +245,7 @@ void SerialConnection::loadSettings()
         m_baud = settings.value("SERIALLINK_COMM_BAUD",115200).toInt();
         if (m_baud < 0 || m_baud > 12500000)
         {
-            //Bad baud rate.
+            //Bad baud rate.	 잘못된 전송 속도.  
             m_baud = 115200;
         }
         //m_parity = settings.value("SERIALLINK_COMM_PARITY").toInt();
@@ -274,7 +286,7 @@ void SerialConnection::writeSettings()
     {
         portbaudmap += i.key() + ":" + QString::number(i.value()) + ",";
     }
-    portbaudmap = portbaudmap.mid(0,portbaudmap.length()-1); //Remove the last comma (,)
+    portbaudmap = portbaudmap.mid(0,portbaudmap.length()-1); //Remove the last comma (,)	 마지막 쉼표 (,)를 제거합니다.  
     settings.setValue("SERIALLINK_COMM_PORTMAP",portbaudmap);
     settings.sync();
 }
@@ -284,7 +296,7 @@ bool SerialConnection::connect()
     QLOG_DEBUG() << "SerialConnection::connect()";
     if (m_port)
     {
-        //Port already exists
+        //Port already exists	 이미 존재하는 포트  
         disconnect();
     }
     m_port = new QSerialPort();
@@ -294,7 +306,7 @@ bool SerialConnection::connect()
                      this, SLOT(portError(QSerialPort::SerialPortError)), Qt::UniqueConnection);
 
 #if defined(Q_OS_MACX) && ((QT_VERSION == 0x050402)||(QT_VERSION == 0x0500401))
-    // temp fix Qt5.4.1 issue on OSX
+    // temp fix Qt5.4.1 issue on OSX	 temp는 OSX에서 Qt5.4.1 문제를 해결합니다.  
     // http://code.qt.io/cgit/qt/qtserialport.git/commit/?id=687dfa9312c1ef4894c32a1966b8ac968110b71e
     m_port->setPortName("/dev/cu." + m_portName);
 #else
@@ -318,7 +330,7 @@ bool SerialConnection::connect()
     }
     if (!m_port->setBaudRate(m_baud))
     {
-        //Unable to set baud rate.
+        //Unable to set baud rate.	 전송 속도를 설정할 수 없습니다.  
         emit error(this,"Unable to set baud rate: " + m_port->errorString());
         m_port->close();
         delete m_port;
@@ -370,7 +382,7 @@ void SerialConnection::readyRead()
 {
     if (!m_port)
     {
-        //This shouldn't happen
+        //This shouldn't happen	  이런 일은 없어야합니다.  
     }
     m_lastTimeoutMessage = QDateTime::currentMSecsSinceEpoch();
     QByteArray bytes = m_port->readAll();

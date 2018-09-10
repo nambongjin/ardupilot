@@ -29,6 +29,13 @@ This file is part of the QGROUNDCONTROL project
  *
  */
 
+/*
+ 무인 차량을위한 UDP 연결 (서버) 정의
+ * @ Flightgear Manual http://mapserver.flightgear.org/getstart.pdf를 참조하십시오.
+ * @author Lorenz Meier <mavteam@student.ethz.ch>
+*/
+
+
 #include "logging.h"
 #include "QGCFlightGearLink.h"
 #include "QGC.h"
@@ -64,13 +71,19 @@ QGCFlightGearLink::QGCFlightGearLink(UASInterface* mav, QString startupArguments
 QGCFlightGearLink::~QGCFlightGearLink()
 {   //do not disconnect unless it is connected.
     //disconnectSimulation will delete the memory that was allocated for proces, terraSync and socket
+
+/*
+    // 연결되어 있지 않으면 연결을 끊지 마십시오.
+    // disconnectSimulation은 proces, terraSync 및 소켓에 할당 된 메모리를 삭제합니다.
+*/
+
     if(connectState){
        disconnectSimulation();
     }
 }
 
 /**
- * @brief Runs the thread
+ * @brief Runs the thread	 스레드를 실행합니다.  
  *
  **/
 void QGCFlightGearLink::run()
@@ -112,7 +125,7 @@ void QGCFlightGearLink::processError(QProcess::ProcessError err)
 }
 
 /**
- * @param host Hostname in standard formatting, e.g. localhost:14551 or 192.168.1.1:14551
+ * @param host Hostname in standard formatting, e.g. localhost:14551 or 192.168.1.1:14551	 표준 형식의 호스트 명. 예 : localhost : 14551 또는 192.168.1.1:14551  
  */
 void QGCFlightGearLink::setRemoteHost(const QString& host)
 {
@@ -122,12 +135,12 @@ void QGCFlightGearLink::setRemoteHost(const QString& host)
         QHostInfo info = QHostInfo::fromName(host.split(":").first());
         if (info.error() == QHostInfo::NoError)
         {
-            // Add host
+            // Add host	 호스트 추가  
             QList<QHostAddress> hostAddresses = info.addresses();
             QHostAddress address;
             for (int i = 0; i < hostAddresses.size(); i++)
             {
-                // Exclude loopback IPv4 and all IPv6 addresses
+                // Exclude loopback IPv4 and all IPv6 addresses	 루프백 IPv4 및 모든 IPv6 주소 제외  
                 if (!hostAddresses.at(i).toString().contains(":"))
                 {
                     address = hostAddresses.at(i);
@@ -135,7 +148,7 @@ void QGCFlightGearLink::setRemoteHost(const QString& host)
             }
             currentHost = address;
             QLOG_TRACE() << "Address:" << address.toString();
-            // Set port according to user input
+            // Set port according to user input	 사용자 입력에 따라 포트 설정  
             currentPort = host.split(":").last().toInt();
         }
     }
@@ -144,7 +157,7 @@ void QGCFlightGearLink::setRemoteHost(const QString& host)
         QHostInfo info = QHostInfo::fromName(host);
         if (info.error() == QHostInfo::NoError)
         {
-            // Add host
+            // Add host	 호스트 추가  
             currentHost = info.addresses().first();
         }
     }
@@ -166,7 +179,7 @@ void QGCFlightGearLink::updateActuators(uint64_t time, float act1, float act2, f
 
 void QGCFlightGearLink::updateControls(uint64_t time, float rollAilerons, float pitchElevator, float yawRudder, float throttle, uint8_t systemMode, uint8_t navMode)
 {
-    // magnetos,aileron,elevator,rudder,throttle\n
+    // magnetos,aileron,elevator,rudder,throttle\n	 자석, 에일러론, 엘리베이터, 방향타, 스로틀 \ n  
 
     //float magnetos = 3.0f;
     Q_UNUSED(time);
@@ -218,6 +231,14 @@ void QGCFlightGearLink::writeBytes(const char* data, qint64 size)
  * @param data Pointer to the data byte array to write the bytes to
  * @param maxLength The maximum number of bytes to write
  **/
+
+/*
+ * @brief 인터페이스에서 여러 바이트를 읽습니다.
+ *
+ 파라미터 : data - 바이트 배열을 기입하는 데이터 바이트 배열의 포인터.
+ * @param maxLength 기입 해지는 최대 바이트 수
+*/
+
 void QGCFlightGearLink::readBytes()
 {
     const qint64 maxLength = 65536;
@@ -231,13 +252,13 @@ void QGCFlightGearLink::readBytes()
 
     QByteArray b(data, s);
 
-    // Print string
+    // Print string	 문자열을 출력한다.  
     QString state(b);
     QLOG_TRACE() << "FG LINK GOT:" << state;
 
     QStringList values = state.split("\t");
 
-    // Check length
+    // Check length	  길이를 확인하십시오.  
     const int nValues = 21;
     if (values.size() != nValues)
     {
@@ -246,7 +267,7 @@ void QGCFlightGearLink::readBytes()
         return;
     }
 
-    // Parse string
+    // Parse string	 문자열 분석  
     float roll, pitch, yaw, rollspeed, pitchspeed, yawspeed;
     double lat, lon, alt;   
     float ind_airspeed;
@@ -282,17 +303,17 @@ void QGCFlightGearLink::readBytes()
     mag_dip = values.at(18).toFloat();
 
     temperature = values.at(19).toFloat();
-    abs_pressure = values.at(20).toFloat() * 1e2f; //convert to Pa from hPa
-    abs_pressure += barometerOffsetkPa * 1e3f; //add offset, convert from kPa to Pa
+    abs_pressure = values.at(20).toFloat() * 1e2f; //convert to Pa from hPa	 hPa에서 Pa로 변환  
+    abs_pressure += barometerOffsetkPa * 1e3f; //add offset, convert from kPa to Pa	 오프셋을 추가하고 kPa에서 Pa로 변환합니다.  
 
-    //calculate differential pressure
+    //calculate differential pressure	 차압을 계산합니다.  
     const float air_gas_constant = 287.1f; // J/(kg * K)
     const float absolute_null_celsius = -273.15f; // °C
     float density = abs_pressure / (air_gas_constant * (temperature - absolute_null_celsius));
     diff_pressure = true_airspeed * true_airspeed * density / 2.0f;
     //qDebug() << "diff_pressure: " << diff_pressure << "abs_pressure: " << abs_pressure;
     
-    /* Calculate indicated airspeed */
+    /* Calculate indicated airspeed	 지시 대기 속도를 계산하십시오   */
     const float air_density_sea_level_15C  = 1.225f; //kg/m^3
     if (diff_pressure > 0)
     {
@@ -304,11 +325,11 @@ void QGCFlightGearLink::readBytes()
     
     //qDebug() << "ind_airspeed: " << ind_airspeed << "true_airspeed: " << true_airspeed;
     
-    // Send updated state
+    // Send updated state	 업데이트 된 상태를 보냅니다.  
     //qDebug()  << "sensorHilEnabled: " << sensorHilEnabled;
     if (_sensorHilEnabled)
     {
-        quint16 fields_changed = 0xFFF; //set all 12 used bits
+        quint16 fields_changed = 0xFFF; //set all 12 used bits	 12 비트를 모두 설정합니다.  
 
         float pressure_alt = alt;
 
@@ -350,10 +371,10 @@ void QGCFlightGearLink::readBytes()
                          vx, vy, vz,
                          ind_airspeed, true_airspeed,
                          xacc, yacc, zacc);
-        //qDebug()  << "hilStateChanged " << (int32_t)lat << (int32_t)lon << (int32_t)alt;
+        //qDebug()  << "hilStateChanged " << (int32_t)lat << (int32_t)lon << (int32_t)alt;	 
     }
 
-    //    // Echo data for debugging purposes
+    //    // Echo data for debugging purposes	 디버깅 목적으로 데이터 에코하기  
     //    std::cerr << __FILE__ << __LINE__ << "Received datagram:" << std::endl;
     //    int i;
     //    for (i=0; i<s; i++)
@@ -370,6 +391,13 @@ void QGCFlightGearLink::readBytes()
  *
  * @return The number of bytes to read
  **/
+
+/*
+ * @brief 읽을 바이트 수를 가져옵니다.
+ *
+ * @return 읽을 바이트 수
+*/
+
 qint64 QGCFlightGearLink::bytesAvailable()
 {
     return socket->pendingDatagramSize();
@@ -380,6 +408,13 @@ qint64 QGCFlightGearLink::bytesAvailable()
  *
  * @return True if connection has been disconnected, false if connection couldn't be disconnected.
  **/
+
+/*
+ * @brief 연결을 끊습니다.
+ *
+ * @return 연결이 끊어진 경우 true, 연결을 끊을 수없는 경우 false.
+*/
+
 bool QGCFlightGearLink::disconnectSimulation()
 {
     disconnect(process, SIGNAL(error(QProcess::ProcessError)),
@@ -420,6 +455,13 @@ bool QGCFlightGearLink::disconnectSimulation()
  *
  * @return True if connection has been established, false if connection couldn't be established.
  **/
+
+/*
+ * @brief 연결을 연결하십시오.
+ *
+ * @return 접속이 확립하면 true, 접속을 확립 할 수없는 경우는 false
+*/
+
 bool QGCFlightGearLink::connectSimulation()
 {
     QLOG_DEBUG() << "STARTING FLIGHTGEAR LINK";
@@ -445,12 +487,13 @@ bool QGCFlightGearLink::connectSimulation()
     }
 
     //connect(&refreshTimer, SIGNAL(timeout()), this, SLOT(sendUAVUpdate()));
-    // Catch process error
+    // Catch process error	 프로세스 오류를 잡아라.  
+  
     QObject::connect( process, SIGNAL(error(QProcess::ProcessError)),
                       this, SLOT(processError(QProcess::ProcessError)));
     QObject::connect( terraSync, SIGNAL(error(QProcess::ProcessError)),
                       this, SLOT(processError(QProcess::ProcessError)));
-    // Start Flightgear
+    // Start Flightgear	  Flightgear를 시작합니다.  
     QStringList flightGearArguments;
     QString processFgfs;
     QString processTerraSync;
@@ -479,21 +522,26 @@ bool QGCFlightGearLink::connectSimulation()
     processFgfs = "fgfs";
     //fgRoot = "/usr/share/flightgear";
     QString fgScenery1 = "/usr/share/flightgear/data/Scenery";
-    QString fgScenery2 = "/usr/share/games/flightgear/Scenery"; // Ubuntu default location
-    fgScenery = ""; //Flightgear can also start with fgScenery = ""
+    QString fgScenery2 = "/usr/share/games/flightgear/Scenery"; // Ubuntu default location	 우분투 기본 위치  
+    fgScenery = ""; //Flightgear can also start with fgScenery = ""	 Flightgear도 fgScenery = ""로 시작할 수 있습니다.  
     if (QDir(fgScenery1).exists())
         fgScenery = fgScenery1;
     else if (QDir(fgScenery2).exists())
         fgScenery = fgScenery2;
 
 
-    processTerraSync = "nice"; //according to http://wiki.flightgear.org/TerraSync, run with lower priority
+    processTerraSync = "nice"; //according to http://wiki.flightgear.org/TerraSync, run with lower priority	  http://wiki.flightgear.org/TerraSync에 따라 낮은 우선 순위로 실행  
     terraSyncScenery = QDir::homePath() + "/.terrasync/Scenery"; //according to http://wiki.flightgear.org/TerraSync a separate directory is used
+
+/*
+http://wiki.flightgear.org/TerraSync에 따라 별도의 디렉토리가 사용됩니다.
+*/
+
 #endif
 
     fgAircraft = QGC::shareDirectory() + "/files/flightgear/Aircraft";
 
-    // Sanity checks
+    // Sanity checks	 온전한 검사  
     bool sane = true;
 //    QFileInfo executable(processFgfs);
 //    if (!executable.isExecutable())
@@ -529,7 +577,7 @@ bool QGCFlightGearLink::connectSimulation()
     // --atlas=socket,out,1,localhost,5505,udp
     // terrasync -p 5505 -S -d /usr/local/share/TerraSync
 
-    /*Prepare FlightGear Arguments */
+    /*Prepare FlightGear Arguments 	 r 인수 준비   */
     //flightGearArguments << QString("--fg-root=%1").arg(fgRoot);
     flightGearArguments << QString("--fg-scenery=%1:%2").arg(fgScenery).arg(terraSyncScenery); //according to http://wiki.flightgear.org/TerraSync a separate directory is used
     flightGearArguments << QString("--fg-aircraft=%1").arg(fgAircraft);
@@ -571,13 +619,13 @@ bool QGCFlightGearLink::connectSimulation()
 //    //flightGearArguments << "--disable-horizon-effect";
 //    flightGearArguments << "--disable-clouds";
 //    flightGearArguments << "--fdm=jsb";
-//    flightGearArguments << "--units-meters"; //XXX: check: the protocol xml has already a conversion from feet to m?
+//    flightGearArguments << "--units-meters"; //XXX: check: the protocol xml has already a conversion from feet to m?	 프로토콜 xml이 이미 ft에서 m으로 변환 되었습니까?  
 //    flightGearArguments << "--notrim";
 
     flightGearArguments += startupArguments.split(" ");
     if (mav->getSystemType() == MAV_TYPE_QUADROTOR)
     {
-        // Start all engines of the quad
+        // Start all engines of the quad	 쿼드의 모든 엔진을 시작합니다.  
         flightGearArguments << "--prop:/engines/engine[0]/running=true";
         flightGearArguments << "--prop:/engines/engine[1]/running=true";
         flightGearArguments << "--prop:/engines/engine[2]/running=true";
@@ -596,7 +644,16 @@ bool QGCFlightGearLink::connectSimulation()
     // Add new argument with this: flightGearArguments << "";
     //flightGearArguments << QString("--aircraft=%2").arg(aircraft);
 
-    /*Prepare TerraSync Arguments */
+/*
+    // 지면 고도와 같지 않은 고도가 비행 장치에서 0이 아닌 기본 스로틀을 유도하기 때문에 고도가 설정되지 않음
+    // 고도가 설정되지 않으면 항공기가 지상에 배치됩니다.
+    // flightGearArguments << QString ( "- 고도 = % 1"). arg (UASManager :: instance () -> getHomeAltitude ());
+
+    // 이 인수로 새 인수를 추가합니다. flightGearArguments << "";
+    // flightGearArguments << QString ( "- aircraft = % 2"). arg (항공기);
+*/
+
+    /*Prepare TerraSync Arguments	  TerraSync 인수 준비   */
     QStringList terraSyncArguments;
 #ifdef Q_OS_LINUX
     terraSyncArguments << "terrasync";
@@ -605,7 +662,7 @@ bool QGCFlightGearLink::connectSimulation()
     terraSyncArguments << "5505";
     terraSyncArguments << "-S";
     terraSyncArguments << "-d";
-    terraSyncArguments << terraSyncScenery; //according to http://wiki.flightgear.org/TerraSync a separate directory is used
+    terraSyncArguments << terraSyncScenery; //according to http://wiki.flightgear.org/TerraSync a separate directory is used	 http://wiki.flightgear.org/TerraSync에 따라 별도의 디렉토리가 사용됩니다.  
 
 #ifdef Q_OS_LINUX
      /* Setting environment */
@@ -683,7 +740,7 @@ void QGCFlightGearLink::printFgfsError()
 }
 
 /**
- * @brief Set the startup arguments used to start flightgear
+ * @brief Set the startup arguments used to start flightgear	 비행 기어를 시작하는 데 사용되는 시작 인수를 설정합니다.  
  *
  **/
 void QGCFlightGearLink::setStartupArguments(QString startupArguments)
@@ -696,6 +753,13 @@ void QGCFlightGearLink::setStartupArguments(QString startupArguments)
  *
  * @return True if link is connected, false otherwise.
  **/
+
+/*
+ * @brief 연결이 활성화되어 있는지 확인하십시오.
+ *
+ * @return 링크가 연결되어 있으면 true이고, 그렇지 않으면 false입니다.
+*/
+
 bool QGCFlightGearLink::isConnected()
 {
     return connectState;

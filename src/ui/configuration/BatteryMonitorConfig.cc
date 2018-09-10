@@ -84,6 +84,7 @@ BatteryMonitorConfig::BatteryMonitorConfig(QWidget *parent) : AP2ConfigWidget(pa
     initConnections();
 
     // Setup presets
+    // 설정 사전 설정
     setupPresetSelectionTable();
 }
 
@@ -91,8 +92,11 @@ void BatteryMonitorConfig::setupPresetSelectionTable()
 {
     // Setup preset manually in code for now
     // but this would be good ot read from a file
+    // 지금 코드에서 수동으로 프리셋 설정
+    // 하지만 이것은 파일에서 읽는 것이 좋을 것입니다.
 
     // Iris
+    // 아이리스
     BatteryPreset *preset = new BatteryPreset("3DR Iris\n4 in 1 ESC",
                                               BatteryPreset::Both,
                                               2, 12.02f,  // voltPin, voltDivider
@@ -331,10 +335,12 @@ void BatteryMonitorConfig::batteryChanged(UASInterface* uas, double voltage, dou
     Q_UNUSED(seconds);
 
     // Update Basic Battery Tab
+    // 기본 배터리 업데이트 탭
     ui.battVoltageLineEdit->setText(QString::number(voltage,'f',2));
     ui.battCurrentLineEdit->setText(QString::number(current,'f',2));
 
     // Update Advanced Tab
+    // Update Advanced 탭
     ui.calcVoltsLineEdit->setText(QString::number(voltage,'f',2));
     if (ui.measuredVoltsLineEdit->text() == "")
     {
@@ -435,6 +441,7 @@ void BatteryMonitorConfig::parameterChanged(int uas, int component, QString para
     {
         QLOG_DEBUG() << "Received paramter BATT_CURR_PIN";
         //Unused at the moment, everything is off BATT_VOLT_PIN
+        // 현재 사용하지 않고 모든 것이 꺼져 있습니다 BATT_VOLT_PIN
         int ivalue = value.toInt();
         ui.currPinLineEdit->setText(QString::number(ivalue));
     }

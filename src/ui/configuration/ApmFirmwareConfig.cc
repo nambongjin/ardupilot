@@ -63,7 +63,7 @@ ApmFirmwareConfig::ApmFirmwareConfig(QWidget *parent) : AP2ConfigWidget(parent),
     ui.warningLabelAC33->setVisible(false);
     ui.textBrowser->setVisible(false);
 
-    // first hide all buttons
+    // first hide all buttons	 처음에는 모든 버튼을 숨 깁니다.  
     hideFirmwareButtons();
 
     loadSettings();
@@ -142,7 +142,7 @@ void ApmFirmwareConfig::updateFirmwareButtons()
 
 void ApmFirmwareConfig::loadSettings()
 {
-    // Load defaults from settings
+    // Load defaults from settings	 설정에서 기본값로드  
     QSettings settings;
     settings.sync();
     settings.beginGroup("APM_FIRMWARE_CONFIG");
@@ -155,7 +155,7 @@ void ApmFirmwareConfig::loadSettings()
 
 void ApmFirmwareConfig::storeSettings()
 {
-    // Store settings
+    // Store settings	 설정 저장  
     QSettings settings;
     settings.beginGroup("APM_FIRMWARE_CONFIG");
     settings.setValue("ENABLE_UPDATE_CHECK", m_enableUpdateCheck);
@@ -186,6 +186,14 @@ void ApmFirmwareConfig::populateSerialPorts()
             // on windows, the friendly name is annoyingly identical between devices. On OSX it's different
             // We also want to only display COM ports for PX4/Pixhawk, or arduino mega 2560's.
             // We also want to show FTDI based 232/TTL devices, for APM 1.0/2.0 devices which use FTDI for usb comms.
+
+/*
+            // 사용자에게 덜 혼란스럽게 블루투스 포트를 추가하지 않음
+            // Windows에서 친숙한 이름은 기기간에 성가 시게 동일합니다. OSX에서는 다릅니다.
+            // PX4 / Pixhawk 또는 arduino mega 2560에 대해서만 COM 포트를 표시하려고합니다.
+            // 우리는 또한 usb 통신을 위해 FTDI를 사용하는 APM 1.0 / 2.0 장치에 대해 FTDI 기반 232 / TTL 장치를 보여주고 자합니다.
+*/
+
             if (info.description().toLower().contains("px4") || info.description().toLower().contains("mega") ||
                     info.productIdentifier() == 0x0001 || info.productIdentifier() == 0x0003 ||
                     info.productIdentifier() == 0x0010 || info.productIdentifier() == 0x0011 ||
@@ -214,7 +222,8 @@ void ApmFirmwareConfig::populateSerialPorts()
     }
     if (ui.linkComboBox->count() == 0)
     {
-        //no ports found
+        //no ports found	 포트가 없습니다.  
+
         ui.linkComboBox->setEnabled(false);
         ui.comPortNameLabel->setText("No valid device found. \nCheck to be sure your APM2.5+ \n or Pixhawk/PX4 device is plugged in, and \ndrivers are installed.");
     }
@@ -226,7 +235,7 @@ void ApmFirmwareConfig::populateSerialPorts()
 
 void ApmFirmwareConfig::showEvent(QShowEvent *)
 {
-    // Start Port scanning
+    // Start Port scanning	 포트 스캐닝을 시작합니다.  
     m_timer.setSingleShot(false);
     m_timer.start(2000);
     if(ui.stackedWidget->currentIndex() == 0)
@@ -243,7 +252,7 @@ void ApmFirmwareConfig::showEvent(QShowEvent *)
 
 void ApmFirmwareConfig::hideEvent(QHideEvent *)
 {
-    // Stop Port scanning
+    // Stop Port scanning	 포트 스캔 중지  
     if (!m_timer.isActive())
         return;
 
@@ -276,7 +285,7 @@ void ApmFirmwareConfig::cancelButtonClicked()
 
 void ApmFirmwareConfig::cleanUp()
 {
-    // stop and cleanup an operation
+    // stop and cleanup an operation	 작업 중지 및 정리  
     if (m_px4uploader)
     {
         QLOG_DEBUG() << "PX4 Flashing Cleanup";
@@ -392,6 +401,13 @@ void ApmFirmwareConfig::requestFirmwares(QString type, QString autopilot, bool n
     //type can be "stable" "beta" or "latest"
     //autopilot can be "apm" "px4", "px4-v2" or "px4-v4"
     //or "aerocore"
+
+/*
+    // type은 "stable" "beta"또는 "latest"가 될 수 있습니다.
+    // 자동 조종 장치는 "apm" "px4", "px4-v2"또는 "px4-v4"가 될 수 있습니다.
+    // 또는 "aerocore"
+*/
+
     QLOG_DEBUG() << "ApmFirmwareConfig::requestFirmwares - Requesting firmware versions:" << autopilot << " " << type;
     if(autopilot.size() == 0)
     {
@@ -463,6 +479,12 @@ void ApmFirmwareConfig::requestFirmwares(QString type, QString autopilot, bool n
              * Last known 'latest': http://firmware.ardupilot.org/Copter/2015-03/2015-03-13-00:03/
              * stable and beta both still support, as they are not 3.3 yet
              */
+
+/*
+             * AC3.3은 Pixhawk 만 지원하며 APM1 / APM2는 단종되었습니다.
+             * 마지막으로 알려진 '최신': http://firmware.ardupilot.org/Copter/2015-03/2015-03-13-00:03/
+             * 안정적이지 않고 아직 베타가 둘 모두를 지원합니다. 3.3이 아닙니다./
+*/
             QString prepath = "http://firmware.ardupilot.org/Copter/2015-03/2015-03-13-00:03/" + prestring;
             m_buttonToUrlMap[ui.copterPushButton] = prepath + "-heli/ArduCopter.hex";
             m_buttonToUrlMap[ui.hexaPushButton] = prepath + "-hexa/ArduCopter.hex";
@@ -482,7 +504,7 @@ void ApmFirmwareConfig::requestFirmwares(QString type, QString autopilot, bool n
         }
         else
         {
-            //TODO: Need to add beta and stable as they push APM1/APM2 support off
+            //TODO: Need to add beta and stable as they push APM1/APM2 support off	 APM1 / APM2 지원을 해제하여 베타 버전과 안정 버전을 추가해야합니다.  
 
             m_buttonToUrlMap[ui.copterPushButton] = "http://firmware.ardupilot.org/Copter/" + type + "/" + prestring + "-heli/ArduCopter.hex";
             m_buttonToUrlMap[ui.hexaPushButton] = "http://firmware.ardupilot.org/Copter/" + type + "/" + prestring + "-hexa/ArduCopter.hex";
@@ -650,7 +672,7 @@ void ApmFirmwareConfig::downloadFinished()
 
     if (reply->error() != QNetworkReply::NoError)
     {
-        //Something went wrong when downloading the firmware.
+        //Something went wrong when downloading the firmware.	 펌웨어를 다운로드 할 때 문제가 발생했습니다.  
         QMessageBox::information(this,tr("Error downloading firmware"),tr("There was an error while downloading the firmware.\nError number: ") + QString::number(reply->error()) + "\nError text: " + reply->errorString());
         ui.textBrowser->append("Error downloading firmware.");
         ui.textBrowser->append("Error Number: " + QString::number(reply->error()));
@@ -753,6 +775,13 @@ void ApmFirmwareConfig::requestDeviceReplug()
     //connect(m_px4UnplugTimer,SIGNAL(timeout()),this,SLOT(px4UnplugTimerTick()));
     //m_px4UnplugTimer->start(1000);
     //QMessageBox::information(this,"Warning","Please click ok, then unplug, and plug back in the PX4/Pixhawk");
+
+/*
+    // connect (m_px4UnplugTimer, SIGNAL (timeout ()), this, SLOT (px4UnplugTimerTick ()));
+    // m_px4UnplugTimer-> start (1000);
+    // QMessageBox :: information ( "경고", "확인을 클릭 한 다음 플러그를 뽑고 PX4 / Pixhawk를 다시 연결하십시오");
+*/
+
 }
 void ApmFirmwareConfig::px4UnplugTimerTick()
 {
@@ -809,7 +838,7 @@ void ApmFirmwareConfig::flashButtonClicked()
         }
         if (QMessageBox::question(0,"Confirm",confirmmsg,QMessageBox::Ok,QMessageBox::Abort) == QMessageBox::Abort)
         {
-            //aborted.
+            //aborted.	 중단되었습니다.  
             return;
         }
 
@@ -872,7 +901,7 @@ void ApmFirmwareConfig::setLink(int index)
 
 QString ApmFirmwareConfig::processPortInfo(const QSerialPortInfo &info)
 {
-    // Include FTDI based 232/TTL devices, for APM 1.0/2.0 devices which use FTDI for usb comms.
+    // Include FTDI based 232/TTL devices, for APM 1.0/2.0 devices which use FTDI for usb comms.	 usb 통신을 위해 FTDI를 사용하는 APM 1.0 / 2.0 장치 용 FTDI 기반 232 / TTL 장치를 포함합니다.  
     if ((info.description().toLower().contains("mega") && info.description().contains("2560")) \
             || info.productIdentifier() == 0x6001 || info.productIdentifier() == 0x6010 || info.productIdentifier() == 0x6014 )
     {
@@ -934,7 +963,7 @@ bool ApmFirmwareConfig::stripVersionFromGitReply(QString url, QString reply,QStr
 
 void ApmFirmwareConfig::firmwareListFinished()
 {
-    m_activeNetworkRequests--;  // on finish one request is gone.
+    m_activeNetworkRequests--;  // on finish one request is gone.	 끝에 하나의 요청이 사라졌습니다.  
     QNetworkReply *reply = qobject_cast<QNetworkReply*>(sender());
     QVariant redirectionTarget = reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
 
@@ -989,7 +1018,7 @@ void ApmFirmwareConfig::firmwareListFinished()
 
     if (stripVersionFromGitReply(reply->url().toString(),replystr,apmver + "-heli",cmpstr,&outstr))
     {
-        //Version checking
+        //Version checking	  버전 확인  
         m_buttonToWarning[ui.copterPushButton] = versionIsGreaterThan(outstr,3.1);
         ui.copterLabel->setText(labelstr + outstr);
         ui.copterLabel->setVisible(true);
@@ -998,7 +1027,7 @@ void ApmFirmwareConfig::firmwareListFinished()
     }
     if (stripVersionFromGitReply(reply->url().toString(),replystr,apmver + "-quad",cmpstr,&outstr))
     {
-        //Update version checkin
+        //Update version checkin	 버전 업데이트 체크인  
         compareVersionsForNotification("ArduCopter", outstr); // We only check one of the copter frame types
         m_buttonToWarning[ui.quadPushButton] = versionIsGreaterThan(outstr,3.1);
         ui.quadLabel->setText(labelstr + outstr);
@@ -1008,7 +1037,7 @@ void ApmFirmwareConfig::firmwareListFinished()
     }
     if (stripVersionFromGitReply(reply->url().toString(),replystr,apmver + "-hexa",cmpstr,&outstr))
     {
-        //Version checking
+        //Version checking	 버전 확인  
         m_buttonToWarning[ui.hexaPushButton] = versionIsGreaterThan(outstr,3.1);
         ui.hexaLabel->setText(labelstr + outstr);
         ui.hexaLabel->setVisible(true);
@@ -1017,7 +1046,7 @@ void ApmFirmwareConfig::firmwareListFinished()
     }
     if (stripVersionFromGitReply(reply->url().toString(),replystr,apmver + "-octa-quad",cmpstr,&outstr))
     {
-        //Version checking
+        //Version checking	 버전 확인  
         m_buttonToWarning[ui.octaQuadPushButton] = versionIsGreaterThan(outstr,3.1);
         ui.octaQuadLabel->setText(labelstr + outstr);
         ui.octaQuadLabel->setVisible(true);
@@ -1026,7 +1055,7 @@ void ApmFirmwareConfig::firmwareListFinished()
     }
     if (stripVersionFromGitReply(reply->url().toString(),replystr,apmver + "-octa",cmpstr,&outstr))
     {
-        //Version checking
+        //Version checking	 버전 확인  
         m_buttonToWarning[ui.octaPushButton] = versionIsGreaterThan(outstr,3.1);
         ui.octaLabel->setText(labelstr + outstr);
         ui.octaLabel->setVisible(true);
@@ -1044,7 +1073,7 @@ void ApmFirmwareConfig::firmwareListFinished()
     }
     if (stripVersionFromGitReply(reply->url().toString(),replystr,apmver + "-y6",cmpstr,&outstr))
     {
-        //Version checking
+        //Version checking	 버전 확인  
         m_buttonToWarning[ui.y6PushButton] = versionIsGreaterThan(outstr,3.1);
         ui.y6Label->setText(labelstr + outstr);
         ui.y6Label->setVisible(true);
@@ -1053,7 +1082,7 @@ void ApmFirmwareConfig::firmwareListFinished()
     }
     if (stripVersionFromGitReply(reply->url().toString(),replystr,"Plane",cmpstr,&outstr))
     {
-        //Update version checkin
+        //Update version checkin	 버전 업데이트 체크인  
         compareVersionsForNotification("ArduPlane", outstr);
         m_buttonToWarning[ui.planePushButton] = versionIsGreaterThan(outstr,3.1);
         ui.planeLabel->setText(labelstr + outstr);
@@ -1063,7 +1092,7 @@ void ApmFirmwareConfig::firmwareListFinished()
     }
     if (stripVersionFromGitReply(reply->url().toString(),replystr,"Rover",cmpstr,&outstr))
     {
-        //Update version checkin
+        //Update version checkin	 버전 업데이트 체크인  
         compareVersionsForNotification("ArduRover", outstr);
         m_buttonToWarning[ui.roverPushButton] = versionIsGreaterThan(outstr,3.1);
         ui.roverLabel->setText(labelstr + outstr);
@@ -1072,9 +1101,14 @@ void ApmFirmwareConfig::firmwareListFinished()
         return;
     }
     // Due to the comparison value this matches all - MUST BE THE LAST - TODO stripVersionFromGitReply() must be fixed!!
+
+/*
+	비교 값으로 인해이 값이 모두 일치 함 - 마지막으로 TODO 여야합니다. stripVersionFromGitReply ()가 수정되어야합니다!
+*/
+
     if (stripVersionFromGitReply(reply->url().toString(),replystr,apmver,cmpstr,&outstr))
     {
-        //Version checking
+        //Version checking	 버전 확인  
         m_buttonToWarning[ui.mutlicopterPushButton] = versionIsGreaterThan(outstr,3.1);
         ui.multicopterLabel->setText(labelstr + outstr);
         ui.multicopterLabel->setVisible(true);
@@ -1087,8 +1121,19 @@ void ApmFirmwareConfig::firmwareListFinished()
 
     //QLOG_DEBUG() << "Match not found for:" << reply->url();
     //QLOG_DEBUG() << "Git version line:" <<  replystr;
+
+/*
+    // QLOG_DEBUG () << "일치하는 항목을 찾을 수 없습니다 :"<< reply-> url ();
+    // QLOG_DEBUG () << "Git 버전 라인 :"<< replystr;
+*/
+
 }
 //Takes the format: "AnythingHere VX.Y.Z, where .Z is optional, and X and Y can be any number of digits.
+
+/*
+// "AnythingHere VX.YZ, 여기서 .Z는 선택 사항이며 X와 Y는 임의의 숫자 일 수 있습니다.
+*/
+
 bool ApmFirmwareConfig::versionIsGreaterThan(QString verstr,double version)
 {
     QRegExp versionEx("\\d*\\.\\d+");
@@ -1139,13 +1184,13 @@ bool ApmFirmwareConfig::compareVersionStrings(const QString& newVersion, const Q
     int newMajor = 0, newMinor = 0, newBuild = 0;
     int currentMajor = 0, currentMinor = 0,currentBuild = 0;
 
-    QString newBuildSubMoniker, oldBuildSubMoniker; // holds if the build is a rc or dev build
+    QString newBuildSubMoniker, oldBuildSubMoniker; // holds if the build is a rc or dev build	 빌드가 rc 또는 dev 빌드 인 경우 보유  
 
     QRegExp versionEx("(\\d*\\.\\d+\\.?\\d?)-?(rc\\d)?");
     QString versionstr = "";
     int pos = versionEx.indexIn(newVersion);
     if (pos > -1) {
-        // Split first sub-element to get numercal major.minor.build version
+        // Split first sub-element to get numercal major.minor.build version	 첫 번째 하위 요소를 분할하여 numercal major.minor.build 버전을 가져옵니다.  
         QLOG_DEBUG() << "Detected newVersion:" << versionEx.capturedTexts()<< " count:"
                      << versionEx.captureCount();
         versionstr = versionEx.cap(1);
@@ -1155,7 +1200,7 @@ bool ApmFirmwareConfig::compareVersionStrings(const QString& newVersion, const Q
         if (versionList.size() > 2){
             newBuild = versionList[2].toInt();
         }
-        // second subelement is either rcX candidate or developement build
+        // second subelement is either rcX candidate or developement build	 두 번째 하위 요소는 rcX candidate 또는 developement build입니다.  
         if (versionEx.captureCount() == 2)
             newBuildSubMoniker = versionEx.cap(2);
     }
@@ -1173,7 +1218,7 @@ bool ApmFirmwareConfig::compareVersionStrings(const QString& newVersion, const Q
         if (versionList.size() > 2){
             currentBuild = versionList[2].toInt();
         }
-        // second subelement is either rcX candidate or developement build
+        // second subelement is either rcX candidate or developement build	 두 번째 하위 요소는 rcX candidate 또는 developement build입니다.  
         if (versionEx2.captureCount() == 2)
             oldBuildSubMoniker = versionEx2.cap(2);
     }
@@ -1181,19 +1226,25 @@ bool ApmFirmwareConfig::compareVersionStrings(const QString& newVersion, const Q
     QLOG_DEBUG() << "Verison Compare:" <<QString().sprintf(" New Version %d.%d.%d > Old Version %d.%d.%d",
                                                  newMajor,newMinor,newBuild,currentMajor, currentMinor,currentBuild);
     if (newMajor>currentMajor){
-        // A Major release
+        // A Major release	  메이저 릴리스  
         return true;
     } else if (newMajor == currentMajor){
         if (newMinor >  currentMinor){
-            // A minor release
+            // A minor release	 마이너 릴리스  
             return true;
         } else if (newMinor ==  currentMinor){
             if (newBuild > currentBuild)
-                // new build (or tiny release)
+                // new build (or tiny release)	 새로운 빌드 (또는 작은 릴리즈)  
                 return true;
             else if (newBuild == currentBuild) {
                 // Check if RC is newer
                 // If the version isn't newer, it might be a new release candidate
+
+/*
+                // RC가 최신인지 확인
+                // 버전이 최신이 아닌 경우 새 출시 후보가 될 수 있습니다.
+*/
+
                 int newRc = 0, oldRc = 0;
 
                 if (newBuildSubMoniker.startsWith("RC", Qt::CaseInsensitive)
@@ -1219,7 +1270,7 @@ bool ApmFirmwareConfig::compareVersionStrings(const QString& newVersion, const Q
                 if (newBuildSubMoniker.length() == 0
                         && oldBuildSubMoniker.startsWith("RC", Qt::CaseInsensitive)) {
                     QLOG_DEBUG() << "Stable build newer that last unstable release candidate ";
-                    return true; // this means a new stable build of the unstable rc is available
+                    return true; // this means a new stable build of the unstable rc is available	 이것은 불안정한 rc의 새로운 stable 빌드가 사용 가능하다는 것을 의미한다.  
                 }
             }
         }
@@ -1232,11 +1283,11 @@ bool ApmFirmwareConfig::compareVersionStrings(const QString& newVersion, const Q
 
 void ApmFirmwareConfig::flashCustomFirmware()
 {
-    // Show File SelectionDialog
+    // Show File SelectionDialog	     파일 선택 대화 상자 표시  
 
     QString filename = QFileDialog::getOpenFileName(this, tr("Open File"), QGC::appDataDirectory(),
                                                      tr("bin (*.hex *.px4)"));
-    QApplication::processEvents(); // Helps clear dialog from screen
+    QApplication::processEvents(); // Helps clear dialog from screen	 화면에서 대화 상자를 지울 수 있도록 도와줍니다.  
 
     if (filename.length() > 0){
         QLOG_DEBUG() << "Selected File to flash: " << filename;
@@ -1257,7 +1308,7 @@ void ApmFirmwareConfig::checkForUpdates(const QString &versionString)
     if (m_enableUpdateCheck){
         QLOG_DEBUG() << "APM Version Check For Updates";
 
-        // Wait for signal about the INS_PRODUCT_ID then tigger FW version fetch.
+        // Wait for signal about the INS_PRODUCT_ID then tigger FW version fetch.	 INS_PRODUCT_ID에 대한 신호를 기다렸다가 FW 버전 페치를 시작합니다.  
         m_currentVersionString = versionString;
         m_updateCheckInitiated = true;
     }
@@ -1268,10 +1319,10 @@ void ApmFirmwareConfig::compareVersionsForNotification(const QString &apmPlatfor
     if (m_currentVersionString.contains(apmPlatform)) {
         QStringList list = m_currentVersionString.split(" ");
         if (compareVersionStrings(newFwVersion, list[1])){
-            // Show Update fwVersion
+            // Show Update fwVersion	 업데이트 표시 fwVersion  
             if(m_lastVersionSkipped.contains(newFwVersion)){
                     QLOG_DEBUG() << " Version Skipped: " << newFwVersion;
-                    return; // need to skip this one
+                    return; // need to skip this one	 이것을 건너 뛸 필요가있다.  
             }
             QLOG_INFO() << "Update Avaiable for " << apmPlatform << " Ver: " << newFwVersion;
             if (QMessageBox::Ignore == QMessageBox::information(this, tr("Update Status"),
@@ -1294,9 +1345,15 @@ void ApmFirmwareConfig::parameterChanged(int uas, int component, QString paramet
     if(m_updateCheckInitiated){
         if (parameterName.contains("INS_PRODUCT_ID")){
             m_updateCheckInitiated = false;
-            // determine board type for firmware update
+            // determine board type for firmware update	  펌웨어 업데이트를위한 보드 유형 결정  
             switch(value.toInt()){
             // @Values: 0:Unknown,1:APM1-1280,2:APM1-2560,88:APM2,3:SITL,4:PX4v1,5:PX4v2,Flymaple:256,Linux:257
+
+/*
+            // @ 값 : 0 : 알 수 없음, 1 : APM1-1280,2 : APM1-2560,88 : APM2,3 : SITL, 4 : PX4v1,5 : PX4v2, Flymaple : 256, Linux : 257
+
+*/
+
 
             case 88:{ //APM2
                 requestFirmwares(m_firmwareType,"apm",true);
@@ -1335,7 +1392,7 @@ void ApmFirmwareConfig::arduinoError(QString error)
     ui.textBrowser->append(error);
     QMessageBox::information(0,"Error",error);
     cleanUp();
-    if (m_tempFirmwareFile) m_tempFirmwareFile->deleteLater(); //This will remove the temporary file.
+    if (m_tempFirmwareFile) m_tempFirmwareFile->deleteLater(); //This will remove the temporary file.	 그러면 임시 파일이 제거됩니다.  
     m_tempFirmwareFile = NULL;
     ui.progressBar->setVisible(false);
     ui.cancelPushButton->setVisible(false);
@@ -1374,7 +1431,7 @@ void ApmFirmwareConfig::arduinoFlashFailed()
 void ApmFirmwareConfig::arduinoUploadComplete()
 {
     cleanUp();
-    //Ensure we're reading 100%
+    //Ensure we're reading 100%	  우리가 100 % 
     ui.progressBar->setMaximum(100);
     ui.progressBar->setValue(100);
     QMessageBox::information(this,"Complete","APM Flashing is complete!");
@@ -1386,7 +1443,7 @@ void ApmFirmwareConfig::arduinoUploadComplete()
         m_throwPropSpinWarning = false;
     }
     //QLOG_DEBUG() << "Upload finished!" << QString::number(status);
-    if (m_tempFirmwareFile) m_tempFirmwareFile->deleteLater(); //This will remove the temporary file.
+    if (m_tempFirmwareFile) m_tempFirmwareFile->deleteLater(); //This will remove the temporary file.	 그러면 임시 파일이 제거됩니다.  
     m_tempFirmwareFile = NULL;
     ui.progressBar->setVisible(false);
     ui.cancelPushButton->setVisible(false);

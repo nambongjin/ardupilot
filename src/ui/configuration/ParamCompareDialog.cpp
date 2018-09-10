@@ -187,7 +187,7 @@ void ParamCompareDialog::populateParamListFromString(QString paramString, QMap<Q
         } else {
             QLOG_DEBUG() << "Comment: " << paramLine;
             if (!summaryShown && !summaryComplete){
-                // removes the '#' and any whites space before or after
+                // removes the '#' and any whites space before or after	 앞과 뒤의 '#'및 공백을 제거합니다.  
                 summaryText.append(paramLine.remove(0,1).trimmed() + "\n");
             }
         }
@@ -203,7 +203,7 @@ void ParamCompareDialog::populateParamListFromString(QString paramString, QMap<Q
 
 void ParamCompareDialog::compareLists()
 {
-    QList<QString> keys = m_newList->keys(); // This needs to be an amalgamated list of all keys
+    QList<QString> keys = m_newList->keys(); // This needs to be an amalgamated list of all keys	  모든 키가 합쳐진 목록이어야합니다.  
 
     ui->compareTableWidget->setSortingEnabled(false);
     for(int count = 0; count < keys.count(); ++count){
@@ -250,7 +250,7 @@ void ParamCompareDialog::saveNewParameters()
     QTableWidget* table = ui->compareTableWidget;
 
     for(int rowCount = 0; rowCount < table->rowCount(); ++rowCount){
-        // Get hold of the UASParameter
+        // Get hold of the UASParameter	 UASParameter를 가져옵니다.  
         QTableWidgetItem* paramName = table->item(rowCount, PCD_COLUMN_PARAM_NAME);
         QTableWidgetItem* paramCheck= table->item(rowCount, PCD_COLUMN_CHECKBOX);
         if (paramName && (paramCheck->checkState() == Qt::Checked)){
@@ -258,13 +258,19 @@ void ParamCompareDialog::saveNewParameters()
 
             // then update it's value in the current list
             // [TODO] this would be an action of the Param Manager
+
+/*
+            // 그런 다음 현재 목록에서 값을 업데이트합니다.
+            // [TODO] 이것은 Param Manager의 액션이 될 것입니다.
+*/
+
             param->setValue(table->item(rowCount, PCD_COLUMN_NEW_VALUE)->data(Qt::DisplayRole));
             QLOG_DEBUG() << "Applied to m_currentList:" << param << " = "
                          << table->item(rowCount, PCD_COLUMN_NEW_VALUE)->data(Qt::DisplayRole);
         }
     }
 
-    accept(); // dismiss the dialog
+    accept(); // dismiss the dialog	 대화 상자를 닫습니다.  
 }
 
 void ParamCompareDialog::checkAll()

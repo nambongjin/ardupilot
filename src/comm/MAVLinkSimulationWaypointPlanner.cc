@@ -45,27 +45,27 @@ class PxMatrix3x3;
 
 
 /**
- * @brief Pixhawk 3D vector class, can be cast to a local OpenCV CvMat.
+ * @brief Pixhawk 3D vector class, can be cast to a local OpenCV CvMat.	  Pixhawk 3D 벡터 클래스는 로컬 OpenCV CvMat에 캐스트 될 수 있습니다.  
  *
  */
 class PxVector3
 {
 public:
-    /** @brief standard constructor */
+    /** @brief standard constructor 	 표준 생성자  */
     PxVector3(void) {}
-    /** @brief copy constructor */
+    /** @brief copy constructor 	 복사 생성자   */
     PxVector3(const PxVector3 &v) {
         for (int i=0; i < 3; i++) {
             m_vec[i] = v.m_vec[i];
         }
     }
-    /** @brief x,y,z constructor */
+    /** @brief x,y,z constructor 	  x, y, z 생성자  */
     PxVector3(const float _x, const float _y, const float _z) {
         m_vec[0] = _x;
         m_vec[1] = _y;
         m_vec[2] = _z;
     }
-    /** @brief broadcast constructor */
+    /** @brief broadcast constructor 	 브로드 캐스트 생성자  */
     PxVector3(const float _f) {
         for (int i=0; i < 3; i++) {
             m_vec[i] = _f;
@@ -73,7 +73,7 @@ public:
     }
 
 private:
-    /** @brief private constructor (not used here, for SSE compatibility) */
+    /** @brief private constructor (not used here, for SSE compatibility) 	 개인 생성자 (SSE 호환성을 위해 여기에 사용되지 않음)  */
     PxVector3(const float (&_vec)[3]) {
         for (int i=0; i < 3; i++) {
             m_vec[i] = _vec[i];
@@ -81,23 +81,23 @@ private:
     }
 
 public:
-    /** @brief assignment operator */
+    /** @brief assignment operator 	 대입 연산자  */
     void operator= (const PxVector3 &r) {
         for (int i=0; i < 3; i++) {
             m_vec[i] = r.m_vec[i];
         }
     }
-    /** @brief const element access */
+    /** @brief const element access	 const 요소 접근   */
     float operator[] (const int i) const {
         return m_vec[i];
     }
-    /** @brief element access */
+    /** @brief element access 	 간단한 요소 접근  */
     float &operator[] (const int i) {
         return m_vec[i];
     }
-
-    // === arithmetic operators ===
-    /** @brief element-wise negation */
+	 
+    // === arithmetic operators ===	 === 산술 연산자 ===  
+    /** @brief element-wise negation	 요소 별 부정    */
     friend PxVector3 operator- (const PxVector3 &v) {
         PxVector3 ret;
         for (int i=0; i < 3; i++) {
@@ -207,24 +207,24 @@ public:
         }
     }
 
-    // === vector operators ===
-    /** @brief dot product */
+    // === vector operators ===	 === 벡터 연산자 ===  
+    /** @brief dot product 	 간단한 내 용품  */
     float	dot(const PxVector3 &v) const {
         return m_vec[0]*v.m_vec[0] + m_vec[1]*v.m_vec[1] + m_vec[2]*v.m_vec[2];
     }
-    /** @brief length squared of the vector */
+    /** @brief length squared of the vector	 벡터의 제곱 길이    */
     float	lengthSquared(void) const {
         return m_vec[0]*m_vec[0] + m_vec[1]*m_vec[1] + m_vec[2]*m_vec[2];
     }
-    /** @brief length of the vector */
+    /** @brief length of the vector	 벡터의 짧은 길이   */
     float	length(void) const {
         return sqrt(lengthSquared());
     }
-    /** @brief cross product */
+    /** @brief cross product 		 십자가 제품   	 */
     PxVector3 cross(const PxVector3 &v) const {
         return PxVector3(m_vec[1]*v.m_vec[2] - m_vec[2]*v.m_vec[1], m_vec[2]*v.m_vec[0] - m_vec[0]*v.m_vec[2], m_vec[0]*v.m_vec[1] - m_vec[1]*v.m_vec[0]);
     }
-    /** @brief normalizes the vector */
+    /** @brief normalizes the vector 	 벡터를 정규화합니다  */
     PxVector3 &normalize(void) {
         const float l = 1.f / length();
         for (int i=0; i < 3; i++) {
@@ -239,27 +239,27 @@ protected:
 };
 
 /**
- * @brief Pixhawk 3D vector class in double precision, can be cast to a local OpenCV CvMat.
+ * @brief Pixhawk 3D vector class in double precision, can be cast to a local OpenCV CvMat.	  Pixhawk 3D 벡터 클래스는 이중 정밀도로 로컬 OpenCV CvMat에 캐스트 할 수 있습니다.  
  *
  */
 class PxVector3Double
 {
 public:
-    /** @brief standard constructor */
+    /** @brief standard constructor	 표준 생성자   */
     PxVector3Double(void) {}
-    /** @brief copy constructor */
+    /** @brief copy constructor 	 복사 생성자  */
     PxVector3Double(const PxVector3Double &v) {
         for (int i=0; i < 3; i++) {
             m_vec[i] = v.m_vec[i];
         }
     }
-    /** @brief x,y,z constructor */
+    /** @brief x,y,z constructor 	  간단한 x, y, z 생성자  */
     PxVector3Double(const double _x, const double _y, const double _z) {
         m_vec[0] = _x;
         m_vec[1] = _y;
         m_vec[2] = _z;
     }
-    /** @brief broadcast constructor */
+    /** @brief broadcast constructor	  간단한 브로드 캐스트 생성자   */
     PxVector3Double(const double _f) {
         for (int i=0; i < 3; i++) {
             m_vec[i] = _f;
@@ -267,7 +267,7 @@ public:
     }
 
 private:
-    /** @brief private constructor (not used here, for SSE compatibility) */
+    /** @brief private constructor (not used here, for SSE compatibility)	 개인 생성자 (SSE 호환성을 위해 여기에 사용되지 않음)   */
     PxVector3Double(const double (&_vec)[3]) {
         for (int i=0; i < 3; i++) {
             m_vec[i] = _vec[i];
@@ -275,23 +275,23 @@ private:
     }
 
 public:
-    /** @brief assignment operator */
+    /** @brief assignment operator 	 대입 연산자  */
     void operator= (const PxVector3Double &r) {
         for (int i=0; i < 3; i++) {
             m_vec[i] = r.m_vec[i];
         }
     }
-    /** @brief const element access */
+    /** @brief const element access 	 const 요소 접근  */
     double operator[] (const int i) const {
         return m_vec[i];
     }
-    /** @brief element access */
+    /** @brief element access	  간단한 요소 접근   */
     double &operator[] (const int i) {
         return m_vec[i];
     }
 
-    // === arithmetic operators ===
-    /** @brief element-wise negation */
+    // === arithmetic operators ===	  === 산술 연산자 ===  
+    /** @brief element-wise negation 	 요소 별 부정  */
     friend PxVector3Double operator- (const PxVector3Double &v) {
         PxVector3Double ret;
         for (int i=0; i < 3; i++) {
@@ -401,24 +401,24 @@ public:
         }
     }
 
-    // === vector operators ===
-    /** @brief dot product */
+    // === vector operators ===	 === 벡터 연산자 ===  
+    /** @brief dot product 	  내 용품  */
     double	dot(const PxVector3Double &v) const {
         return m_vec[0]*v.m_vec[0] + m_vec[1]*v.m_vec[1] + m_vec[2]*v.m_vec[2];
     }
-    /** @brief length squared of the vector */
+    /** @brief length squared of the vector  벡터의 제곱 길이 */
     double	lengthSquared(void) const {
         return m_vec[0]*m_vec[0] + m_vec[1]*m_vec[1] + m_vec[2]*m_vec[2];
     }
-    /** @brief length of the vector */
+    /** @brief length of the vector	 벡터의 짧은 길이   */
     double	length(void) const {
         return sqrt(lengthSquared());
     }
-    /** @brief cross product */
+    /** @brief cross product	 	 십자가 제품   */
     PxVector3Double cross(const PxVector3Double &v) const {
         return PxVector3Double(m_vec[1]*v.m_vec[2] - m_vec[2]*v.m_vec[1], m_vec[2]*v.m_vec[0] - m_vec[0]*v.m_vec[2], m_vec[0]*v.m_vec[1] - m_vec[1]*v.m_vec[0]);
     }
-    /** @brief normalizes the vector */
+    /** @brief normalizes the vector 	 벡터를 정규화합니다.  */
     PxVector3Double &normalize(void) {
         const double l = 1.f / length();
         for (int i=0; i < 3; i++) {
@@ -462,7 +462,7 @@ MAVLinkSimulationWaypointPlanner::MAVLinkSimulationWaypointPlanner(MAVLinkSimula
 
 
 /*
-*  @brief Sends an waypoint ack message
+*  @brief Sends an waypoint ack message	 웨이 포인트 응답 메시지를 보냅니다.  
 */
 void MAVLinkSimulationWaypointPlanner::send_waypoint_ack(uint8_t target_systemid, uint8_t target_compid, uint8_t type)
 {
@@ -488,6 +488,17 @@ void MAVLinkSimulationWaypointPlanner::send_waypoint_ack(uint8_t target_systemid
 *
 *  @param seq The waypoint sequence number the MAV should fly to.
 */
+
+/*
+* @brief 새로운 목표 웨이 포인트를 방송하고 MAV가 거기로 날아 오도록 지시합니다.
+*
+*이 기능은 새로운 활성 웨이 포인트 시퀀스 번호를 브로드 캐스트하고
+* 컨트롤러에 메시지를 보냅니다. 좌표로 날아 가라고 명령합니다.
+주어진 방향을 가진 웨이 포인트의 *
+*
+* @param seq MAV가 비행해야하는 웨이 포인트 시퀀스 번호.
+*/
+
 void MAVLinkSimulationWaypointPlanner::send_waypoint_current(uint16_t seq)
 {
     if(seq < waypoints->size()) {
@@ -512,13 +523,23 @@ void MAVLinkSimulationWaypointPlanner::send_waypoint_current(uint16_t seq)
 *  of the waypoint with a given orientation
 *
 *  @param seq The waypoint sequence number the MAV should fly to.
+*/	 
+
+/*
+* @brief MAV가 특정 위치로 날아 오도록 지시합니다.
+*
+* 컨트롤러에 메시지를 보냅니다. 좌표로 날아 가라고 명령합니다.
+주어진 방향을 가진 웨이 포인트의 *
+*
+* @param seq MAV가 비행해야하는 웨이 포인트 시퀀스 번호.
 */
+
 void MAVLinkSimulationWaypointPlanner::send_setpoint(uint16_t seq)
 {
     if(seq < waypoints->size()) {
         mavlink_mission_item_t *cur = waypoints->at(seq);
 
-        // send new set point to local IMU
+        // send new set point to local IMU	 새로운 설정 값을 로컬 IMU에 보낸다.  
         if (cur->frame == MAV_FRAME_LOCAL_NED || cur->frame == MAV_FRAME_LOCAL_ENU) {
 
             uint64_t now = QGC::groundTimeMilliseconds();
@@ -592,6 +613,15 @@ void MAVLinkSimulationWaypointPlanner::send_waypoint_request(uint8_t target_syst
 *
 *  @param seq The waypoint sequence number the MAV has reached.
 */
+
+/*
+* @ brief는 중간 지점에 도달했다는 메시지를 내 보냅니다.
+*
+*이 함수는 웨이 포인트에 도달했다는 메시지를 방송합니다.
+*
+* @param seq MAV가 도달 한 웨이 포인트 시퀀스 번호.
+*/
+
 void MAVLinkSimulationWaypointPlanner::send_waypoint_reached(uint16_t seq)
 {
     mavlink_message_t msg;
@@ -615,7 +645,7 @@ float MAVLinkSimulationWaypointPlanner::distanceToSegment(uint16_t seq, float x,
         const PxVector3 A(cur->x, cur->y, cur->z);
         const PxVector3 C(x, y, z);
 
-        // seq not the second last waypoint
+        // seq not the second last waypoint	  마지막 두 번째 웨이 포인트가 아닌 seq  
         if ((uint16_t)(seq+1) < waypoints->size()) {
             mavlink_mission_item_t *next = waypoints->at(seq+1);
             const PxVector3 B(next->x, next->y, next->z);
@@ -673,6 +703,14 @@ void MAVLinkSimulationWaypointPlanner::mavlink_handler (const mavlink_message_t*
 
     //check for timed-out operations
 
+/*
+    // param 메시지를 처리한다.
+//         paramClient-> handleMAVLinkPacket (msg);
+
+    // 시간 초과 된 작업을 확인합니다.
+*/
+
+
     QLOG_DEBUG() << "MAV: %d WAYPOINTPLANNER GOT MESSAGE" << systemid;
 
     uint64_t now = QGC::groundTimeMilliseconds();
@@ -701,7 +739,7 @@ void MAVLinkSimulationWaypointPlanner::mavlink_handler (const mavlink_message_t*
                 mavlink_attitude_t att;
                 mavlink_msg_attitude_decode(msg, &att);
                 float yaw_tolerance = yawTolerance;
-                //compare current yaw
+                //compare current yaw	 현재 요를 비교합니다.  
                 if (att.yaw - yaw_tolerance >= 0.0f && att.yaw + yaw_tolerance < 2.f*M_PI) {
                     if (att.yaw - yaw_tolerance <= wp->param4 && att.yaw + yaw_tolerance >= wp->param4)
                         yawReached = true;
@@ -715,7 +753,7 @@ void MAVLinkSimulationWaypointPlanner::mavlink_handler (const mavlink_message_t*
                         yawReached = true;
                 }
 
-                // FIXME HACK: Ignore yaw:
+                // FIXME HACK: Ignore yaw:	 FIXME HACK : 무시한다.  
 
                 yawReached = true;
             }
@@ -734,7 +772,7 @@ void MAVLinkSimulationWaypointPlanner::mavlink_handler (const mavlink_message_t*
 
                 posReached = false;
 
-                // compare current position (given in message) with current waypoint
+                // compare current position (given in message) with current waypoint	 현재의 웨이 포인트와 현재의 위치 (메세지로 지정)를 비교한다  
                 float orbit = wp->param1;
 
                 float dist;
@@ -771,12 +809,26 @@ void MAVLinkSimulationWaypointPlanner::mavlink_handler (const mavlink_message_t*
 
                 // FIXME big hack for simulation!
                 //float oneDegreeOfLatMeters = 111131.745f;
+
+/*
+                // 시뮬레이션을위한 큰 해킹을 고칩니다!
+                // float oneDegreeOfLatMeters = 111131.745f;
+*/
+
                 float orbit = 0.00008f;
 
                 // compare current position (given in message) with current waypoint
                 //float orbit = wp->param1;
 
                 // Convert to degrees
+
+/*
+                // 현재의 웨이 포인트와 현재의 위치 (메세지로 지정)를 비교한다
+                // float orbit = wp-> param1;
+
+                // 도 단위로 변환
+*/
+
 
 
                 float dist;
@@ -792,7 +844,7 @@ void MAVLinkSimulationWaypointPlanner::mavlink_handler (const mavlink_message_t*
     }
 
     case MAVLINK_MSG_ID_COMMAND_LONG:
-    { // special action from ground station
+    { // special action from ground station	  지상국의 특수 작전  
         mavlink_command_long_t action;
         mavlink_msg_command_long_decode(msg, &action);
         if(action.target_system == systemid) {
@@ -930,6 +982,13 @@ void MAVLinkSimulationWaypointPlanner::mavlink_handler (const mavlink_message_t*
             //ensure that we are in the correct state and that the first request
             //has id 0 and the following requests have either the last id
             // (re-send last waypoint) or last_id+1 (next waypoint)
+
+/*
+            // 우리가 올바른 상태에 있고 첫 번째 요청이
+            // 는 id가 0이고 다음 요청은 마지막 ID
+            // (마지막 웨이 포인트 재전송) 또는 last_id + 1 (다음 웨이 포인트)
+*/
+
             if ((current_state == PX_WPP_SENDLIST && wpr.seq == 0)
                     || (current_state == PX_WPP_SENDLIST_SENDWPS
                         && (wpr.seq == protocol_current_wp_id || wpr.seq == protocol_current_wp_id + 1)
@@ -978,7 +1037,7 @@ void MAVLinkSimulationWaypointPlanner::mavlink_handler (const mavlink_message_t*
 
             }
         } else {
-            //we we're target but already communicating with someone else
+            //we we're target but already communicating with someone else	 우리는 목표이지만 다른 누군가와 이미 의사 소통 중입니다.  
             if((wpr.target_system == systemid && wpr.target_component == compid)
                     && !(msg->sysid == protocol_current_partner_systemid
                          && msg->compid == protocol_current_partner_compid)) {
@@ -1051,6 +1110,12 @@ void MAVLinkSimulationWaypointPlanner::mavlink_handler (const mavlink_message_t*
 
             //ensure that we are in the correct state and that the first
             //waypoint has id 0 and the following waypoints have the correct ids
+
+/*
+            // 우리가 올바른 상태에 있고 첫 번째
+            // waypoint는 id가 0이고 다음 웨이 포인트는 올바른 id를가집니다.
+*/
+
             if ((current_state == PX_WPP_GETLIST && wp.seq == 0)
                    || (current_state == PX_WPP_GETLIST_GETWPS && wp.seq == protocol_current_wp_id
                        && wp.seq < protocol_current_count)) {
@@ -1083,12 +1148,12 @@ void MAVLinkSimulationWaypointPlanner::mavlink_handler (const mavlink_message_t*
                         current_active_wp_id = waypoints_receive_buffer->size() - 1;
                     }
 
-                    // switch the waypoints list
+                    // switch the waypoints list	  경유지 목록을 전환합니다.  
                     std::vector<mavlink_mission_item_t*>* waypoints_temp = waypoints;
                     waypoints = waypoints_receive_buffer;
                     waypoints_receive_buffer = waypoints_temp;
 
-                    //get the new current waypoint
+                    //get the new current waypoint	 새로운 현재 웨이 포인트를 얻는다.  
                     uint32_t i;
                     for(i = 0; i < waypoints->size(); i++) {
                         if (waypoints->at(i)->current == 1) {
@@ -1116,7 +1181,7 @@ void MAVLinkSimulationWaypointPlanner::mavlink_handler (const mavlink_message_t*
                 }
             } else {
                 if (current_state == PX_WPP_IDLE) {
-                    //we're done receiving waypoints, answer with ack.
+                    //we're done receiving waypoints, answer with ack.	 우리는 웨이 포인트 수신을 마쳤습니다.  
                     send_waypoint_ack(protocol_current_partner_systemid, protocol_current_partner_compid, 0);
                     QLOG_INFO() << "Received MAVLINK_MSG_ID_MISSION_ITEM while state=PX_WPP_IDLE, answered with WAYPOINT_ACK.\n";
                 }
@@ -1147,7 +1212,7 @@ void MAVLinkSimulationWaypointPlanner::mavlink_handler (const mavlink_message_t*
                                    << wp.seq << " - FIXME: missed error description\n";
             }
         } else {
-            // We're target but already communicating with someone else
+            // We're target but already communicating with someone else	 목표이지만 이미 다른 사람과 통신 중입니다.  
             if((wp.target_system == systemid && wp.target_component == compid) && !(msg->sysid == protocol_current_partner_systemid && msg->compid == protocol_current_partner_compid) && current_state != PX_WPP_IDLE) {
                 QLOG_INFO() << "Ignored MAVLINK_MSG_ID_MISSION_ITEM "
                             << wp.seq << " from ID " << msg->sysid << " because i'm already talking to ID "
@@ -1187,13 +1252,13 @@ void MAVLinkSimulationWaypointPlanner::mavlink_handler (const mavlink_message_t*
     }
     }
 
-    //check if the current waypoint was reached
+    //check if the current waypoint was reached	 현재 웨이 포인트에 도달했는지 확인  
     if ((posReached && /*yawReached &&*/ !idle)) {
         if (current_active_wp_id < waypoints->size()) {
             mavlink_mission_item_t *cur_wp = waypoints->at(current_active_wp_id);
 
             if (timestamp_firstinside_orbit == 0) {
-                // Announce that last waypoint was reached
+                // Announce that last waypoint was reached	 마지막 웨이 포인트에 도달했음을 발표합니다.  
                 QLOG_INFO() << "*** Reached waypoint " << cur_wp->seq << " ***\n";
                 send_waypoint_reached(cur_wp->seq);
                 timestamp_firstinside_orbit = now;
@@ -1201,18 +1266,30 @@ void MAVLinkSimulationWaypointPlanner::mavlink_handler (const mavlink_message_t*
 
             // check if the MAV was long enough inside the waypoint orbit
             //if (now-timestamp_lastoutside_orbit > (cur_wp->hold_time*1000))
+
+/*
+            // MAV가 웨이 포인트 궤도 내부에서 충분히 길 었는지 확인
+            // if (now-timestamp_lastoutside_orbit> (cur_wp-> hold_time * 1000))
+*/
+
             if(now-timestamp_firstinside_orbit >= cur_wp->param2*1000) {
                 if (cur_wp->autocontinue) {
                     cur_wp->current = 0;
                     if (current_active_wp_id == waypoints->size() - 1 && waypoints->size() > 0) {
                         //the last waypoint was reached, if auto continue is
                         //activated restart the waypoint list from the beginning
+
+/*
+                        // 자동 계속이있는 경우 마지막 웨이 포인트에 도달했습니다.
+                        // activated 웨이 포인트리스트를 처음부터 다시 시작합니다.
+*/
+
                         current_active_wp_id = 0;
                     } else {
                         current_active_wp_id++;
                     }
 
-                    // Fly to next waypoint
+                    // Fly to next waypoint	 다음 웨이 포인트로 날아라.  
                     timestamp_firstinside_orbit = 0;
                     send_waypoint_current(current_active_wp_id);
                     send_setpoint(current_active_wp_id);

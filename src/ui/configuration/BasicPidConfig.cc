@@ -97,6 +97,13 @@ void BasicPidConfig::mapParamNames()
     // TODO: Move to baseclass and syncronize with CopterPidConfig class
     // as it uses exactly the same mechanics
     // version check
+
+/*
+    // TODO : 기본 클래스로 이동하여 CopterPidConfig 클래스와 동기화합니다.
+    // 정확히 같은 기능을 사용하기 때문에
+    // 버전 확인
+*/
+
     ArduPilotMegaMAV* apmMav = dynamic_cast<ArduPilotMegaMAV*>(m_uas);
     if (apmMav == nullptr)
     {
@@ -127,7 +134,7 @@ void BasicPidConfig::mapParamNames()
             mot_thrust_hover = "MOT_THST_HOVER";
             rc_feel_rp       = "ATC_INPUT_TC";      // since ArduCopter 3.6
 
-            // has new scaling and different description since ArduCopter 3.6
+            // has new scaling and different description since ArduCopter 3.6	 ArduCopter 3.6 이후의 새로운 확장 및 다른 설명이  
             m_rcFeelWidget->setupDouble(QString("RC Feel Roll/Pitch"), tr("Attitude control input time constant (aka smoothing). Low numbers lead to sharper response, higher numbers to softer response.\nVery soft = 1.0 / Very sharp = 0.0")
                                                ,0.5,0.0,1.0,0.000001);
 

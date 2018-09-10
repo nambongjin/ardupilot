@@ -26,6 +26,12 @@ This file is part of the APM_PLANNER project
  *
  *   @author Michael Carpenter <malcom2073@gmail.com>
  */
+/* *
+ * @file
+ * @ 간단한 "소프트웨어"구성 선택 화면
+ *
+ * @author Michael Carpenter <malcom2073@gmail.com>
+ */
 
 #ifndef APMSOFTWARECONFIG_H
 #define APMSOFTWARECONFIG_H
@@ -55,6 +61,7 @@ class ApmSoftwareConfig : public QWidget
     Q_OBJECT
 
     // Download state machine for parameters
+    // 매개 변수에 대한 상태 머신 다운로드
     enum ParamReadWriteState { none, startRead, startWrite, readingParams, writingParams, completed };
     
 public:
@@ -80,6 +87,7 @@ private:
     static const QString s_xmlSubFolder;
 
     //Parameter from XML
+    // XML의 매개 변수
     class ParamConfig
     {
     public:
@@ -95,9 +103,11 @@ private:
     };
 
     //List of parameters from XML file, to be loaded on a timer
+    // 타이머에로드 할 XML 파일의 매개 변수 목록
     QList<ParamConfig> m_paramConfigList;
 
     //Parameter loading timer
+    // 매개 변수로드 타이머
     QTimer m_populateTimer;
 
     QString m_apmPdefFilename;
