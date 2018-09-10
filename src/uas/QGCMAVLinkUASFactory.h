@@ -8,7 +8,7 @@
 #include "UASInterface.h"
 #include "LinkInterface.h"
 
-// INCLUDE ALL MAV/UAS CLASSES USING MAVLINK
+// INCLUDE ALL MAV/UAS CLASSES USING MAVLINK	 MAVLINK를 사용하여 모든 MAV / UAS 클래스 포함
 #include "UAS.h"
 #include "SlugsMAV.h"
 #include "PxQuadMAV.h"
@@ -21,7 +21,7 @@ class QGCMAVLinkUASFactory : public QObject
 public:
     explicit QGCMAVLinkUASFactory(QObject *parent = 0);
 
-    /** @brief Create a new UAS object using MAVLink as protocol */
+    /** @brief Create a new UAS object using MAVLink as protocol 	 MAVLink를 프로토콜로 사용하여 새 UAS 객체 만들기 */
     static UASInterface* createUAS(MAVLinkProtocol* mavlink, LinkInterface* link, int sysid, mavlink_heartbeat_t* heartbeat, QObject* parent=NULL);
 
 signals:

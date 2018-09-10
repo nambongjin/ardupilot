@@ -56,7 +56,7 @@ public:
     SlugsMAV(MAVLinkProtocol* mavlink, int id = 0);
 
 public slots:
-    /** @brief Receive a MAVLink message from this MAV */
+    /** @brief Receive a MAVLink message from this MAV	 MAV로부터 MAVLink 메시지 받기 */
     void receiveMessage(LinkInterface* link, mavlink_message_t message);
 
     void emitSignals (void);
@@ -115,7 +115,7 @@ protected:
     mavlink_rc_channels_raw_t mlChannels;
 
 
-    // Standart messages MAVLINK used by SLUGS
+    // Standart messages MAVLINK used by SLUGS	 SLUGS에서 사용하는 Standart 메시지 MAVLINK
 private:
 
 

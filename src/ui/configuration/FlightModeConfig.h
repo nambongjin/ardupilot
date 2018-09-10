@@ -22,7 +22,7 @@ This file is part of the APM_PLANNER project
 
 /**
  * @file
- *   @brief Flight mode configuration
+ *   @brief Flight mode configuration	 비행 모드 구성
  *
  *   @author Michael Carpenter <malcom2073@gmail.com>
  */
@@ -71,7 +71,7 @@ private:
 
     QList<bool> m_changedModes;
     int m_modesUpdated;
-    QString m_modeString;  // Array to store if the flight mode has changed
+    QString m_modeString;  // Array to store if the flight mode has changed	 비행 모드가 변경된 경우 저장할 배열
     int m_flightModeCh;
 
 };

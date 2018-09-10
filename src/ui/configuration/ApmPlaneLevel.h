@@ -22,7 +22,7 @@ This file is part of the APM_PLANNER project
 
 /**
  * @file
- *   @brief Accelerometer calibration for ApmPlane
+ *   @brief Accelerometer calibration for ApmPlane	 ApmPlane에 대한 가속도계 보정
  *
  *   @author Michael Carpenter <malcom2073@gmail.com>
  */
