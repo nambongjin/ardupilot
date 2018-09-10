@@ -67,7 +67,7 @@ void DownloadRemoteParamsDialog::downloadButtonClicked()
 {
     QLOG_DEBUG() << "loadButtonClicked";
     if (ui->listWidget->currentRow() == -1)
-        return; // no item selected
+        return; // no item selected// 선택한 항목이 없습니다.
     m_url = m_paramUrls.at(ui->listWidget->currentRow());
 
     setStatusText(tr("Downloading %1").arg(m_url.toString()));
@@ -98,6 +98,7 @@ void DownloadRemoteParamsDialog::loadFileDialogAccepted()
     if (dialog->selectedFiles().size() == 0)
     {
         //No file selected/cancel clicked
+        // 파일이 선택되지 않았거나 클릭이 취소되었습니다.
         return;
     }
     QString filename = dialog->selectedFiles().at(0);
@@ -194,6 +195,7 @@ bool DownloadRemoteParamsDialog::downloadParamFile()
         }
     }
     // Always must remove file before proceeding
+    // 계속하기 전에 항상 파일을 제거해야합니다.
     QFile::remove(fileName);
 
     m_downloadedFileName = fileName;
@@ -278,6 +280,10 @@ void DownloadRemoteParamsDialog::httpReadyRead()
     // We read all of its new data and write it into the file.
     // That way we use less RAM than when reading it at the finished()
     // signal of the QNetworkReply
+    // 이 슬롯은 QNetworkReply에 새로운 데이터가있을 때마다 호출됩니다.
+    // 모든 새로운 데이터를 읽고 파일에 씁니다.
+    // 완성 된 ()에서 그것을 읽을 때보 다 적은 RAM을 사용하는 방식으로
+    // QNetworkReply의 신호
     if (m_downloadedParamFile)
         m_downloadedParamFile->write(m_networkReply->readAll());
 }
@@ -300,8 +306,9 @@ void DownloadRemoteParamsDialog::httpParamListFinished()
     }
 
     // Finished donwloading the version information
+    // 버전 정보를 마쳤습니다.
     if (m_networkReply->error()) {
-        // [TODO] cleanup download failed
+        // [TODO] cleanup download failed// [TODO] 정리 다운로드에 실패했습니다.
 #ifdef QT_DEBUG
         QMessageBox::information(NULL, tr("HTTP"),
                                  tr("Download failed: %1.")
@@ -309,6 +316,7 @@ void DownloadRemoteParamsDialog::httpParamListFinished()
 #endif
     } else {
         // Process downloadeed object
+        // 다운로드 된 객체 처리
         processDownloadedVersionObject(m_networkReply->readAll());
     }
 
