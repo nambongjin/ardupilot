@@ -26,8 +26,8 @@ CompassMotorCalibrationDialog::CompassMotorCalibrationDialog(QWidget *parent) :
 
     QCustomPlot* customPlot = ui->customPlot;
     customPlot->addGraph();
-    customPlot->graph(GRAPH_ID_INTERFERENCE)->setPen(QPen(GRAPH_COLOR_INTERFERENCE)); // line color blue for first graph
-    customPlot->graph(GRAPH_ID_INTERFERENCE)->setBrush(QBrush(GRAPH_COLOR_INTERFERENCE_FILL)); // first graph will be filled with translucent blue
+    customPlot->graph(GRAPH_ID_INTERFERENCE)->setPen(QPen(GRAPH_COLOR_INTERFERENCE)); // line color blue for first graph// 첫 번째 그래프의 파란색 선 색상
+    customPlot->graph(GRAPH_ID_INTERFERENCE)->setBrush(QBrush(GRAPH_COLOR_INTERFERENCE_FILL)); // first graph will be filled with translucent blue// 첫 번째 그래프는 반투명의 파란색으로 채워집니다.
 
     customPlot->xAxis->setLabel("Throttle (%)");
 
@@ -37,7 +37,7 @@ CompassMotorCalibrationDialog::CompassMotorCalibrationDialog(QWidget *parent) :
     customPlot->yAxis->setRange(0,100);
 
     customPlot->addGraph();
-    customPlot->graph(GRAPH_ID_CURRENT)->setPen(QPen(GRAPH_COLOR_CURRENT)); // line color red for second graph
+    customPlot->graph(GRAPH_ID_CURRENT)->setPen(QPen(GRAPH_COLOR_CURRENT)); // line color red for second graph// 두 번째 그래프의 빨간색 선 색상
     customPlot->graph(GRAPH_ID_CURRENT)->setBrush(QBrush(GRAPH_COLOR_CURRENT_FILL));
 
     customPlot->yAxis2->setVisible(true);
