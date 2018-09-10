@@ -28,6 +28,13 @@ This file is part of the QGROUNDCONTROL project
  *   @author Petri Tanskanen <mavteam@student.ethz.ch>
  *
  */
+/* *
+ * @file
+ * @brief 웨이 포인트 프로토콜 핸들러의 구현
+ *
+ * @author Petri Tanskanen <mavteam@student.ethz.ch>
+ *
+ */
 
 #include "logging.h"
 #include "UASWaypointManager.h"
@@ -35,9 +42,9 @@ This file is part of the QGROUNDCONTROL project
 #include "UASManager.h"
 #include "MainWindow.h"
 
-#define PROTOCOL_TIMEOUT_MS 2000    ///< maximum time to wait for pending messages until timeout
-#define PROTOCOL_DELAY_MS 20        ///< minimum delay between sent messages
-#define PROTOCOL_MAX_RETRIES 5      ///< maximum number of send retries (after timeout)
+#define PROTOCOL_TIMEOUT_MS 2000    ///< maximum time to wait for pending messages until timeout// <대기중인 메시지가 대기 할 때까지의 최대 시간
+#define PROTOCOL_DELAY_MS 20        ///< minimum delay between sent messages// / <보낸 메시지 간 최소 지연
+#define PROTOCOL_MAX_RETRIES 5      ///< maximum number of send retries (after timeout)// / <최대 재전송 횟수 (시간 초과 후)
 
 static const QString DEFAULT_REL_ALT = "defaultRelAltitude";
 
@@ -56,7 +63,7 @@ UASWaypointManager::UASWaypointManager(UAS* _uas)
       uasid(0),
       m_defaultAcceptanceRadius(5.0),
       m_defaultRelativeAlt(0.0),
-      waypointIDHandled(65534) // nobody will have a waypoint list with 65534 waypoints.
+      waypointIDHandled(65534) // nobody will have a waypoint list with 65534 waypoints.// 아무도 65534 웨이 포인트가있는 웨이 포인트 목록을 가지지 않습니다.
 {
     if (uas)
     {
@@ -141,6 +148,7 @@ void UASWaypointManager::handleGlobalPositionChanged(UASInterface* mav, double l
     if (waypointsEditable.count() > 0 && currentWaypointEditable && currentWaypointEditable->isGlobalFrame())
     {
         // TODO FIXME Calculate distance
+        // TODO FIXME 거리 계산
         double dist = 0;
         emit waypointDistanceChanged(dist);
     }
@@ -153,6 +161,7 @@ void UASWaypointManager::handleWaypointCount(quint8 systemId, quint8 compId, qui
         current_retries = PROTOCOL_MAX_RETRIES;
 
         //Clear the old edit-list before receiving the new one
+        // 새로운 편집 목록을 받기 전에 이전 편집 목록을 지우십시오.
         if (read_to_edit == true){
             qDeleteAll(waypointsEditable);
             waypointsEditable.clear();
@@ -208,6 +217,7 @@ void UASWaypointManager::handleWaypoint(quint8 systemId, quint8 compId, mavlink_
 
             QLOG_DEBUG() << "handleWaypoint() - Received waypoint " << current_wp_id;
             //get next waypoint
+            // 다음 웨이 포인트 얻기
             current_wp_id++;
 
             if(current_wp_id < current_count) {
@@ -216,12 +226,13 @@ void UASWaypointManager::handleWaypoint(quint8 systemId, quint8 compId, mavlink_
                 sendWaypointAck(0);
 
                 // all waypoints retrieved, change state to idle
+                // 검색된 모든 웨이 포인트, 유휴 상태로 변경
                 current_state = WP_IDLE;
                 current_count = 0;
                 current_wp_id = 0;
                 current_partner_systemid = 0;
                 current_partner_compid = MAV_COMP_ID_PRIMARY;
-                waypointIDHandled = 65534;  // Set to invalid value.
+                waypointIDHandled = 65534;  // Set to invalid value.// 잘못된 값으로 설정합니다.
 
                 protocol_timer.stop();
                 emit readGlobalWPFromUAS(false);
@@ -251,9 +262,10 @@ void UASWaypointManager::handleWaypointAck(quint8 systemId, quint8 compId, mavli
     if (systemId == current_partner_systemid && (compId == current_partner_compid || compId == MAV_COMP_ID_PRIMARY)) {
         if((current_state == WP_SENDLIST || current_state == WP_SENDLIST_SENDWPS) && (current_wp_id == waypoint_buffer.count()-1 && wpa->type == 0)) {
             //all waypoints sent and ack received
+            // 전송 된 모든 웨이 포인트와 수신 된 ack
             protocol_timer.stop();
             current_state = WP_IDLE;
-            readWaypoints(false); //Update "Onboard Waypoints"-tab immidiately after the waypoint list has been sent.
+            readWaypoints(false); //Update "Onboard Waypoints"-tab immidiately after the waypoint list has been sent.// 웨이 포인트 목록이 전송 된 후 즉시 "온보드 웨이 포인트"를 업데이트합니다.
             emit updateStatusString("done.");
         } else if(current_state == WP_CLEARLIST) {
             protocol_timer.stop();
@@ -307,6 +319,7 @@ void UASWaypointManager::handleWaypointCurrent(quint8 systemId, quint8 compId, m
             current_state = WP_IDLE;
 
             // update the local main storage
+            // 로컬 주 기억 장치를 갱신한다.
             if (wpc->seq < waypointsViewOnly.size()) {
                 for(int i = 0; i < waypointsViewOnly.size(); i++) {
                     if (waypointsViewOnly[i]->getId() == wpc->seq) {
@@ -323,6 +336,7 @@ void UASWaypointManager::handleWaypointCurrent(quint8 systemId, quint8 compId, m
 //            emit updateStatusString(QString("New current waypoint %1").arg(wpc->seq));
             QLOG_INFO() << QString("New current waypoint %1").arg(wpc->seq);
             //emit update to UI widgets
+            // UI 위젯에 대한 업데이트를 내 보냅니다.
             emit currentWaypointChanged(wpc->seq);
         }
     }
@@ -331,6 +345,7 @@ void UASWaypointManager::handleWaypointCurrent(quint8 systemId, quint8 compId, m
 void UASWaypointManager::notifyOfChangeEditable(Waypoint* wp)
 {
     // If only one waypoint was changed, emit only WP signal
+    // 웨이 포인트가 하나만 변경된 경우 WP 신호 만 방출합니다.
     if (wp != NULL) {
         emit waypointEditableChanged(uasid, wp);
     } else {
@@ -356,6 +371,7 @@ int UASWaypointManager::setCurrentWaypoint(quint16 seq)
         if(current_state == WP_IDLE) {
 
             //send change to UAS - important to note: if the transmission fails, we have inconsistencies
+            // 변경 사항을 UAS로 보냅니다 - 중요 사항 : 전송이 실패하면 불일치가 발생합니다.
             protocol_timer.start(PROTOCOL_TIMEOUT_MS);
             current_retries = PROTOCOL_MAX_RETRIES;
 
@@ -377,6 +393,7 @@ int UASWaypointManager::setCurrentEditable(quint16 seq)
     if (seq < waypointsEditable.count()) {
         if(current_state == WP_IDLE) {
             //update local main storage
+            // 로컬 주 기억 장치를 갱신한다.
             for(int i = 0; i < waypointsEditable.count(); i++) {
                 if (waypointsEditable[i]->getId() == seq) {
                     waypointsEditable[i]->setCurrent(true);
@@ -409,11 +426,17 @@ void UASWaypointManager::addWaypointViewOnly(Waypoint *wp)
  * @param enforceFirstActive Enforces that the first waypoint is set as active
  * @see createWaypoint() is more suitable for most use cases
  */
+/* *
+ * @warning 웨이 포인트가 전체 애플리케이션 라이프 사이클 동안 유효하게 유지되는지 확인하십시오!
+ * @param enforceFirstActive 첫 번째 웨이 포인트가 활성으로 설정되도록합니다.
+ * @see createWaypoint ()는 대부분의 유스 케이스에 더 적합합니다.
+ */
 void UASWaypointManager::addWaypointEditable(Waypoint *wp, bool enforceFirstActive)
 {
     if (wp)
     {
         // Check if this is the first waypoint in an offline list
+        // 오프라인 목록의 첫 번째 웨이 포인트인지 확인합니다.
         if (waypointsEditable.count() == 0 && uas == NULL)
             MainWindow::instance()->showCriticalMessage(tr("OFFLINE Waypoint Editing Mode"), tr("You are in offline editing mode. Make sure to save your mission to a file before connecting to a system - you will need to load the file into the system, the offline list will be cleared on connect."));
 
@@ -427,6 +450,7 @@ void UASWaypointManager::addWaypointEditable(Waypoint *wp, bool enforceFirstActi
         connect(wp, SIGNAL(changed(Waypoint*)), this, SLOT(notifyOfChangeEditable(Waypoint*)));
 
         // Moved to caller - if all waypoints are received.
+        // 호출자에게 이동 - 모든 경유지를 받으면.
         emit waypointEditableListChanged();
         emit waypointEditableListChanged(uasid);
     }
@@ -435,9 +459,13 @@ void UASWaypointManager::addWaypointEditable(Waypoint *wp, bool enforceFirstActi
 /**
  * @param enforceFirstActive Enforces that the first waypoint is set as active
  */
+/* *
+ * @param enforceFirstActive 첫 번째 웨이 포인트가 활성으로 설정되도록합니다.
+ */
 Waypoint* UASWaypointManager::createWaypoint(bool enforceFirstActive)
 {
     // Check if this is the first waypoint in an offline list
+    // 오프라인 목록의 첫 번째 웨이 포인트인지 확인합니다.
     if (waypointsEditable.count() == 0 && uas == NULL)
         MainWindow::instance()->showCriticalMessage(tr("OFFLINE Waypoint Editing Mode"), tr("You are in offline editing mode. Make sure to save your mission to a file before connecting to a system - you will need to load the file into the system, the offline list will be cleared on connect."));
 
@@ -465,13 +493,13 @@ int UASWaypointManager::removeWaypoint(quint16 seq)
     {
         Waypoint *t = waypointsEditable[seq];
 
-        if (t->getCurrent() == true) //trying to remove the current waypoint
+        if (t->getCurrent() == true) //trying to remove the current waypoint// 현재 웨이 포인트를 지우려고합니다.
         {
-            if (seq+1 < waypointsEditable.count()) // setting the next waypoint as current
+            if (seq+1 < waypointsEditable.count()) // setting the next waypoint as current// 다음 웨이 포인트를 현재로 설정합니다.
             {
                 waypointsEditable[seq+1]->setCurrent(true);
             }
-            else if (seq-1 >= 0) // if deleting the last on the list, then setting the previous waypoint as current
+            else if (seq-1 >= 0) // if deleting the last on the list, then setting the previous waypoint as current// 목록에서 마지막을 삭제 한 다음 이전 웨이 포인트를 현재로 설정하면
             {
                 waypointsEditable[seq-1]->setCurrent(true);
             }
@@ -530,6 +558,7 @@ void UASWaypointManager::saveWaypoints(const QString &saveFile)
     QTextStream out(&file);
 
     //write the waypoint list version to the first line for compatibility check
+    // 호환성 체크를 위해 웨이 포인트리스트 버전을 첫 번째 라인에 쓴다.
     out << "QGC WPL 110\r\n";
 
     for (int i = 0; i < waypointsEditable.count(); i++)
@@ -613,6 +642,9 @@ const QList<Waypoint *> UASWaypointManager::getGlobalFrameWaypointList()
     // TODO Keep this global frame list up to date
     // with complete waypoint list
     // instead of filtering on each request
+    // TODO이 글로벌 프레임리스트를 최신으로 유지
+    // 완전한 웨이 포인트리스트와 함께
+    // 각 요청을 필터링하는 대신
     QList<Waypoint*> wps;
     foreach (Waypoint* wp, waypointsEditable)
     {
@@ -629,12 +661,15 @@ const QList<Waypoint *> UASWaypointManager::getGlobalFrameAndNavTypeWaypointList
     // TODO Keep this global frame list up to date
     // with complete waypoint list
     // instead of filtering on each request
+    // TODO이 글로벌 프레임리스트를 최신으로 유지
+    // 완전한 웨이 포인트리스트와 함께
+    // 각 요청을 필터링하는 대신
     QList<Waypoint*> wps;
     foreach (Waypoint* wp, waypointsEditable)
     {
         if ((wp->isGlobalFrame()) && (wp->isNavigationType() || (wp->visibleOnMapWidget())))
         {
-            if(wp->visibleOnMapWidget() && onlypath) // we need waypoints only to draw the path on map
+            if(wp->visibleOnMapWidget() && onlypath) // we need waypoints only to draw the path on map// 지도 상에 경로를 그리기 위해서만 중간 점이 필요합니다
                 continue;
             wps.append(wp);
         }
@@ -647,6 +682,9 @@ const QList<Waypoint *> UASWaypointManager::getNavTypeWaypointList()
     // TODO Keep this global frame list up to date
     // with complete waypoint list
     // instead of filtering on each request
+    // TODO이 글로벌 프레임리스트를 최신으로 유지
+    // 완전한 웨이 포인트리스트와 함께
+    // 각 요청을 필터링하는 대신
     QList<Waypoint*> wps;
     foreach (Waypoint* wp, waypointsEditable)
     {
@@ -667,6 +705,8 @@ int UASWaypointManager::getGlobalFrameIndexOf(Waypoint* wp)
 {
     // Search through all waypointsEditable,
     // counting only those in global frame
+    // 모든 웨이 포인트를 검색합니다 .Editable,
+    // 전역 프레임의 수만 계산합니다.
     int i = 0;
     foreach (Waypoint* p, waypointsEditable) {
         if (p->isGlobalFrame())
@@ -705,6 +745,8 @@ int UASWaypointManager::getNavTypeIndexOf(Waypoint* wp)
 {
     // Search through all waypointsEditable,
     // counting only those in global frame
+    // 모든 웨이 포인트를 검색합니다 .Editable,
+    // 전역 프레임의 수만 계산합니다.
     int i = 0;
     foreach (Waypoint* p, waypointsEditable)
     {
@@ -725,6 +767,8 @@ int UASWaypointManager::getGlobalFrameCount()
 {
     // Search through all waypointsEditable,
     // counting only those in global frame
+    // 모든 웨이 포인트를 검색합니다 .Editable,
+    // 전역 프레임의 수만 계산합니다.
     int i = 0;
     foreach (Waypoint* p, waypointsEditable)
     {
@@ -741,6 +785,8 @@ int UASWaypointManager::getGlobalFrameAndNavTypeCount()
 {
     // Search through all waypointsEditable,
     // counting only those in global frame
+    // 모든 웨이 포인트를 검색합니다 .Editable,
+    // 전역 프레임의 수만 계산합니다.
     int i = 0;
     foreach (Waypoint* p, waypointsEditable) {
         if (p->isGlobalFrame() && p->isNavigationType())
@@ -756,6 +802,8 @@ int UASWaypointManager::getNavTypeCount()
 {
     // Search through all waypointsEditable,
     // counting only those in global frame
+    // 모든 웨이 포인트를 검색합니다 .Editable,
+    // 전역 프레임의 수만 계산합니다.
     int i = 0;
     foreach (Waypoint* p, waypointsEditable) {
         if (p->isNavigationType()) {
@@ -770,6 +818,8 @@ int UASWaypointManager::getLocalFrameCount()
 {
     // Search through all waypointsEditable,
     // counting only those in global frame
+    // 모든 웨이 포인트를 검색합니다 .Editable,
+    // 전역 프레임의 수만 계산합니다.
     int i = 0;
     foreach (Waypoint* p, waypointsEditable)
     {
@@ -786,6 +836,8 @@ int UASWaypointManager::getLocalFrameIndexOf(Waypoint* wp)
 {
     // Search through all waypointsEditable,
     // counting only those in local frame
+    // 모든 웨이 포인트를 검색합니다 .Editable,
+    // 전역 프레임의 수만 계산합니다.
     int i = 0;
     foreach (Waypoint* p, waypointsEditable)
     {
@@ -806,6 +858,8 @@ int UASWaypointManager::getMissionFrameIndexOf(Waypoint* wp)
 {
     // Search through all waypointsEditable,
     // counting only those in mission frame
+    // 모든 웨이 포인트를 검색합니다 .Editable,
+    // 미션 프레임에서만 계산
     int i = 0;
     foreach (Waypoint* p, waypointsEditable)
     {
@@ -826,6 +880,9 @@ int UASWaypointManager::getMissionFrameIndexOf(Waypoint* wp)
 /**
  * @param readToEdit If true, incoming waypoints will be copied both to "edit"-tab and "view"-tab. Otherwise, only to "view"-tab.
  */
+/* *
+* @param readToEdit true이면 수신 웨이 포인트가 "편집"- 탭과 "보기"- 탭으로 복사됩니다. 그렇지 않으면, 오직 "보기"- 탭.
+ */
 void UASWaypointManager::readWaypoints(bool readToEdit)
 {
     read_to_edit = readToEdit;
@@ -834,6 +891,7 @@ void UASWaypointManager::readWaypoints(bool readToEdit)
 
 
         //Clear the old view-list before receiving the new one
+        // 새로운 뷰리스트를 받기 전에 이전 뷰리스트를 지운다.
         qDeleteAll(waypointsViewOnly);
         waypointsViewOnly.clear();
         emit waypointViewOnlyListChanged();
@@ -870,6 +928,7 @@ void UASWaypointManager::goToWaypoint(Waypoint *wp)
     if (!uas) return;
 
     //Don't try to send a guided mode message to an AP that does not support it.
+    // 지원하지 않는 AP로 안내 모드 메시지를 보내려고 시도하지 마십시오.
     if (uas->getAutopilotType() == MAV_AUTOPILOT_ARDUPILOTMEGA)
     {
         QLOG_DEBUG() << "APM: goToWaypont: " + wp->debugString();
@@ -878,14 +937,14 @@ void UASWaypointManager::goToWaypoint(Waypoint *wp)
         //const Waypoint *cur_s = waypointsEditable.at(i);
 
         mission.autocontinue = 0;
-        mission.current = 2; //2 for guided mode
+        mission.current = 2; //2 for guided mode// 안내 모드의 경우 2
         mission.param1 = wp->getParam1();
         mission.param2 = wp->getParam2();
         mission.param3 = wp->getParam3();
         mission.param4 = wp->getParam4();
         mission.frame = wp->getFrame();
         mission.command = wp->getAction();
-        mission.seq = 0;     // don't read out the sequence number of the waypoint class
+        mission.seq = 0;     // don't read out the sequence number of the waypoint class// 웨이 포인트 클래스의 시퀀스 번호를 읽지 않습니다.
         mission.x = wp->getX();
         mission.y = wp->getY();
         mission.z = wp->getZ();
@@ -924,35 +983,37 @@ void UASWaypointManager::writeWaypoints()
             bool noCurrent = true;
 
             //copy waypoint data to local buffer
+            // 웨이 포인트 데이터를 로컬 버퍼에 복사합니다.
             for (int i=0; i < current_count; i++) {
                 waypoint_buffer.push_back(new mavlink_mission_item_t);
                 mavlink_mission_item_t *cur_d = waypoint_buffer.back();
-                memset(cur_d, 0, sizeof(mavlink_mission_item_t));   //initialize with zeros
+                memset(cur_d, 0, sizeof(mavlink_mission_item_t));   //initialize with zeros// 0으로 초기화하십시오.
                 const Waypoint *cur_s = waypointsEditable.at(i);
 
                 cur_d->autocontinue = cur_s->getAutoContinue();
-                cur_d->current = cur_s->getCurrent() & noCurrent;   //make sure only one current waypoint is selected, the first selected will be chosen
+                cur_d->current = cur_s->getCurrent() & noCurrent;   //make sure only one current waypoint is selected, the first selected will be chosen// 하나의 현재 웨이 포인트 만 선택되었는지, 처음 선택한 웨이 포인트가 선택되었는지 확인하십시오
                 cur_d->param1 = cur_s->getParam1();
                 cur_d->param2 = cur_s->getParam2();
                 cur_d->param3 = cur_s->getParam3();
                 cur_d->param4 = cur_s->getParam4();
                 cur_d->frame = cur_s->getFrame();
                 cur_d->command = cur_s->getAction();
-                cur_d->seq = i;     // don't read out the sequence number of the waypoint class
+                cur_d->seq = i;     // don't read out the sequence number of the waypoint class// 웨이 포인트 클래스의 시퀀스 번호를 읽지 않습니다.
                 cur_d->x = cur_s->getX();
                 cur_d->y = cur_s->getY();
                 cur_d->z = cur_s->getZ();
 
                 if (cur_s->getCurrent() && noCurrent)
                     noCurrent = false;
-                if (i == (current_count - 1) && noCurrent == true) //not a single waypoint was set as "current"
-                    cur_d->current = true; // set the last waypoint as current. Or should it better be the first waypoint ?
+                if (i == (current_count - 1) && noCurrent == true) //not a single waypoint was set as "current"// 단일 웨이 포인트가 "현재"로 설정되지 않았습니다.
+                    cur_d->current = true; // set the last waypoint as current. Or should it better be the first waypoint ?// 마지막 웨이 포인트를 현재로 설정합니다. 아니면 첫 번째 웨이 포인트가 좋을까요?
             }
 
 
 
 
             //send the waypoint count to UAS (this starts the send transaction)
+            // 웨이 포인트 수를 UAS로 보낸다 (이것은 전송 트랜잭션을 시작한다)
             sendWaypointCount();
         } else if (waypointsEditable.count() == 0)
         {
@@ -962,6 +1023,7 @@ void UASWaypointManager::writeWaypoints()
     else
     {
         //we're in another transaction, ignore command
+        // 우리는 다른 트랜잭션에있다. 명령을 무시한다.
         QLOG_DEBUG() << "UASWaypointManager::sendWaypoints() doing something else ignoring command";
     }
 }
@@ -1089,7 +1151,7 @@ void UASWaypointManager::sendWaypointAck(quint8 type)
 }
 
 UAS* UASWaypointManager::getUAS() {
-    return this->uas;    ///< Returns the owning UAS
+    return this->uas;    ///< Returns the owning UAS// / <소유하는 UAS를 반환합니다.
 }
 
 double UASWaypointManager::getAltitudeRecommendation(MAV_FRAME frame)
@@ -1100,15 +1162,15 @@ double UASWaypointManager::getAltitudeRecommendation(MAV_FRAME frame)
         else if (waypointsEditable.count() > 1)
             return waypointsEditable.last()->getAltitude();
         else
-            return 0.0f; // This returns 0.0m for NAV: Home
+            return 0.0f; // This returns 0.0m for NAV: Home// NAV : Home에 대해 0.0m를 반환합니다.
 
-    } else { // working in the relative frame
+    } else { // working in the relative frame// 상대 프레임에서 작업
         if (waypointsEditable.count() == 1)
             return m_defaultRelativeAlt;
         else if (waypointsEditable.count() > 1)
             return waypointsEditable.last()->getAltitude();
         else
-            return 0.0f; // This returns 0.0m for NAV: Home
+            return 0.0f; // This returns 0.0m for NAV: Home// NAV : Home에 대해 0.0m를 반환합니다.
     }
 }
 
@@ -1126,25 +1188,32 @@ double UASWaypointManager::getDefaultRelAltitude()
 int UASWaypointManager::getFrameRecommendation()
 {
     // APM always uses waypoint 0 as HOME location (ie. it's MAV_FRAME_GLOBAL)
+    // APM은 항상 웨이 포인트 0을 HOME 위치로 사용합니다 (즉, MAV_FRAME_GLOBAL입니다)
     if (!uas) {
         // Offline Edit mode.
-        if (waypointsEditable.count() == 0){ // Home is always ABS ALT.
+        // 오프라인 편집 모드.
+        if (waypointsEditable.count() == 0){ // Home is always ABS ALT.// 집은 항상 ABS ALT입니다.
             return MAV_FRAME_GLOBAL;
         } else if (waypointsEditable.count() > 1) {
             // new waypoints adopt the last waypoint setting by default.
+            // 새로운 웨이 포인트는 기본적으로 마지막 웨이 포인트 설정을 채택합니다.
             return static_cast<int>(waypointsEditable.last()->getFrame());
         } else {
             // Always make WP1 in offline mode relative
+           // WP1을 항상 오프라인 모드로 만듭니다.
             return MAV_FRAME_GLOBAL_RELATIVE_ALT;
         }
     }
 
     // Online edit rules
+    // 온라인 편집 규칙
     if (waypointsEditable.count() > 1) {
         // new waypoints adopt the last waypoint setting by default.
+        // 새로운 웨이 포인트는 기본적으로 마지막 웨이 포인트 설정을 채택합니다.
         return static_cast<int>(waypointsEditable.last()->getFrame());
     } else {
         // Always make WP1 relative
+        // 항상 WP1을 상대적으로 만듭니다.
         return MAV_FRAME_GLOBAL_RELATIVE_ALT;
     }
 }
