@@ -52,7 +52,7 @@ Rectangle {
         Repeater {
             model: makeGraticule()
 
-            Rectangle { // Graticule Light
+            Rectangle { // Graticule Light  계수 선 라이트
                 id:graticuleLight
                 width: root.width
                 height: 2
@@ -76,7 +76,7 @@ Rectangle {
         }
     }
 
-    Rectangle { // Altitude Label
+    Rectangle { // Altitude Label    고도 레이블
         anchors.right: parent.right
         anchors.verticalCenter: parent.verticalCenter
         width: parent.width

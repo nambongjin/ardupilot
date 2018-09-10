@@ -26,13 +26,13 @@ UASQuickViewTextItem::UASQuickViewTextItem(QWidget *parent) : UASQuickViewItem(p
     titlefont.setPixelSize(this->height() / 4.0);
     valueLabel->setFontSize(this->height() / 2.0);
     titleLabel->setFontSize(this->height() / 4.0);
-    // use golden ratio for evenly distributed colors
+    // use golden ratio for evenly distributed colors	     // 균등하게 분포 된 색상에 황금 비율 사용  
     double golden_ratio_conjugate = 0.618033988749895;
     double h = ((double)rand() / (double)(RAND_MAX));
     h = h + golden_ratio_conjugate;
     h = fmod(h, 1.0);     // hue, 0.0 - 1.0
-    double s = 0.75;    // saturation, the bigger it is, the stronger the color is
-    double v = 0.8516;  // value, represents lightness or brightness, 0 is black
+    double s = 0.75;    // saturation, the bigger it is, the stronger the color is	 채도가 크면 클수록 색상이 강해집니다.  
+    double v = 0.8516;  // value, represents lightness or brightness, 0 is black	 값은 밝기 또는 밝기를 나타내며 0은 검정색입니다.  
     QColor color = QColor::fromHsvF(h, s, v);
     titleLabel->setFontColor(color);
     valueLabel->setFontColor(color);
@@ -51,7 +51,7 @@ QString UASQuickViewTextItem::title()
 void UASQuickViewTextItem::setValue(double value)
 {
 
-    //Lon/Lat needs 7 decimal places, everything else should be scaled by value.
+    //Lon/Lat needs 7 decimal places, everything else should be scaled by value.	 Lon / Lat에는 소수점 7 자리가 필요합니다. 나머지는 값으로 조정해야합니다.  
     if ((titleLabel->text().toLower() == "longitude") ||
             (titleLabel->text().toLower() == "latitude") ||
             (titleLabel->text().toLower() == "lon") ||

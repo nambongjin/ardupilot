@@ -29,7 +29,8 @@ Rectangle {
         y: parent.height - compassImage.height/2
     }
 
-    Image { // Compass
+    Image { // Compass   나침반
+
         id: compassImage
         source: "../resources/components/rollPitchIndicator/compass.svg"
         smooth: true

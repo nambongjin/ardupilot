@@ -9,7 +9,7 @@ QGCMissionNavLoiterToAlt::QGCMissionNavLoiterToAlt(WaypointEditableView* WEV) :
     ui->setupUi(this);
     this->WEV = WEV;
 
-    //Using UI to change WP:
+    //Using UI to change WP:	 UI를 사용하여 WP 변경하기 :  
     connect(this->ui->headingreqSpinBox, SIGNAL(valueChanged(double)),WEV,SLOT(changedParam1(double)));
     connect(this->ui->radiusSpinBox, SIGNAL(valueChanged(double)),WEV,SLOT(changedParam2(double)));
     //connect(this->ui->param3SpinBox, SIGNAL(valueChanged(double)),WEV,SLOT(changedParam3(double)));
@@ -21,7 +21,7 @@ QGCMissionNavLoiterToAlt::QGCMissionNavLoiterToAlt(WaypointEditableView* WEV) :
     connect(this->ui->lonSpinBox, SIGNAL(valueChanged(double)),WEV,SLOT(changedParam6(double)));
     connect(this->ui->altSpinBox, SIGNAL(valueChanged(double)),WEV,SLOT(changedParam7(double)));
 
-    //Reading WP to update UI:
+    //Reading WP to update UI:	 UI를 업데이트하기 위해 WP를 읽습니다.  
     connect(WEV,SIGNAL(frameBroadcast(MAV_FRAME)),this,SLOT(updateFrame(MAV_FRAME)));
     connect(WEV,SIGNAL(param1Broadcast(double)),this->ui->headingreqSpinBox,SLOT(setValue(double)));
     connect(WEV,SIGNAL(param2Broadcast(double)),this->ui->radiusSpinBox,SLOT(setValue(double)));

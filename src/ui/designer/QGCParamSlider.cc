@@ -49,9 +49,14 @@ QGCParamSlider::QGCParamSlider(QWidget *parent) :
     //ui->editLine1->setStyleSheet("QWidget { border: 1px solid #66666B; border-radius: 3px; padding: 10px 0px 0px 0px; background: #111122; }");
     //ui->editLine2->setStyleSheet("QWidget { border: 1px solid #66666B; border-radius: 3px; padding: 10px 0px 0px 0px; background: #111122; }");
 
+/*
+    // ui-> editLine1-> setStyleSheet ( "QWidget {테두리 : 1px 솔리드 # 66666B; 테두리 반경 : 3px; 패딩 : 10px 0px 0px; 배경 : # 111122;}");
+    // ui-> editLine2-> setStyleSheet ( "QWidget {테두리 : 1px 솔리드 # 66666B; 테두리 반경 : 3px; 패딩 : 10px 0px 0px; 배경 : # 111122;}");
+*/
+	 
     connect(ui->editDoneButton, SIGNAL(clicked()), this, SLOT(endEditMode()));
 
-    // Sending actions
+    // Sending actions	 작업 보내기  
     connect(ui->writeButton, SIGNAL(clicked()), this, SLOT(sendParameter()));
     connect(ui->editSelectComponentComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(selectComponent(int)));
     connect(ui->editSelectParamComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(selectParameter(int)));
@@ -62,9 +67,9 @@ QGCParamSlider::QGCParamSlider(QWidget *parent) :
     connect(ui->readButton, SIGNAL(clicked()), this, SLOT(requestParameter()));
     connect(ui->editRefreshParamsButton, SIGNAL(clicked()), this, SLOT(refreshParamList()));
     connect(ui->editInfoCheckBox, SIGNAL(clicked(bool)), this, SLOT(showInfo(bool)));
-    // connect to self
+    // connect to self	 자신과 연결  
     connect(ui->infoLabel, SIGNAL(released()), this, SLOT(showTooltip()));
-    // Set the current UAS if present
+    // Set the current UAS if present	 현재 UAS를 설정합니다 (있는 경우).  
     connect(UASManager::instance(), SIGNAL(activeUASSet(UASInterface*)), this, SLOT(setActiveUAS(UASInterface*)));
 }
 
@@ -104,19 +109,26 @@ void QGCParamSlider::setActiveUAS(UASInterface* activeUas)
             disconnect(uas, SIGNAL(parameterChanged(int,int,int,int,QString,QVariant)), this, SLOT(setParameterValue(int,int,int,int,QString,QVariant)));
         }
 
-        // Connect buttons and signals
+        // Connect buttons and signals	 버튼과 신호 연결  
         connect(activeUas, SIGNAL(parameterChanged(int,int,int,int,QString,QVariant)), this, SLOT(setParameterValue(int,int,int,int,QString,QVariant)), Qt::UniqueConnection);
         uas = activeUas;
         // Update current param value
         //requestParameter();
         // Set param info
+
+/*
+        // 현재 매개 변수 값을 업데이트합니다.
+        // requestParameter ();
+        // 매개 변수 설정
+*/
+
         QString text = uas->getParamManager()->getParamInfo(parameterName);
         if (text != "")
         {
             ui->infoLabel->setToolTip(text);
             ui->infoLabel->show();
         }
-        // Force-uncheck and hide label if no description is available
+        // Force-uncheck and hide label if no description is available	 설명을 사용할 수없는 경우 라벨을 강제로 선택 취소하고 숨 깁니다.  
         if (ui->editInfoCheckBox->isChecked())
         {
             showInfo((text.length() > 0));
@@ -177,32 +189,32 @@ void QGCParamSlider::selectComponent(int componentIndex)
 
 void QGCParamSlider::selectParameter(int paramIndex)
 {
-    // Set name
+    // Set name	 이름 설정  
     parameterName = ui->editSelectParamComboBox->itemText(paramIndex);
 
-    // Update min and max values if available
+    // Update min and max values if available	 사용 가능한 경우 min 및 max 값을 업데이트합니다.  
     if (uas)
     {
         if (uas->getParamManager())
         {
-            // Current value
+            // Current value	 현재 값  
             //uas->getParamManager()->requestParameterUpdate(component, parameterName);
 
-            // Minimum
+            // Minimum	 최소값  
             if (uas->getParamManager()->isParamMinKnown(parameterName))
             {
                 parameterMin = uas->getParamManager()->getParamMin(parameterName);
                 ui->editMinSpinBox->setValue(parameterMin);
             }
 
-            // Maximum
+            // Maximum	 최대  
             if (uas->getParamManager()->isParamMaxKnown(parameterName))
             {
                 parameterMax = uas->getParamManager()->getParamMax(parameterName);
                 ui->editMaxSpinBox->setValue(parameterMax);
             }
 
-            // Description
+            // Description	 설명  
             //QString text = uas->getParamManager()->getParamInfo(parameterName);
             //ui->infoLabel->setText(text);
 
@@ -238,13 +250,13 @@ void QGCParamSlider::startEditMode()
 
 void QGCParamSlider::endEditMode()
 {
-    // Store component id
+    // Store component id	 구성 요소 ID 저장  
     selectComponent(ui->editSelectComponentComboBox->currentIndex());
 
-    // Store parameter name and id
+    // Store parameter name and id	 매개 변수 이름과 ID 저장  
     selectParameter(ui->editSelectParamComboBox->currentIndex());
 
-    // Min/max
+    // Min/max	 최소 / 최대  
     parameterMin = ui->editMinSpinBox->value();
     parameterMax = ui->editMaxSpinBox->value();
 
@@ -286,7 +298,7 @@ void QGCParamSlider::sendParameter()
 {
     if (uas)
     {
-        // Set value, param manager handles retransmission
+        // Set value, param manager handles retransmission	 값을 설정하면 param manager가 재전송을 처리합니다.  
         if (uas->getParamManager())
         {
             uas->getParamManager()->setParameter(component, parameterName, parameterValue);
@@ -344,6 +356,14 @@ void QGCParamSlider::setSliderValue(int sliderValue)
  * @brief parameterName Key/name of the parameter
  * @brief value Value of the parameter
  */
+
+/*
+ * @brief uas 무인 시스템 매개 변수 전송
+ * @brief 구성 요소 매개 변수를 보내는 UAS 구성 요소
+ * @brief parameterName 매개 변수의 키 / 이름입니다.
+ * @brief value 매개 변수의 값
+*/
+
 void QGCParamSlider::setParameterValue(int uas, int component, int paramCount, int paramIndex, QString parameterName, QVariant value)
 {
     Q_UNUSED(paramCount);
@@ -351,7 +371,7 @@ void QGCParamSlider::setParameterValue(int uas, int component, int paramCount, i
     {
         ui->nameLabel->setText(parameterName);
     }
-    // Check if this component and parameter are part of the list
+    // Check if this component and parameter are part of the list	 이 구성 요소와 매개 변수가 목록의 일부인지 확인합니다.  
     bool found = false;
     for (int i = 0; i< ui->editSelectComponentComboBox->count(); ++i)
     {
@@ -366,7 +386,7 @@ void QGCParamSlider::setParameterValue(int uas, int component, int paramCount, i
         ui->editSelectComponentComboBox->addItem(tr("Component #%1").arg(component), component);
     }
 
-    // Parameter checking
+    // Parameter checking	 매개 변수 검사  
     found = false;
     for (int i = 0; i < ui->editSelectParamComboBox->count(); ++i)
     {
@@ -393,7 +413,7 @@ void QGCParamSlider::setParameterValue(int uas, int component, int paramCount, i
             }
             else
             {
-                //Disable the component here.
+                //Disable the component here.	 여기서 구성 요소를 비활성화합니다.  
                 ui->valueSlider->setEnabled(false);
                 ui->intValueSpinBox->setEnabled(false);
                 ui->doubleValueSpinBox->setEnabled(false);
@@ -544,7 +564,7 @@ void QGCParamSlider::readSettings(const QString& pre,const QVariantMap& settings
 
     setActiveUAS(UASManager::instance()->getActiveUAS());
 
-    // Get param value after settings have been loaded
+    // Get param value after settings have been loaded	 설정이로드 된 후 param 값 가져 오기  
     //requestParameter();
 }
 
@@ -579,6 +599,6 @@ void QGCParamSlider::readSettings(const QSettings& settings)
 
     setActiveUAS(UASManager::instance()->getActiveUAS());
 
-    // Get param value after settings have been loaded
+    // Get param value after settings have been loaded	 설정이로드 된 후 param 값 가져 오기  
     //requestParameter();
 }

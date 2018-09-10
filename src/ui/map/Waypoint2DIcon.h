@@ -34,6 +34,7 @@ public:
      * @param radius 원의 반경
      */
 
+
     Waypoint2DIcon(mapcontrol::MapGraphicItem* map, mapcontrol::OPMapWidget* parent, Waypoint* wp, const QColor& color, int listindex, int radius = 31);
 
     virtual ~Waypoint2DIcon();

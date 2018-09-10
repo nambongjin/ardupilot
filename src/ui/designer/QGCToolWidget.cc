@@ -45,7 +45,7 @@ QGCToolWidget::QGCToolWidget(const QString& title, QWidget *parent, QSettings* s
         dock->setObjectName(widgetTitle+"DOCK");
     }
 
-    // Try with parent
+    // Try with parent	 부모와 함께 시도  
     dock = dynamic_cast<QDockWidget*>(parent);
     if (dock) {
         dock->setWindowTitle(widgetTitle);
@@ -68,6 +68,12 @@ QGCToolWidget::QGCToolWidget(const QString& title, QWidget *parent, QSettings* s
     // Enforce storage if this not loaded from settings
     // is MUST NOT BE SAVED if it was loaded from settings!
     //if (!settings) storeWidgetsToSettings();
+
+/*
+    // 설정에서로드되지 않은 경우 저장소를 적용합니다.
+    // 설정에서로드 된 경우 // 절대로 저장하지 마십시오!
+*/
+
 }
 
 QGCToolWidget::~QGCToolWidget()
@@ -93,12 +99,18 @@ void QGCToolWidget::setParent(QWidget *parent)
  * @param parent Object later holding these widgets, usually the main window
  * @return List of all widgets
  */
+
+/*
+ * @param parent 나중에이 위젯들을 가지고있는 객체, 보통 메인 윈도우
+ * @return 모든 위젯의리스트
+*/
+
 QList<QGCToolWidget*> QGCToolWidget::createWidgetsFromSettings(QWidget* parent, QString settingsFile)
 {
-    // Load widgets from application settings
+    // Load widgets from application settings	 애플리케이션 설정에서 위젯로드  
     QSettings* settings;
 
-    // Or load them from a settings file
+    // Or load them from a settings file	 또는 설정 파일에서로드합니다.  
     if (!settingsFile.isEmpty())
     {
         settings = new QSettings(settingsFile, QSettings::IniFormat);
@@ -130,6 +142,12 @@ QList<QGCToolWidget*> QGCToolWidget::createWidgetsFromSettings(QWidget* parent, 
         {
             // Silently catch empty widget name - sanity check
             // to survive broken settings (e.g. from user manipulation)
+
+/*
+            // 빈 위젯 이름을 자동으로 catch합니다.
+            // 깨진 설정 (예 : 사용자 조작에서 생존)
+*/
+
         }
         else
         {
@@ -169,6 +187,11 @@ void QGCToolWidget::showLabel(QString name,int num)
 /**
  * @param singleinstance If this is set to true, the widget settings will only be loaded if not another widget with the same title exists
  */
+
+/*
+ * @param singleinstance 이것이 true로 설정되면 같은 제목을 가진 다른 위젯이 존재하지 않을 경우에만 위젯 설정이로드됩니다
+*/
+
 bool QGCToolWidget::loadSettings(const QString& settings, bool singleinstance)
 {
     QSettings set(settings, QSettings::IniFormat);
@@ -180,6 +203,12 @@ bool QGCToolWidget::loadSettings(const QString& settings, bool singleinstance)
         if (singleinstance && QGCToolWidget::instances()->keys().contains(widgetName)) return false;
         // Do not use setTitle() here,
         // interferes with loading settings
+
+/*
+        // 여기서 setTitle ()을 사용하지 마십시오.
+        // 로드 설정을 방해합니다.
+*/
+
         widgetTitle = widgetName;
         //QLOG_DEBUG() << "WIDGET TITLE LOADED: " << widgetName;
         loadSettings(set);
@@ -226,6 +255,11 @@ void QGCToolWidget::setParameterValue(int uas, int component, QString parameterN
     if (paramToItemMap.contains(parameterName))
     {
         //If we already have an item for this parameter, updates are handled internally.
+
+/*
+
+        // 이미이 매개 변수에 대한 항목이있는 경우 내부적으로 업데이트가 처리됩니다.*/
+
         return;
     }
 
@@ -236,6 +270,11 @@ void QGCToolWidget::setParameterValue(int uas, int component, QString parameterN
         if (type == "COMMANDBUTTON")
         {
             //This shouldn't happen, but I'm not sure... so lets test for it.
+
+/*
+            // 이런 일은 있어서는 안되지만 확실하지는 않습니다 ... 그래서 테스트 해보십시오.
+*/
+
             continue;
         }
         else if (type == "SLIDER")
@@ -381,7 +420,7 @@ void QGCToolWidget::loadSettings(QSettings& settings)
 
 void QGCToolWidget::storeWidgetsToSettings(QString settingsFile)
 {
-    // Store list of widgets
+    // Store list of widgets	    위젯 목록 저장  
     QSettings* settings;
     if (!settingsFile.isEmpty())
     {
@@ -404,7 +443,7 @@ void QGCToolWidget::storeWidgetsToSettings(QString settingsFile)
     {
         if (i < instances()->size())
         {
-            // Updating value
+            // Updating value	 값을 업데이트 중입니다.  
             if (!instances()->values().at(i)->fromMetaData())
             {
                 settings->setArrayIndex(num++);
@@ -415,13 +454,13 @@ void QGCToolWidget::storeWidgetsToSettings(QString settingsFile)
         }
         else
         {
-            // Deleting old value
+            // Deleting old value	 이전 값 삭제  
             settings->remove("TITLE");
         }
     }
     settings->endArray();
 
-    // Store individual widget items
+    // Store individual widget items	 개별 위젯 항목 저장  
     for (int i = 0; i < instances()->size(); ++i)
     {
         instances()->values().at(i)->storeSettings(*settings);
@@ -447,7 +486,7 @@ void QGCToolWidget::storeSettings(QSettings& settings)
 {
     if (isFromMetaData)
     {
-        //Refuse to store if this is loaded from metadata or dynamically generated.
+        //Refuse to store if this is loaded from metadata or dynamically generated.	   메타 데이터에서로드되거나 동적으로 생성 된 경우 저장을 거부합니다.  
         return;
     }
     //QLOG_DEBUG() << "WRITING WIDGET" << widgetTitle << "TO SETTINGS";
@@ -456,13 +495,13 @@ void QGCToolWidget::storeSettings(QSettings& settings)
     int k = 0; // QGCToolItem counter
     for (int j = 0; j  < children().size(); ++j)
     {
-        // Store only QGCToolWidgetItems
+        // Store only QGCToolWidgetItems	  QGCToolWidgetItems 만 저장  
         QGCToolWidgetItem* item = dynamic_cast<QGCToolWidgetItem*>(children().at(j));
         if (item)
         {
-            // Only count actual tool widget item children
+            // Only count actual tool widget item children	 실제 도구 위젯 항목의 자식 만 계산합니다.  
             settings.setArrayIndex(k++);
-            // Store the ToolWidgetItem
+            // Store the ToolWidgetItem	 ToolWidgetItem을 저장한다.  
             item->writeSettings(settings);
         }
     }
@@ -476,7 +515,7 @@ void QGCToolWidget::addUAS(UASInterface* uas)
     UAS* newMav = dynamic_cast<UAS*>(uas);
     if (newMav)
     {
-        // FIXME Convert to list
+        // FIXME Convert to list	 FIXME리스트로 변환  
         if (mav == NULL) mav = newMav;
     }
 }
@@ -496,7 +535,7 @@ void QGCToolWidget::contextMenuEvent (QContextMenuEvent* event)
 
 void QGCToolWidget::hideEvent(QHideEvent* event)
 {
-    // Store settings
+    // Store settings	  설정 저장  
     QWidget::hideEvent(event);
 }
 
@@ -505,6 +544,14 @@ void QGCToolWidget::hideEvent(QHideEvent* event)
  * Both values are only stored internally and allow an external
  * widget to configure it accordingly
  */
+
+/*
+/ * *
+ * 위젯 현재보기 및 적용된 도크 위젯 영역.
+ * 두 값은 내부적으로 만 저장되며 외부 값
+ 그에 따라 구성하는 * 위젯
+*/
+
 void QGCToolWidget::setViewVisibilityAndDockWidgetArea(int view, bool visible, Qt::DockWidgetArea area)
 {
     viewVisible.insert(view, visible);
@@ -651,14 +698,14 @@ void QGCToolWidget::setTitle()
 
 void QGCToolWidget::setWindowTitle(const QString& title)
 {
-    // Sets title and calls setWindowTitle on QWidget
+    // Sets title and calls setWindowTitle on QWidget	 제목을 설정하고 QWidget에 setWindowTitle을 호출합니다.  
     widgetTitle = title;
     QWidget::setWindowTitle(title);
 }
 
 void QGCToolWidget::setTitle(QString title)
 {
-    // Remove references to old title
+    // Remove references to old title	 이전 제목에 대한 참조를 제거합니다.  
     /*QSettings settings;
     settings.beginGroup(widgetTitle);
     settings.remove("");
@@ -667,14 +714,14 @@ void QGCToolWidget::setTitle(QString title)
 
     if (instances()->contains(widgetTitle)) instances()->remove(widgetTitle);
 
-    // Switch to new title
+    // Switch to new title	 새 제목으로 전환  
     widgetTitle = title;
 
     if (!instances()->contains(title)) instances()->insert(title, this);
     QWidget::setWindowTitle(title);
     QDockWidget* parent = dynamic_cast<QDockWidget*>(this->parentWidget());
     if (parent) parent->setWindowTitle(title);
-    // Store all widgets
+    // Store all widgets	 모든 위젯 저장  
     //storeWidgetsToSettings();
 
     emit titleChanged(title);
@@ -688,9 +735,9 @@ void QGCToolWidget::setMainMenuAction(QAction* action)
 
 void QGCToolWidget::deleteWidget()
 {
-    // Remove from settings
+    // Remove from settings	 설정에서 제거  
 
-    // Hide
+    // Hide	 숨기기  
     this->hide();
     instances()->remove(getTitle());
     /*QSettings settings;
@@ -700,6 +747,6 @@ void QGCToolWidget::deleteWidget()
     storeWidgetsToSettings();*/
     storeWidgetsToSettings();
 
-    // Delete
+    // Delete	 삭제  
     this->deleteLater();
 }

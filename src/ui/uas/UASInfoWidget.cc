@@ -54,6 +54,12 @@ UASInfoWidget::UASInfoWidget(QWidget *parent, QString name) : QWidget(parent)
 
     // Set default values
     /** Set two voltage decimals and zero charge level decimals **/
+
+/*
+    // 기본값 설정
+    / * * 2 개의 전압 소수점 및 0 번째 충전 레벨 소수점을 설정합니다. * /
+*/
+
     this->voltageDecimals = 2;
     this->loadDecimals = 2;
 
@@ -81,6 +87,12 @@ void UASInfoWidget::showEvent(QShowEvent* event)
 {
     // React only to internal (pre-display)
     // events
+
+/*
+    // 내부 (사전 표시)
+    // 이벤트
+*/
+
     Q_UNUSED(event);
     updateTimer->start(updateInterval);
 }
@@ -89,6 +101,12 @@ void UASInfoWidget::hideEvent(QHideEvent* event)
 {
     // React only to internal (pre-display)
     // events
+
+/*
+    // 내부 (사전 표시)
+    // 이벤트
+*/
+
     Q_UNUSED(event);
     updateTimer->stop();
 }
@@ -101,7 +119,7 @@ void UASInfoWidget::addUAS(UASInterface* uas)
         connect(uas, SIGNAL(loadChanged(UASInterface*, double)), this, SLOT(updateCPULoad(UASInterface*,double)));
         connect(uas, SIGNAL(errCountChanged(int,QString,QString,int)), this, SLOT(updateErrorCount(int,QString,QString,int)));
 
-        // Set this UAS as active if it is the first one
+        // Set this UAS as active if it is the first one	 이 UAS를 첫 번째 활성으로 설정합니다.  
         if (activeUAS == 0) activeUAS = uas;
     }
 }
@@ -149,6 +167,12 @@ void UASInfoWidget::updateReceiveLoss(int uasId, float receiveLoss)
   The send loss is typically calculated on the GCS based on packets
   that were received scrambled from the MAV
  */
+
+/*
+  전송 손실은 일반적으로 패킷을 기반으로 GCS에서 계산됩니다
+  MAV에서 스크램블링받은
+*/
+
 void UASInfoWidget::updateSendLoss(int uasId, float sendLoss)
 {
     Q_UNUSED(uasId);

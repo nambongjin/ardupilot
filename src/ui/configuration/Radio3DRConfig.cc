@@ -58,7 +58,7 @@ Radio3DRConfig::Radio3DRConfig(QWidget *parent) : QWidget(parent),
 
     addMavLinkComboBoxConfig(*ui.mavLinkComboBox_remote);
 
-    setButtonState(true); // start with buttons disabled
+    setButtonState(true); // start with buttons disabled	  버튼을 사용하지 않고 시작합니다.  
 
     populateSerialPorts();
 
@@ -66,7 +66,7 @@ Radio3DRConfig::Radio3DRConfig(QWidget *parent) : QWidget(parent),
 
     initConnections();
 
-    //connect timer for when refreshing the serial port list
+    //connect timer for when refreshing the serial port list	 직렬 포트 목록을 새로 고칠 때 타이머 연결  
     connect(&m_timer,SIGNAL(timeout()),this,SLOT(populateSerialPorts()));
 }
 
@@ -87,7 +87,7 @@ void Radio3DRConfig::addBaudComboBoxConfig(QComboBox *comboBox)
     comboBox->addItem(QLatin1String("2400"), QSerialPort::Baud2400);
     comboBox->addItem(QLatin1String("1200"), QSerialPort::Baud1200);
 
-    // Set combobox to default baud rate of 57600.
+    // Set combobox to default baud rate of 57600.	 combobox를 기본 전송 속도 57600으로 설정합니다.  
     comboBox->setCurrentIndex(2);
 }
 
@@ -111,7 +111,7 @@ void Radio3DRConfig::fillPortsInfo(QComboBox &comboBox)
             QLOG_INFO() << "Found " << list.first();
             comboBox.insertItem(0,list[0], list);
         } else {
-            // Do nothing as the port is already listed
+            // Do nothing as the port is already listed	 포트가 이미 나열되어 있으므로 아무 작업도 수행하지 않습니다.  
         }
     }
     for (int i=0;i<comboBox.count();i++)
@@ -124,7 +124,7 @@ void Radio3DRConfig::fillPortsInfo(QComboBox &comboBox)
     }
     if(comboBox.count() == 0)
     {
-       // no interface found
+       // no interface found	 인터페이스가 없습니다.  
        comboBox.insertItem(0, "None", QStringList());
        setButtonState(true);
     }
@@ -138,7 +138,7 @@ void Radio3DRConfig::fillPortsInfo(QComboBox &comboBox)
 
 void Radio3DRConfig::loadSavedSerialSettings()
 {
-    // Load defaults from settings
+    // Load defaults from settings	 설정에서 기본값로드  
     QSettings settings;
     settings.sync();
     settings.beginGroup("3DRRADIO");
@@ -164,7 +164,7 @@ void Radio3DRConfig::loadSavedSerialSettings()
 
 void Radio3DRConfig::saveSerialSettings()
 {
-    // Store settings
+    // Store settings	 설정 저장  
     QSettings settings;
     settings.beginGroup("3DRRADIO");
     settings.setValue("COMM_PORT", m_settings.name);
@@ -180,7 +180,7 @@ void Radio3DRConfig::saveSerialSettings()
 void Radio3DRConfig::showEvent(QShowEvent *event)
 {
     Q_UNUSED(event);
-    // Start refresh Timer
+    // Start refresh Timer	 새로 고침 타이머를 시작합니다.  
     QLOG_DEBUG() << "3DR Radio Start Serial Port Scanning";
     m_timer.start(RADIO3DR_UPDATE_PORT_TIME);
     loadSavedSerialSettings();
@@ -191,7 +191,7 @@ void Radio3DRConfig::showEvent(QShowEvent *event)
 void Radio3DRConfig::hideEvent(QHideEvent *event)
 {
     Q_UNUSED(event);
-    // Stop the port list refeshing
+    // Stop the port list refeshing	 포트 목록 refeshing 중지  
     QLOG_DEBUG() << "3DR Radio Stop Serial Port Scanning";
     m_timer.stop();
     saveSerialSettings();
@@ -209,7 +209,7 @@ void Radio3DRConfig::populateSerialPorts()
 
 void Radio3DRConfig::initConnections()
 {
-    // Ui Connections
+    // Ui Connections	  Ui 연결  
     connect(ui.loadSettingsButton, SIGNAL(clicked()), this, SLOT(readRadioSettings()));
     connect(ui.saveSettingsButton, SIGNAL(clicked()), this, SLOT(writeRemoteRadioSettings()));
     connect(ui.resetDefaultsButton, SIGNAL(clicked()), this, SLOT(resetRemoteRadioSettingsToDefaults()));
@@ -232,9 +232,9 @@ void Radio3DRConfig::serialPortOpenFailure(int error, QString errorString)
 void Radio3DRConfig::serialConnectionFailure(QString errorString)
 {
    QLOG_ERROR() << "Crtical Error " << errorString;
-   // disable buttons
+   // disable buttons	 버튼 비활성화  
    setButtonState(true);
-   // restart serial port scanning
+   // restart serial port scanning	 직렬 포트 스캐닝을 다시 시작합니다.  
    m_timer.start();
 }
 
@@ -292,9 +292,9 @@ void Radio3DRConfig::readRadioSettings()
     resetUI();
 
     if(m_radioSettings->openSerialPort(m_settings)){
-         m_timer.stop(); // Stop updatuing the ports combobox
+         m_timer.stop(); // Stop updatuing the ports combobox	 포트 콤보 박스 업데이트를 중지합니다.  
 
-        m_radioSettings->writeEscapeSeqeunce(); // Start Sate machine
+        m_radioSettings->writeEscapeSeqeunce(); // Start Sate machine	 Sate 컴퓨터를 시작합니다.  
     }
 }
 
@@ -326,9 +326,9 @@ void Radio3DRConfig::updateLocalComplete(int result)
     QLOG_DEBUG() << "local status:" << status;
     ui.localStatus->setText(tr("<b>STATUS:</b> ") + status);
 
-    if (result == 0){ // reboot for both reset and write states
+    if (result == 0){ // reboot for both reset and write states	 재설정 및 쓰기 상태 모두 재부트  
         m_radioSettings->rebootRemoteRadio();
-        thread()->usleep(300000);   // wait a little until reset is sent
+        thread()->usleep(300000);   // wait a little until reset is sent	 재설정이 전송 될 때까지 조금 기다립니다.  
         m_radioSettings->rebootLocalRadio();
     }
 
@@ -483,7 +483,7 @@ void Radio3DRConfig::writeLocalRadioSettings()
         return;
     }
 
-    m_newRadioSettings.setVersion(ui.versionLabel->text()); // This sets the correct number of PARAMS
+    m_newRadioSettings.setVersion(ui.versionLabel->text()); // This sets the correct number of PARAMS	  올바른 PARAMS 수를 설정합니다.  
     m_newRadioSettings.airSpeed(ui.airBaudComboBox->itemData(ui.airBaudComboBox->currentIndex()).toInt());
     m_newRadioSettings.serialSpeed(ui.baudComboBox->itemData(ui.baudComboBox->currentIndex()).toInt());
     m_newRadioSettings.netID(ui.netIdSpinBox->value());
@@ -515,12 +515,12 @@ void Radio3DRConfig::writeRemoteRadioSettings()
     }
 
     if (ui.versionLabel_remote->text().length() == 0){
-        // No remote radio connected so write the local version.
+        // No remote radio connected so write the local version.	 연결된 원격 라디오가 없으므로 로컬 버전을 작성하십시오.  
         writeLocalRadioSettings();
         return;
     }
 
-    m_newRadioSettings.setVersion(ui.versionLabel_remote->text()); // This sets the correct number of PARAMS
+    m_newRadioSettings.setVersion(ui.versionLabel_remote->text()); // This sets the correct number of PARAMS	 올바른 PARAMS 수를 설정합니다.  
     m_newRadioSettings.airSpeed(ui.airBaudComboBox_remote->itemData(ui.airBaudComboBox_remote->currentIndex()).toInt());
     m_newRadioSettings.serialSpeed(ui.baudComboBox_remote->itemData(ui.baudComboBox_remote->currentIndex()).toInt());
     m_newRadioSettings.netID(ui.netIdSpinBox_remote->value());
@@ -662,7 +662,7 @@ void Radio3DRConfig::setupFrequencyComboBox(QComboBox &comboBox, int freqCode )
         freqStepSize = 1000;
         break;
     default:
-        minFreq = 1;    // this supports RFD900, RFD900A, RFD900U, RFD900P
+        minFreq = 1;    // this supports RFD900, RFD900A, RFD900U, RFD900P	 이것은 RFD900, RFD900A, RFD900U, RFD900P를 지원합니다.  
         maxFreq = 30;
         freqStepSize = 1;
     }
