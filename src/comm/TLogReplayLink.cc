@@ -136,6 +136,8 @@ void TLogReplayLink::run()
             m_variableAccessMutex.lock();
 
             //m_speedVar is a value, between 25 and 175. These are speed percentages.
+            // m_speedVar는 25와 175 사이의 값입니다. 이는 속도 비율입니다
+
             privSpeedVar = m_speedVar; //50 - ((m_speedVar) / 4);
             if (privatepos != m_posVar)
             {
@@ -157,6 +159,7 @@ void TLogReplayLink::run()
             if (decodeState != 1)
             {
                 //Not a mavlink byte!
+                // mavlink 바이트가 아닙니다!
                 if (nexttime)
                 {
                     timebuf.append(bytes[i]);
@@ -166,6 +169,8 @@ void TLogReplayLink::run()
                     nexttime = false;
 
                     //Should be a timestamp for the next packet.
+                    // 다음 패킷의 타임 스탬프 여야합니다.
+
                     quint64 logmsecs = quint64(static_cast<unsigned char>(timebuf.at(0))) << 56;
                     logmsecs += quint64(static_cast<unsigned char>(timebuf.at(1))) << 48;
                     logmsecs += quint64(static_cast<unsigned char>(timebuf.at(2))) << 40;
@@ -186,10 +191,14 @@ void TLogReplayLink::run()
                     else
                     {
                         //Difference in time between the last time we read a timestamp, and this time
+                        //타임 스탬프를 마지막으로 읽은 시간과이 시간의 차이
+
                         qint64 pcdiff = QDateTime::currentMSecsSinceEpoch() - lastPcTime;
                         lastPcTime = QDateTime::currentMSecsSinceEpoch();
 
                         //Difference in time between the last timestamp we fired off, and this one
+                        // 우리가 해고 한 마지막 타임 스탬프와이 시간의 차이
+
                         qint64 logdiff = logmsecs - lastLogTime;
                         lastLogTime = logmsecs;
                         logdiff /= 1000;
@@ -198,11 +207,14 @@ void TLogReplayLink::run()
                         {
                             //The next mavlink packet was fired faster than our loop is running, send it immediatly
                             //Fire immediatly
+                            // 다음 mavlink 패킷이 루프가 실행되는 것보다 빠르게 실행되고 immediatly로 전송됩니다.
+                            // 즉시 immediatly
                             delay = 0;
                         }
                         else
                         {
                             //The next mavlink packet was sent logdiff-pcdiff millseconds after the current time
+                            //다음 mavlink 패킷은 현재 시간 이후에 logdiff-pcdiff 밀리 초 단위로 전송되었습니다.
                             delay = logdiff-pcdiff;
 
                         }
@@ -214,9 +226,12 @@ void TLogReplayLink::run()
             {
                 nexttime = true;
                 //Good decode
+                // 좋은 디코드
                 if (message.sysid == 255)
                 {
                     //GCS packet, ignore it
+                    // GCS 패킷, 무시하십시오.
+
                 }
                 else
                 {
@@ -225,22 +240,29 @@ void TLogReplayLink::run()
                     {
                         mavlink_heartbeat_t heartbeat;
                         // Reset version field to 0
+                        // 버전 필드를 0으로 재설정합니다.
+
                         heartbeat.mavlink_version = 0;
                         mavlink_msg_heartbeat_decode(&message, &heartbeat);
 
 
                         // Create a new UAS object
+                        // 새 UAS 객체를 만듭니다.
+
                         if (heartbeat.autopilot == MAV_AUTOPILOT_ARDUPILOTMEGA)
                         {
                             ArduPilotMegaMAV* mav = new ArduPilotMegaMAV(0, message.sysid);
                             mav->setSystemType((int)heartbeat.type);
                             uas = mav;
                             // Make UAS aware that this link can be used to communicate with the actual robot
+                            // UAS가이 링크를 사용하여 실제 로봇과 통신 할 수 있음을 알린다.
                             uas->addLink(this);
                             UASObject *obj = new UASObject();
                             LinkManager::instance()->addSimObject(message.sysid,obj);
 
                             // Now add UAS to "official" list, which makes the whole application aware of it
+                            // 이제 UAS를 "공식"목록에 추가하면 전체 응용 프로그램이이를 인식합니다
+
                             UASManager::instance()->addUAS(uas);
 
                         }
@@ -250,6 +272,8 @@ void TLogReplayLink::run()
                         if (delay > 0 && delay < 10000)
                         {
                             //Split the delay into 100msec chunks, to allow for canceling.
+                            // 지연을 100msec 청크로 분할하여 취소를 허용합니다.
+
                             int realdelay = delay / ((double)privSpeedVar / 100.0);
                             int repeat = realdelay / 100;
                             for (int i=0;i<repeat;i++)
@@ -258,6 +282,8 @@ void TLogReplayLink::run()
                                 if (!m_threadRun)
                                 {
                                     //Break out
+                                    // 탈주
+
                                     MainWindow::instance()->toolBar().overrideDisableConnectWidget(false);
                                     MainWindow::instance()->toolBar().disableConnectWidget(false);
                                     emit disconnected(this);
@@ -285,6 +311,7 @@ void TLogReplayLink::run()
                     else
                     {
                         //no UAS, and not a heartbeat
+                        // 하트 비트가 아닌 UAS가 없습니다.
                     }
                 }
 

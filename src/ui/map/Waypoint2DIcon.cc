@@ -22,6 +22,9 @@ Waypoint2DIcon::Waypoint2DIcon(mapcontrol::MapGraphicItem* map, mapcontrol::OPMa
     autoreachedEnabled = false; // In contrast to the use in OpenPilot, we don't
                                 // want to let the map interfere with the actual mission logic
                                 // wether a WP is reached depends solely on the UAV's state machine
+                                // OpenPilot에서의 사용과는 달리 우리는
+                                // 지도가 실제 미션 로직과 간섭하도록하고 싶습니다.
+                                // WP에 도달하면 UAV의 상태 머신에만 의존합니다.
     drawIcon();
 }
 
@@ -41,6 +44,9 @@ Waypoint2DIcon::Waypoint2DIcon(mapcontrol::MapGraphicItem* map, mapcontrol::OPMa
     autoreachedEnabled = false; // In contrast to the use in OpenPilot, we don't
                                 // want to let the map interfere with the actual mission logic
                                 // wether a WP is reached depends solely on the UAV's state machine
+                                // OpenPilot에서의 사용과는 달리 우리는
+                                // 지도가 실제 미션 로직과 간섭하도록하고 싶습니다.
+                                // WP에 도달하면 UAV의 상태 머신에만 의존합니다.
     updateWaypoint();
 }
 
@@ -58,6 +64,7 @@ void Waypoint2DIcon::updateWaypoint()
 {
     if (waypoint) {
         // Store old size
+        // 이전 크기로 저장
         static QRectF oldSize;
 
         SetHeading(waypoint->getYaw());
@@ -68,15 +75,18 @@ void Waypoint2DIcon::updateWaypoint()
         SetDescription(waypoint->getDescription());
         SetAltitude(waypoint->getAltitude());
         // FIXME Add SetNumber (currently needs a separate call)
+        // FIXME SetNumber를 추가합니다 (현재 별도의 호출이 필요합니다).
         drawIcon();
         QRectF newSize = boundingRect();
 
         // QLOG_DEBUG() << "WIDTH" << newSize.width() << "<" << oldSize.width();
 
         // If new size is smaller than old size, update surrounding
+        // 새 크기가 이전 크기보다 작은 경우 주변을 업데이트합니다.
         if ((newSize.width() <= oldSize.width()) || (newSize.height() <= oldSize.height()))
         {
             // If the symbol size was reduced, enforce an update of the environment
+            // 심볼 크기가 축소 된 경우 환경 업데이트를 시행합니다.
 //            update(oldSize);
             int oldWidth = oldSize.width() + 20;
             int oldHeight = oldSize.height() + 20;
@@ -87,6 +97,7 @@ void Waypoint2DIcon::updateWaypoint()
         else
         {
             // Symbol size stayed constant or increased, use new size for update
+            // 기호 크기가 일정하게 유지되거나 늘어났습니다. 새 크기를 사용하여 업데이트합니다.
             this->update();
         }
         oldSize = boundingRect();
@@ -147,14 +158,18 @@ void Waypoint2DIcon::drawIcon()
     int penWidth = pen1.width();
 
     // DRAW WAYPOINT
+    // 그리기 WAYPOINT
     QPointF p(picture.width()/2, picture.height()/2);
 
     QPolygonF poly(4);
     // Top point
+    // 톱 포인트
     poly.replace(0, QPointF(p.x(), p.y()-picture.height()/2.0f+penWidth/2));
     // Right point
+    // 오른쪽 포인트
     poly.replace(1, QPointF(p.x()+picture.width()/2.0f-penWidth/2, p.y()));
     // Bottom point
+    // 아래 점
     poly.replace(2, QPointF(p.x(), p.y() + picture.height()/2.0f-penWidth/2));
     poly.replace(3, QPointF(p.x() - picture.width()/2.0f+penWidth/2, p.y()));
 
@@ -164,6 +179,9 @@ void Waypoint2DIcon::drawIcon()
     // If this is not a waypoint (only the default representation)
     // or it is a waypoint, but not one where direction has no meaning
     // then draw the heading indicator
+    // 이것이 웨이 포인트가 아닌 경우 (기본 표현 만)
+    // 또는 웨이 포인트이지만, 방향이 의미가없는 것은 아닙니다.
+    // 그런 다음 제목 표시기를 그립니다.
     if (!waypoint || (waypoint && (
             (waypoint->getAction() != (int)MAV_CMD_NAV_TAKEOFF) &&
             (waypoint->getAction() != (int)MAV_CMD_NAV_LAND) &&
@@ -184,6 +202,7 @@ void Waypoint2DIcon::drawIcon()
     if ((waypoint != NULL) && (waypoint->getAction() == (int)MAV_CMD_NAV_TAKEOFF))
     {
         // Takeoff waypoint
+        // 이륙 웨이 포인트
         int width = picture.width()-penWidth;
         int height = picture.height()-penWidth;
 
@@ -200,6 +219,7 @@ void Waypoint2DIcon::drawIcon()
     else if ((waypoint != NULL) && (waypoint->getAction() == (int)MAV_CMD_NAV_LAND))
     {
         // Landing waypoint
+        // 방문 웨이 포인트
         int width = (picture.width())/2-penWidth;
         int height = (picture.height())/2-penWidth;
         painter.setPen(pen1);
@@ -212,6 +232,7 @@ void Waypoint2DIcon::drawIcon()
     else if ((waypoint != NULL) && ((waypoint->getAction() == (int)MAV_CMD_NAV_LOITER_TO_ALT) || (waypoint->getAction() == (int)MAV_CMD_NAV_LOITER_UNLIM) || (waypoint->getAction() == (int)MAV_CMD_NAV_LOITER_TIME) || (waypoint->getAction() == (int)MAV_CMD_NAV_LOITER_TURNS)))
     {
         // Loiter waypoint
+        
         int width = (picture.width()-penWidth)/2;
         int height = (picture.height()-penWidth)/2;
         painter.setPen(pen1);
@@ -224,6 +245,7 @@ void Waypoint2DIcon::drawIcon()
     else if ((waypoint != NULL) && (waypoint->getAction() == (int)MAV_CMD_DO_SET_ROI))
     {
         // Region of Interest
+        // 관심 지역
         int width = (picture.width()-penWidth)/2;
         int height = (picture.height()-penWidth)/4;
         painter.setPen(pen1);
@@ -238,6 +260,7 @@ void Waypoint2DIcon::drawIcon()
     else if ((waypoint != NULL) && (waypoint->getAction() == (int)MAV_CMD_NAV_RETURN_TO_LAUNCH))
     {
         // Return to launch waypoint
+        // 웨이 포인트 시작으로 돌아 가기
         int width = picture.width()-penWidth;
         int height = picture.height()-penWidth;
         painter.setPen(pen1);
@@ -260,6 +283,7 @@ void Waypoint2DIcon::drawIcon()
     else
     {
         // Navigation waypoint
+        // 네비게이션 웨이 포인트
         painter.setPen(pen1);
         painter.drawPolygon(poly);
         painter.setPen(pen2);

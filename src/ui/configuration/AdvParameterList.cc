@@ -89,21 +89,26 @@ void AdvParameterList::tableWidgetItemChanged(QTableWidgetItem* item)
             || !ui.tableWidget->item(item->row(),ADV_TABLE_COLUMN_PARAM))
     {
         //Invalid item, something has gone awry.
+        // 잘못된 항목입니다. 무엇인가 잘못되었습니다.
         return;
     }
     if (item->column() != ADV_TABLE_COLUMN_VALUE)
     {
         //Don't want to edit values that aren't actual values
+        // 실제 값이 아닌 값을 편집하고 싶지 않습니다.
         return;
     }
 
     // This is to force the use of '.' decimal as the seperator. ie use the 'C' locale.
     // thousand seperators are also rejected in 'C' locale
+    // 강제로 '.'를 사용합니다. 분리 자로 10 진수. 즉 'C'로켈을 사용하십시오.
+    // 천개의 분리 자도 'C'로켈에서 거부됩니다.
     bool ok = false;
     double number = item->text().toDouble(&ok);
     if (!ok)
     {
         //Failed to convert
+        // 변환하지 못했습니다.
         QMessageBox::warning(this,"Error","Failed to convert number, please verify your input uses '.' as decimal and no seperator and try again");
         disconnect(ui.tableWidget, SIGNAL(itemChanged(QTableWidgetItem*)),this, SLOT(tableWidgetItemChanged(QTableWidgetItem*)));
         ui.tableWidget->item(item->row(),ADV_TABLE_COLUMN_VALUE)->setText(m_paramToOrigValueMap[ui.tableWidget->item(item->row(),ADV_TABLE_COLUMN_PARAM)->text()]);
@@ -251,8 +256,10 @@ void AdvParameterList::loadDialogAccepted()
 
     foreach(UASParameter* param, m_parameterList){
         // Modify the elements in the table widget.
+        // 테이블 위젯의 요소를 수정합니다.
         if (param->isModified()){
             // Update the local table widget
+            // 로컬 테이블 위젯을 업데이트한다.
             QTableWidgetItem* item = m_paramValueMap.value(param->name());
             if (item){
                 if (param->value() != item->data(Qt::DisplayRole)){
@@ -339,7 +346,7 @@ void AdvParameterList::saveDialogAccepted()
     file.flush();
     file.close();
 
-    dialog->deleteLater(); // cleanup dialog instance
+    dialog->deleteLater(); // cleanup dialog instance// 클린업 대화 상자 인스턴스
     dialog = NULL;
 }
 
@@ -475,12 +482,15 @@ void AdvParameterList::parameterChanged(int uas, int component, int parameterCou
     Q_UNUSED(parameterCount)
     // Create a parameter list model for comparison feature
     // [TODO] This needs to move to the global parameter model.
+    // 비교 기능을위한 매개 변수 목록 모델 만들기
+    // [TODO] 이것은 전역 매개 변수 모델로 이동해야합니다.
 
     if (m_parameterList.contains(parameterName)){
         UASParameter* param = m_parameterList.value(parameterName);
-        param->setValue(value); // This also sets the modified bit
+        param->setValue(value); // This also sets the modified bit// 수정 된 비트도 설정합니다.
     } else {
         // create a new entry
+        // 새 항목을 만듭니다.
         UASParameter* param = new UASParameter(parameterName,component,value,parameterId);
         m_parameterList.insert(parameterName, param);
     }
@@ -495,10 +505,13 @@ void AdvParameterList::downloadRemoteFiles()
     if(dialog->exec() == QDialog::Accepted) {
         // Pull the selected file and
         // modify the parameters on the adv param list.
+        // 선택한 파일을 당겨
+        // adv 매개 변수 목록의 매개 변수를 수정하십시오.
         QLOG_DEBUG() << "Remote File Downloaded";
         QLOG_DEBUG() << "TODO: Trigger auto load or compare of the downloaded file";
 
         // Bring up the compare dialog
+        // 비교 대화 상자를 표시합니다.
         m_paramFileToCompare = dialog->getDownloadedFileName();
         QTimer::singleShot(300, this, SLOT(compareButtonClicked()));
     }
@@ -510,8 +523,10 @@ void AdvParameterList::updateTableWidgetElements(QMap<QString, UASParameter *> &
 {
     foreach(UASParameter* param, parameterList){
         // Modify the elements in the table widget.
+        // 테이블 위젯의 요소를 수정합니다.
         if (param->isModified()){
             // Update the local table widget
+            // 로컬 테이블 위젯을 업데이트한다.
             QTableWidgetItem* item = m_paramValueMap.value(param->name());
             if (item){
                 if(param->value().toDouble() != item->data(Qt::DisplayRole).toDouble()){
@@ -532,9 +547,11 @@ void AdvParameterList::compareButtonClicked()
     if(dialog->exec() == QDialog::Accepted) {
         // Apply the selected parameters
         // [TODO] For now just scan the returned new list and update the advanced tableview
+        // 선택한 매개 변수 적용
+        // [TODO] 이제 반환 된 새 목록을 스캔하고 고급 tableview를 업데이트하십시오.
         updateTableWidgetElements(m_parameterList);
     }
-    m_paramFileToCompare = ""; // clear any previous filenames
+    m_paramFileToCompare = ""; // clear any previous filenames// 이전 파일 이름을 모두 지 웁니다.
     dialog->deleteLater();
     dialog = NULL;
 }
@@ -544,6 +561,7 @@ void AdvParameterList::findStringInTable(const QString &searchString)
     QLOG_DEBUG() << "Find String in table: " << searchString;
 
     // Don't want the items to be considered changed
+    // 항목이 변경된 것으로 간주하지 않습니다.
     disconnect(ui.tableWidget, SIGNAL(itemChanged(QTableWidgetItem*)),
             this, SLOT(tableWidgetItemChanged(QTableWidgetItem*)));
 
@@ -555,7 +573,7 @@ void AdvParameterList::findStringInTable(const QString &searchString)
     }
 
     m_searchItemList.clear();
-    if (searchString.length() > 2){ //need at least three characters to search
+    if (searchString.length() > 2){ //need at least three characters to search// 검색 할 문자가 3 자 이상 필요합니다.
         m_searchItemList = ui.tableWidget->findItems(searchString, Qt::MatchContains);
     }
 
@@ -570,6 +588,7 @@ void AdvParameterList::findStringInTable(const QString &searchString)
     }
 
     // Reconnect changed signal
+    // 변경된 신호를 다시 연결
     connect(ui.tableWidget, SIGNAL(itemChanged(QTableWidgetItem*)),
             this, SLOT(tableWidgetItemChanged(QTableWidgetItem*)));
 }
@@ -586,7 +605,7 @@ void AdvParameterList::nextItemInSearch()
         ui.tableWidget->scrollToItem(m_searchItemList[m_searchIndex],QAbstractItemView::PositionAtCenter);
         m_searchItemList[m_searchIndex]->setSelected(true);
     } else {
-        m_searchIndex = 0; // loop around
+        m_searchIndex = 0; // loop around// 주변 루프
     }
 }
 
@@ -603,7 +622,7 @@ void AdvParameterList::previousItemInSearch()
         ui.tableWidget->scrollToItem(m_searchItemList[m_searchIndex],QAbstractItemView::PositionAtCenter);
         m_searchItemList[m_searchIndex]->setSelected(true);
     } else {
-        m_searchIndex = m_searchItemList.count() - 1; // loops around
+        m_searchIndex = m_searchItemList.count() - 1; // loops around// 주변 루프
     }
 }
 void AdvParameterList::resetButtonClicked()

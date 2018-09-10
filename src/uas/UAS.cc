@@ -8,6 +8,13 @@
  *   @author Lorenz Meier <mavteam@student.ethz.ch>
  *
  */
+/* *
+ * @file
+ * @brief 무인 항공기 1 대를 나타냅니다.
+ *
+ * @author Lorenz Meier <mavteam@student.ethz.ch>
+ *
+ */
 
 #include "logging.h"
 #include "UAS.h"
@@ -35,8 +42,8 @@
 #endif
 
 
-const double UAS::lipoFull = 4.2f;  ///< 100% charged voltage
-const double UAS::lipoEmpty = 3.5f; ///< Discharged voltage
+const double UAS::lipoFull = 4.2f;  ///< 100% charged voltage// / 100 % 충전 전압
+const double UAS::lipoEmpty = 3.5f; ///< Discharged voltage// / <방전 전압
 
 
 /**
@@ -44,6 +51,12 @@ const double UAS::lipoEmpty = 3.5f; ///< Discharged voltage
 * by calling readSettings. This means the new UAS will have the same settings 
 * as the previous one created unless one calls deleteSettings in the code after
 * creating the UAS. 
+*/
+/* *
+* 이전 UAS (이름, 기체, 자동 조종 장치, 배터리 사양)에서 설정을 가져옵니다.
+* readSettings를 호출하여. 즉, 새 UAS는 동일한 설정을 갖습니다.
+* 이전에 코드에서 deleteSettings를 호출하지 않으면 * 이전에 생성 된 것과 같습니다.
+* UAS 작성. 
 */
 UAS::UAS(MAVLinkProtocol* protocol, int id) : UASInterface(),
     uasId(id),
@@ -61,6 +74,7 @@ UAS::UAS(MAVLinkProtocol* protocol, int id) : UASInterface(),
     systemIsArmed(false),
     base_mode(-1),
     // custom_mode not initialized
+    // custom_mode가 초기화되지 않았습니다.
     custom_mode(-1),
     status(-1),
     // shortModeText not initialized
@@ -70,6 +84,13 @@ UAS::UAS(MAVLinkProtocol* protocol, int id) : UASInterface(),
     // actuatorNames not initialized
     // motorValues not initialized
     // motorNames mnot initialized
+    // shortModeText가 초기화되지 않았습니다.
+    // shortStateText가 초기화되지 않았습니다.
+
+    // actuatorValues가 초기화되지 않았습니다.
+    // actuatorNames 초기화되지 않았습니다.
+    // 초기화되지 않은 motorValues
+    // motorNames가 초기화되지 않았습니다.
     thrustSum(0),
     thrustMax(10),
 
@@ -77,6 +98,10 @@ UAS::UAS(MAVLinkProtocol* protocol, int id) : UASInterface(),
     // cells not initialized
     // fullVoltage not initialized
     // emptyVoltage not initialized
+    // batteryType이 초기화되지 않았습니다.
+    // 초기화되지 않은 셀
+    // fullVoltage가 초기화되지 않았습니다.
+    // emptyVoltage가 초기화되지 않았습니다.
     startVoltage(-1.0),
     tickVoltage(10.5),
     lastTickVoltageValue(13.0),
@@ -89,6 +114,8 @@ UAS::UAS(MAVLinkProtocol* protocol, int id) : UASInterface(),
     batteryRemainingEstimateEnabled(true),
     // chargeLevel not initialized
     // timeRemaining  not initialized
+    // chargeLevel이 초기화되지 않았습니다.
+    // timeRemaining이 초기화되지 않았습니다.
     lowBattAlarm(false),
 
     startTime(QGC::groundTimeMilliseconds()),
@@ -151,6 +178,7 @@ UAS::UAS(MAVLinkProtocol* protocol, int id) : UASInterface(),
     simulation(0),
 
     // The protected members.
+    // 보호 된 멤버.
     connectionLost(false),
     lastVoltageWarning(0),
     lastNonNullTime(0),
@@ -175,13 +203,14 @@ UAS::UAS(MAVLinkProtocol* protocol, int id) : UASInterface(),
     statusTimeout->start(500);
     readSettings(); 
     // Initial signals
+    // 초기 신호
     emit disarmed();
     emit armingChanged(false);  
 
     systemId = QGC::defaultSystemId;
     componentId = QGC::defaultComponentId;
 
-    m_heartbeatsEnabled = MainWindow::instance()->heartbeatEnabled(); //Default to sending heartbeats
+    m_heartbeatsEnabled = MainWindow::instance()->heartbeatEnabled(); //Default to sending heartbeats// 기본 하트 비트 전송
     QTimer *heartbeattimer = new QTimer(this);
     connect(heartbeattimer,SIGNAL(timeout()),this,SLOT(sendHeartbeat()));
     heartbeattimer->start(MAVLINK_HEARTBEAT_DEFAULT_RATE * 1000);
@@ -194,6 +223,10 @@ UAS::UAS(MAVLinkProtocol* protocol, int id) : UASInterface(),
 * Saves the settings of name, airframe, autopilot type and battery specifications
 * by calling writeSettings.
 */
+/* *
+* 이름, 기체, 자동 조종 장치 유형 및 배터리 사양 설정 저장
+* writeSettings를 호출하여.
+*/
 UAS::~UAS()
 {
     writeSettings();
@@ -205,6 +238,10 @@ UAS::~UAS()
 /**
 * Saves the settings of name, airframe, autopilot type and battery specifications
 * for the next instantiation of UAS.
+*/
+/* *
+* 이름, 기체, 자동 조종 장치 유형 및 배터리 사양 설정 저장
+* UAS의 다음 인스턴스화를 위해.
 */
 void UAS::writeSettings()
 {
@@ -221,6 +258,10 @@ void UAS::writeSettings()
 /**
 * Reads in the settings: name, airframe, autopilot type, and battery specifications
 * for the new UAS.
+*/
+/* *
+* 이름, 기체, 자동 조종 장치 유형 및 배터리 사양을 읽습니다.
+* 새로운 UAS.
 */
 void UAS::readSettings()
 {
@@ -241,6 +282,11 @@ void UAS::readSettings()
 *  This is in case one does not want the old values but would rather 
 *  start with the values assigned by the constructor.
 */
+/* *
+* readSettings에 의해 원래 UAS로 읽은 설정을 삭제합니다.
+* 이것은 이전 값을 원하지 않지만 오히려 
+* 생성자가 지정한 값으로 시작합니다.
+*/
 void UAS::deleteSettings()
 {
     this->name = "";
@@ -252,6 +298,9 @@ void UAS::deleteSettings()
 /**
 * @ return the id of the uas
 */
+/* *
+* @ uas의 이드를 반환합니다.
+*/
 int UAS::getUASID() const
 {
     return uasId;
@@ -260,9 +309,13 @@ int UAS::getUASID() const
 /**
 * Update the heartbeat.
 */
+/* *
+* 하트 비트를 업데이트하십시오.
+*/
 void UAS::updateState()
 {
     // Check if heartbeat timed out
+    // 하트 비트가 시간 초과되었는지 확인
     quint64 heartbeatInterval = QGC::groundTimeUsecs() - lastHeartbeat;
     if (!connectionLost && (heartbeatInterval > timeoutIntervalHeartbeat))
     {
@@ -273,6 +326,7 @@ void UAS::updateState()
     }
 
     // Update connection loss time on each iteration
+    // 각 반복에서 연결 손실 시간을 업데이트합니다.
     if (connectionLost && (heartbeatInterval > timeoutIntervalHeartbeat))
     {
         connectionLossTime = heartbeatInterval;
@@ -280,6 +334,7 @@ void UAS::updateState()
     }
 
     // Connection gained
+    // 연결이 확보되었습니다.
     if (connectionLost && (heartbeatInterval < timeoutIntervalHeartbeat))
     {
         QString audiostring = QString("Link regained to system %1 after %2 seconds").arg(this->getUASID()).arg((int)(connectionLossTime/1000000));
@@ -291,6 +346,8 @@ void UAS::updateState()
 
     // Position lock is set by the MAVLink message handler
     // if no position lock is available, indicate an error
+    // 위치 잠금은 MAVLink 메시지 핸들러에 의해 설정된다.
+    // 위치 잠금을 사용할 수없는 경우 오류를 나타냅니다.
     if (positionLock)
     {
         positionLock = false;
@@ -308,6 +365,10 @@ void UAS::updateState()
 * If the acitve UAS (the UAS that was selected) is not the one that is currently
 * active, then change the active UAS to the one that was selected.
 */
+/* *
+* acitve UAS (선택한 UAS)가 현재의 UAS가 아닌 경우
+* 활성, 활성 UAS를 선택한 UAS로 변경하십시오.
+*/
 void UAS::setSelected()
 {
     if (UASManager::instance()->getActiveUAS() != this)
@@ -320,6 +381,9 @@ void UAS::setSelected()
 /**
 * @return if the active UAS is the current UAS
 **/
+/* *
+현재의 UAS가 현재의 UAS 인 경우는 @return
+* */
 bool UAS::getSelected() const
 {
     return (UASManager::instance()->getActiveUAS() == this);
@@ -391,6 +455,9 @@ void UAS::receiveMessage(LinkInterface* link, mavlink_message_t message)
     // Only accept messages from this system (condition 1)
     // and only then if a) attitudeStamped is disabled OR b) attitudeStamped is enabled
     // and we already got one attitude packet
+    // 이 시스템의 메시지 만 수락합니다 (조건 1).
+    // 그리고 오직 a) attitudeStamped가 비활성화 된 경우 또는 b) attitudeStamped가 활성화 된 경우에만
+    // 우리는 이미 하나의 태도 패킷을 가지고있다.
     if (message.sysid == uasId && (!attitudeStamped || (attitudeStamped && (lastAttitude != 0)) || message.msgid == MAVLINK_MSG_ID_ATTITUDE))
     {
         QString uasState;
@@ -403,22 +470,27 @@ void UAS::receiveMessage(LinkInterface* link, mavlink_message_t message)
         {
         case MAV_COMP_ID_IMU_2:
             // Prefer IMU 2 over IMU 1 (FIXME)
+            // IMU 1보다 IMU 2를 선호합니다 (FIXME).
             componentID[message.msgid] = MAV_COMP_ID_IMU_2;
             break;
         default:
             // Do nothing
+           // 아무것도하지 않습니다.
             break;
         }
 
         // Store component ID
+          // 구성 요소 ID 저장
         if (componentID[message.msgid] == -1)
         {
             // Prefer the first component
+            // 첫 번째 구성 요소 선호
             componentID[message.msgid] = message.compid;
         }
         else
         {
             // Got this message already
+            // 이미이 메시지가 있습니다.
             if (componentID[message.msgid] != message.compid)
             {
                 componentMulti[message.msgid] = true;
@@ -444,6 +516,8 @@ void UAS::receiveMessage(LinkInterface* link, mavlink_message_t message)
 			
 			// Send the base_mode and system_status values to the plotter. This uses the ground time
 			// so the Ground Time checkbox must be ticked for these values to display
+			// base_mode 및 system_status 값을 플로터에 보냅니다. 이것은 지상 시간을 사용합니다.
+			// 그래서이 값을 표시하려면 Ground Time 체크 박스를 체크해야합니다.
             quint64 time = getUnixTime();
 			QString name = QString("M%1:HEARTBEAT.%2").arg(message.sysid);
 			emit valueChanged(uasId, name.arg("base_mode"), "bits", state.base_mode, time);
@@ -451,6 +525,7 @@ void UAS::receiveMessage(LinkInterface* link, mavlink_message_t message)
 			emit valueChanged(uasId, name.arg("system_status"), "-", state.system_status, time);
 			
             // Set new type if it has changed
+            // 변경된 경우 새 유형 설정
             if (this->type != state.type)
             {
                 this->type = state.type;
@@ -520,7 +595,7 @@ void UAS::receiveMessage(LinkInterface* link, mavlink_message_t message)
 
             // AUDIO
             if (/*modeHasChanged || stateHasChanged || */customModeHasChanged){
-                playCustomModeChangedAudioMessage(); // delegate audio to autopilot specializations
+                playCustomModeChangedAudioMessage(); // delegate audio to autopilot specializations// 오디오를 자동 조종 전문화에 위임합니다.
             }
 
             } break;
@@ -534,6 +609,7 @@ void UAS::receiveMessage(LinkInterface* link, mavlink_message_t message)
             mavlink_msg_sys_status_decode(&message, &state);
 
             // Prepare for sending data to the realtime plotter, which is every field excluding onboard_control_sensors_present.
+            // onboard_control_sensors_present를 제외한 모든 필드 인 실시간 플로터에 데이터를 보낼 준비를합니다.
             quint64 time = getUnixTime();
             emit valueChanged(uasId, statusName().arg("Sensors Enabled"), "bits", state.onboard_control_sensors_enabled, time);
             emit valueChanged(uasId, statusName().arg("Sensors Health"), "bits", state.onboard_control_sensors_health, time);
@@ -544,15 +620,18 @@ void UAS::receiveMessage(LinkInterface* link, mavlink_message_t message)
             emit valueChanged(uasId, statusName().arg("Errors Count 4"), "-", state.errors_count4, time);
 
 			// Process CPU load.
+			// CPU로드를 처리합니다.
             emit loadChanged(this,state.load/10.0);
             emit valueChanged(uasId, statusName().arg("CPU Load"), "%", state.load/10.0, time);
 
 			// Battery charge/time remaining/voltage calculations
+			// 배터리 충전 / 남은 시간 / 전압 계산
             currentVoltage = state.voltage_battery/1000.0;
             lpVoltage = filterVoltage(currentVoltage);
             tickLowpassVoltage = tickLowpassVoltage*0.8 + 0.2*currentVoltage;
 
             // We don't want to tick above the threshold
+            // 임계 값 이상으로 틱하지 않으려합니다.
             if (tickLowpassVoltage > tickVoltage)
             {
                 lastTickVoltageValue = tickLowpassVoltage;
@@ -560,12 +639,16 @@ void UAS::receiveMessage(LinkInterface* link, mavlink_message_t message)
 
             if ((startVoltage > 0.0) && (tickLowpassVoltage < tickVoltage) && (fabs(lastTickVoltageValue - tickLowpassVoltage) > 0.1)
                     /* warn if lower than treshold */
+                    /* 임계 값보다 낮 으면 경고 */
                     && (lpVoltage < tickVoltage)
                     /* warn only if we have at least the voltage of an empty LiPo cell, else we're sampling something wrong */
+                    /* 우리가 적어도 비어있는 LiPo 셀의 전압을 가지고있을 때만 경고한다, 그렇지 않으면 우리는 잘못된 것을 샘플링한다 */
                     && (currentVoltage > 3.3)
                     /* warn only if current voltage is really still lower by a reasonable amount */
+                    /* 현재 전압이 적당한 양만큼 실제로 여전히 낮을 경우에만 경고합니다. */
                     && ((currentVoltage - 0.2) < tickVoltage)
                     /* warn only every 12 seconds */
+                    /* 12 초마다 경고 */
                     && (QGC::groundTimeUsecs() - lastVoltageWarning) > 12000000)
             {
                 GAudioOutput::instance()->say(QString("voltage warning: %1 volts").arg(lpVoltage, 0, 'f', 1, QChar(' ')));
@@ -587,6 +670,7 @@ void UAS::receiveMessage(LinkInterface* link, mavlink_message_t message)
             emit valueChanged(uasId, statusName().arg("Voltage"), "V", state.voltage_battery/1000.0, time);
 
 			// And if the battery current draw is measured, log that also.
+			// 그리고 배터리 전류가 측정되는 경우이를 기록하십시오.
 			if (state.current_battery != -1)
 			{
                 currentCurrent = ((double)state.current_battery)/100.0;
@@ -594,9 +678,11 @@ void UAS::receiveMessage(LinkInterface* link, mavlink_message_t message)
 			}
 
             // LOW BATTERY ALARM
+            // 낮은 배터리 알람
             if (lpVoltage < warnVoltage && (currentVoltage - 0.2) < warnVoltage && (currentVoltage > 3.3))
             {
                 // An audio alarm. Does not generate any signals.
+                // 오디오 알람. 신호를 생성하지 않습니다.
                 startLowBattAlarm();
             }
             else
@@ -606,6 +692,8 @@ void UAS::receiveMessage(LinkInterface* link, mavlink_message_t message)
 
             // control_sensors_enabled:
             // relevant bits: 11: attitude stabilization, 12: yaw position, 13: z/altitude control, 14: x/y position control
+            // control_sensors_enabled :
+            // 관련 비트 : 11 : 자세 안정화, 12 : 요 위치, 13 : z / 고도 제어, 14 : x / y 위치 제어
             emit attitudeControlEnabled(state.onboard_control_sensors_enabled & (1 << 11));
             emit positionYawControlEnabled(state.onboard_control_sensors_enabled & (1 << 12));
             emit positionZControlEnabled(state.onboard_control_sensors_enabled & (1 << 13));
@@ -615,6 +703,10 @@ void UAS::receiveMessage(LinkInterface* link, mavlink_message_t message)
 			// drop_rate_comm value from 1/100 of a percent in a uint16 to a true
 			// percentage as a float. We also cap the incoming value at 100% as defined
 			// by the MAVLink specifications.
+			// 필요에 따라 방울 비율 업데이트를 트리거합니다. 여기서 우리는 들어오는
+			// uint16의 1/100 백분율에서 true로 drop_rate_comm 값
+			// 백분율로 백분율. 또한 들어오는 값을 정의 된대로 100 %로 제한합니다.
+			// MAVLink 사양에 따라.
 			if (state.drop_rate_comm > 10000)
 			{
 				state.drop_rate_comm = 10000;
@@ -735,6 +827,7 @@ void UAS::receiveMessage(LinkInterface* link, mavlink_message_t message)
             mavlink_msg_vfr_hud_decode(&message, &hud);
             quint64 time = getUnixTime();
             // Display updated values
+            // 업데이트 된 값을 표시합니다.
             emit thrustChanged(this, hud.throttle/100.0);
 
             if (!attitudeKnown)
@@ -762,6 +855,7 @@ void UAS::receiveMessage(LinkInterface* link, mavlink_message_t message)
             quint64 time = getUnixTime(pos.time_boot_ms);
 
             // Emit position always with component ID
+            // 항상 구성 요소 ID로 위치를 내 보냅니다.
             emit localPositionChanged(this, message.compid, pos.x, pos.y, pos.z, time);
 
             if (!wrongComponent)
@@ -779,6 +873,7 @@ void UAS::receiveMessage(LinkInterface* link, mavlink_message_t message)
                 emit velocityChanged_NED(this, speedX, speedY, speedZ, time);
 
                 // Set internal state
+                // 내부 상태 설정
                 if (!positionLock) {
                     // If position was not locked before, notify positive
                     GAudioOutput::instance()->notifyPositive();
@@ -823,20 +918,24 @@ void UAS::receiveMessage(LinkInterface* link, mavlink_message_t message)
             emit globalPositionChanged(this, getLatitude(), getLongitude(), getAltitudeAMSL(), time);
             emit altitudeChanged(this, altitudeAMSL, altitudeRelative, -speedZ, time);
             // We had some frame mess here, global and local axes were mixed.
+            // 여기서 프레임이 엉망이었습니다. 전역 축과 로컬 축이 섞였습니다.
             emit velocityChanged_NED(this, speedX, speedY, speedZ, time);
 
             setGroundSpeed(qSqrt(speedX*speedX+speedY*speedY));
             emit speedChanged(this, groundSpeed, airSpeed, time);
 
             // Set internal state
+            // 내부 상태 설정
             if (!positionLock)
             {
                 // If position was not locked before, notify positive
+                // 이전에 위치가 잠겨 있지 않은 경우 양수 알림
                 GAudioOutput::instance()->notifyPositive();
             }
             positionLock = true;
             isGlobalPositionKnown = true;
             //TODO fix this hack for forwarding of global position for patch antenna tracking
+            // TODO는 패치 안테나 추적을위한 전역 위치 전달을 위해이 해킹을 수정합니다.
             forwardMessage(message);
         }
             break;
@@ -849,6 +948,7 @@ void UAS::receiveMessage(LinkInterface* link, mavlink_message_t message)
 
             emit gpsLocalizationChanged(this, pos.fix_type);
             // TODO: track localization state not only for gps but also for other loc. sources
+            // TODO : gps뿐만 아니라 다른 loc에 대한 지역화 상태를 추적합니다. 원천
             int loc_type = pos.fix_type;
             if (loc_type == 1)
             {
@@ -861,6 +961,7 @@ void UAS::receiveMessage(LinkInterface* link, mavlink_message_t message)
             setGPSVelocity(pos.vel/100.0);
 
             // emit raw GPS message
+            // 원시 GPS 메시지를 내 보냅니다.
             setGPSLatitude(pos.lat/(double)1E7);
             setGPSLongitude(pos.lon/(double)1E7);
             setGPSAltitude(pos.alt/1000.0);
@@ -872,6 +973,7 @@ void UAS::receiveMessage(LinkInterface* link, mavlink_message_t message)
                 isGlobalPositionKnown = true;
 
                 // If no GLOBAL_POSITION_INT messages ever received, use these raw GPS values instead.
+                // GLOBAL_POSITION_INT 메시지가 수신되지 않으면이 원시 GPS 값을 대신 사용하십시오.
                 if (!globalEstimatorActive) {
                     setLatitude(latitude_gps);
                     setLongitude(longitude_gps);
@@ -880,6 +982,7 @@ void UAS::receiveMessage(LinkInterface* link, mavlink_message_t message)
                     emit altitudeChanged(this, altitudeAMSL, altitudeRelative, -speedZ, time);
                 
                     // Smaller than threshold and not NaN
+                  // 임계 값보다 작으며 NaN이 아닙니다.
                     if ((velocity_gps < 1000000) && !qIsNaN(velocity_gps) && !qIsInf(velocity_gps))
                     {
                         setGroundSpeed(velocity_gps);
@@ -916,7 +1019,7 @@ void UAS::receiveMessage(LinkInterface* link, mavlink_message_t message)
             mavlink_rc_channels_raw_t channels;
             mavlink_msg_rc_channels_raw_decode(&message, &channels);
 
-            const unsigned int portWidth = 8; // XXX magic number
+            const unsigned int portWidth = 8; // XXX magic number// XXX 매직 넘버
 
             emit remoteControlRSSIChanged(channels.rssi/255.0f);
             if (channels.chan1_raw != UINT16_MAX)
@@ -942,7 +1045,7 @@ void UAS::receiveMessage(LinkInterface* link, mavlink_message_t message)
             mavlink_rc_channels_scaled_t channels;
             mavlink_msg_rc_channels_scaled_decode(&message, &channels);
 
-            const unsigned int portWidth = 8; // XXX magic number
+            const unsigned int portWidth = 8; // XXX magic number// XXX 매직 넘버
 
             emit remoteControlRSSIChanged(channels.rssi/255.0f);
             if (static_cast<uint16_t>(channels.chan1_scaled) != UINT16_MAX)
@@ -970,6 +1073,8 @@ void UAS::receiveMessage(LinkInterface* link, mavlink_message_t message)
             QByteArray bytes(rawValue.param_id, MAVLINK_MSG_PARAM_VALUE_FIELD_PARAM_ID_LEN);
             // Construct a string stopping at the first NUL (0) character, else copy the whole
             // byte array (max MAVLINK_MSG_PARAM_VALUE_FIELD_PARAM_ID_LEN, so safe)
+            // 첫 번째 NUL (0) 문자에서 중지하는 문자열을 구성하고, 그렇지 않으면 전체를 복사합니다.
+            // 바이트 배열 (최대 MAVLINK_MSG_PARAM_VALUE_FIELD_PARAM_ID_LEN, 안전)
             QString parameterName(bytes);
             mavlink_param_union_t paramVal;
             paramVal.param_float = rawValue.param_value;
@@ -1070,6 +1175,7 @@ void UAS::receiveMessage(LinkInterface* link, mavlink_message_t message)
             b.resize(MAVLINK_MSG_STATUSTEXT_FIELD_TEXT_LEN+1);
             mavlink_msg_statustext_get_text(&message, b.data());
             // Ensure NUL-termination
+            // NUL 종료를 보장한다.
             b[b.length()-1] = '\0';
             QString text = QString(b);
             int severity = mavlink_msg_statustext_get_severity(&message);
@@ -1130,10 +1236,13 @@ void UAS::receiveMessage(LinkInterface* link, mavlink_message_t message)
             int pos = seq * imagePayload;
 
             // Check if we have a valid transaction
+            // 유효한 트랜잭션이 있는지 확인하십시오.
             if (imagePackets == 0)
             {
                 // NO VALID TRANSACTION - ABORT
                 // Restart statemachine
+                // 유효하지 않은 거래 - ABORT
+                // statemachine을 다시 시작하십시오.
                 imagePacketsArrived = 0;
             }
 
@@ -1148,9 +1257,11 @@ void UAS::receiveMessage(LinkInterface* link, mavlink_message_t message)
             ++imagePacketsArrived;
 
             // emit signal if all packets arrived
+            // 모든 패킷이 도착하면 신호를 내 보냅니다.
             if ((imagePacketsArrived >= imagePackets))
             {
                 // Restart statemachine
+                // statemachine을 다시 시작하십시오.
                 emit imageReady(this);
                 //QLOG_DEBUG() << "imageReady emitted. all packets arrived";
             }
@@ -1306,9 +1417,11 @@ void UAS::receiveMessage(LinkInterface* link, mavlink_message_t message)
         }
             break;
         // MAVLink Log donwload messages
+        // MAVLink 로그 donwload 메시지
         case MAVLINK_MSG_ID_LOG_ENTRY:
         {
             // we have revceived a log entry from the MAV
+            // MAV에서 로그 항목을 재생했습니다.
             mavlink_log_entry_t log_entry;
             mavlink_msg_log_entry_decode(&message, &log_entry);
             emit logEntry(uasId, log_entry.time_utc, log_entry.size, log_entry.id, log_entry.num_logs, log_entry.last_log_num);
@@ -1317,6 +1430,7 @@ void UAS::receiveMessage(LinkInterface* link, mavlink_message_t message)
         case MAVLINK_MSG_ID_LOG_DATA:
         {
             //data that is part of a paticular log
+            // 패치 로그의 일부인 데이터
             mavlink_log_data_t log_data;
             mavlink_msg_log_data_decode(&message, &log_data);
             emit logData(uasId, log_data.ofs, log_data.id, log_data.count, (const char*)log_data.data);
@@ -1325,6 +1439,7 @@ void UAS::receiveMessage(LinkInterface* link, mavlink_message_t message)
         case MAVLINK_MSG_ID_COMPASSMOT_STATUS:
         {
             // Configuration Messages for Compass Calibration
+            // 나침반 보정을위한 구성 메시지
             mavlink_compassmot_status_t compassmot_status;
             mavlink_msg_compassmot_status_decode(&message, &compassmot_status);
             emit compassMotCalibration(&compassmot_status);
@@ -1374,6 +1489,7 @@ void UAS::receiveMessage(LinkInterface* link, mavlink_message_t message)
         }
 
         // Messages to ignore
+        // 무시할 메시지
         case MAVLINK_MSG_ID_RAW_PRESSURE:
         case MAVLINK_MSG_ID_SCALED_PRESSURE:
         case MAVLINK_MSG_ID_OPTICAL_FLOW:
@@ -1391,7 +1507,7 @@ void UAS::receiveMessage(LinkInterface* link, mavlink_message_t message)
             if (!unknownPackets.contains(message.msgid))
             {
                 unknownPackets.append(message.msgid);
-#ifdef QT_DEBUG // Remove these messages from the release build
+#ifdef QT_DEBUG // Remove these messages from the release build// 릴리스 빌드에서이 메시지를 제거합니다.
                 QString errString = tr("UNABLE TO DECODE MESSAGE NUMBER %1").arg(message.msgid);
                 emit textMessageReceived(uasId, message.compid, 255, errString);
 #endif
@@ -1411,6 +1527,11 @@ void UAS::receiveMessage(LinkInterface* link, mavlink_message_t message)
 * Receive an extended message.
 * @param link
 * @param message
+*/
+/* *
+* 확장 된 메시지를 수신하십시오.
+* @param 링크
+* @param 메시지
 */
 void UAS::receiveExtendedMessage(LinkInterface* link, std::tr1::shared_ptr<google::protobuf::Message> message)
 {
@@ -1510,6 +1631,12 @@ void UAS::receiveExtendedMessage(LinkInterface* link, std::tr1::shared_ptr<googl
 * @param lon The longitude of the home position
 * @param alt The altitude of the home position
 */
+/* *
+* UAS의 홈 위치를 설정하십시오.
+* @param lat 홈 위치의 위도
+* @param lon 홈 위치의 경도
+* @param alt 홈 위치의 고도
+*/
 void UAS::setHomePosition(double lat, double lon, double alt)
 {
     if (blockHomePositionChanges)
@@ -1528,6 +1655,7 @@ void UAS::setHomePosition(double lat, double lon, double alt)
     int ret = msgBox.exec();
 
     // Close the message box shortly after the click to prevent accidental clicks
+    // 우발적 인 클릭을 방지하기 위해 클릭 직후에 메시지 상자를 닫습니다.
     QTimer::singleShot(5000, &msgBox, SLOT(reject()));
 
 
@@ -1536,9 +1664,11 @@ void UAS::setHomePosition(double lat, double lon, double alt)
         mavlink_message_t msg;
         mavlink_msg_command_long_pack(systemId, componentId, &msg, this->getUASID(), 0, MAV_CMD_DO_SET_HOME, 1, 0, 0, 0, 0, lat, lon, alt);
         // Send message twice to increase chance that it reaches its goal
+        // 목표에 도달 할 확률을 높이기 위해 메시지를 두 번 보낸다.
         sendMessage(msg);
 
         // Send new home position to UAS
+        // UAS에 새 홈 위치 보내기
         mavlink_set_gps_global_origin_t home;
         home.target_system = uasId;
         home.latitude = lat*1E7;
@@ -1555,6 +1685,9 @@ void UAS::setHomePosition(double lat, double lon, double alt)
 /**
 * Set the origin to the current GPS location.
 **/
+/* *
+* 현재 GPS 위치로 원점을 설정하십시오.
+* */
 void UAS::setLocalOriginAtCurrentGPSPosition()
 {
     QMessageBox msgBox;
@@ -1566,6 +1699,7 @@ void UAS::setLocalOriginAtCurrentGPSPosition()
     int ret = msgBox.exec();
 
     // Close the message box shortly after the click to prevent accidental clicks
+    // 우발적 인 클릭을 방지하기 위해 클릭 직후에 메시지 상자를 닫습니다.
     QTimer::singleShot(5000, &msgBox, SLOT(reject()));
 
 
@@ -1574,6 +1708,7 @@ void UAS::setLocalOriginAtCurrentGPSPosition()
         mavlink_message_t msg;
         mavlink_msg_command_long_pack(systemId, componentId, &msg, this->getUASID(), 0, MAV_CMD_DO_SET_HOME, 1, 1, 0, 0, 0, 0, 0, 0);
         // Send message twice to increase chance that it reaches its goal
+        // 목표에 도달 할 확률을 높이기 위해 메시지를 두 번 보낸다.
         sendMessage(msg);
     }
 }
@@ -1583,6 +1718,12 @@ void UAS::setLocalOriginAtCurrentGPSPosition()
 * @param x postion
 * @param y position
 * @param z position
+*/
+/* *
+* 로컬 위치 설정 값을 설정하십시오.
+* @param x postion
+* @ 파라미터 y 위치
+* @param z 위치
 */
 void UAS::setLocalPositionSetpoint(float x, float y, float z, float yaw)
 {
@@ -1605,6 +1746,13 @@ void UAS::setLocalPositionSetpoint(float x, float y, float z, float yaw)
 * @param z position
 * @param yaw
 */
+/* *
+* 로컬 위치의 오프셋을 설정합니다.
+* @ 파라미터 x 위치
+* @ 파라미터 y 위치
+* @param z 위치
+* @param yaw
+*/
 void UAS::setLocalPositionOffset(float x, float y, float z, float yaw)
 {
 #ifdef MAVLINK_ENABLED_PIXHAWK
@@ -1623,6 +1771,7 @@ void UAS::startRadioControlCalibration(int param)
 {
     mavlink_message_t msg;
     // Param 1: gyro cal, param 2: mag cal, param 3: pressure cal, Param 4: radio
+    // Param 1 : 자이로 칼, param 2 : mag cal, param 3 : 압력 cal, Param 4 : 라디오
     mavlink_msg_command_long_pack(systemId, componentId, &msg, uasId, 0, MAV_CMD_PREFLIGHT_CALIBRATION, 1, 0, 0, 0, param, 0, 0, 0);
     sendMessage(msg);
 }
@@ -1631,6 +1780,7 @@ void UAS::endRadioControlCalibration()
 {
     mavlink_message_t msg;
     // Param 1: gyro cal, param 2: mag cal, param 3: pressure cal, Param 4: radio
+    // Param 1 : 자이로 칼, param 2 : mag cal, param 3 : 압력 cal, Param 4 : 라디오
     mavlink_msg_command_long_pack(systemId, componentId, &msg, uasId, 0, MAV_CMD_PREFLIGHT_CALIBRATION, 1, 0, 0, 0, 0, 0, 0, 0);
     sendMessage(msg);
 }
@@ -1653,6 +1803,7 @@ void UAS::startMagnetometerCalibration()
 {
     mavlink_message_t msg;
     // Param 1: gyro cal, param 2: mag cal, param 3: pressure cal, Param 4: radio
+    // Param 1 : 자이로 칼, param 2 : mag cal, param 3 : 압력 cal, Param 4 : 라디오
     mavlink_msg_command_long_pack(systemId, componentId, &msg, uasId, MAV_COMP_ID_IMU, MAV_CMD_PREFLIGHT_CALIBRATION, 1, 0, 1, 0, 0, 0, 0, 0);
     sendMessage(msg);
 }
@@ -1661,6 +1812,7 @@ void UAS::startGyroscopeCalibration()
 {
     mavlink_message_t msg;
     // Param 1: gyro cal, param 2: mag cal, param 3: pressure cal, Param 4: radio
+    // Param 1 : 자이로 칼, param 2 : mag cal, param 3 : 압력 cal, Param 4 : 라디오
     mavlink_msg_command_long_pack(systemId, componentId, &msg, uasId, MAV_COMP_ID_IMU, MAV_CMD_PREFLIGHT_CALIBRATION, 1, 1, 0, 0, 0, 0, 0, 0);
     sendMessage(msg);
 }
@@ -1669,6 +1821,7 @@ void UAS::startPressureCalibration()
 {
     mavlink_message_t msg;
     // Param 1: gyro cal, param 2: mag cal, param 3: pressure cal, Param 4: radio
+    // Param 1 : 자이로 칼, param 2 : mag cal, param 3 : 압력 cal, Param 4 : 라디오
     mavlink_msg_command_long_pack(systemId, componentId, &msg, uasId, MAV_COMP_ID_IMU, MAV_CMD_PREFLIGHT_CALIBRATION, 1, 0, 0, 1, 0, 0, 0, 0);
     sendMessage(msg);
 }
@@ -1677,6 +1830,7 @@ void UAS::startCompassMotCalibration()
 {
     mavlink_message_t msg;
     // Param 1: gyro cal, param 2: mag cal, param 3: pressure cal, Param 4: radio, Param5: Accel Calib Param 6: Compass Mot
+    // Param 1 : 자이로 칼, param 2 : mag cal, param 3 : 압력 cal, Param 4 : 라디오, Param5 : Accel Calib Param 6 : Compass Mot
     mavlink_msg_command_long_pack(systemId, componentId, &msg, uasId, 0, MAV_CMD_PREFLIGHT_CALIBRATION, 1, 0, 0, 0, 0, 0, 1, 0);
     sendMessage(msg);
 }
@@ -1687,9 +1841,16 @@ void UAS::startCompassMotCalibration()
 * this will add/subtract the communication delay between GCS and MAV, it will
 * never alter the timestamp in a safety critical way.
 */
+/* *
+* Unix가없는 시스템이 없다고 가정하고, 시간이 40 년보다 작은 지 확인하십시오.
+* 타임 스탬프는 재부팅없이 40 년 이상 계속 실행됩니다. 최악의 경우
+* 이것은 GCS와 MAV 사이의 통신 지연을 더하거나 뺍니다.
+* 안전상 중요한 방식으로 타임 스탬프를 변경하지 마십시오.
+*/
 quint64 UAS::getUnixReferenceTime(quint64 time)
 {
     // Same as getUnixTime, but does not react to attitudeStamped mode
+    // getUnixTime과 같지만 attitudeStamped 모드에는 반응하지 않습니다.
     if (time == 0)
     {
         //        QLOG_DEBUG() << "XNEW time:" <<QGC::groundTimeMilliseconds();
@@ -1711,6 +1872,22 @@ quint64 UAS::getUnixReferenceTime(quint64 time)
     // 60 seconds
     // 1000 milliseconds
     // 1000 microseconds
+    // 시간이 40 년보다 작은 지 확인합니다.
+    // Unix 타임 스탬프가없는 시스템이 없다고 가정합니다.
+    // 40 년 이상 연속 사용하지 않고
+    // 재부팅하십시오. 최악의 경우, 이것은 더하기 / 빼기
+    // GCS와 MAV 간의 통신 지연,
+    // 안전 장치에서 타임 스탬프를 변경하지 않습니다.
+    // 중요한 길.
+    //
+    // 계산 :
+    // 40 년
+    // 365 일
+    // 24 시간
+    // 60 분
+    // 60 초
+    // 1000 밀리 초
+    // 1000 마이크로 초
 #ifndef _MSC_VER
     else if (time < 1261440000000000LLU)
 #else
@@ -1728,6 +1905,8 @@ quint64 UAS::getUnixReferenceTime(quint64 time)
     {
         // Time is not zero and larger than 40 years -> has to be
         // a Unix epoch timestamp. Do nothing.
+        // 시간은 0이 아니고 40 년 이상이되어야합니다.>
+        // Unix epoch timestamp. 아무것도하지 마세요.
         return time/1000;
     }
 }
@@ -1740,6 +1919,15 @@ quint64 UAS::getUnixReferenceTime(quint64 time)
 * clock is not present or broken and datasets should be collected that are still
 * roughly synchronized. PLEASE NOTE THAT ENABLING ATTITUDE STAMPED RUINS THE
 * SCIENTIFIC NATURE OF THE CORRECT LOGGING FUNCTIONS OF QGROUNDCONTROL!
+*/
+/* *
+* @warning attitudeStamped가 활성화되면이 함수는 실제로 반환하지 않습니다.
+*이 측정의 정확한 시간 소인은 UNIX 시간으로 증가되었지만
+* 마지막으로 측정 된 태도와 일치하도록 타임 스탬프를 IN 시간으로 이동합니다. 없다.
+왜 온보드가 필요한 시스템 셋업을 제외하고는 누가 이것을 원할 것인가?
+* 시계가 없거나 손상되어 데이터 세트가 수집되어야합니다.
+* 대략 동기화. 제발 놀리는 태도를 촉구 주목
+QGROUNDCONTROL의 정확한 기록 기능의 과학적 특성!
 */
 quint64 UAS::getUnixTimeFromMs(quint64 time)
 {
@@ -1754,6 +1942,15 @@ quint64 UAS::getUnixTimeFromMs(quint64 time)
 * clock is not present or broken and datasets should be collected that are
 * still roughly synchronized. PLEASE NOTE THAT ENABLING ATTITUDE STAMPED
 * RUINS THE SCIENTIFIC NATURE OF THE CORRECT LOGGING FUNCTIONS OF QGROUNDCONTROL!
+*/
+/* *
+* @warning attitudeStamped가 활성화되면이 함수는 실제로 반환하지 않습니다.
+*이 측정의 정확한 시간은 UNIX 시간으로 확대되었지만
+* 마지막으로 측정 된 태도와 일치하도록 타임 스탬프를 IN 시간으로 이동합니다. 없다.
+왜 온보드가 필요한 시스템 셋업을 제외하고는 누가 이것을 원할 것인가?
+* 시계가 없거나 손상되어 데이터 집합이 수집되어야합니다.
+* 여전히 대략 동기화. 촉구하는 태도를 유의하십시오.
+* QGROUNDCONTROL의 정확한 기록 기능에 대한 과학적 연구가 필요합니다!
 */
 quint64 UAS::getUnixTime(quint64 time)
 {
@@ -1783,6 +1980,22 @@ quint64 UAS::getUnixTime(quint64 time)
     // 60 seconds
     // 1000 milliseconds
     // 1000 microseconds
+    // 시간이 40 년보다 작은 지 확인합니다.
+    // Unix 타임 스탬프가없는 시스템이 없다고 가정합니다.
+    // 40 년 이상 연속 사용하지 않고
+    // 재부팅하십시오. 최악의 경우, 이것은 더하기 / 빼기
+    // GCS와 MAV 간의 통신 지연,
+    // 안전 장치에서 타임 스탬프를 변경하지 않습니다.
+    // 중요한 길.
+    //
+    // 계산 :
+    // 40 년
+    // 365 일
+    // 24 시간
+    // 60 분
+    // 60 초
+    // 1000 밀리 초
+    // 1000 마이크로 초
 #ifndef _MSC_VER
     else if (time < 1261440000000000LLU)
 #else
@@ -1803,6 +2016,8 @@ quint64 UAS::getUnixTime(quint64 time)
     {
         // Time is not zero and larger than 40 years -> has to be
         // a Unix epoch timestamp. Do nothing.
+        // 시간은 0이 아니고 40 년 이상이되어야합니다.>
+        // Unix epoch timestamp. 아무것도하지 마세요.
         ret = time/1000;
     }
 
@@ -1811,6 +2026,9 @@ quint64 UAS::getUnixTime(quint64 time)
 
 /**
 * @param component that will be searched for in the map of parameters.
+*/
+/* *
+파라미터의 맵 내에서 검색되는 * @param 컴퍼넌트
 */
 QList<QString> UAS::getParameterNames(int component)
 {
@@ -1832,16 +2050,21 @@ QList<int> UAS::getComponentIds()
 void UAS::setMode(int mode)
 {
     //this->mode = mode; //no call assignament, update receive message from UAS
+    // this-> mode = mode; // 호출 할당 없음, UAS로부터 업데이트 수신 메시지
 
     // Strip armed / disarmed call, this is not relevant for setting the mode
+    // 무장 해제 / 무장 해제 호출을 제거합니다. 이것은 모드 설정과 관련이 없습니다.
     uint8_t newMode = mode;
     newMode &= (~(uint8_t)MAV_MODE_FLAG_SAFETY_ARMED);
     // Now set current state (request no change)
+    // 현재 상태를 설정합니다 (변경 요청 없음).
     newMode |= (uint8_t)(this->base_mode) & (uint8_t)(MAV_MODE_FLAG_SAFETY_ARMED);
 
     // Strip HIL part, replace it with current system state
+    // HIL 부분을 제거하고 현재 시스템 상태로 대체합니다.
     newMode &= (~(uint8_t)MAV_MODE_FLAG_HIL_ENABLED);
     // Now set current state (request no change)
+    // 현재 상태를 설정합니다 (변경 요청 없음).
     newMode |= (uint8_t)(this->base_mode) & (uint8_t)(MAV_MODE_FLAG_HIL_ENABLED);
 
     QLOG_DEBUG() << "SENDING REQUEST TO SET MODE TO SYSTEM" << uasId << ", REQUEST TO SET MODE " << newMode;
@@ -1856,15 +2079,22 @@ void UAS::setMode(int mode)
 * @param newBaseMode that UAS is to be set to.
 * @param newCustomMode that UAS is to be set to.
 */
+/* *
+UAS가 설정되는 @ 파라미터의 newBaseMode.
+UAS가 설정되는 @ 파라미터의 newCustomMode.
+*/
 void UAS::setMode(uint8_t newBaseMode, uint32_t newCustomMode)
 {
     if (receivedMode)
     {
         //base_mode = mode; //no call assignament, update receive message from UAS
+        // base_mode = mode; // 호출 할당 없음, UAS로부터 업데이트 수신 메시지
 
         // Strip armed / disarmed call for safety reasons, this is not relevant for setting the mode
+        // 안전을 이유로 무장 해제 / 무장 해제 호출을 제거합니다. 이것은 모드 설정과 관련이 없습니다.
         newBaseMode &= ~MAV_MODE_FLAG_SAFETY_ARMED;
         // Now set current state (request no change)
+        // 현재 상태를 설정합니다 (변경 요청 없음).
         newBaseMode |= this->base_mode & MAV_MODE_FLAG_SAFETY_ARMED;
 
 //        // Strip HIL part, replace it with current system state
@@ -1883,6 +2113,10 @@ void UAS::setMode(uint8_t newBaseMode, uint32_t newCustomMode)
 /**
 * @param newBaseMode that UAS is to be set to.
 * @param newCustomMode that UAS is to be set to.
+*/
+/* *
+UAS가 설정되는 @ 파라미터의 newBaseMode.
+UAS가 설정되는 @ 파라미터의 newCustomMode.
 */
 void UAS::setModeArm(uint8_t newBaseMode, uint32_t newCustomMode)
 {
@@ -1904,6 +2138,10 @@ void UAS::setModeArm(uint8_t newBaseMode, uint32_t newCustomMode)
 * Send a message to every link that is connected.
 * @param message that is to be sent
 */
+/* *
+* 연결된 모든 링크로 메시지를 보냅니다.
+전송되는 @ 파라미터 메시지
+*/
 void UAS::sendMessage(mavlink_message_t message)
 {
     if (!LinkManager::instance())
@@ -1917,6 +2155,7 @@ void UAS::sendMessage(mavlink_message_t message)
     }
 
     // Emit message on all links that are currently connected
+    // 현재 연결된 모든 링크에서 메시지를 내 보냅니다.
     foreach (LinkInterface* link, *links)
     {
         //if (LinkManager::instance()->getLinks().contains(link))
@@ -1935,6 +2174,10 @@ void UAS::sendMessage(mavlink_message_t message)
 /**
 * Forward a message to all links that are currently connected.
 * @param message that is to be forwarded
+*/
+/* *
+* 현재 연결된 모든 링크로 메시지 전달.
+전달 될 @param 메시지
 */
 void UAS::forwardMessage(mavlink_message_t message)
 {
@@ -1982,20 +2225,29 @@ void UAS::sendHeartbeat()
 * @param link that the message will be sent to
 * @message that is to be sent
 */
+/* *
+* 연결되어있는 링크로 메시지를 보냅니다.
+메시지가 전송 될 @param 링크
+전송할 메시지 * @ 메시지
+*/
 void UAS::sendMessage(LinkInterface* link, mavlink_message_t message)
 {
     if(!link) return;
     // Create buffer
+    // 버퍼를 만듭니다.
     uint8_t buffer[MAVLINK_MAX_PACKET_LEN];
     // Write message into buffer, prepending start sign
+    // 버퍼에 메시지를 쓰고 시작 기호를 앞에 쓴다.
     int len = mavlink_msg_to_send_buffer(buffer, &message);
     //static uint8_t messageKeys[256] = MAVLINK_MESSAGE_CRCS;
     //mavlink_finalize_message_chan(&message, systemId, componentId, link->getId(), 0, message.len, messageKeys[message.msgid]);
 
     // If link is connected
+    // 링크가 연결된 경우
     if (link->isConnected())
     {
         // Send the portion of the buffer now occupied by the message
+        // 이제 메시지가 차지하고있는 버퍼의 부분을 보냅니다.
         link->writeBytes((const char*)buffer, len);
     }
     else
@@ -2007,6 +2259,9 @@ void UAS::sendMessage(LinkInterface* link, mavlink_message_t message)
 /**
  * @param value battery voltage
  */
+/* *
+ * @ 파라미터 값 배터리 전압
+ */
 double UAS::filterVoltage(double value) const
 {
     return lpVoltage * 0.6f + value * 0.4f;
@@ -2016,6 +2271,10 @@ double UAS::filterVoltage(double value) const
 * The string representation of the custom_mode.
 * @Return string
 */
+/* *
+* custom_mode의 문자열 표현입니다.
+* @ 반환 문자열
+*/
 QString UAS::getCustomModeText()
 {
     return QString("UNKNOWN");
@@ -2024,6 +2283,10 @@ QString UAS::getCustomModeText()
 /**
 * The audio string representation of the custom_mode.
 * @Return string
+*/
+/* *
+* custom_mode의 오디오 캐릭터 라인 표현.
+* @ 반환 문자열
 */
 QString UAS::getCustomModeAudioText()
 {
@@ -2035,6 +2298,11 @@ QString UAS::getCustomModeAudioText()
 * Get the status of the code and a description of the status.
 * Status can be unitialized, booting up, calibrating sensors, active
 * standby, cirtical, emergency, shutdown or unknown.
+*/
+/* *
+* 코드의 상태 및 상태 설명을 가져옵니다.
+* 상태는 단위 화, 부팅, 센서 교정, 활성
+* 대기, 치명적, 비상 사태, 종료 또는 알 수 없음.
 */
 void UAS::getStatusForCode(int statusCode, QString& uasState, QString& stateDescription)
 {
@@ -2092,11 +2360,13 @@ QImage UAS::getImage()
 //    QLOG_DEBUG() << "IMAGE TYPE:" << imageType;
 
     // RAW greyscale
+    // RAW 회색 음영
     if (imageType == MAVLINK_DATA_STREAM_IMG_RAW8U)
     {
         int imgColors = 255;
 
         // Construct PGM header
+        // PGM 헤더를 구성합니다.
         QString header("P5\n%1 %2\n%3\n");
         header = header.arg(imageWidth).arg(imageHeight).arg(imgColors);
 
@@ -2119,6 +2389,7 @@ QImage UAS::getImage()
 
     }
     // BMP with header
+    // 헤더가있는 BMP
     else if (imageType == MAVLINK_DATA_STREAM_IMG_BMP ||
              imageType == MAVLINK_DATA_STREAM_IMG_JPEG ||
              imageType == MAVLINK_DATA_STREAM_IMG_PGM ||
@@ -2130,6 +2401,7 @@ QImage UAS::getImage()
         }
     }
     // Restart statemachine
+    // statemachine을 다시 시작하십시오.
     imagePacketsArrived = 0;
     //imageRecBuffer.clear();
     return image;
@@ -2145,6 +2417,7 @@ void UAS::requestImage()
     QLOG_DEBUG() << "trying to get an image from the uas...";
 
     // check if there is already an image transmission going on
+    // 이미 이미지 전송이 진행 중인지 확인
     if (imagePacketsArrived == 0)
     {
         mavlink_message_t msg;
@@ -2160,6 +2433,11 @@ void UAS::requestImage()
 /**
  *
  * @return The uptime in milliseconds
+ *
+ */
+/* *
+ *
+ * @return 가동 시간 (밀리 세컨드 단위)
  *
  */
 quint64 UAS::getUptime() const
@@ -2208,57 +2486,86 @@ void UAS::readParametersFromStorage()
 /**
 * @param rate The update rate in Hz the message should be sent
 */
+/* *
+* @param rate 메시지를 보내야하는 업데이트 속도 (Hz)
+*/
 void UAS::enableAllDataTransmission(int rate)
 {
     // Buffers to write data to
+    // 데이터를 쓸 버퍼
     mavlink_message_t msg;
     mavlink_request_data_stream_t stream;
     // Select the message to request from now on
     // 0 is a magic ID and will enable/disable the standard message set except for heartbeat
+    // 지금부터 요청할 메시지를 선택하십시오.
+    // 0은 매직 ID이며 하트 비트를 제외하고 표준 메시지 세트를 활성화 / 비활성화합니다
     stream.req_stream_id = MAV_DATA_STREAM_ALL;
     // Select the update rate in Hz the message should be send
     // All messages will be send with their default rate
     // TODO: use 0 to turn off and get rid of enable/disable? will require
     //  a different magic flag for turning on defaults, possibly something really high like 1111 ?
+    // 메시지를 보내야하는 업데이트 속도를 Hz 단위로 선택하십시오.
+    // 모든 메시지는 기본 속도로 전송됩니다.
+    // TODO : 0을 사용하여 해제하고 사용 / 사용 안 함을 제거 하시겠습니까? 필요할 것이다
+    //   기본값을 켜기위한 다른 마술 플래그, 아마도 1111과 같은 정말로 높은 것?
     stream.req_message_rate = 0;
     // Start / stop the message
+    // 메시지 시작 / 정지
     stream.start_stop = (rate) ? 1 : 0;
     // The system which should take this command
+    // 이 명령을 취해야하는 시스템
     stream.target_system = uasId;
     // The component / subsystem which should take this command
+    // 이 명령을 사용해야하는 구성 요소 / 하위 시스템
     stream.target_component = 0;
     // Encode and send the message
+    // 인코딩하여 메시지 보내기
     mavlink_msg_request_data_stream_encode(systemId, componentId, &msg, &stream);
     // Send message twice to increase chance of reception
+    // 수신 기회를 높이기 위해 메시지를 두 번 보낸다.
     sendMessage(msg);
 }
 
 /** 
 * @param rate The update rate in Hz the message should be sent
 */
+/* *
+* @param rate 메시지를 보내야하는 업데이트 속도 (Hz)
+*/
 void UAS::enableRawSensorDataTransmission(int rate)
 {
     // Buffers to write data to
+    // 데이터를 쓸 버퍼
     mavlink_message_t msg;
     mavlink_request_data_stream_t stream;
     // Select the message to request from now on
+    // 지금부터 요청할 메시지를 선택하십시오.
     stream.req_stream_id = MAV_DATA_STREAM_RAW_SENSORS;
     // Select the update rate in Hz the message should be send
+    // 메시지를 보내야하는 업데이트 속도를 Hz 단위로 선택하십시오.
     stream.req_message_rate = rate;
     // Start / stop the message
+    // 메시지 시작 / 정지
     stream.start_stop = (rate) ? 1 : 0;
     // The system which should take this command
+    // 이 명령을 취해야하는 시스템
     stream.target_system = uasId;
     // The component / subsystem which should take this command
+    // 이 명령을 사용해야하는 구성 요소 / 하위 시스템
     stream.target_component = 0;
     // Encode and send the message
+    // 인코딩하여 메시지 보내기
     mavlink_msg_request_data_stream_encode(systemId, componentId, &msg, &stream);
     // Send message twice to increase chance of reception
+    // 수신 기회를 높이기 위해 메시지를 두 번 보낸다.
     sendMessage(msg);
 }
 
 /** 
 * @param rate The update rate in Hz the message should be sent
+*/
+/* *
+* @param rate 메시지를 보내야하는 업데이트 속도 (Hz)
 */
 void UAS::enableExtendedSystemStatusTransmission(int rate)
 {
@@ -2284,6 +2591,9 @@ void UAS::enableExtendedSystemStatusTransmission(int rate)
 /** 
 * @param rate The update rate in Hz the message should be sent
 */
+/* *
+* @param rate 메시지를 보내야하는 업데이트 속도 (Hz)
+*/
 void UAS::enableRCChannelDataTransmission(int rate)
 {
 #if defined(MAVLINK_ENABLED_UALBERTA_MESSAGES)
@@ -2294,18 +2604,25 @@ void UAS::enableRCChannelDataTransmission(int rate)
     mavlink_message_t msg;
     mavlink_request_data_stream_t stream;
     // Select the message to request from now on
+    // 데이터를 쓸 버퍼
     stream.req_stream_id = MAV_DATA_STREAM_RC_CHANNELS;
     // Select the update rate in Hz the message should be send
+    // 메시지를 보내야하는 업데이트 속도를 Hz 단위로 선택하십시오.
     stream.req_message_rate = rate;
     // Start / stop the message
+    // 메시지 시작 / 정지
     stream.start_stop = (rate) ? 1 : 0;
     // The system which should take this command
+    // 이 명령을 취해야하는 시스템
     stream.target_system = uasId;
     // The component / subsystem which should take this command
+    // 이 명령을 사용해야하는 구성 요소 / 하위 시스템
     stream.target_component = 0;
     // Encode and send the message
+    // 인코딩하여 메시지 보내기
     mavlink_msg_request_data_stream_encode(systemId, componentId, &msg, &stream);
     // Send message twice to increase chance of reception
+    // 수신 기회를 높이기 위해 메시지를 두 번 보낸다.
     sendMessage(msg);
 #endif
 }
@@ -2313,24 +2630,34 @@ void UAS::enableRCChannelDataTransmission(int rate)
 /** 
 * @param rate The update rate in Hz the message should be sent
 */
+/* *
+* @param rate 메시지를 보내야하는 업데이트 속도 (Hz)
+*/
 void UAS::enableRawControllerDataTransmission(int rate)
 {
     // Buffers to write data to
     mavlink_message_t msg;
     mavlink_request_data_stream_t stream;
     // Select the message to request from now on
+    // 지금부터 요청할 메시지를 선택하십시오.
     stream.req_stream_id = MAV_DATA_STREAM_RAW_CONTROLLER;
     // Select the update rate in Hz the message should be send
+    // 메시지를 보내야하는 업데이트 속도를 Hz 단위로 선택하십시오.
     stream.req_message_rate = rate;
     // Start / stop the message
+    // 메시지 시작 / 정지
     stream.start_stop = (rate) ? 1 : 0;
     // The system which should take this command
+    // 이 명령을 취해야하는 시스템
     stream.target_system = uasId;
     // The component / subsystem which should take this command
+    // 이 명령을 사용해야하는 구성 요소 / 하위 시스템
     stream.target_component = 0;
     // Encode and send the message
+    // 인코딩하여 메시지 보내기
     mavlink_msg_request_data_stream_encode(systemId, componentId, &msg, &stream);
     // Send message twice to increase chance of reception
+    // 수신 기회를 높이기 위해 메시지를 두 번 보낸다.
     sendMessage(msg);
 }
 
@@ -2359,73 +2686,106 @@ void UAS::enableRawControllerDataTransmission(int rate)
 /** 
 * @param rate The update rate in Hz the message should be sent
 */
+/* *
+* @param rate 메시지를 보내야하는 업데이트 속도 (Hz)
+*/
 void UAS::enablePositionTransmission(int rate)
 {
     // Buffers to write data to
+    // 데이터를 쓸 버퍼
     mavlink_message_t msg;
     mavlink_request_data_stream_t stream;
     // Select the message to request from now on
+    // 지금부터 요청할 메시지를 선택하십시오.
     stream.req_stream_id = MAV_DATA_STREAM_POSITION;
     // Select the update rate in Hz the message should be send
+    // 메시지를 보내야하는 업데이트 속도를 Hz 단위로 선택하십시오.
     stream.req_message_rate = rate;
     // Start / stop the message
+    // 메시지 시작 / 정지
     stream.start_stop = (rate) ? 1 : 0;
     // The system which should take this command
+    // 이 명령을 취해야하는 시스템
     stream.target_system = uasId;
     // The component / subsystem which should take this command
+    // 이 명령을 사용해야하는 구성 요소 / 하위 시스템
     stream.target_component = 0;
     // Encode and send the message
+    // 인코딩하여 메시지 보내기
     mavlink_msg_request_data_stream_encode(systemId, componentId, &msg, &stream);
     // Send message twice to increase chance of reception
+    // 수신 기회를 높이기 위해 메시지를 두 번 보낸다.
     sendMessage(msg);
 }
 
 /** 
 * @param rate The update rate in Hz the message should be sent
+*/
+/* *
+* @param rate 메시지를 보내야하는 업데이트 속도 (Hz)
 */
 void UAS::enableExtra1Transmission(int rate)
 {
     // Buffers to write data to
+    // 데이터를 쓸 버퍼
     mavlink_message_t msg;
     mavlink_request_data_stream_t stream;
     // Select the message to request from now on
+    // 지금부터 요청할 메시지를 선택하십시오.
     stream.req_stream_id = MAV_DATA_STREAM_EXTRA1;
     // Select the update rate in Hz the message should be send
+    // 메시지를 보내야하는 업데이트 속도를 Hz 단위로 선택하십시오.
     stream.req_message_rate = rate;
     // Start / stop the message
+   // 메시지 시작 / 정지
     stream.start_stop = (rate) ? 1 : 0;
     // The system which should take this command
+    // 이 명령을 취해야하는 시스템
     stream.target_system = uasId;
     // The component / subsystem which should take this command
+    // 이 명령을 사용해야하는 구성 요소 / 하위 시스템
     stream.target_component = 0;
     // Encode and send the message
+    // 인코딩하여 메시지 보내기
     mavlink_msg_request_data_stream_encode(systemId, componentId, &msg, &stream);
     // Send message twice to increase chance of reception
+    // 수신 기회를 높이기 위해 메시지를 두 번 보낸다.
     sendMessage(msg);
     sendMessage(msg);
 }
 
 /** 
 * @param rate The update rate in Hz the message should be sent
+*/
+/* *
+* @param rate 메시지를 보내야하는 업데이트 속도 (Hz)
 */
 void UAS::enableExtra2Transmission(int rate)
 {
     // Buffers to write data to
+    // 데이터를 쓸 버퍼
     mavlink_message_t msg;
     mavlink_request_data_stream_t stream;
     // Select the message to request from now on
+    // 지금부터 요청할 메시지를 선택하십시오.
     stream.req_stream_id = MAV_DATA_STREAM_EXTRA2;
     // Select the update rate in Hz the message should be send
+    // 메시지를 보내야하는 업데이트 속도를 Hz 단위로 선택하십시오.
     stream.req_message_rate = rate;
     // Start / stop the message
+    // 메시지 시작 / 정지
     stream.start_stop = (rate) ? 1 : 0;
     // The system which should take this command
+    // 이 명령을 취해야하는 시스템
     stream.target_system = uasId;
     // The component / subsystem which should take this command
+    // 이 명령을 사용해야하는 구성 요소 / 하위 시스템
     stream.target_component = 0;
     // Encode and send the message
+    // 인코딩하여 메시지 보내기
     mavlink_msg_request_data_stream_encode(systemId, componentId, &msg, &stream);
     // Send message twice to increase chance of reception
+    // 수신 기회를 높이기 위해 메시지를 두 번 보낸다.
     sendMessage(msg);
     sendMessage(msg);
 }
@@ -2433,24 +2793,35 @@ void UAS::enableExtra2Transmission(int rate)
 /** 
 * @param rate The update rate in Hz the message should be sent
 */
+/* *
+* @param rate 메시지를 보내야하는 업데이트 속도 (Hz)
+*/
 void UAS::enableExtra3Transmission(int rate)
 {
     // Buffers to write data to
+    // 데이터를 쓸 버퍼
     mavlink_message_t msg;
     mavlink_request_data_stream_t stream;
     // Select the message to request from now on
+    // 지금부터 요청할 메시지를 선택하십시오.
     stream.req_stream_id = MAV_DATA_STREAM_EXTRA3;
     // Select the update rate in Hz the message should be send
+    // 메시지를 보내야하는 업데이트 속도를 Hz 단위로 선택하십시오.
     stream.req_message_rate = rate;
     // Start / stop the message
+    // 메시지 시작 / 정지
     stream.start_stop = (rate) ? 1 : 0;
     // The system which should take this command
+    // 이 명령을 취해야하는 시스템
     stream.target_system = uasId;
     // The component / subsystem which should take this command
+    // 이 명령을 사용해야하는 구성 요소 / 하위 시스템
     stream.target_component = 0;
     // Encode and send the message
+    // 인코딩하여 메시지 보내기
     mavlink_msg_request_data_stream_encode(systemId, componentId, &msg, &stream);
     // Send message twice to increase chance of reception
+    // 수신 기회를 높이기 위해 메시지를 두 번 보낸다.
     sendMessage(msg);
     sendMessage(msg);
 }
@@ -2460,6 +2831,12 @@ void UAS::enableExtra3Transmission(int rate)
  *
  * @param component The component to set the parameter
  * @param id Name of the parameter 
+ */
+/* *
+ * 온보드 매개 변수 값 설정
+ *
+ 파라미터를 설정하는 컴퍼넌트
+ * @param id 매개 변수의 이름입니다. 
  */
 void UAS::setParameter(const int compId, const QString& paramId, const QVariant& value)
 {
@@ -2471,6 +2848,8 @@ void UAS::setParameter(const int compId, const QString& paramId, const QVariant&
 
         // Assign correct value based on QVariant
         // TODO: This is a hack for MAV_AUTOPILOT_ARDUPILOTMEGA until the new version of MAVLink and a fix for their param handling.
+        // QVariant를 기반으로 올바른 값을 지정합니다.
+        // TODO : 이것은 MAV_AUTOPILOT_ARDUPILOTMEGA에 대한 해킹이며 새로운 버전의 MAVLink와 param 처리를위한 수정입니다.
         if (getAutopilotType() == MAV_AUTOPILOT_ARDUPILOTMEGA)
         {
             switch (static_cast<QMetaType::Type>(value.type()))
@@ -2531,9 +2910,11 @@ void UAS::setParameter(const int compId, const QString& paramId, const QVariant&
         //QLOG_DEBUG() << "SENT PARAM:" << value;
 
         // Copy string into buffer, ensuring not to exceed the buffer size
+        // 문자열을 버퍼에 복사하여 버퍼 크기를 초과하지 않도록합니다.
         for (unsigned int i = 0; i < sizeof(p.param_id); i++)
         {
             // String characters
+            // 문자열 문자
             if ((int)i < paramId.length())
             {
                 p.param_id[i] = paramId.toLatin1()[i];
@@ -2541,6 +2922,7 @@ void UAS::setParameter(const int compId, const QString& paramId, const QVariant&
             else
             {
                 // Fill rest with zeros
+                // 나머지는 0으로 채 웁니다.
                 p.param_id[i] = 0;
             }
         }
@@ -2553,16 +2935,19 @@ void UAS::setParameter(const int compId, const QString& paramId, const QVariant&
 
 
 //TODO update this to use the parameter manager / param data model instead
+// TODO를 업데이트하여 매개 변수 관리자 / 매개 변수 데이터 모델을 대신 사용합니다.
 void UAS::processParamValueMsg(mavlink_message_t& msg, const QString& paramName, const mavlink_param_value_t& rawValue,  mavlink_param_union_t& paramValue)
 {
     int compId = msg.compid;
 
     // Insert component if necessary
+    // 필요한 경우 구성 요소 삽입
     if (!parameters.contains(compId)) {
         parameters.insert(compId, new QMap<QString, QVariant>());
     }
 
     // Insert parameter into registry
+    // 레지스트리에 매개 변수 삽입
     if (parameters.value(compId)->contains(paramName)) {
         parameters.value(compId)->remove(paramName);
     }
@@ -2571,6 +2956,8 @@ void UAS::processParamValueMsg(mavlink_message_t& msg, const QString& paramName,
 
     // Insert with correct type
     // TODO: This is a hack for MAV_AUTOPILOT_ARDUPILOTMEGA until the new version of MAVLink and a fix for their param handling.
+    // 올바른 유형으로 삽입
+    // TODO : 이것은 MAV_AUTOPILOT_ARDUPILOTMEGA에 대한 해킹이며 새로운 버전의 MAVLink와 param 처리를위한 수정입니다.
     switch (rawValue.param_type)
     {
     case MAV_PARAM_TYPE_REAL32:
@@ -2583,6 +2970,7 @@ void UAS::processParamValueMsg(mavlink_message_t& msg, const QString& paramName,
         }
         parameters.value(compId)->insert(paramName, param);
         // Emit change
+        // 변경 사항을 내 보냅니다.
         emit parameterChanged(uasId, compId, paramName, param);
         emit parameterChanged(uasId, compId, rawValue.param_count, rawValue.param_index, paramName, param);
         //                QLOG_DEBUG() << "RECEIVED PARAM:" << param;
@@ -2598,6 +2986,7 @@ void UAS::processParamValueMsg(mavlink_message_t& msg, const QString& paramName,
         }
         parameters.value(compId)->insert(paramName, param);
         // Emit change
+        // 변경 사항을 내 보냅니다.
         emit parameterChanged(uasId, compId, paramName, param);
         emit parameterChanged(uasId, compId, rawValue.param_count, rawValue.param_index, paramName, param);
         //QLOG_DEBUG() << "RECEIVED PARAM:" << param;
@@ -2613,6 +3002,7 @@ void UAS::processParamValueMsg(mavlink_message_t& msg, const QString& paramName,
         }
         parameters.value(compId)->insert(paramName, param);
         // Emit change
+        // 변경 사항을 내 보냅니다.
         emit parameterChanged(uasId, compId, paramName, param);
         emit parameterChanged(uasId, compId, rawValue.param_count, rawValue.param_index, paramName, param);
         //QLOG_DEBUG() << "RECEIVED PARAM:" << param;
@@ -2643,6 +3033,7 @@ void UAS::processParamValueMsg(mavlink_message_t& msg, const QString& paramName,
         }
         parameters.value(compId)->insert(paramName, param);
         // Emit change
+        // 변경 사항을 내 보냅니다.
         emit parameterChanged(uasId, compId, paramName, param);
         emit parameterChanged(uasId, compId, rawValue.param_count, rawValue.param_index, paramName, param);
     }
@@ -2657,6 +3048,7 @@ void UAS::processParamValueMsg(mavlink_message_t& msg, const QString& paramName,
         }
         parameters.value(compId)->insert(paramName, param);
         // Emit change
+        // 변경 사항을 내 보냅니다.
         emit parameterChanged(uasId, compId, paramName, param);
         emit parameterChanged(uasId, compId, rawValue.param_count, rawValue.param_index, paramName, param);
         //                QLOG_DEBUG() << "RECEIVED PARAM:" << param;
@@ -2670,9 +3062,13 @@ void UAS::processParamValueMsg(mavlink_message_t& msg, const QString& paramName,
 /**
 * Request parameter, use parameter name to request it.
 */
+/* *
+* 매개 변수를 요청하려면 매개 변수 이름을 사용하십시오.
+*/
 void UAS::requestParameter(int component, int id)
 {
     // Request parameter, use parameter name to request it
+    // 매개 변수를 요청하고 매개 변수 이름을 사용하여 요청하십시오.
     mavlink_message_t msg;
     mavlink_param_request_read_t read;
     read.param_index = id;
@@ -2690,6 +3086,7 @@ void UAS::requestNextParamFromQueue()
     QString parameter;
 
     {   // Scope for mutex
+        // 뮤텍스 범위
         QMutexLocker lock(&requestQueueMutex);
         if(paramRequestQueue.isEmpty())
         {
@@ -2703,10 +3100,12 @@ void UAS::requestNextParamFromQueue()
     }
 
     // Request parameter, use parameter name to request it
+    // 매개 변수를 요청하고 매개 변수 이름을 사용하여 요청하십시오.
     mavlink_message_t msg;
     mavlink_param_request_read_t read;
     read.param_index = -1;
     // Copy full param name or maximum max field size
+    // 전체 매개 변수 이름 또는 최대 최대 필드 크기 복사
     if (parameter.length() > MAVLINK_MSG_PARAM_REQUEST_READ_FIELD_PARAM_ID_LEN)
     {
         emit textMessageReceived(uasId, 0, 255, QString("QGC WARNING: Parameter name %1 is more than %2 bytes long. This might lead to errors and mishaps!").arg(parameter).arg(MAVLINK_MSG_PARAM_REQUEST_READ_FIELD_PARAM_ID_LEN-1));
@@ -2714,7 +3113,7 @@ void UAS::requestNextParamFromQueue()
     }
     memcpy(read.param_id, parameter.toStdString().c_str(), qMax(parameter.length(), MAVLINK_MSG_PARAM_REQUEST_READ_FIELD_PARAM_ID_LEN));
     if (parameter.length() < MAVLINK_MSG_PARAM_REQUEST_READ_FIELD_PARAM_ID_LEN){
-        read.param_id[parameter.length()] = '\0'; // Enforce null termination
+        read.param_id[parameter.length()] = '\0'; // Enforce null termination// Null 종료를 적용합니다.
     }
     read.target_system = uasId;
     read.target_component = component;
@@ -2726,6 +3125,9 @@ void UAS::requestNextParamFromQueue()
 
 /**
 * Request a parameter, use parameter name to request it.
+*/
+/* *
+* 매개 변수를 요청하려면 매개 변수 이름을 사용하십시오.
 */
 void UAS::requestParameter(int component, const QString& parameter)
 {
@@ -2752,6 +3154,9 @@ void UAS::requestParameter(int component, const QString& parameter)
 
 /**
 * @param systemType Type of MAV.
+*/
+/* *
+* @param systemType MAV의 타입.
 */
 void UAS::setSystemType(int systemType)
 {
@@ -2848,6 +3253,10 @@ void UAS::executeCommand(MAV_CMD command, int confirmation, float param1, float 
  * Launches the system
  *
  */
+/* *
+ * 시스템을 시작합니다.
+ *
+ */
 void UAS::launch()
 {
     mavlink_message_t msg;
@@ -2859,6 +3268,10 @@ void UAS::launch()
  * @warning Depending on the UAS, this might make the rotors of a helicopter spinning
  *
  */
+/* *
+ * @ 경고 UAS에 따라 헬리콥터의 로터가 회전 할 수 있습니다.
+ *
+ */
 void UAS::armSystem()
 {
     setModeArm(base_mode | MAV_MODE_FLAG_SAFETY_ARMED, custom_mode);
@@ -2866,6 +3279,10 @@ void UAS::armSystem()
 
 /**
  * @warning Depending on the UAS, this might completely stop all motors.
+ *
+ */
+/* *
+ * @ 경고 UAS에 따라 모든 모터를 완전히 정지시킬 수 있습니다.
  *
  */
 void UAS::disarmSystem()
@@ -2896,6 +3313,10 @@ void UAS::toggleAutonomy()
 /**
 * Set the manual control commands.
 * This can only be done if the system has manual inputs enabled and is armed.
+*/
+/* *
+* 수동 제어 명령을 설정하십시오.
+* 시스템에 수동 입력이 활성화되어 있고 작동 준비가되어있는 경우에만 가능합니다.
 */
 void UAS::setManualControlCommands(double roll, double pitch, double yaw, double thrust, int xHat, int yHat, int buttons)
 {
@@ -2933,6 +3354,9 @@ void UAS::setManualControlCommands(double roll, double pitch, double yaw, double
         // looks like APM::Copter is not setting g.sysid_my_gcs to our systemId
         // fetch the value APM::Copter expects
         // see https://github.com/diydrones/ardupilot/issues/1515
+        // APM :: Copter가 g.sysid_my_gcs를 systemId로 설정하지 않습니다.
+        // APM :: Copter가 기대하는 값을 가져옵니다.
+        // https://github.com/diydrones/ardupilot/issues/1515를 참조하십시오.
         int gcs = params->value("SYSID_MYGCS").toInt();
 
         if (roll == -1.0 && pitch == -1.0 && yaw == -1.0 && thrust == 0.0)
@@ -2991,12 +3415,14 @@ void UAS::setManualControlCommands(double roll, double pitch, double yaw, double
         //emit attitudeThrustSetPointChanged(this, roll, pitch, yaw, thrust, QGC::groundTimeMilliseconds());
     }
     // If system has manual inputs enabled
+    // 시스템에 수동 입력이 활성화 된 경우
     else if(((base_mode & (uint8_t)MAV_MODE_FLAG_DECODE_POSITION_MANUAL) || (base_mode & (uint8_t)MAV_MODE_FLAG_HIL_ENABLED))
             && (! overrideRC))
     {
         manualControl = true;
 
         // Scale values
+        // 값의 크기 조절
         float manualRollAngle = -1000.0f + roll * 2000.0f;
         float manualPitchAngle = -1000.0f + pitch * 2000.0f;
         float manualYawAngle = -1000.0f + yaw * 2000.0f;
@@ -3022,6 +3448,9 @@ static int intValue(const QMap<QString, QVariant>* params, const QString& key, i
 
 /** @brief scale joystick axis to RC value
  *         using min,max,trim,rev from UAS
+ */
+/* * @ 간단한 조이스틱 축을 RC 값에 축척합니다.
+ * UAS의 min, max, trim, rev 사용
  */
 uint16_t UAS::scaleJoystickToRC(double v, int channel) const
 {
@@ -3087,12 +3516,18 @@ void UAS::logRequestEnd()
 /**
 * @return the type of the system
 */
+/* *
+* @return 시스템의 타입
+*/
 int UAS::getSystemType()
 {
     return this->type;
 }
 
 /**
+* @param buttonIndex
+*/
+/* *
 * @param buttonIndex
 */
 void UAS::receiveButton(int buttonIndex)
@@ -3116,6 +3551,9 @@ void UAS::receiveButton(int buttonIndex)
 /**
 * Halt the uas.
 */
+/* *
+* 휴지.
+*/
 void UAS::halt()
 {
     mavlink_message_t msg;
@@ -3126,6 +3564,9 @@ void UAS::halt()
 /**
 * Make the UAS move.
 */
+/* *
+* UAS가 움직 이도록하십시오.
+*/
 void UAS::go()
 {
     mavlink_message_t msg;
@@ -3135,6 +3576,9 @@ void UAS::go()
 
 /** 
 * Order the robot to return home 
+*/
+/* *
+* 로봇이 집으로 돌아갈 것을 명령하십시오. 
 */
 void UAS::home()
 {
@@ -3152,6 +3596,9 @@ void UAS::home()
 /**
 * Order the robot to land on the runway 
 */
+/* *
+* 활주로에 착륙하도록 로봇을 주문하십시오. 
+*/
 void UAS::land()
 {
     mavlink_message_t msg;
@@ -3162,6 +3609,9 @@ void UAS::land()
 
 /**
 * Order the robot to start receiver pairing
+*/
+/* *
+* 수신기 페어링을 시작하도록 로봇을 주문하십시오.
 */
 void UAS::pairRX(int rxType, int rxSubType)
 {
@@ -3175,6 +3625,10 @@ void UAS::pairRX(int rxType, int rxSubType)
  * The MAV starts the emergency landing procedure. The behaviour depends on the onboard implementation
  * and might differ between systems.
  */
+/* *
+* MAV는 비상 착륙 절차를 시작합니다. 동작은 온보드 구현에 따라 다릅니다.
+ * 시스템마다 다를 수 있습니다.
+ */
 void UAS::emergencySTOP()
 {
     // FIXME MAVLINKV10PORTINGNEEDED
@@ -3187,6 +3641,13 @@ void UAS::emergencySTOP()
  * @warning This might lead to a crash.
  *
  * The command will not be executed until emergencyKILLConfirm is issues immediately afterwards
+ */
+/* *
+ *이 마비를 종료하십시오 - 모든 온보드 시스템이 즉시 종료됩니다 (예 :
+ * 주전 원선이 끊어짐).
+ * @ 경고 이것은 충돌을 일으킬 수 있습니다.
+ *
+ * 명령은 비상 사태가 발각 된 직후까지 실행되지 않습니다.
  */
 bool UAS::emergencyKILL()
 {
@@ -3222,11 +3683,15 @@ bool UAS::emergencyKILL()
 /**
 * If enabled, connect the flight gear link.
 */
+/* *
+* 활성화 된 경우 비행 기어 링크를 연결하십시오.
+*/
 void UAS::enableHilFlightGear(bool enable, QString options, bool sensorHil, QObject * configuration)
 {
     QGCFlightGearLink* link = dynamic_cast<QGCFlightGearLink*>(simulation);
     if (!link || !simulation) {
         // Delete wrong sim
+        // 잘못된 sim 삭제
         if (simulation) {
             stopHil();
             delete simulation;
@@ -3234,6 +3699,7 @@ void UAS::enableHilFlightGear(bool enable, QString options, bool sensorHil, QObj
         simulation = new QGCFlightGearLink(this, options);
     }
     // Connect Flight Gear Link
+    // Flight Gear Link 연결
     link = dynamic_cast<QGCFlightGearLink*>(simulation);
     link->setStartupArguments(options);
     link->sensorHilEnabled(sensorHil);
@@ -3251,11 +3717,15 @@ void UAS::enableHilFlightGear(bool enable, QString options, bool sensorHil, QObj
 /**
 * If enabled, connect the JSBSim link.
 */
+/* *
+* 활성화 된 경우 JSBSim 링크를 연결하십시오.
+*/
 void UAS::enableHilJSBSim(bool enable, QString options)
 {
     QGCJSBSimLink* link = dynamic_cast<QGCJSBSimLink*>(simulation);
     if (!link || !simulation) {
         // Delete wrong sim
+        // 잘못된 sim 삭제
         if (simulation) {
             stopHil();
             delete simulation;
@@ -3263,6 +3733,7 @@ void UAS::enableHilJSBSim(bool enable, QString options)
         simulation = new QGCJSBSimLink(this, options);
     }
     // Connect Flight Gear Link
+    // Flight Gear Link 연결
     link = dynamic_cast<QGCJSBSimLink*>(simulation);
     link->setStartupArguments(options);
     if (enable)
@@ -3293,6 +3764,24 @@ void UAS::enableHilJSBSim(bool enable, QString options)
 * @param yacc Y acceleration (mg)
 * @param zacc Z acceleration (mg)
 */
+/* *
+* @param time_us 타임 스탬프 (UNIX 이후의 마이크로 초 또는 시스템 부팅 이후의 마이크로 초)
+* @param 롤 롤 각도 (rad)
+* @param pitch 피치 각 (rad)
+* @param yaw 요우 각 (rad)
+* @param rollspeed 롤 각속도 (rad / s)
+* @param pitchspeed 피치 각속도 (rad / s)
+* @param yawspeed 요 각속도 (rad / s)
+* @param 위도, * 1E7로 표현됨
+* @param lon 경도, * 1E7로 표현됨
+* @param alt 고도 (미터 단위) * 1000 (밀리미터)
+* @param vx Ground X 속도 (위도), m / s * 100으로 표시
+* @param vy Ground Y 속도 (경도), m / s * 100으로 표현됨
+* @param vz Ground Z 속도 (고도), m / s * 100으로 표시
+* @param xacc X 가속도 (mg)
+* @param yacc Y 가속도 (mg)
+* @param zacc Z 가속도 (mg)
+*/
 void UAS::sendHilGroundTruth(quint64 time_us, float roll, float pitch, float yaw, float rollspeed,
                        float pitchspeed, float yawspeed, double lat, double lon, double alt,
                        float vx, float vy, float vz, float ind_airspeed, float true_airspeed, float xacc, float yacc, float zacc)
@@ -3303,6 +3792,7 @@ void UAS::sendHilGroundTruth(quint64 time_us, float roll, float pitch, float yaw
     Q_UNUSED(zacc);
     
         // Emit attitude for cross-check
+        // 교차 체크를 위해 태도를 내 보냅니다.
         emit valueChanged(uasId, "roll sim", "rad", roll, getUnixTime());
         emit valueChanged(uasId, "pitch sim", "rad", pitch, getUnixTime());
         emit valueChanged(uasId, "yaw sim", "rad", yaw, getUnixTime());
@@ -3341,6 +3831,24 @@ void UAS::sendHilGroundTruth(quint64 time_us, float roll, float pitch, float yaw
 * @param yacc Y acceleration (mg)
 * @param zacc Z acceleration (mg)
 */
+/* *
+* @param time_us 타임 스탬프 (UNIX 이후의 마이크로 초 또는 시스템 부팅 이후의 마이크로 초)
+* @param 롤 롤 각도 (rad)
+* @param pitch 피치 각 (rad)
+* @param yaw 요우 각 (rad)
+* @param rollspeed 롤 각속도 (rad / s)
+* @param pitchspeed 피치 각속도 (rad / s)
+* @param yawspeed 요 각속도 (rad / s)
+* @param 위도, * 1E7로 표현됨
+* @param lon 경도, * 1E7로 표현됨
+* @param alt 고도 (미터 단위) * 1000 (밀리미터)
+* @param vx Ground X 속도 (위도), m / s * 100으로 표시
+* @param vy Ground Y 속도 (경도), m / s * 100으로 표현됨
+* @param vz Ground Z 속도 (고도), m / s * 100으로 표시
+* @param xacc X 가속도 (mg)
+* @param yacc Y 가속도 (mg)
+* @param zacc Z 가속도 (mg)
+*/
 void UAS::sendHilState(quint64 time_us, float roll, float pitch, float yaw, float rollspeed,
                        float pitchspeed, float yawspeed, double lat, double lon, double alt,
                        float vx, float vy, float vz, float ind_airspeed, float true_airspeed, float xacc, float yacc, float zacc)
@@ -3373,6 +3881,7 @@ void UAS::sendHilState(quint64 time_us, float roll, float pitch, float yaw, floa
     else
     {
         // Attempt to set HIL mode
+        // HIL 모드를 설정하려고 시도합니다.
         setMode(base_mode | MAV_MODE_FLAG_HIL_ENABLED, custom_mode);
         qDebug() << __FILE__ << __LINE__ << "HIL is onboard not enabled, trying to enable.";
     }
@@ -3394,6 +3903,7 @@ void UAS::sendHilSensors(quint64 time_us, float xacc, float yacc, float zacc, fl
     else
     {
         // Attempt to set HIL mode
+        // HIL 모드를 설정하려고 시도합니다.
         setMode(base_mode | MAV_MODE_FLAG_HIL_ENABLED, custom_mode);
         qDebug() << __FILE__ << __LINE__ << "HIL is onboard not enabled, trying to enable.";
     }
@@ -3402,6 +3912,7 @@ void UAS::sendHilSensors(quint64 time_us, float xacc, float yacc, float zacc, fl
 void UAS::sendHilGps(quint64 time_us, double lat, double lon, double alt, int fix_type, float eph, float epv, float vel, float vn, float ve, float vd, float cog, int satellites)
 {
     // Only send at 10 Hz max rate
+    // 최대 10Hz로만 보내십시오.
     if (QGC::groundTimeMilliseconds() - lastSendTimeGPS < 100)
         return;
 
@@ -3409,9 +3920,11 @@ void UAS::sendHilGps(quint64 time_us, double lat, double lon, double alt, int fi
     {
         float course = cog;
         // map to 0..2pi
+        // 0..2pi에 매핑
         if (course < 0)
             course += 2.0f * static_cast<float>(M_PI);
         // scale from radians to degrees
+        // 라디안에서도 단위로 크기 조절
         course = (course / M_PI) * 180.0f;
 
         mavlink_message_t msg;
@@ -3423,6 +3936,7 @@ void UAS::sendHilGps(quint64 time_us, double lat, double lon, double alt, int fi
     else
     {
         // Attempt to set HIL mode
+        // HIL 모드를 설정하려고 시도합니다.
         setMode(base_mode | MAV_MODE_FLAG_HIL_ENABLED, custom_mode);
         qDebug() << __FILE__ << __LINE__ << "HIL is onboard not enabled, trying to enable.";
     }
@@ -3432,6 +3946,9 @@ void UAS::sendHilGps(quint64 time_us, double lat, double lon, double alt, int fi
 /**
 * Connect flight gear link.
 **/
+/* *
+* 비행 장치 링크를 연결하십시오.
+* */
 void UAS::startHil()
 {
     if (hilEnabled) return;
@@ -3444,6 +3961,9 @@ void UAS::startHil()
 
 /**
 * disable flight gear link.
+*/
+/* *
+* 비행 기어 링크를 비활성화하십시오.
 */
 void UAS::stopHil()
 {
@@ -3471,11 +3991,13 @@ void UAS::shutdown()
     int ret = msgBox.exec();
 
     // Close the message box shortly after the click to prevent accidental clicks
+    // 우발적 인 클릭을 방지하기 위해 클릭 직후에 메시지 상자를 닫습니다.
     QTimer::singleShot(5000, &msgBox, SLOT(reject()));
 
     if (ret == QMessageBox::Yes)
     {
         // If the active UAS is set, execute command
+        // 활성 UAS가 설정된 경우 명령 실행
         mavlink_message_t msg;
         mavlink_msg_command_long_pack(systemId, componentId, &msg, uasId, MAV_COMP_ID_PRIMARY, MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN, 1, 2, 2, 0, 0, 0, 0, 0);
         sendMessage(msg);
@@ -3488,6 +4010,12 @@ void UAS::shutdown()
 * @param z position
 * @param yaw
 */
+/* *
+* @ 파라미터 x 위치
+* @ 파라미터 y 위치
+* @param z 위치
+* @param yaw
+*/
 void UAS::setTargetPosition(float x, float y, float z, float yaw)
 {
     mavlink_message_t msg;
@@ -3497,6 +4025,9 @@ void UAS::setTargetPosition(float x, float y, float z, float yaw)
 
 /**
  * @return The name of this system as string in human-readable form
+ */
+/* *
+ * @return 사람이 읽을 수있는 형식의 문자열로서의이 시스템의 이름
  */
 QString UAS::getUASName(void) const
 {
@@ -3515,6 +4046,9 @@ QString UAS::getUASName(void) const
 /**
 * @return the state of the uas as a short text.
 */
+/* *
+* @return은 uas의 상태를 짧은 텍스트로 반환합니다.
+*/
 const QString& UAS::getShortState() const
 {
     return shortStateText;
@@ -3525,12 +4059,18 @@ const QString& UAS::getShortState() const
 * hardware in the loop is being used.
 * @return the audio mode text for the id given.
 */
+/* *
+* 모드는 자율, 가이드, 수동 또는 무장 할 수 있습니다. 또한 if를 반환합니다.
+* 루프의 하드웨어가 사용되고 있습니다.
+지정된 ID의 오디오 모드 텍스트를 돌려줍니다.
+*/
 QString UAS::getAudioModeTextFor(int id)
 {
     QString mode;
     uint8_t modeid = id;
 
     // BASE MODE DECODING
+    // 베이스 모드 디코딩
     if (modeid & (uint8_t)MAV_MODE_FLAG_DECODE_POSITION_AUTO)
     {
         mode += "autonomous";
@@ -3550,6 +4090,7 @@ QString UAS::getAudioModeTextFor(int id)
     else
     {
         // Nothing else applies, we're in preflight
+        // 다른 것은 적용되지 않습니다. 프리 플라이트에 있습니다.
         mode += "preflight";
     }
 
@@ -3559,12 +4100,14 @@ QString UAS::getAudioModeTextFor(int id)
     }
 
     // ARMED STATE DECODING
+    // 무장 한 상태 디코딩
     if (modeid & (uint8_t)MAV_MODE_FLAG_DECODE_POSITION_SAFETY)
     {
         mode.append(" and armed");
     }
 
     // HARDWARE IN THE LOOP DECODING
+    // 루프 디코딩에서의 하드웨어
     if (modeid & (uint8_t)MAV_MODE_FLAG_DECODE_POSITION_HIL)
     {
         mode.append(" using hardware in the loop simulation");
@@ -3577,6 +4120,10 @@ QString UAS::getAudioModeTextFor(int id)
 * The mode returned can be auto, stabilized, test, manual, preflight or unknown.
 * @return the short text of the mode for the id given.
 */
+/* *
+* 반환 된 모드는 자동, 안정화, 테스트, 수동, 프리 플라이트 또는 알 수 없음입니다.
+* @return 주어진 id에 대한 모드의 짧은 텍스트.
+*/
 QString UAS::getShortModeTextFor(int id)
 {
     QString mode;
@@ -3585,6 +4132,7 @@ QString UAS::getShortModeTextFor(int id)
     QLOG_DEBUG() << "MODE:" << modeid;
 
     // BASE MODE DECODING
+    // 베이스 모드 디코딩
     if (modeid & (uint8_t)MAV_MODE_FLAG_DECODE_POSITION_AUTO)
     {
         mode += "|AUTO";
@@ -3615,6 +4163,7 @@ QString UAS::getShortModeTextFor(int id)
     }
 
     // ARMED STATE DECODING
+    // 무장 한 상태 디코딩
     if (modeid & (uint8_t)MAV_MODE_FLAG_DECODE_POSITION_SAFETY)
     {
         mode.prepend("A");
@@ -3625,6 +4174,7 @@ QString UAS::getShortModeTextFor(int id)
     }
 
     // HARDWARE IN THE LOOP DECODING
+    // 루프 디코딩에서의 하드웨어
     if (modeid & (uint8_t)MAV_MODE_FLAG_DECODE_POSITION_HIL)
     {
         mode.prepend("HIL:");
@@ -3640,6 +4190,9 @@ const QString& UAS::getShortMode() const
 
 /**
 * Add the link and connect a signal to it which will be set off when it is destroyed.
+*/
+/* *
+* 링크를 추가하고 신호가 연결되면 파괴 될 때 해제됩니다.
 */
 void UAS::addLink(LinkInterface* link)
 {
@@ -3678,6 +4231,9 @@ void UAS::removeLink(QObject* object)
 /**
 * @return the list of links
 */
+/* *
+링크의리스트를 돌려줍니다.
+*/
 QList<LinkInterface*>* UAS::getLinks()
 {
     return links;
@@ -3696,6 +4252,9 @@ QList<int> UAS::getLinkIdList()
 /**
 * @rerturn the map of the components
 */
+/* *
+* @는 구성 요소의지도를 반환합니다.
+*/
 QMap<int, QString> UAS::getComponents()
 {
     return components;
@@ -3705,6 +4264,11 @@ QMap<int, QString> UAS::getComponents()
 * Set the battery type and the  number of cells.
 * @param type of the battery
 * @param cells Number of cells.
+*/
+/* *
+* 배터리 유형과 셀 수를 설정하십시오.
+전지의 @ 파라미터 형
+* @param cells 셀의 수.
 */
 void UAS::setBattery(BatteryType type, int cells)
 {
@@ -3732,6 +4296,10 @@ void UAS::setBattery(BatteryType type, int cells)
 /**
 * Set the battery specificaitons: empty voltage, warning voltage, and full voltage.
 * @param specifications of the battery
+*/
+/* *
+* 배터리 사양을 설정하십시오 : 빈 전압, 경고 전압 및 전체 전압.
+배터리의 @param 사양
 */
 void UAS::setBatterySpecs(const QString& specs)
 {
@@ -3763,12 +4331,15 @@ void UAS::setBatterySpecs(const QString& specs)
             float temp;
             bool ok;
             // Get the empty voltage
+            // 빈 전압을 얻는다.
             temp = parts.at(0).toFloat(&ok);
             if (ok) emptyVoltage = temp;
             // Get the warning voltage
+            // 경고 전압을 얻는다.
             temp = parts.at(1).toFloat(&ok);
             if (ok) warnVoltage = temp;
             // Get the full voltage
+            // 전체 전압을 얻는다.
             temp = parts.at(2).toFloat(&ok);
             if (ok) fullVoltage = temp;
         }
@@ -3781,6 +4352,9 @@ void UAS::setBatterySpecs(const QString& specs)
 
 /**
 * @return the battery specifications(empty voltage, warning voltage, full voltage)
+*/
+/* *
+* @return 배터리 사양 (비어있는 전압, 경고 전압, 최대 전압)
 */
 QString UAS::getBatterySpecs()
 {
@@ -3797,6 +4371,9 @@ QString UAS::getBatterySpecs()
 /**
 * @return the time remaining.
 */
+/* *
+* @return 남은 시간.
+*/
 int UAS::calculateTimeRemaining()
 {
     quint64 dt = QGC::groundTimeMilliseconds() - startTime;
@@ -3812,6 +4389,9 @@ int UAS::calculateTimeRemaining()
 
 /**
  * @return charge level in percent - 0 - 100
+ */
+/* *
+ * @ 백분율로 나타낸 충전 레벨 - 0 - 100
  */
 double UAS::getChargeLevel()
 {
@@ -3921,6 +4501,7 @@ bool UAS::isGroundRover()
 void UAS::playCustomModeChangedAudioMessage()
 {
     // Do nothing as its custom message only a autopilot will know the correct action
+    // 자동 조종사 만 올바른 동작을 알 수 있도록 사용자 정의 메시지로 아무것도하지 않습니다.
 }
 
 void UAS::playArmStateChangedAudioMessage(bool armedState)

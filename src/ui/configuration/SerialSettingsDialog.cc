@@ -32,6 +32,17 @@ This file is part of the APM_PLANNER project
  * Copyright (C) 2012 Laszlo Papp <lpapp@kde.org>
  *
  */
+/**
+ * @file
+ * @ 간단한 시리얼 설정보기.
+ *
+ * @author Bill Bonney <billbonney@communistech.com>
+ *
+ * 다음과 같은 Qt 예제의 영향 : -
+ * Copyright (C) 2012 Denis Shienkov <denis.shienkov@gmail.com>
+ * Copyright (C) 2012 Laszlo Papp <lpapp@kde.org>
+ *
+ */
 #include "logging.h"
 #include "SerialSettingsDialog.h"
 #include "TerminalConsole.h"
@@ -67,6 +78,7 @@ SettingsDialog::SettingsDialog(QWidget *parent) :
     updateSettings();
 
     //Keep refreshing the serial port list
+    // 시리얼 포트 목록을 새로 고칩니다.
     connect(&m_timer,SIGNAL(timeout()),this,SLOT(populateSerialPorts()));
 }
 
@@ -113,6 +125,8 @@ void SettingsDialog::fillPortsParameters()
 {
     // fill baud rate (is not the entire list of available values,
     // desired values??, add your independently)
+    // 전송 속도를 채 웁니다. (사용 가능한 값의 전체 목록이 아니며,
+    // 원하는 값 ??, 독립적으로 추가)
     ui->baudRateBox->addItem(QLatin1String("115200"), QSerialPort::Baud115200);
     ui->baudRateBox->addItem(QLatin1String("57600"), QSerialPort::Baud57600);
     ui->baudRateBox->addItem(QLatin1String("38400"), QSerialPort::Baud38400);
@@ -121,6 +135,7 @@ void SettingsDialog::fillPortsParameters()
     ui->baudRateBox->addItem(QLatin1String("Custom"));
 
     // fill data bits
+    // 데이터 비트 채우기
     ui->dataBitsBox->addItem(QLatin1String("5"), QSerialPort::Data5);
     ui->dataBitsBox->addItem(QLatin1String("6"), QSerialPort::Data6);
     ui->dataBitsBox->addItem(QLatin1String("7"), QSerialPort::Data7);
@@ -128,6 +143,7 @@ void SettingsDialog::fillPortsParameters()
     ui->dataBitsBox->setCurrentIndex(3);
 
     // fill parity
+    // 패리티 채우기
     ui->parityBox->addItem(QLatin1String("None"), QSerialPort::NoParity);
     ui->parityBox->addItem(QLatin1String("Even"), QSerialPort::EvenParity);
     ui->parityBox->addItem(QLatin1String("Odd"), QSerialPort::OddParity);
@@ -135,6 +151,7 @@ void SettingsDialog::fillPortsParameters()
     ui->parityBox->addItem(QLatin1String("Space"), QSerialPort::SpaceParity);
 
     // fill stop bits
+    // 스톱 비트 채우기
     ui->stopBitsBox->addItem(QLatin1String("1"), QSerialPort::OneStop);
 #ifdef Q_OS_WIN
     ui->stopBitsBox->addItem(QLatin1String("1.5"), QSerialPort::OneAndHalfStop);
@@ -142,6 +159,7 @@ void SettingsDialog::fillPortsParameters()
     ui->stopBitsBox->addItem(QLatin1String("2"), QSerialPort::TwoStop);
 
     // fill flow control
+    // 흐름 제어 채우기
     ui->flowControlBox->addItem(QLatin1String("None"), QSerialPort::NoFlowControl);
     ui->flowControlBox->addItem(QLatin1String("RTS/CTS"), QSerialPort::HardwareControl);
     ui->flowControlBox->addItem(QLatin1String("XON/XOFF"), QSerialPort::SoftwareControl);
@@ -174,6 +192,7 @@ void SettingsDialog::fillPortsInfo(QComboBox &comboBox)
             comboBox.insertItem(0,list[0], list);
         } else {
             // Do nothing as the port is already listed
+            // 포트가 이미 나열되어 있으므로 아무 작업도 수행하지 않습니다.
         }
     }
     for (int i=0;i<comboBox.count();i++)
@@ -204,6 +223,7 @@ void SettingsDialog::showEvent(QShowEvent *event)
 {
     Q_UNUSED(event);
     // Start refresh Timer
+    // 새로 고침 타이머를 시작합니다.
     m_timer.start(2000);
 }
 
@@ -211,6 +231,7 @@ void SettingsDialog::hideEvent(QHideEvent *event)
 {
     Q_UNUSED(event);
     // Stop the port list refeshing
+    // 포트 목록 refeshing 중지
     m_timer.stop();
 
 }
@@ -220,24 +241,31 @@ void SettingsDialog::updateSettings()
     m_currentSettings.name = ui->serialPortInfoListBox->currentText();
 
     // Baud Rate
+    // 전송 속도
     if (ui->baudRateBox->currentIndex() == 4) {
         // custom baud rate
+        // 사용자 정의 전송 속도
         m_currentSettings.baudRate = ui->baudRateBox->currentText().toInt();
     } else {
         // standard baud rate
+        // 표준 보오율
         m_currentSettings.baudRate = static_cast<QSerialPort::BaudRate>(
                     ui->baudRateBox->itemData(ui->baudRateBox->currentIndex()).toInt());
     }
     // Data bits
+    // 데이터 비트
     m_currentSettings.dataBits = static_cast<QSerialPort::DataBits>(
                 ui->dataBitsBox->itemData(ui->dataBitsBox->currentIndex()).toInt());
     // Parity
+    // 패리티
     m_currentSettings.parity = static_cast<QSerialPort::Parity>(
                 ui->parityBox->itemData(ui->parityBox->currentIndex()).toInt());
     // Stop bits
+    // 정지 비트
     m_currentSettings.stopBits = static_cast<QSerialPort::StopBits>(
                 ui->stopBitsBox->itemData(ui->stopBitsBox->currentIndex()).toInt());
     // Flow control
+    // 흐름 제어
     m_currentSettings.flowControl = static_cast<QSerialPort::FlowControl>(
                 ui->flowControlBox->itemData(ui->flowControlBox->currentIndex()).toInt());
 }

@@ -36,9 +36,18 @@ PxQuadMAV::PxQuadMAV(MAVLinkProtocol* mavlink, int id) :
  *             messages can be sent back to the system via this link
  * @param message MAVLink message, as received from the MAVLink protocol stack
  */
+/**
+ *이 기능은 MAVLink가 완전하고 손상되지 않은 (CRC 검사 유효)
+ * mavlink 패킷이 수신되었습니다.
+ *
+ * @param link 메시지가 나온 하드웨어 링크 (예 : / dev / ttyUSB0 또는 UDP 포트).
+ *이 링크를 통해 메시지를 시스템에 다시 보낼 수 있습니다.
+ * @param message MAVLink 프로토콜 스택으로부터받은 MAVLink 메시지
+ */
 void PxQuadMAV::receiveMessage(LinkInterface* link, mavlink_message_t message)
 {
     // Only compile this portion if matching MAVLink packets have been compiled
+    // 일치하는 MAVLink 패킷이 컴파일 된 경우에만이 부분을 컴파일하십시오.
 #ifdef MAVLINK_ENABLED_PIXHAWK
     mavlink_message_t* msg = &message;
 
@@ -58,6 +67,7 @@ void PxQuadMAV::receiveMessage(LinkInterface* link, mavlink_message_t message)
         case MAVLINK_MSG_ID_IMAGE_TRIGGERED:
         {
             // FIXME Kind of a hack to load data from disk
+            // FIXME 디스크에서 데이터를로드하는 해킹의 종류
             mavlink_image_triggered_t img;
             mavlink_msg_image_triggered_decode(&message, &img);
             emit imageStarted(img.timestamp);
@@ -193,6 +203,7 @@ void PxQuadMAV::receiveMessage(LinkInterface* link, mavlink_message_t message)
 //        break;
         default:
             // Let UAS handle the default message set
+            // UAS가 기본 메시지 세트를 처리하도록합니다.
             UAS::receiveMessage(link, message);
             break;
         }
@@ -200,6 +211,7 @@ void PxQuadMAV::receiveMessage(LinkInterface* link, mavlink_message_t message)
 
 #else
     // Let UAS handle the default message set
+    // UAS가 기본 메시지 세트를 처리하도록합니다.
     UAS::receiveMessage(link, message);
     Q_UNUSED(link);
     Q_UNUSED(message);

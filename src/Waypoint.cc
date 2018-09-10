@@ -73,6 +73,7 @@ Waypoint::Waypoint(const Waypoint& waypoint)
       reachedTime(waypoint.getReachedTime())
 {
     // Copy Constrcutor
+    // 건설자 복사하기
 }
 
 Waypoint::~Waypoint()
@@ -86,11 +87,12 @@ bool Waypoint::isNavigationType()
 
             if (action == MAV_CMD_NAV_TAKEOFF) {
                 // TakeOff Command can be bot NAV or NonNAV
+                // TakeOff 명령은 봇 NAV 또는 NonNAV가 될 수 있습니다.
                 return isValidLocation();
             }
 
             if (action != MAV_CMD_NAV_ROI) // Odd NAV command out
-                return true;
+                return true;               // 이상한 NAV 명령 출력
         }
         return false;
 }
@@ -133,10 +135,11 @@ bool Waypoint::isValidLocation() const
 
         if ( getLatitude() == 0.0 || getLongitude() == 0.0) {
             return false; // zero Long/Lat is seldom a valid point.
-        }
+        }                 // Long / Lat 0은 거의 유효하지 않습니다.
 
     } else if (isLocalFrame()) {
         // TODO: Validate Local Frame coords
+        // TODO : 로컬 프레임 좌표 검증
         return true;
     }
     return true;
@@ -158,6 +161,7 @@ bool Waypoint::visibleOnMapWidget()
 {
     QList<int> extraVisibleWaypoints;
     // add waypoints here,to be visible on map
+    // 여기에 웨이 포인트를 추가하여지도에 표시합니다.
     extraVisibleWaypoints << MAV_CMD_DO_SET_ROI;
     if(extraVisibleWaypoints.contains(action))
         return true;
@@ -202,6 +206,7 @@ bool Waypoint::load(QTextStream &loadStream)
         this->z = wpParams[10].toDouble();
         this->autocontinue = (wpParams[11].toInt() == 1 ? true : false);
         if(wpParams.size() == 13) { // Optional Description
+                                     // 선택적 설명
             this->description = wpParams[12];
         }
         return true;

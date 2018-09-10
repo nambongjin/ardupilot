@@ -31,6 +31,7 @@ void UASQuickViewItemSelect::addItem(QString item,bool enabled)
     if (item.indexOf(".") != -1)
     {
         //Item has a subcateogry
+        // 항목에 하위 항목이 있습니다.
         category = item.mid(0,item.indexOf("."));
         name = item.mid(item.indexOf(".")+1);
     }
@@ -47,6 +48,7 @@ void UASQuickViewItemSelect::addItem(QString item,bool enabled)
         ui.stackedWidget->widget(col)->setLayout(new QVBoxLayout());
         //col = m_categoryToIndexMap[category];
         //New column.
+        // 새 열.
         QLabel *titlelabel = new QLabel(this);
         titlelabel->setText(category);
         titlelabel->show();
@@ -54,6 +56,7 @@ void UASQuickViewItemSelect::addItem(QString item,bool enabled)
         ui.stackedWidget->widget(col)->layout()->addWidget(titlelabel);
 
         //Ensure that GCS Status gets the top slot
+        // GCS 상태가 최상위 슬롯을 차지하도록합니다.
         if ((category == "GCS Status")||(category == "GCS Metric")
                 ||(category == "GCS Imperial")||(category == "GCS GPS"))
         {
@@ -88,6 +91,7 @@ void UASQuickViewItemSelect::addItem(QString item,bool enabled)
          }
     }*/
     //Row is the next invalid object, and col is the proper column.
+    // 행은 다음 유효하지 않은 객체이고 col은 적절한 열입니다.
     //ui.gridLayout->addWidget(label,row,col);
     ui.stackedWidget->widget(col)->layout()->removeItem(ui.stackedWidget->widget(col)->layout()->itemAt(ui.stackedWidget->widget(col)->layout()->count()-1));
     ui.stackedWidget->widget(col)->layout()->addWidget(label);

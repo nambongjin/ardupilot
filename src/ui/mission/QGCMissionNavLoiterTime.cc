@@ -10,6 +10,7 @@ QGCMissionNavLoiterTime::QGCMissionNavLoiterTime(WaypointEditableView* WEV) :
     this->WEV = WEV;
 
     //Using UI to change WP:
+    // UI를 사용하여 WP 변경 
     connect(this->ui->timeSpinBox, SIGNAL(valueChanged(double)),WEV,SLOT(changedParam1(double)));
     //connect(this->ui->acceptanceSpinBox, SIGNAL(valueChanged(double)),WEV,SLOT(changedParam2(double)));
     connect(this->ui->radSpinBox, SIGNAL(valueChanged(double)),WEV,SLOT(changedParam3(double)));
@@ -22,6 +23,7 @@ QGCMissionNavLoiterTime::QGCMissionNavLoiterTime(WaypointEditableView* WEV) :
     connect(this->ui->altSpinBox, SIGNAL(valueChanged(double)),WEV,SLOT(changedParam7(double)));
 
     //Reading WP to update UI:
+    // UI를 업데이트하기 위해 WP를 읽습니다.
     connect(WEV,SIGNAL(frameBroadcast(MAV_FRAME)),this,SLOT(updateFrame(MAV_FRAME)));
     connect(WEV,SIGNAL(param1Broadcast(double)),this->ui->timeSpinBox,SLOT(setValue(double)));
     //connect(WEV,SIGNAL(param2Broadcast(double)),this->ui->acceptanceSpinBox,SLOT(setValue(double)));

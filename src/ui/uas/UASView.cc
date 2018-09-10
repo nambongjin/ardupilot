@@ -90,6 +90,7 @@ UASView::UASView(UASInterface* uas, QWidget *parent) :
     m_ui->setupUi(this);
 
     // Setup communication
+    // 통신 설정
     //connect(uas, SIGNAL(valueChanged(int,QString,double,quint64)), this, SLOT(receiveValue(int,QString,double,quint64)));
     connect(uas, SIGNAL(batteryChanged(UASInterface*, double, double, double, int)), this, SLOT(updateBattery(UASInterface*, double, double, double, int)));
     connect(uas, SIGNAL(heartbeat(UASInterface*)), this, SLOT(receiveHeartbeat(UASInterface*)));
@@ -109,9 +110,11 @@ UASView::UASView(UASInterface* uas, QWidget *parent) :
     connect(uas, SIGNAL(navModeChanged(int, int, QString)), this, SLOT(updateNavMode(int, int, QString)));
 
     // Setup UAS selection
+    // UAS 선택 설정
     connect(m_ui->uasViewFrame, SIGNAL(clicked(bool)), this, SLOT(setUASasActive(bool)));
 
     // Setup user interaction
+    // 사용자 상호 작용 설정
     connect(m_ui->liftoffButton, SIGNAL(clicked()), uas, SLOT(launch()));
     connect(m_ui->haltButton, SIGNAL(clicked()), uas, SLOT(halt()));
     connect(m_ui->continueButton, SIGNAL(clicked()), uas, SLOT(go()));
@@ -121,6 +124,7 @@ UASView::UASView(UASInterface* uas, QWidget *parent) :
     connect(m_ui->shutdownButton, SIGNAL(clicked()), uas, SLOT(shutdown()));
 
     // Allow to delete this widget
+    // 이 위젯을 삭제하도록 허용합니다.
     connect(removeAction, SIGNAL(triggered()), this, SLOT(deleteLater()));
     connect(renameAction, SIGNAL(triggered()), this, SLOT(rename()));
     connect(selectAction, SIGNAL(triggered()), uas, SLOT(setSelected()));
@@ -130,11 +134,13 @@ UASView::UASView(UASInterface* uas, QWidget *parent) :
     connect(uas, SIGNAL(systemRemoved()), this, SLOT(deleteLater()));
 
     // Name changes
+    // 이름 변경
     connect(uas, SIGNAL(nameChanged(QString)), this, SLOT(updateName(QString)));
 
     // Set static values
-
+    // 정적 값을 설정합니다.
     // Name
+    // 이름
     if (uas->getUASName() == "")
     {
         m_ui->nameLabel->setText(tr("UAS") + QString::number(uas->getUASID()));
@@ -147,6 +153,7 @@ UASView::UASView(UASInterface* uas, QWidget *parent) :
     setBackgroundColor();
 
     // Heartbeat fade
+    // 하트 비트 페이드
     refreshTimer = new QTimer(this);
     connect(refreshTimer, SIGNAL(timeout()), this, SLOT(refresh()));
     if (lowPowerModeEnabled)
@@ -159,10 +166,12 @@ UASView::UASView(UASInterface* uas, QWidget *parent) :
     }
 
     // Hide kill and shutdown buttons per default
+    // 기본값에 따라 종료 및 종료 버튼 숨기기
     m_ui->killButton->hide();
     m_ui->shutdownButton->hide();
 
     // Set state and mode
+    // 상태 및 모드 설정
     updateMode(uas->getUASID(), uas->getShortMode(), "");
     updateState(uas, uas->getShortState(), "");
     setSystemType(uas, uas->getSystemType());
@@ -202,9 +211,14 @@ void UASView::showStatusText(int uasid, int componentid, int severity, QString t
  * Set the background color based on the MAV color. If the MAV is selected as the
  * currently actively controlled system, the frame color is highlighted
  */
+/**
+ * 배경 색상은 MAV 색상을 기준으로 설정하십시오. MAV가
+ * 현재 활발하게 제어되는 시스템, 프레임 색상이 강조 표시됨
+ */
 void UASView::setBackgroundColor()
 {
     // UAS color
+    // UAS 색상
     QColor uasColor = uas->getColor();
     QString colorstyle;
     QString borderColor = "#4A4A4F";
@@ -286,6 +300,8 @@ void UASView::showEvent(QShowEvent* event)
 {
     // React only to internal (pre-display)
     // events
+    // 내부 (사전 표시)
+    // 이벤트
     Q_UNUSED(event);
     refreshTimer->start(updateInterval*10);
 }
@@ -294,6 +310,8 @@ void UASView::hideEvent(QHideEvent* event)
 {
     // React only to internal (pre-display)
     // events
+    // 내부 (사전 표시)
+    // 이벤트
     Q_UNUSED(event);
    // refreshTimer->stop();
 }
@@ -319,6 +337,13 @@ void UASView::updateName(const QString& name)
  * @param uas Source system, has to be the same as this->uas
  * @param systemType type ID, following the MAVLink system type conventions
  * @see http://pixhawk.ethz.ch/software/mavlink
+ */
+/**
+ * 현재 시스템 유형은 시스템 아이콘을 통해 표시됩니다.
+ *
+ * @param uas 소스 시스템은 this-> uas와 같아야한다.
+ MAVLink 시스템 타입 규약에 따라 * @param systemType 유형 ID
+ * @ http://pixhawk.ethz.ch/software/mavlink 참조
  */
 void UASView::setSystemType(UASInterface* uas, unsigned int systemType)
 {
@@ -347,6 +372,7 @@ void UASView::setSystemType(UASInterface* uas, unsigned int systemType)
             break;
         case MAV_TYPE_GCS: {
                 // A groundstation is a special system type, update widget
+                // Groundstation은 특별한 시스템 유형이며 업데이트 위젯입니다
                 QString result;
                 m_ui->nameLabel->setText(tr("GCS ") + result.sprintf("%03d", uas->getUASID()));
                 m_ui->waypointLabel->setText("");
@@ -542,6 +568,7 @@ void UASView::selectAirframe()
     if (uas)
     {
         // Get list of airframes from UAS
+        // UAS에서 항공기 목록 가져 오기
         QStringList airframes;
         airframes << "Generic"
                 << "Multiplex Easystar"
@@ -565,6 +592,7 @@ void UASView::selectAirframe()
         if (ok && !item.isEmpty())
         {
             // Set this airframe as UAS airframe
+            // 이 기체를 UAS 기체로 설정하십시오.
             uas->setAirframe(airframes.indexOf(item));
         }
     }
@@ -580,6 +608,9 @@ void UASView::refresh()
     //setUpdatesEnabled(false);
     //setUpdatesEnabled(true);
     //repaint();
+    // setUpdatesEnabled (false);
+    // setUpdatesEnabled (true);
+    // repaint ();
     QLOG_TRACE() << "UPDATING UAS WIDGET!" << uas->getUASName();
 
 
@@ -591,17 +622,20 @@ void UASView::refresh()
         generalUpdateCount = 0;
         QLOG_TRACE() << "UPDATING EVERYTHING";
         // State
+        // 상태
         m_ui->stateLabel->setText(state);
         m_ui->statusTextLabel->setText(stateDesc);
 
         // Battery
+        // 배터리
         m_ui->batteryBar->setValue(static_cast<int>(this->chargeLevel));
         //m_ui->loadBar->setValue(static_cast<int>(this->load));
         m_ui->thrustBar->setValue(this->thrust);
 
         // Position
         // If global position is known, prefer it over local coordinates
-
+        // 위치
+        // 전역 위치를 알고 있다면 로컬 좌표보다 선호한다.
         if (!globalFrameKnown && localFrame)
         {
             QString position;
@@ -636,6 +670,7 @@ void UASView::refresh()
         }
 
         // Altitude
+        // 고도
         if (groundDistance == 0 && alt != 0)
         {
             m_ui->groundDistanceLabel->setText(QString("%1 m").arg(alt, 6, 'f', 1, '0'));
@@ -646,15 +681,18 @@ void UASView::refresh()
         }
 
         // Speed
+        // 속도  
         QString speed("%1 m/s");
         m_ui->speedLabel->setText(speed.arg(totalSpeed, 4, 'f', 1, '0'));
 
         // Thrust
+        // 추력
         m_ui->thrustBar->setValue(thrust * 100);
 
         if(this->timeRemaining > 1 && this->timeRemaining < QGC::MAX_FLIGHT_TIME)
         {
             // Filter output to get a higher stability
+            // 더 높은 안정성을 얻기 위해 출력 필터링
             filterTime = static_cast<int>(this->timeRemaining);
             filterTime = 0.8 * filterTime + 0.2 * static_cast<int>(this->timeRemaining);
             int sec = static_cast<int>(filterTime - static_cast<int>(filterTime / 60.0f) * 60);
@@ -671,6 +709,7 @@ void UASView::refresh()
         }
 
         // Time Elapsed
+        // 경과 된 시간
         //QDateTime time = MG::TIME::msecToQDateTime(uas->getUptime());
 
         quint64 filterTime = uas->getUptime() / 1000;
@@ -688,6 +727,7 @@ void UASView::refresh()
     if (timeout)
     {
         // CRITICAL CONDITION, NO HEARTBEAT
+        // 중요 조건, 심박동 없음
 
         QString borderColor = "#FFFF00";
         if (isActive)
@@ -720,6 +760,8 @@ void UASView::refresh()
         {
             // Fade heartbeat icon
             // Make color darker
+            // 하트 비트 아이콘을 사라집니다.
+            // 어두운 색으로 만듭니다.
             heartbeatColor = heartbeatColor.darker(210);
 
             //m_ui->heartbeatIcon->setAutoFillBackground(true);

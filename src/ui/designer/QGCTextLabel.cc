@@ -18,6 +18,7 @@ QGCTextLabel::QGCTextLabel(QWidget *parent) :
     connect(ui->editFinishButton, SIGNAL(clicked()), this, SLOT(endEditMode()));
 
     // Hide all edit items
+    // 모든 편집 항목 숨기기
     ui->editFinishButton->hide();
     ui->editNameLabel->hide();
     ui->editTextParam->hide();
@@ -29,6 +30,8 @@ QGCTextLabel::QGCTextLabel(QWidget *parent) :
     ui->editLine2->setStyleSheet("QWidget { border: 1px solid #66666B; border-radius: 3px; padding: 10px 0px 0px 0px; background: #111122; }");
 
     // Add commands to combo box
+    // 콤보 상자에 명령 추가
+
 
 }
 
@@ -42,6 +45,7 @@ QGCTextLabel::~QGCTextLabel()
 void QGCTextLabel::startEditMode()
 {
     // Hide elements
+    // 요소 숨기기
     ui->nameLabel->hide();
 
     ui->editTextParam->show();
@@ -51,8 +55,9 @@ void QGCTextLabel::startEditMode()
     ui->editLine1->show();
     ui->editLine2->show();
     //setStyleSheet("QGroupBox { border: 1px solid #66666B; border-radius: 3px; padding: 10px 0px 0px 0px; background: #111122; }");
-
+    // setStyleSheet ( "QGroupBox {테두리 : 1px 솔리드 # 66666B; 테두리 반경 : 3px; 패딩 : 10px 0px 0px; 배경 : # 111122;}");
     // Attempt to undock the dock widget
+    // 도킹 위젯을 도킹 해제하려고 시도합니다.
     QWidget* p = this;
     QDockWidget* dock;
 
@@ -82,10 +87,12 @@ void QGCTextLabel::endEditMode()
     ui->nameLabel->show();
 
     // Write to settings
+    // 설정에 기록
     emit editingFinished();
     //setStyleSheet("");
 
     // Attempt to dock the dock widget
+    // 도킹 위젯을 도킹하려고 시도합니다.
     QWidget* p = this;
     QDockWidget* dock;
 
@@ -123,6 +130,7 @@ void QGCTextLabel::readSettings(const QString& pre,const QVariantMap& settings)
     else if (ui->editTextParam->text() == "MAV")
     {
         //MAV command text
+        // MAV 명령 텍스트
         connect(uas,SIGNAL(textMessageReceived(int,int,int,QString)),this,SLOT(textMessageReceived(int,int,int,QString)));
     }
 
@@ -143,6 +151,7 @@ void QGCTextLabel::textMessageReceived(int uasid, int component, int severity, Q
     if (enabledNum != -1)
     {
         //SUCCESS: Executed CMD: 241
+        // 성공 : 실행 된 명령 : 241
         if (message.contains("SUCCESS"))
         {
             if (message.trimmed().endsWith(QString::number(enabledNum)))
@@ -173,6 +182,7 @@ void QGCTextLabel::readSettings(const QSettings& settings)
     else if (ui->editTextParam->text() == "MAV")
     {
         //MAV command text
+        // MAV 명령 텍스트
         ui->nameLabel->setText(ui->editNameLabel->text());
         ui->textLabel->setText("");
         connect(uas,SIGNAL(textMessageReceived(int,int,int,QString)),this,SLOT(textMessageReceived(int,int,int,QString)));

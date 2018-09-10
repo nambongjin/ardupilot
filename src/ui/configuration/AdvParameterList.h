@@ -26,6 +26,12 @@ This file is part of the APM_PLANNER project
  *
  *   @author Michael Carpenter <malcom2073@gmail.com>
  */
+/* *
+ * @file
+ * @brief 고급 매개 변수 목록, 차량의 모든 매개 변수 목록, 저장 /로드 기능 포함
+ *
+ * @author Michael Carpenter <malcom2073@gmail.com>
+ */
 
 #ifndef ADVPARAMETERLIST_H
 #define ADVPARAMETERLIST_H
@@ -43,6 +49,7 @@ class AdvParameterList : public AP2ConfigWidget
     Q_OBJECT
 
     // Download state machine for parameters
+    // 매개 변수에 대한 상태 머신 다운로드
     enum ParamDownloadState { none, starting, refreshing, completed };
 
 public:
@@ -73,6 +80,7 @@ private slots:
 
 private:
     // Helper methods
+    // 도우미 메서드
     void resetParamWriteWidget();
 
 private:
