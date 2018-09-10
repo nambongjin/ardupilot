@@ -27,6 +27,14 @@ This file is part of the APM_PLANNER project
  *   @author Arne Wischmann <wischmann-a@gmx.de>
  *
  */
+/* *
+ * @file
+ * @brief Airframe type 설정 위젯 소스.
+ *
+ * @author Michael Carpenter <malcom2073@gmail.com>
+ * @author Arne Wischmann <wischmann-a@gmx.de>
+ *
+ */
 
 #include "logging.h"
 #include "FrameTypeConfig.h"
@@ -82,9 +90,12 @@ void FrameTypeConfig::parameterChanged(int uas, int component, QString parameter
 
     // TODO handle reconnecting
     // TODO handle reordering of messages -> frame is set before Version is valid
+    // TODO 핸들 재 연결
+    // TODO는 메시지의 재정렬을 처리합니다. -> 프레임은 버전이 유효하기 전에 설정됩니다.
     if (parameterName == "FRAME")
     {
         // ArduPilot < V3.5.0 uses only "FRAME" parameter to set the farme type
+        // ArduPilot <V3.5.0은 "FRAME"매개 변수 만 사용하여 farme 유형을 설정합니다
         emit detectedOldFrameType(value.toInt());
     }
     else if(parameterName == "FRAME_CLASS")
@@ -113,12 +124,15 @@ void FrameTypeConfig::parameterChanged(int uas, int component, int parameterCoun
 
     // Create a parameter list model for comparison feature
     // [TODO] This needs to move to the global parameter model.
+    // 비교 기능을위한 매개 변수 목록 모델 만들기
+    // [TODO] 이것은 전역 매개 변수 모델로 이동해야합니다.
 
     if (m_parameterList.contains(parameterName)){
         UASParameter* param = m_parameterList.value(parameterName);
-        param->setValue(value); // This also sets the modified bit
+        param->setValue(value); // This also sets the modified bit// 수정 된 비트도 설정합니다.
     } else {
         // create a new entry
+        // 새 항목을 만듭니다.
         UASParameter* param = new UASParameter(parameterName,component,value,parameterId);
         m_parameterList.insert(parameterName, param);
     }
@@ -131,10 +145,13 @@ void FrameTypeConfig::paramButtonClicked()
     if(dialog->exec() == QDialog::Accepted) {
         // Pull the selected file and
         // modify the parameters on the adv param list.
+        // 선택한 파일을 당겨
+        // adv 매개 변수 목록의 매개 변수를 수정하십시오.
         QLOG_DEBUG() << "Remote File Downloaded";
         QLOG_DEBUG() << "Trigger auto load or compare of the downloaded file";
 
         // Bring up the compare dialog
+        // 비교 대화 상자를 표시합니다.
         m_paramFileToCompare = dialog->getDownloadedFileName();
         QTimer::singleShot(300, this, SLOT(activateCompareDialog()));
     }
@@ -151,8 +168,10 @@ void FrameTypeConfig::activateCompareDialog()
 
     if(dialog->exec() == QDialog::Accepted) {
         // Apply the selected parameters
+        // 선택한 매개 변수 적용
         foreach(UASParameter* param, m_parameterList){
             // Apply changes to ParamManager
+            // ParamManager에 변경 내용을 적용합니다.
             if(param->isModified()){
                 m_uas->getParamManager()->setParameter(param->component(),param->name(),param->value());
             }
@@ -174,6 +193,7 @@ FrameTypeConfigOld::FrameTypeConfigOld(UASInterface *uasInterface, QWidget *pare
     ui.setupUi(this);
 
     //Disable until we get a FRAME parameter.
+    // FRAME 매개 변수를 얻을 때까지 사용하지 않습니다.
     enableButtons(false);
 
     connect(ui.plusRadioButton,SIGNAL(clicked()),this,SLOT(plusFrameSelected()));
@@ -290,10 +310,12 @@ FrameTypeConfigNew::FrameTypeConfigNew(UASInterface *uasInterface, QWidget *pare
     ui.setupUi(this);
 
     // Default - buttons disabled and Widges invisible
+    // 기본값 - 버튼 비활성화 및 Widges 보이지 않음
     enableClassButtons(false);
     enableTypeWidgets(false, false, false, false, false);
 
     // connect frame class buttons
+    // 프레임 클래스 버튼 연결
     connect(ui.quadRadioBtn, SIGNAL(clicked()), this, SLOT(FrameClassQuadSelected()));
     connect(ui.hexaRadioBtn, SIGNAL(clicked()), this, SLOT(FrameClassHexaSelected()));
     connect(ui.octaRadionbtn, SIGNAL(clicked()), this, SLOT(FrameClassOctaSelected()));
@@ -305,6 +327,7 @@ FrameTypeConfigNew::FrameTypeConfigNew(UASInterface *uasInterface, QWidget *pare
     connect(ui.coaxRadioBtn, SIGNAL(clicked()), this, SLOT(FrameClassCoaxSelected()));
 
     // connect frame type buttons
+    // 프레임 유형 버튼 연결
     connect(ui.plusRadioBtn, SIGNAL(clicked()), this, SLOT(FrameTypePlusSelected()));
     connect(ui.XRadioBtn, SIGNAL(clicked()), this, SLOT(FrameTypeXSelected()));
     connect(ui.hRadioBtn, SIGNAL(clicked()), this, SLOT(FrameTypeHSelected()));
@@ -400,63 +423,63 @@ void FrameTypeConfigNew::FrameClassQuadSelected()
 {
     m_frameClass = FRAME_CLASS_QUAD;
     enableTypeWidgets(true, true, true, true, false);   // enable: plus, X, HV, AVTail
-    FrameTypePlusSelected();    // set default frame type to avoid unallowed selections when switching classes
+    FrameTypePlusSelected();    // set default frame type to avoid unallowed selections when switching classes// 클래스를 전환 할 때 허용되지 않는 선택을 피하기 위해 기본 프레임 유형을 설정합니다.
 }
 
 void FrameTypeConfigNew::FrameClassHexaSelected()
 {
     m_frameClass = FRAME_CLASS_HEXA;
     enableTypeWidgets(true, true, false, false, false); // enable: plus, X
-    FrameTypePlusSelected();    // set default frame type to avoid unallowed selections when switching classes
+    FrameTypePlusSelected();    // set default frame type to avoid unallowed selections when switching classes// 클래스를 전환 할 때 허용되지 않는 선택을 피하기 위해 기본 프레임 유형을 설정합니다.
 }
 
 void FrameTypeConfigNew::FrameClassOctaSelected()
 {
     m_frameClass = FRAME_CLASS_OCTA;
     enableTypeWidgets(true, true, true, false, false);  // enable: plus, X, HV
-    FrameTypePlusSelected();    // set default frame type to avoid unallowed selections when switching classes
+    FrameTypePlusSelected();    // set default frame type to avoid unallowed selections when switching classes// 클래스를 전환 할 때 허용되지 않는 선택을 피하기 위해 기본 프레임 유형을 설정합니다.
 }
 
 void FrameTypeConfigNew::FrameClassOctaQuadSelected()
 {
     m_frameClass = FRAME_CLASS_OCTAQUAD;
     enableTypeWidgets(true, true, true, false, false);  // enable: plus, X, HV
-    FrameTypePlusSelected();    // set default frame type to avoid unallowed selections when switching classes
+    FrameTypePlusSelected();    // set default frame type to avoid unallowed selections when switching classes// 클래스를 전환 할 때 허용되지 않는 선택을 피하기 위해 기본 프레임 유형을 설정합니다.
 }
 
 void FrameTypeConfigNew::FrameClassY6Selected()
 {
     m_frameClass = FRAME_CLASS_Y6;
     enableTypeWidgets(false, true, false, false, true); // enable: X, Y6B
-    FrameTypeXSelected();    // set default frame type to avoid unallowed selections when switching classes
+    FrameTypeXSelected();    // set default frame type to avoid unallowed selections when switching classes// 클래스를 전환 할 때 허용되지 않는 선택을 피하기 위해 기본 프레임 유형을 설정합니다.
 }
 
 void FrameTypeConfigNew::FrameClassHeliSelected()
 {
     m_frameClass = FRAME_CLASS_HELI;
     enableTypeWidgets(true, false, false, false, false);    // enable: plus
-    FrameTypePlusSelected();    // set default frame type to avoid unallowed selections when switching classes
+    FrameTypePlusSelected();    // set default frame type to avoid unallowed selections when switching classes// 클래스를 전환 할 때 허용되지 않는 선택을 피하기 위해 기본 프레임 유형을 설정합니다.
 }
 
 void FrameTypeConfigNew::FrameClassTriSelected()
 {
     m_frameClass = FRAME_CLASS_TRI;
     enableTypeWidgets(false, true, false, false, false); // enable: X
-    FrameTypeXSelected();    // set default frame type to avoid unallowed selections when switching classes
+    FrameTypeXSelected();    // set default frame type to avoid unallowed selections when switching classes// 클래스를 전환 할 때 허용되지 않는 선택을 피하기 위해 기본 프레임 유형을 설정합니다.
 }
 
 void FrameTypeConfigNew::FrameClassSingleSelected()
 {
     m_frameClass = FRAME_CLASS_SINGLE;
     enableTypeWidgets(true, false, false, false, false);    // enable: plus
-    FrameTypePlusSelected();    // set default frame type to avoid unallowed selections when switching classes
+    FrameTypePlusSelected();    // set default frame type to avoid unallowed selections when switching classes// 클래스를 전환 할 때 허용되지 않는 선택을 피하기 위해 기본 프레임 유형을 설정합니다.
 }
 
 void FrameTypeConfigNew::FrameClassCoaxSelected()
 {
     m_frameClass = FRAME_CLASS_COAX;
     enableTypeWidgets(true, false, false, false, false);    // enable: plus
-    FrameTypePlusSelected();    // set default frame type to avoid unallowed selections when switching classes
+    FrameTypePlusSelected();    // set default frame type to avoid unallowed selections when switching classes// 클래스를 전환 할 때 허용되지 않는 선택을 피하기 위해 기본 프레임 유형을 설정합니다.
 }
 
 void FrameTypeConfigNew::FrameTypePlusSelected()
