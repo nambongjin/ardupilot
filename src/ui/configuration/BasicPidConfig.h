@@ -69,7 +69,7 @@ private:
     QString mot_thrust_hover;
     QString rc_feel_rp;
 
-    bool m_use_mot_thst_hover; // if AC3.4-rc2+ use this varible set.
+    bool m_use_mot_thst_hover; // if AC3.4-rc2+ use this varible set.	 AC3.4-rc2 +가이 가변 세트를 사용하는 경우.
 };
 
 #endif // BASICPIDCONFIG_H

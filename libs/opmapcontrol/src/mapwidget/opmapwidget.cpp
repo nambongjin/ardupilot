@@ -141,6 +141,13 @@ namespace mapcontrol
      * @return The reference to the UAVItem or NULL if no item exists yet
      * @see AddUAV() for adding a not yet existing UAV to the map
      */
+
+/*/ * *
+     * @return UAVItem 에의 참조 또는 아직 아이템이 존재하지 않는 경우는 NULL
+     지도에 아직 존재하지 않는 UAV를 추가하려면 * @ AddUAV ()를보십시오.
+     * /
+*/
+
     UAVItem* OPMapWidget::GetUAV(int id)
     {
         return UAVS.value(id, 0);
@@ -164,6 +171,11 @@ namespace mapcontrol
             UAV->setParentItem(map);
             // FIXME XXX The map widget is here actually handling
             // safety and mission logic - might be worth some refactoring
+
+/*            // FIXME XXX지도 위젯이 실제로 처리됩니다.
+            // 안전과 임무 논리 - 일부 리팩토링의 가치가 있을지 모른다.
+*/
+
             connect(this,SIGNAL(UAVLeftSafetyBouble(internals::PointLatLng)),UAV,SIGNAL(UAVLeftSafetyBouble(internals::PointLatLng)));
             connect(this,SIGNAL(UAVReachedWayPoint(int,WayPointItem*)),UAV,SIGNAL(UAVReachedWayPoint(int,WayPointItem*)));
         }
@@ -308,12 +320,19 @@ namespace mapcontrol
 //        }
 
 
-
         // Add waypoint line
 //        trail->addToGroup(new TrailItem(position,altitude,color,this));
 //        if(!lasttrailline.IsEmpty())
 //            trailLine->addToGroup((new TrailLineItem(lasttrailline,position,color,map)));
 //        lasttrailline=position;
+
+/*// 웨이 포인트 라인 추가
+//         trail-> addToGroup (새로운 TrailItem (위치, 고도, 색,이));
+//         if (! lasttrailline.IsEmpty ())
+//             trailLine-> addToGroup ((새로운 TrailLineItem (lasttrailline, position, color, map))));
+//         lasttrailline = position;
+*/
+
     }
     WayPointItem* OPMapWidget::WPCreate(internals::PointLatLng const& coord,int const& altitude)
     {
@@ -467,6 +486,12 @@ namespace mapcontrol
 // *************************************************************************************
 // return the bearing from one point to another .. in degrees
 
+/*// ************************************************* **************************************
+// 한 지점에서 다른 지점으로 베어링을 반환합니다.
+
+*/
+
+
 double OPMapWidget::bearing(internals::PointLatLng from, internals::PointLatLng to)
 {
     double lat1 = from.Lat() * deg_to_rad;
@@ -491,6 +516,11 @@ double OPMapWidget::bearing(internals::PointLatLng from, internals::PointLatLng 
 
 // *************************************************************************************
 // return a destination lat/lon point given a source lat/lon point and the bearing and distance from the source point
+
+/*// ************************************************* **************************************
+// 소스 위도 / 경도 점과 소스 점으로부터의 방위 및 거리가 주어지는 목적지 위도 / 경도 점을 반환합니다.
+*/
+
 
 internals::PointLatLng OPMapWidget::destPoint(internals::PointLatLng source, double bear, double dist)
 {

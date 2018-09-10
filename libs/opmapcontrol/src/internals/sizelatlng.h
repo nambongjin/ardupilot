@@ -65,6 +65,12 @@ public:
 //       return new PointLatLng(size.HeightLat(), size.WidthLng());
 //    }
 
+/*//      정적 명시 적 연산자 PointLatLng (SizeLatLng size)
+//     {
+//        새로운 PointLatLng (size.HeightLat (), size.WidthLng ())를 반환합니다.
+//     }*/
+
+
 
      bool IsEmpty()const
      {
@@ -119,6 +125,27 @@ public:
 //    {
 //       return (PointLatLng) this;
 //    }
+
+/*//      bool을 대체 equals (객체 obj)
+//     {
+//        if (! (obj is SizeLatLng))
+//        {
+//           false를 반환합니다.
+//        }
+//        SizeLatLng ef = (SizeLatLng) obj;
+//        return ((((ef.WidthLng == this-> WidthLng) && (ef.HeightLat == this-> HeightLat)) && ef.GetType (). 같은 값 (base.GetType ()));
+//     }
+
+//      override int GetHashCode ()
+//     {
+//        return base.GetHashCode ();
+//     }
+
+//      PointLatLng ToPointLatLng ()
+//     {
+//        return (PointLatLng) this;
+//     }*/
+
 
      QString ToString()
     {

@@ -33,12 +33,26 @@ This file is part of the APM_PLANNER project
  *
  */
 
+/*
+ * @file
+ * @brief MAVLinkProtocol
+ *이 클래스는 수신 mavlink_message_t 패킷을 처리합니다.
+ * 특정 하트 비트 시스템 ID가 없으면 UAS 클래스를 만듭니다.
+ * 추가 파싱을 위해 UAS 클래스에 mavlink_message_t를 전달합니다.
+ *
+ * @author Michael Carpenter <malcom2073@gmail.com>
+ * @author Arne Wischmann <wischmann-a@gmx.de>
+ * @author QGROUNDCONTROL PROJECT -이 코드에는 QGROUNDCONTROL의 GPLv3 + 스 니펫이 있습니다. (c) 2009, 2010 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
+ *
+*/
+
+
 
 #ifndef NEW_MAVLINKPARSER_H
 #define NEW_MAVLINKPARSER_H
 
 #include <mavlink_types.h>
-extern mavlink_status_t m_mavlink_status[MAVLINK_COMM_NUM_BUFFERS]; // defined in src/main.cc
+extern mavlink_status_t m_mavlink_status[MAVLINK_COMM_NUM_BUFFERS]; // defined in src/main.cc	 src / main.cc에 정의 됨
 #include <mavlink.h>
 
 #include <QByteArray>

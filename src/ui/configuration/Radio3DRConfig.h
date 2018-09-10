@@ -97,6 +97,12 @@ private:
      * @brief setButtonState - enable / disable the buttons
      * @param disabled - true disable, false enable
      */
+
+/*
+     * @brief setButtonState - 버튼을 활성화 / 비활성화합니다.
+     파라미터 : disabled - true, false, false
+*/
+
     void setButtonState(bool disabled);
 
 private:

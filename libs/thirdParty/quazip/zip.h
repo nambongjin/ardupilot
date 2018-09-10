@@ -45,6 +45,16 @@
       ftp://ftp.pkware.com/probdesc.zip
 */
 
+/*
+
+.ZIP 형식에 대한 자세한 내용은
+      http://www.info-zip.org/pub/infozip/doc/appnote-981119-iz.zip
+      http://www.info-zip.org/pub/infozip/doc/
+   PkWare는 다음에서 사양을 제공합니다.
+      ftp://ftp.pkware.com/probdesc.zip
+*/
+
+
 #ifndef _zip_H
 #define _zip_H
 
@@ -68,6 +78,12 @@ extern "C" {
 #if defined(STRICTZIP) || defined(STRICTZIPUNZIP)
 /* like the STRICT of WIN32, we define a pointer that cannot be converted
     from (void*) without cast */
+
+/*
+/ * WIN32의 STRICT처럼 변환 할 수없는 포인터를 정의한다.
+    from (void *) from cast * /
+*/
+
 typedef struct TagzipFile__ { int unused; } zipFile__;
 typedef zipFile__ *zipFile;
 #else
@@ -93,24 +109,34 @@ typedef voidp zipFile;
 /* default memLevel */
 
 /* tm_zip contain date/time info */
+
+/*
+/ * tm_zip에 날짜 / 시간 정보 포함 * /
+*/
+
 typedef struct tm_zip_s
 {
-    uInt tm_sec;            /* seconds after the minute - [0,59] */
-    uInt tm_min;            /* minutes after the hour - [0,59] */
-    uInt tm_hour;           /* hours since midnight - [0,23] */
-    uInt tm_mday;           /* day of the month - [1,31] */
-    uInt tm_mon;            /* months since January - [0,11] */
-    uInt tm_year;           /* years - [1980..2044] */
+    uInt tm_sec;            /* seconds after the minute - [0,59] 	/ * 분 후 초 - [0,59] * /*/	
+    uInt tm_min;            /* minutes after the hour - [0,59] 		시간 후 분 - [0,59]	*/
+    uInt tm_hour;           /* hours since midnight - [0,23] 	 / * 자정 이후 시간 - [0,23] * /*/
+    uInt tm_mday;           /* day of the month - [1,31] 	/ * 달의 일 - [1,31] * /*/
+    uInt tm_mon;            /* months since January - [0,11] 	/ * 1 월 이후의 달 - [0,11] * /*/
+    uInt tm_year;           /* years - [1980..2044] 	/ * 년 - [1980..2044] * /*/
 } tm_zip;
 
 typedef struct
 {
-    tm_zip      tmz_date;       /* date in understandable format           */
-    uLong       dosDate;       /* if dos_date == 0, tmu_date is used      */
+    tm_zip      tmz_date;       /* date in understandable format          	/ * 이해할 수있는 형식의 날짜            * / */
+    uLong       dosDate;       /* if dos_date == 0, tmu_date is used      	/ * dos_date == 0이면 tmu_date가 사용됩니다.       * /*/
 /*    uLong       flag;        */   /* general purpose bit flag        2 bytes */
 
-    uLong       internal_fa;    /* internal file attributes        2 bytes */
-    uLong       external_fa;    /* external file attributes        4 bytes */
+/*
+/ *     uLong 플래그;        * /    / * 범용 비트 플래그 2 바이트 * /
+*/
+
+
+    uLong       internal_fa;    /* internal file attributes        2 bytes 	 / * 내부 파일 속성 2 바이트 * /*/
+    uLong       external_fa;    /* external file attributes        4 bytes 	/ * 외부 파일 속성 4 바이트 * /*/
 } zip_fileinfo;
 
 typedef const char* zipcharpc;
@@ -135,10 +161,35 @@ extern zipFile ZEXPORT zipOpen OF((voidpf file, int append));
        of this zip package.
 */
 
+/*
+/ *
+  zip 파일을 만듭니다.
+     파일은 IO API가 받아들이는 것입니다. Qt IO API의 경우 포인터입니다.
+       QIODevice. fopen () IO API의 경우 파일 이름 (const char *)입니다.
+     파일 경로 이름이 존재하고 append == APPEND_STATUS_CREATEAFTER 인 경우, zip
+       파일의 끝에 생성됩니다.
+         (파일에 자체 추출 코드가 포함 된 경우 유용함)
+     파일 경로 이름이 존재하고 == APPEND_STATUS_ADDINZIP을 추가하면
+       기존 zip에 파일을 추가하십시오 (존재하지 않는 파일을 추가하지 마십시오).
+     zip 파일을 열 수 없으면 반환 값은 NULL입니다.
+     그렇지 않으면 반환 값은 다른 함수와 함께 사용할 수있는 zipFile Handle입니다.
+       이 우편 패키지의
+* /
+*/
+
+
 /* Note : there is no delete function into a zipfile.
    If you want delete file into a zipfile, you must open a zipfile, and create another
    Of couse, you can use RAW reading and writing to copy the file you did not want delte
 */
+
+/*
+/ * 참고 : zip 파일에는 삭제 기능이 없습니다.
+   파일을 zip 파일로 삭제하려면 zip 파일을 열고 다른 파일을 만들어야합니다
+   couse의 경우, RAW 읽기 및 쓰기를 사용하여 델타를 원하지 않는 파일을 복사 할 수 있습니다
+* /
+*/
+
 
 extern zipFile ZEXPORT zipOpen2 OF((voidpf file,
                                    int append,
@@ -168,6 +219,20 @@ extern int ZEXPORT zipOpenNewFileInZip OF((zipFile file,
   level contain the level of compression (can be Z_DEFAULT_COMPRESSION)
 */
 
+/*
+  작성을 위해 ZIP 파일을여십시오.
+  filename : zip 파일 이름 (NULL 인 경우 인용 부호없이 '-'사용)
+  * zipfi는 보충 정보를 포함합니다.
+  extrafield_local! = NULL 및 size_extrafield_local> 0 인 경우 extrafield_local
+    여분의 데이터를 포함한다.
+  extrafield_global! = NULL 및 size_extrafield_global> 0 인 경우 extrafield_global
+    여분의 데이터를 포함한다.
+  주석! = NULL이면 주석은 주석 문자열을 포함합니다.
+  메소드에는 압축 메소드가 포함됩니다 (저장소의 경우 0, deflate의 경우 Z_DEFLATED).
+  레벨은 압축 수준을 포함합니다 (Z_DEFAULT_COMPRESSION 일 수 있음).
+*/
+
+
 
 extern int ZEXPORT zipOpenNewFileInZip2 OF((zipFile file,
                                             const char* filename,
@@ -184,6 +249,11 @@ extern int ZEXPORT zipOpenNewFileInZip2 OF((zipFile file,
 /*
   Same than zipOpenNewFileInZip, except if raw=1, we write raw file
  */
+
+/*
+  zipOpenNewFileInZip과 동일합니다. raw = 1 인 경우를 제외하고는 raw 파일
+*/
+
 
 extern int ZEXPORT zipOpenNewFileInZip3 OF((zipFile file,
                                             const char* filename,
@@ -209,6 +279,14 @@ extern int ZEXPORT zipOpenNewFileInZip3 OF((zipFile file,
     crcForCtypting : crc of file to compress (needed for crypting)
  */
 
+/*
+  zipOpenNewFileInZip2와 동일합니다.
+    windowBits, memLevel, strategy : deflateInit2의 매개 변수 전략 참조
+    암호 : 암호 해독 (암호화하지 않을 경우 NULL)
+    crcForCtypting : 압축 할 파일의 crc (암호화에 필요함)
+*/
+
+
 
 extern int ZEXPORT zipWriteInFileInZip OF((zipFile file,
                        const void* buf,
@@ -217,10 +295,20 @@ extern int ZEXPORT zipWriteInFileInZip OF((zipFile file,
   Write data in the zipfile
 */
 
+/*
+  zip 파일에 데이터 쓰기
+*/
+
+
 extern int ZEXPORT zipCloseFileInZip OF((zipFile file));
 /*
   Close the current file in the zipfile
 */
+
+/*
+  zip 파일에서 현재 파일 닫기
+*/
+
 
 extern int ZEXPORT zipCloseFileInZipRaw OF((zipFile file,
                                             uLong uncompressed_size,
@@ -231,6 +319,13 @@ extern int ZEXPORT zipCloseFileInZipRaw OF((zipFile file,
   uncompressed_size and crc32 are value for the uncompressed size
 */
 
+/*
+  zip 파일에서 현재 파일을 닫습니다.
+    zipOpenNewFileInZip2에서 raw = 1 매개 변수
+  uncompressed_size 및 crc32는 압축되지 않은 크기의 값입니다.
+*/
+
+
 extern int ZEXPORT zipClose OF((zipFile file,
                 const char* global_comment));
 /*
@@ -238,8 +333,18 @@ extern int ZEXPORT zipClose OF((zipFile file,
 */
 
 /*
+  zip 파일 닫기
+*/
+
+
+/*
    Added by Sergey A. Tachenov to tweak zipping behaviour.
    */
+
+/*
+   지그재그 동작을 조정하기 위해 Sergey A. Tachenov에 의해 추가되었습니다.
+*/
+
 extern int ZEXPORT zipSetFlags(zipFile file, unsigned flags);
 extern int ZEXPORT zipClearFlags(zipFile file, unsigned flags);
 

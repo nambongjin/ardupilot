@@ -29,6 +29,8 @@ This file is part of the APM_PLANNER project
  *
  */
 
+
+
 #ifndef LINKMANAGER_H
 #define LINKMANAGER_H
 
@@ -43,6 +45,18 @@ This file is part of the APM_PLANNER project
  * The mavlink decoder lives in its own thread
  * the UAS Class lives in the UI thread
  */
+
+/*
+ * @brief ConnectionManager 클래스
+ *이 클래스는 GCS와 실제 하드웨어 간의 모든 연결을 처리합니다.
+ * 요청시 직렬 또는 UDP 링크를 생성하고 링크를 관련 mavlink 파서에 연결하며,
+ * mavlink 메시지가 들어올 때 신호를 위쪽으로 내 보냅니다.
+ *이 클래스는 UI 스레드에 있습니다.
+ * 직렬 링크는 UI 스레드에 있습니다.
+ * mavlink 디코더는 자체 스레드에 있습니다.
+ * UAS 클래스는 UI 스레드에 있습니다.
+*/
+
 #include "MAVLinkDecoder.h"
 #include "MAVLinkProtocol.h"
 #include <QMap>
@@ -59,7 +73,7 @@ public:
     static LinkManager* instance();
     ~LinkManager();
 
-    void shutdown();    // Called when appplication exits
+    void shutdown();    // Called when appplication exits	 애플리케이션이 종료되면 호출됩니다.
 
     void disableTimeouts(int index);
     void enableTimeouts(int index);
@@ -77,9 +91,9 @@ public:
     QList<int> getLinks() const;
 
     LinkInterface* getLink(int linkId) const;
-    // Remove a link based on instance
+    // Remove a link based on instance	 인스턴스를 기반으로 링크 제거
     void removeLink(LinkInterface *link);
-    // Remove a link based on unique id
+    // Remove a link based on unique id	 고유 ID를 기반으로 링크 제거
     void removeLink(int linkId);
 
     LinkInterface::LinkType getLinkType(int linkid);
@@ -97,7 +111,7 @@ public:
     void setLogSubDirectory(const QString& dir);
     bool loggingEnabled() const;
     UASObject *getUasObject(int uasid);
-    QMap<int,UASObject*> m_uasObjectMap; // [TODO] make private
+    QMap<int,UASObject*> m_uasObjectMap; // [TODO] make private	 [TODO] 비공개로 설정
 
     void addSimObject(uint8_t sysid,UASObject *obj); // [TODO] remove
     void removeSimObject(uint8_t sysid); // [TODO] remove
@@ -108,7 +122,7 @@ signals:
     void protocolStatusMessage(QString title,QString text);
     void linkChanged(int linkid);
 
-    /** @brief aggregated signal for when link status changes */
+    /** @brief aggregated signal for when link status changes 	  / * * 링크 상태가 바뀔 때 요약 된 신호 * /*/
     void linkChanged(LinkInterface *link);
 
     void linkError(int linkid, QString message);

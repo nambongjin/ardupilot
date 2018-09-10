@@ -34,6 +34,11 @@ namespace mapcontrol
 {
     //UAVItem::UAVItem(MapGraphicItem* map,OPMapWidget* parent,QString uavPic):map(map),mapwidget(parent),showtrail(true),showtrailline(true),trailtime(5),traildistance(20),autosetreached(true)
     //,autosetdistance(100)
+
+/*    // UAVItem :: UAVItem은 (MapGraphicItem *지도, OPMapWidget이 * 부모, QString uavPic) : 맵 (지도), mapwidget (부모), showtrail (참), showtrailline (참), trailtime (5), traildistance (20), autosetreached (참된)
+    // 자동 설정 거리 (100)
+*/
+
     UAVItem::UAVItem(MapGraphicItem* map,OPMapWidget* parent,QString uavPic) :
         GraphicsItem(map, parent),
         showtrail(true), showtrailline(true), trailtime(5), traildistance(20),
@@ -44,6 +49,11 @@ namespace mapcontrol
         picture.load(uavPic);
        // Don't scale but trust the image we are given
        // picture=picture.scaled(50,33,Qt::IgnoreAspectRatio);
+
+/*       // 주어진 이미지를 크기를 조정하지 않고 신뢰합니다.
+       // picture = picture.scaled (50,33, Qt :: IgnoreAspectRatio);
+*/
+
         core::Point localposition = map->FromLatLngToLocal(mapwidget->CurrentPosition());
         this->setPos(localposition.X(),localposition.Y());
         this->setZValue(4);
@@ -158,6 +168,14 @@ namespace mapcontrol
       * Rotate the UAV Icon on the map, or rotate the map
       * depending on the display mode
       */
+
+/*
+    / * *
+      * UAV 아이콘을지도에서 회전 시키거나지도를 회전 시키십시오.
+      * 디스플레이 모드에 따라 다름
+      * /
+*/
+
     void UAVItem::SetUAVHeading(const qreal &value)
     {
         if(mapfollowtype==UAVMapFollowType::CenterAndRotateMap)

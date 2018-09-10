@@ -10,7 +10,7 @@ extern mavlink_status_t m_mavlink_status[MAVLINK_COMM_NUM_BUFFERS];  // defined 
 class VehicleOverview : public QObject
 {
     Q_OBJECT
-    //Heartbeat properties
+    //Heartbeat properties	
     Q_PROPERTY(unsigned int custom_mode READ getCustomMode WRITE setCustomMode NOTIFY customModeChanged)
     Q_PROPERTY(unsigned int type READ getType WRITE setType NOTIFY typeChanged)
     Q_PROPERTY(unsigned int autopilot READ getAutopilot WRITE setAutopilot NOTIFY autopilotChanged)
