@@ -15,12 +15,12 @@ void senseSoarMAV::receiveMessage(LinkInterface *link, mavlink_message_t message
 {
 #ifdef MAVLINK_ENABLED_SENSESOAR
 	if (message.sysid == uasId)  // make sure the message is for the right UAV
-	{ 
+	{                            // 메시지가 올바른 UAV 용인지 확인하십시오
 		if (!link) return;
 		switch (message.msgid)
 		{
 		case MAVLINK_MSG_ID_CMD_AIRSPEED_ACK: // TO DO: check for acknowledgement after sended commands
-			{
+			{                             // 명령 : 보낸 명령 뒤에 승인 확인
 				mavlink_cmd_airspeed_ack_t airSpeedMsg;
 				mavlink_msg_cmd_airspeed_ack_decode(&message,&airSpeedMsg);
 				break;
@@ -29,8 +29,12 @@ void senseSoarMAV::receiveMessage(LinkInterface *link, mavlink_message_t message
 			{
 				break;
 			}*/
-		case MAVLINK_MSG_ID_FILT_ROT_VEL: // rotational velocities
+                /* MAVLINK_MSG_ID_CMD_AIRSPEED_CHNG : UAV로만 발송됩니다.
 			{
+				단절;
+			} */
+		case MAVLINK_MSG_ID_FILT_ROT_VEL: // rotational velocities
+			{                         // 회전 속도
 				mavlink_filt_rot_vel_t rotVelMsg;
 				mavlink_msg_filt_rot_vel_decode(&message,&rotVelMsg);
 				quint64 time = getUnixTime();
@@ -45,7 +49,7 @@ void senseSoarMAV::receiveMessage(LinkInterface *link, mavlink_message_t message
 				break;
 			}
 		case MAVLINK_MSG_ID_LLC_OUT: // low level controller output
-			{
+			{                    // 로우 레벨 컨트롤러 출력
 				mavlink_llc_out_t llcMsg;
 				mavlink_msg_llc_out_decode(&message,&llcMsg);
 				quint64 time = getUnixTime();
@@ -161,7 +165,7 @@ void senseSoarMAV::receiveMessage(LinkInterface *link, mavlink_message_t message
 		case MAVLINK_MSG_ID_SYS_STAT:
 			{
 #define STATE_WAKING_UP            0x0  // TO DO: not important here, only for the visualisation needed
-#define STATE_ON_GROUND            0x1
+#define STATE_ON_GROUND            0x1  // 정의  : 필요하지 않은 시각화를 위해서만 여기에서 중요하지 않습니다.              
 #define STATE_MANUAL_FLIGHT        0x2
 #define STATE_AUTONOMOUS_FLIGHT    0x3
 #define STATE_AUTONOMOUS_LAUNCH    0x4
@@ -169,6 +173,7 @@ void senseSoarMAV::receiveMessage(LinkInterface *link, mavlink_message_t message
 				mavlink_msg_sys_stat_decode(&message,&statMsg);
 				quint64 time = getUnixTime();
 				// check actuator states
+                                // 액추에이터 상태를 확인하십시오.
 				emit valueChanged(uasId, "Motor1 status", "on/off", (statMsg.act & 0x01), time);
 				emit valueChanged(uasId, "Motor2 status", "on/off", (statMsg.act & 0x02)>>1, time);
 				emit valueChanged(uasId, "Servo1 status", "on/off", (statMsg.act & 0x04)>>2, time);
@@ -176,9 +181,11 @@ void senseSoarMAV::receiveMessage(LinkInterface *link, mavlink_message_t message
 				emit valueChanged(uasId, "Servo3 status", "on/off", (statMsg.act & 0x10)>>4, time);
 				emit valueChanged(uasId, "Servo4 status", "on/off", (statMsg.act & 0x20)>>5, time);
 				// check the current state of the sensesoar
+                                // 감각의 현재 상태를 확인합니다.
 				this->senseSoarState = statMsg.mod;
 				emit valueChanged(uasId,"senseSoar status","-",this->senseSoarState,time);
 				// check the gps fixes
+                                // gps 픽스를 확인합니다.
 				emit valueChanged(uasId,"Lat Long fix","true/false", (statMsg.gps & 0x01), time);
 				emit valueChanged(uasId,"Altitude fix","true/false", (statMsg.gps & 0x02), time);
 				emit valueChanged(uasId,"GPS horizontal accuracy","m",((statMsg.gps & 0x1C)>>2), time);
@@ -186,12 +193,14 @@ void senseSoarMAV::receiveMessage(LinkInterface *link, mavlink_message_t message
 				// Xbee RSSI
 				emit valueChanged(uasId, "Xbee strength", "%", statMsg.commRssi, time);
 				//emit valueChanged(uasId, "Xbee strength", "%", statMsg.gps, time);  // TO DO: define gps bits
+                                // emit valueChanged (uasId, "Xbee strength", "%", statMsg.gps, time); // 할 일 : gps 비트 정의
 
 				break;
 			}
 		default:
 			{
 				// Let UAS handle the default message set
+                                // UAS가 기본 메시지 세트를 처리하도록합니다.
 				UAS::receiveMessage(link, message);
 				break;
 			}
@@ -199,11 +208,12 @@ void senseSoarMAV::receiveMessage(LinkInterface *link, mavlink_message_t message
 	}
 #else
     // Let UAS handle the default message set
+    // UAS가 기본 메시지 세트를 처리하도록합니다.
     UAS::receiveMessage(link, message);
     Q_UNUSED(link);
     Q_UNUSED(message);
 #endif // MAVLINK_ENABLED_SENSESOAR
-}
+}     
 
 void senseSoarMAV::quat2euler(const double *quat, double &roll, double &pitch, double &yaw)
 { 

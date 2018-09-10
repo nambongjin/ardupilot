@@ -33,6 +33,7 @@ GeoFenceConfig::GeoFenceConfig(QWidget *parent) : AP2ConfigWidget(parent)
     disableControls();
 
     // Init Connections
+    // 연결 초기화
 //    connectAllSignals();
 
     AP2ConfigWidget::initConnections();
@@ -59,6 +60,7 @@ void GeoFenceConfig::connectAllSignals()
 void GeoFenceConfig::disconnectAllSignals()
 {
     // Make disconnections
+    // 연결 해제하기
     disconnect(ui.enableCheckBox, SIGNAL(stateChanged(int)),
             this, SLOT(enabledChangedState(int)));
     disconnect(ui.typeComboBox, SIGNAL(currentIndexChanged(int)),
@@ -90,6 +92,7 @@ void GeoFenceConfig::enabledChangedState(int state)
 
     if (!m_uas) {
         // disconnect previous connections.
+        // 이전 연결을 끊습니다.
         showNullMAVErrorMessageBox();
         return;
     }
@@ -183,6 +186,8 @@ void GeoFenceConfig::parameterChanged(int uas, int component, QString parameterN
         QLOG_DEBUG() << "Update FENCE_MARGIN" << value;
         // Currently not part of the 'users' settings
         // See advanced view to change.
+        // 현재 '사용자'설정의 일부가 아닙니다.
+        // 변경할 고급보기를 봅니다.
 
     } else if(parameterName.contains("RTL_ALT_FINAL")) {
         QLOG_DEBUG() << "Update RTL_ALT_FINAL" << value.toDouble();
@@ -226,12 +231,14 @@ void GeoFenceConfig::disableControls()
 void GeoFenceConfig::showEvent(QShowEvent *)
 {
     // Update of Parameters of show.
+    // show 매개 변수의 업데이트.
     m_uas->getParamManager()->requestParameterUpdate(1,"FENCE_ENABLE");
     m_uas->getParamManager()->requestParameterUpdate(1,"FENCE_TYPE");
     m_uas->getParamManager()->requestParameterUpdate(1,"FENCE_ACTION");
     m_uas->getParamManager()->requestParameterUpdate(1,"FENCE_ALT_MAX");
     m_uas->getParamManager()->requestParameterUpdate(1,"FENCE_RADIUS");
 //    m_uas->getParamManager()->requestParameterUpdate(1,"FENCE_MARGIN"); Not Being used currently
+//     m_uas-> getParamManager () -> requestParameterUpdate (1, "FENCE_MARGIN"); 현재 사용되지 않음
     m_uas->getParamManager()->requestParameterUpdate(1,"RTL_ALT");
     m_uas->getParamManager()->requestParameterUpdate(1,"RTL_ALT_FINAL");
 }

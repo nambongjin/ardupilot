@@ -272,27 +272,27 @@ Rectangle {
         }
 
 
-//            DigitalDisplay { // Information Pane 
+//            DigitalDisplay { // Information Pane //정보 창
 //                title: "Speed"
 //                textValue: "11.0m/s"
 //                color: "black"
 //            }
-//            DigitalDisplay { // Information Pane
+//            DigitalDisplay { // Information Pane //정보 창
 //                title: "Alt"
 //                textValue: "20.0m"
 //                color: "black"
 //            }
-//            DigitalDisplay { // Information Pane
+//            DigitalDisplay { // Information Pane //정보 창
 //                title: "Volts"
 //                textValue: "14.8V"
 //                color: "black"
 //            }
-//            DigitalDisplay { // Information Pane
+//            DigitalDisplay { // Information Pane //정보 창
 //                title: "Current"
 //                textValue: "12.0A"
 //                color: "black"
 //            }
-//            DigitalDisplay { // Information Pane
+//            DigitalDisplay { // Information Pane //정보 창
 //                title: "Level"
 //                textValue: "77%"
 //                color: "black"

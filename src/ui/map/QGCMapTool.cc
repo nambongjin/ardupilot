@@ -9,7 +9,7 @@
 #include <QMenu>
 
 const static int MapToolZoomFactor = 10; // This may need to be different for win/linux/mac
-
+                                         // win / linux / mac과 다를 수 있습니다.
 QGCMapTool::QGCMapTool(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::QGCMapTool),
@@ -18,8 +18,10 @@ QGCMapTool::QGCMapTool(QWidget *parent) :
     ui->setupUi(this);
 
     // Connect map and toolbar
+    // 지도와 툴바 연결
     ui->toolBar->setMap(ui->map);
     // Connect zoom slider and map
+    // 확대 / 축소 슬라이더와지도 연결
     ui->zoomSlider->setMinimum(ui->map->MinZoom() * MapToolZoomFactor);
     ui->zoomSlider->setMaximum(ui->map->MaxZoom() * MapToolZoomFactor);
     setZoom(ui->map->ZoomReal());

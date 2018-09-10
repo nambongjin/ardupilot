@@ -29,6 +29,7 @@ UASQuickView::UASQuickView(QWidget *parent) : QWidget(parent)
     loadSettings();
 
     //If we don't have any predefined settings, set some defaults.
+    // 미리 정의 된 설정이없는 경우 일부 기본값을 설정합니다.
     if (uasPropertyValueMap.size() == 0)
     {
         m_columnCount = 2;
@@ -104,6 +105,7 @@ void UASQuickView::replaceSingleItemSelected(QString newitem,QString olditem)
     if (uasPropertyToLabelMap.contains(newitem) && uasPropertyToLabelMap.contains(olditem))
     {
         //Newitem exists, swap the two items.
+        // Newitem이 존재하면 두 항목을 서로 바꿉니다.
         UASQuickViewItem *olditemptr = uasPropertyToLabelMap[olditem];
         UASQuickViewItem *newitemptr = uasPropertyToLabelMap[newitem];
         int oldindex = m_PropertyToLayoutIndexMap[olditem];
@@ -253,14 +255,16 @@ void UASQuickView::sortItems(int columncount)
         itemlist.append(i.value());
     }*/
     //Item list has all the widgets availble, now re-add them to the layouts.
+    // Item List는 모든 위젯을 사용할 수있게되었으며 이제 레이아웃에 다시 추가됩니다.
     for (int i=0;i<m_verticalLayoutList.size();i++)
     {
         ui.horizontalLayout->removeItem(m_verticalLayoutList[i]);
         m_verticalLayoutList[i]->deleteLater(); //removeItem de-parents the item.
-    }
+    }                                           // removeItem은 항목의 부모를 삭제합니다.
     m_verticalLayoutList.clear();
 
     //Create a vertical layout for every intended column
+    // 모든 원하는 열에 대한 세로 레이아웃을 만듭니다.
     for (int i=0;i<columncount;i++)
     {
         QVBoxLayout *layout = new QVBoxLayout();
@@ -271,6 +275,7 @@ void UASQuickView::sortItems(int columncount)
     }
 
     //Cycle through all items and add them to the layout
+    // 모든 항목을 순환하여 레이아웃에 추가합니다.
     int currcol = 0;
     for (int i=0;i<itemlist.size();i++)
     {
@@ -375,6 +380,7 @@ void UASQuickView::valueChanged(const int uasId, const QString& name, const QStr
     if (this->uas->getUASID() != uasId)
     {
         //This message is for the non active UAS
+        // 이 메시지는 비활성 UAS 용입니다.
         return;
     }
     QString propername = name.mid(name.indexOf(":")+1);

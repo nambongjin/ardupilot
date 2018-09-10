@@ -273,6 +273,10 @@ void AirspeedConfig::pinSelectComboBoxChanged(int index)
         {
             //For some reason, the conversion failed. An unexpected case
             //Don't want to set the pin to 0 for no reason, return on failure.
+            // 어떤 이유로 변환에 실패했습니다. 예기치 않은 경우
+            // 아무 이유없이 핀을 0으로 설정하고 싶지 않으면 실패 할 때 반환하십시오.
+
+
             return;
         }
         disconnect(ui.pinSpinBox,SIGNAL(valueChanged(int)),this,SLOT(pinSpinBoxValueChanged(int)));

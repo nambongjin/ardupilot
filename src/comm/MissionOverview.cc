@@ -37,6 +37,7 @@ void MissionOverview::messageReceived(LinkInterface* link, mavlink_message_t mes
 {
     Q_UNUSED(link)
     // ToDo [ Add mission handking code ]
+    //할 일 [임무 조정 코드 추가]
     switch (message.msgid)
     {
 //        case MAVLINK_MSG_ID_MISSION_ACK:

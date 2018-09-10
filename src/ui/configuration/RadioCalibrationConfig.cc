@@ -104,6 +104,7 @@ RadioCalibrationConfig::RadioCalibrationConfig(QWidget *parent) : AP2ConfigWidge
     ui.modeComboBox->insertItem(3, "Mode 4", 4);
 
     // Disable scroll wheel from easily triggering settings change
+    // 스크롤 휠이 설정 변경을 쉽게 트리거하지 못하도록합니다.
     ui.modeComboBox->installEventFilter(QGCMouseWheelEventFilter::getFilter());
     ui.modeComboBox->setCurrentIndex(ui.modeComboBox->findData(m_rcMode));
     modeIndexChanged(ui.modeComboBox->currentIndex());
@@ -167,6 +168,8 @@ void RadioCalibrationConfig::remoteControlChannelRawChanged(int chan,float val)
 
     //Channel is 0-7 typically?
     //Val will be 0-3000, PWM value.
+    // 일반적으로 채널은 0-7입니다.
+    // Val은 0-3000, PWM 값이됩니다.
     if (m_calibrationEnabled) {
         if (val < rcMin[chan])
         {
@@ -180,6 +183,7 @@ void RadioCalibrationConfig::remoteControlChannelRawChanged(int chan,float val)
     }
 
     // Raw value
+   
     rcValue[chan] = val;
 }
 
@@ -195,12 +199,14 @@ void RadioCalibrationConfig::modeIndexChanged(int index)
     if((ui.modeComboBox->currentData() == 1)
         ||(ui.modeComboBox->currentData() == 3)){
         // Mode 1 & 3 (Throttle on right) (Pitch/Aileron left)
+        // 모드 1 & 3 (오른쪽 스로틀) (피치 / 에일러론 왼쪽)
         m_throttleWidget = ui.rightVWidget;
         m_throttleCheckBox = ui.revRightVCheckBox;
         m_pitchWidget = ui.leftVWidget;
         m_pitchCheckBox = ui.revLeftVCheckBox;
     } else {
         // Mode 2 & 4 (Throttle on left) (Pitch/Aileron right)
+        // 모드 2 & 4 (왼쪽 스로틀) (피치 / 에일러론 오른쪽)
         m_throttleWidget = ui.leftVWidget;
         m_throttleCheckBox = ui.revLeftVCheckBox;
         m_pitchWidget = ui.rightVWidget;
@@ -265,15 +271,19 @@ void RadioCalibrationConfig::updateChannelReversalStates()
     if(m_uas == NULL)
         return;
     // Update Pitch Reverse Channel
+    // 피치 역전 채널 업데이트
     updateChannelRevState(m_pitchCheckBox, m_pitchChannel);
 
     // Update Roll Reverse Channel
+    // 롤 역전 채널 업데이트
     updateChannelRevState(ui.revRollCheckBox, m_rollChannel);
 
     // Update Yaw Reverse Channel
+    // Yaw 역방향 채널 업데이트
     updateChannelRevState(ui.revYawCheckBox, m_yawChannel);
 
     // Update Throttle Reverse Channel
+    // 스로틀 역방향 채널 업데이트
     updateChannelRevState(m_throttleCheckBox, m_throttleChannel);
 }
 
@@ -293,6 +303,8 @@ void RadioCalibrationConfig::guiUpdateTimerTick()
     if (m_rollChannel==0 || m_pitchChannel==0 || m_throttleChannel==0 || m_yawChannel==0){
         // If not all parameters have been downloaded, don't update RC channels
         // which results in out-of-range array access.
+        // 모든 매개 변수가 다운로드되지 않은 경우 RC 채널을 업데이트하지 않습니다.
+        // 로 인해 범위를 벗어나는 배열 액세스가 발생합니다.
         return;
     }
 
@@ -383,6 +395,7 @@ void RadioCalibrationConfig::calibrateButtonClicked()
         ui.radio8Widget->hideMinMax();
 
         //Send calibrations.
+        // 교정을 보냅니다.
         QString minTpl("RC%1_MIN");
         QString maxTpl("RC%1_MAX");
         QString trimTpl("RC%1_TRIM");
@@ -406,12 +419,15 @@ void RadioCalibrationConfig::calibrateButtonClicked()
                 QLOG_DEBUG() << "SENDING MAX" << maxTpl.arg(i+1) << rcMax[i];
 
                 // Send Calibrations
+                // 교정을 보냅니다.
                 m_uas->getParamManager()->setParameter(1, minTpl.arg(i+1), rcMin[i]);
                 m_uas->getParamManager()->setParameter(1, trimTpl.arg(i+1), rcValue[i]); // Save the Trim Values.
+                                                                                         // 트림 값을 저장합니다.
                 m_uas->getParamManager()->setParameter(1, maxTpl.arg(i+1), rcMax[i]);
             }
 
             QMessageBox::information(this,"Status",statusstr); // Show Calibraitions to the user
+                                                               // 사용자에게 Calibraitions 표시
         } else {
             QMessageBox::warning(this,"Status","FAILED: Invalid PWM signals\n" + statusstr);
         }
@@ -466,7 +482,8 @@ void RadioCalibrationConfig::setParamChannelRev(const QString& param, bool state
             m_uas->setParameter(1, channelString, -1.0);
         else
             m_uas->setParameter(1, channelString, 1.0); // We use 0 as the default, not 1.0 (which you can also use)
-    }
+    }                                                   // 우리는 1.0을 사용하지 않고 기본값으로 0을 사용합니다 (사용할 수도 있습니다).
+
 }
 
 void RadioCalibrationConfig::elevonsChecked(bool state)
@@ -526,8 +543,10 @@ void RadioCalibrationConfig::writeSettings()
 bool RadioCalibrationConfig::isRadioControlActive()
 {
     // Check the lower 4 channels are active for radio connected.
+    // 연결된 4 개의 채널이 활성화되어 있는지 확인하십시오.
     for(int count=0; count < RC_CHANNEL_LOWER_CONTROL_CH_MAX; count++){
         // Any invalid range and we abort.
+        // 유효하지 않은 범위가 있으면 중단됩니다.
         if (!isInRange(rcValue[count], RC_CHANNEL_PWM_MIN, RC_CHANNEL_PWM_MAX)){
             QLOG_ERROR() << QString().sprintf("isRadioControlActive: Error Channel %d out of range: rcValue=%f",
                                               count+1, rcValue[count]);
@@ -537,6 +556,7 @@ bool RadioCalibrationConfig::isRadioControlActive()
 
     for(int count=RC_CHANNEL_LOWER_CONTROL_CH_MAX; count < RC_CHANNEL_NUM_MAX; count++){
         if ((rcValue[count]>0.0)){ // Only active channels are validated.
+                                   // 활성 채널 만 유효성을 검사합니다.
             if (!isInRange(rcValue[count], RC_CHANNEL_PWM_MIN, RC_CHANNEL_PWM_MAX)){
                 QLOG_ERROR() << QString().sprintf("isRadioControlActive: Error Channel %d out of range: rcValue=%f",
                                                   count+1, rcValue[count]);
@@ -551,8 +571,11 @@ bool RadioCalibrationConfig::validRadioSettings()
 {
     // Check lower 4 channels have been set correctly zero values not allowed.
     // i.e. Aileron (Roll), Elevator (Pitch), Throttle, Rudder (Yaw)
+    // 하위 4 개 채널이 올바르게 설정되었는지 확인합니다. 0 값은 허용되지 않습니다.
+    // ie 에일러론 (롤), 엘리베이터 (피치), 스로틀, 러더 (요우)
     for(int count=0; count< RC_CHANNEL_LOWER_CONTROL_CH_MAX; count++){
         // Any invalid range and we abort.
+        // 유효하지 않은 범위가 있으면 중단됩니다.
         if (!isInRange(rcMin[count], RC_CHANNEL_PWM_MIN, RC_CHANNEL_PWM_MAX)
                 ||!isInRange(rcMax[count], RC_CHANNEL_PWM_MIN, RC_CHANNEL_PWM_MAX)
                 ||!isInRange(rcTrim[count], RC_CHANNEL_PWM_MIN, RC_CHANNEL_PWM_MAX)){
@@ -563,11 +586,15 @@ bool RadioCalibrationConfig::validRadioSettings()
     }
 
     // for channels other than the lower 4 we verify only if non-zero.
+    // 하위 4 이외의 채널의 경우 0이 아닌 경우에만 확인합니다.
     for(int count=RC_CHANNEL_LOWER_CONTROL_CH_MAX; count< RC_CHANNEL_NUM_MAX; count++){
         // Only check if we have received a non-zero value on the channel
         // that the settings are valid.
+        // 채널에 0이 아닌 값을 받았는지 확인하십시오.
+        // 설정이 유효하다는 것을 나타냅니다.
         if ((rcValue[count]>0.0)){
             // Any invalid range and we abort.
+            // 유효하지 않은 범위가 있으면 중단됩니다.
             if (!isInRange(rcMin[count], RC_CHANNEL_PWM_MIN, RC_CHANNEL_PWM_MAX)
                 ||!isInRange(rcMax[count], RC_CHANNEL_PWM_MIN, RC_CHANNEL_PWM_MAX)
                 ||!isInRange(rcTrim[count], RC_CHANNEL_PWM_MIN, RC_CHANNEL_PWM_MAX)){

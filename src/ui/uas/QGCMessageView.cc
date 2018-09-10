@@ -35,6 +35,7 @@ void QGCMessageView::setActiveUAS(UASInterface* uas)
     } else {
 
         // First time UI setup, clear layout
+        // 처음으로 UI 설정, 레이아웃 지우기
         ui->plainTextEdit->show();
 
         connect(clearAction, SIGNAL(triggered()), ui->plainTextEdit, SLOT(clear()));
@@ -47,10 +48,13 @@ void QGCMessageView::setActiveUAS(UASInterface* uas)
 void QGCMessageView::handleTextMessage(int uasid, int componentid, int severity, QString text)
 {
     // XXX color messages according to severity
+    // 심각도에 따른 XXX 컬러 메시지
+
     Q_UNUSED(severity)
 
     ui->plainTextEdit->appendHtml(QString("<font color=\"%1\">[%2:%3] %4</font>\n").arg(UASManager::instance()->getUASForId(uasid)->getColor().name()).arg(UASManager::instance()->getUASForId(uasid)->getUASName()).arg(componentid).arg(text));
     // Ensure text area scrolls correctly
+    // 텍스트 영역이 올바르게 스크롤되도록합니다.
     ui->plainTextEdit->ensureCursorVisible();
 }
 

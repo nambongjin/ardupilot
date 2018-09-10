@@ -49,6 +49,7 @@ MAVLinkSimulationMAV::MAVLinkSimulationMAV(MAVLinkSimulationLink *parent, int sy
     mavlink_version(version)
 {
     // Please note: The waypoint planner is running
+    // 참고 : 웨이 포인트 플래너가 실행 중입니다.
     connect(&mainloopTimer, SIGNAL(timeout()), this, SLOT(mainloop()));
     connect(&planner, SIGNAL(messageSent(mavlink_message_t)), this, SLOT(handleMessage(mavlink_message_t)));
     connect(link, SIGNAL(messageReceived(mavlink_message_t)), this, SLOT(handleMessage(mavlink_message_t)));
@@ -62,6 +63,10 @@ void MAVLinkSimulationMAV::mainloop()
     //    double maxSpeed = 0.0001; // rad/s in earth coordinate frame
 
     //        double xNew = // (nextSPX - previousSPX)
+    // 새로운 시뮬레이터 값을 계산합니다.
+    //     double maxSpeed ​​= 0.0001; // 지구 좌표계의 rad / s
+
+    //         double xNew = // (nextSPX - previousSPX)
 
     if (flying) {
         sys_state = MAV_STATE_ACTIVE;
@@ -70,6 +75,7 @@ void MAVLinkSimulationMAV::mainloop()
     }
 
     // 1 Hz execution
+    // 1 Hz 실행
     if (timer1Hz <= 0) {
         mavlink_message_t msg;
         mavlink_msg_heartbeat_pack(systemid, MAV_COMP_ID_IMU, &msg, MAV_TYPE_FIXED_WING, MAV_AUTOPILOT_ARDUPILOTMEGA, MAV_MODE_GUIDED_ARMED, 0, MAV_STATE_ACTIVE);
@@ -87,13 +93,14 @@ void MAVLinkSimulationMAV::mainloop()
         servos.servo7_raw = 1500;
         servos.servo8_raw = 2000;
         servos.port = 1;    // set a fake port number
-
+                            // 가짜 포트 번호를 설정합니다.
         mavlink_msg_servo_output_raw_encode(systemid, MAV_COMP_ID_IMU, &msg, &servos);
         link->sendMAVLinkMessage(&msg);
         timer1Hz = 50;
     }
 
     // 10 Hz execution
+    // 10 Hz 실행
     if (timer10Hz <= 0) {
         double radPer100ms = 0.00006;
         double altPer100ms = 0.4;
@@ -137,10 +144,11 @@ void MAVLinkSimulationMAV::mainloop()
         else
         {
             // FIXME Implement heading and altitude controller
-
+            // FIXME 표제와 고도 컨트롤러 구현
         }
 
         // GLOBAL POSITION
+        // 글로벌 위치
         mavlink_message_t msg;
         mavlink_global_position_int_t pos;
         pos.alt = altitude*1000.0;
@@ -154,6 +162,7 @@ void MAVLinkSimulationMAV::mainloop()
         planner.handleMessage(msg);
 
         // ATTITUDE
+        // 태도
         mavlink_attitude_t attitude;
         attitude.time_boot_ms = 0;
         attitude.roll = roll;
@@ -167,10 +176,13 @@ void MAVLinkSimulationMAV::mainloop()
         link->sendMAVLinkMessage(&msg);
 
         // SYSTEM STATUS
+        // 시스템 상태
         mavlink_sys_status_t status;
         
         // Since the simulation outputs global position, attitude and raw pressure we specify that the
         // sensors that would be collecting this information are present, enabled and healthy.
+        // 시뮬레이션은 글로벌 위치, 태도 및 원시 압력을 출력하므로 우리는
+        // 이 정보를 수집 할 센서가 있으며, 활성화되어 있고 건강합니다.
         
         status.onboard_control_sensors_present = MAV_SYS_STATUS_SENSOR_3D_GYRO |
                                                     MAV_SYS_STATUS_SENSOR_3D_ACCEL |
@@ -183,7 +195,7 @@ void MAVLinkSimulationMAV::mainloop()
         status.load = 300;
         status.voltage_battery = 10500;
         status.current_battery = -1;  // -1: autopilot does not measure the current
-        status.drop_rate_comm = 0;
+        status.drop_rate_comm = 0;    // -1 : 자동 조종 장치는 전류를 측정하지 않습니다.
         status.errors_comm = 0;
         status.errors_count1 = 0;
         status.errors_count2 = 0;
@@ -219,6 +231,7 @@ void MAVLinkSimulationMAV::mainloop()
         link->sendMAVLinkMessage(&msg);
 
         // RAW PRESSURE
+        // 원시 압력
         mavlink_raw_pressure_t pressure;
         pressure.press_abs = 1000;
         pressure.press_diff1 = 2000;
@@ -230,8 +243,10 @@ void MAVLinkSimulationMAV::mainloop()
     }
 
     // 25 Hz execution
+    // 25 Hz 실행
     if (timer25Hz <= 0) {
         // The message container to be used for sending
+        // 보내는 데 사용할 메시지 컨테이너
         mavlink_message_t ret;
 
         if (sys_mode & MAV_MODE_FLAG_DECODE_POSITION_HIL)
@@ -247,10 +262,12 @@ void MAVLinkSimulationMAV::mainloop()
             hil.aux4 = 0.0f;
             hil.mode = MAV_MODE_FLAG_HIL_ENABLED;
             hil.nav_mode = 0;   // not currently used by any HIL consumers
-            
+                                // 모든 HIL 소비자가 현재 사용하지 않습니다.
             // Encode the data (adding header and checksums, etc.)
+            // 데이터 인코딩 (헤더 및 체크섬 추가 등)
             mavlink_msg_hil_controls_encode(systemid, MAV_COMP_ID_IMU, &ret, &hil);
             // And send it
+            // 그리고 그것을 보내라.
             link->sendMAVLinkMessage(&ret);
         }
 
@@ -269,19 +286,43 @@ void MAVLinkSimulationMAV::mainloop()
         // The message container to be used for sending
         //mavlink_message_t ret;
         // The C-struct holding the data to be sent
+
+        // 실제 컨트롤러 출력 보내기
+        // 이 메시지는 방향을 보여줍니다.
+        // 및 제어 출력의 크기
+        //         mavlink_position_controller_output_t pos;
+        //         pos.x = sin (요) * 127.0f;
+        //         pos.y = cos (요) * 127.0f;
+        //         pos.z = 0;
+        //         mavlink_msg_position_controller_output_encode (systemid, MAV_COMP_ID_IMU, & ret, & pos);
+        //         link-> sendMAVLinkMessage (& ret);
+
+        // 이름이 "FLOAT"이고 값이 0.5f 인 명명 된 값을 전송합니다.
+
+        // 보내는 데 사용할 메시지 컨테이너
+        // mavlink_message_t ret;
+        // 전송할 데이터를 보유하고있는 C-struct
         mavlink_named_value_float_t val;
 
         // Fill in the data
         // Name of the value, maximum 10 characters
         // see full message specs at:
         // http://pixhawk.ethz.ch/wiki/mavlink/
+        
+        // 데이터를 입력하십시오.
+        // 값의 이름, 최대 10 자
+        // 전체 메시지 스펙보기 :
+        // http://pixhawk.ethz.ch/wiki/mavlink/
         strcpy((char *)val.name, "FLOAT");
         // Value, in this case 0.5
+        // 값 (이 경우 0.5)
         val.value = 0.5f;
 
         // Encode the data (adding header and checksums, etc.)
+        // 데이터 인코딩 (헤더 및 체크섬 추가 등)
         mavlink_msg_named_value_float_encode(systemid, MAV_COMP_ID_IMU, &ret, &val);
         // And send it
+        // 그리고 그것을 보내라.
         link->sendMAVLinkMessage(&ret);
 
         // MICROCONTROLLER SEND CODE:
@@ -294,22 +335,32 @@ void MAVLinkSimulationMAV::mainloop()
         // SEND INTEGER VALUE
 
         // We are reusing the "mavlink_message_t ret"
+        // "mavlink_message_t ret"를 재사용 중입니다.
         // message buffer
 
         // The C-struct holding the data to be sent
+         // 전송할 데이터를 보유하고있는 C-struct
         mavlink_named_value_int_t valint;
 
         // Fill in the data
         // Name of the value, maximum 10 characters
         // see full message specs at:
         // http://pixhawk.ethz.ch/wiki/mavlink/
+
+        // 데이터를 입력하십시오.
+        // 값의 이름, 최대 10 자
+        // 전체 메시지 스펙보기 :
+        // http://pixhawk.ethz.ch/wiki/mavlink/
         strcpy((char *)valint.name, "INTEGER");
         // Value, in this case 18000
+        // 값 (이 경우 18000)
         valint.value = 18000;
 
         // Encode the data (adding header and checksums, etc.)
+        // 데이터 인코딩 (헤더 및 체크섬 추가 등)
         mavlink_msg_named_value_int_encode(systemid, MAV_COMP_ID_IMU, &ret, &valint);
         // And send it
+        // 그리고 그것을 보내라.
         link->sendMAVLinkMessage(&ret);
 
         // MICROCONTROLLER SEND CODE:
@@ -327,11 +378,13 @@ void MAVLinkSimulationMAV::mainloop()
 }
 
 // Uncomment to turn on debug message printing
+// 디버그 메시지 인쇄 기능을 해제하려면 주석 처리를 해제하십시오.
 //#define DEBUG_PRINT_MESSAGE
 
 #ifdef DEBUG_PRINT_MESSAGE
 
 //static unsigned chan_counts[MAVLINK_COMM_NUM_BUFFERS];
+
 
 static const unsigned message_lengths[] = MAVLINK_MESSAGE_LENGTHS;
 //static unsigned error_count;
@@ -387,6 +440,7 @@ static void print_field(const mavlink_message_t *msg, const mavlink_field_info_t
     } else {
         unsigned i;
         /* print an array */
+        /* 배열 인쇄 */ 
         if (f->type == MAVLINK_TYPE_CHAR) {
             QLOG_DEBUG() << "'" << f->array_length << "'" <<
                    f->wire_offset+(const char *)_MAV_PAYLOAD(msg);

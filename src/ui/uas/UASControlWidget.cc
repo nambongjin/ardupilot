@@ -28,6 +28,13 @@ This file is part of the PIXHAWK project
  *   @author Lorenz Meier <mavteam@student.ethz.ch>
  *
  */
+/**
+ * @file
+ * @brief 하나의 MAV를 제어하는 ​​위젯의 정의
+ *
+ * @author Lorenz Meier <mavteam@student.ethz.ch>
+ *
+ */
 
 #include <QString>
 #include <QTimer>
@@ -88,6 +95,7 @@ void UASControlWidget::setUAS(UASInterface* uas)
     }
 
     // Connect user interface controls
+    // 사용자 인터페이스 컨트롤 연결
     connect(ui.controlButton, SIGNAL(clicked()), this, SLOT(cycleContextButton()));
     connect(ui.liftoffButton, SIGNAL(clicked()), uas, SLOT(launch()));
     connect(ui.landButton, SIGNAL(clicked()), uas, SLOT(home()));
@@ -124,9 +132,14 @@ void UASControlWidget::updateStatemachine()
  * Set the background color based on the MAV color. If the MAV is selected as the
  * currently actively controlled system, the frame color is highlighted
  */
+/**
+ * 배경 색상은 MAV 색상을 기준으로 설정하십시오. MAV가
+ * 현재 활발하게 제어되는 시스템, 프레임 색상이 강조 표시됨
+ */
 void UASControlWidget::setBackgroundColor(QColor color)
 {
     // UAS color
+    // UAS 색상
     QColor uasColor = color;
     QString colorstyle;
     QString borderColor = "#4A4A4F";
@@ -167,9 +180,13 @@ void UASControlWidget::updateState(int state)
 /**
  * Called by the button
  */
+/**
+ * 버튼에 의해 호출 됨
+ */
 void UASControlWidget::setMode(int mode)
 {
     // Adapt context button mode
+    // 컨텍스트 버튼 모드 적용
     m_uasMode = ui.modeComboBox->itemData(mode).toInt();
     ui.modeComboBox->blockSignals(true);
     ui.modeComboBox->setCurrentIndex(mode);
@@ -184,6 +201,7 @@ void UASControlWidget::transmitMode()
     if (mav)
     {
         // include armed state
+        // 무장 상태 포함
         if (m_engineOn)
             m_uasMode |= MAV_MODE_FLAG_SAFETY_ARMED;
         else
@@ -211,6 +229,7 @@ void UASControlWidget::cycleContextButton()
             ui.lastActionLabel->setText(QString("Disabled motors on %1").arg(mav->getUASName()));
         }
         // Update state now and in several intervals when MAV might have changed state
+        // MAV가 상태를 변경했을 때 상태를 몇 가지 간격으로 업데이트합니다.
         updateStatemachine();
 
         QTimer::singleShot(50, this, SLOT(updateStatemachine()));

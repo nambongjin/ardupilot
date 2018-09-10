@@ -96,8 +96,9 @@ void AccelCalibrationConfig::calibrateButtonClicked()
     ui.outputLabel->clear();
 
     m_isCalibrating = true; // this is to guard against showing unwanted GCS Text Messages.
-
+                            // 원하지 않는 GCS 문자 메시지를 표시하지 않으려 고합니다.
     // Mute Audio until calibrated to avoid HeartBeat Warning message
+    // HeartBeat 경고 메시지를 피하기 위해 보정 될 때까지 오디오 음소거
     if (GAudioOutput::instance()->isMuted() == false) {
         GAudioOutput::instance()->mute(true);
         m_muted = true;
@@ -137,6 +138,7 @@ void AccelCalibrationConfig::calibrateButtonClicked()
         if (m_accelAckCount > 8)
         {
             //We've clicked too many times! Reset.
+            // 너무 많이 클릭했습니다! 다시 놓기.
             for (int i=0;i<8;i++)
             {
                 m_uas->executeCommandAck(i,true);
@@ -153,6 +155,7 @@ void AccelCalibrationConfig::hideEvent(QHideEvent *evt)
     Q_UNUSED(evt);
 
     if (m_muted) { // turns audio backon, when you leave the page
+                   // 오디오 백온을 돌리면, 페이지를 떠날 때
         GAudioOutput::instance()->mute(false);
         m_muted = false;
     }
@@ -166,7 +169,7 @@ void AccelCalibrationConfig::hideEvent(QHideEvent *evt)
     for (int i=m_accelAckCount;i<8;i++)
     {
         m_uas->executeCommandAck(i,true); //Clear out extra commands.
-    }
+    }                                     // 추가 명령을 지 웁니다.
     m_uas->getLinks()->at(0)->enableTimeouts();
 }
 void AccelCalibrationConfig::uasTextMessageReceived(int uasid, int componentid, int severity, QString text)
@@ -179,18 +182,22 @@ void AccelCalibrationConfig::uasTextMessageReceived(int uasid, int componentid, 
     if (severity <= MAV_SEVERITY_CRITICAL)
     {
         //This is a calibration instruction
+        // 이것은 교정 명령입니다.  
         if (!m_isCalibrating || text.startsWith("PreArm:") || text.startsWith("EKF") || text.startsWith("Arm") || text.startsWith("Initialising"))
         {
             // Don't show these warning messages
+            // 이 경고 메시지를 표시하지 않습니다.
             return;
         }
 
         if (text.contains("Place") && text.contains ("and press any key"))
         {
             //Instruction
+            // 지시 사항
             if (m_accelAckCount == 0)
             {
                 //Calibration Sucessful\r"
+                // 교정 성공 \ r "
                 ui.calibrateAccelButton->setText("Continue\nPress SpaceBar");
             }
             ui.outputLabel->setText(text);
@@ -199,7 +206,9 @@ void AccelCalibrationConfig::uasTextMessageReceived(int uasid, int componentid, 
         else if (text.contains("Calibration successful") || text.contains("FAILED") || text.contains("Failed CMD: 241"))
         {
             //Calibration complete success or failure
+            // 보정 완료 성공 또는 실패
             if (m_muted) { // turns audio back on, when you complete fail or success
+                           // 오디오를 다시 켭니다. 실패 또는 성공을 완료하면
                 GAudioOutput::instance()->mute(false);
                 m_muted = false;
             }

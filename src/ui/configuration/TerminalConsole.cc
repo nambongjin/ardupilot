@@ -61,6 +61,7 @@ TerminalConsole::TerminalConsole(QWidget *parent) :
     ui->setupUi(this);
 
     // create the cosole and add it to the centralwidget
+    // cosole을 만들어 중앙 위젯에 추가합니다.
     m_console = new Console;
     m_console->setEnabled(false);
 
@@ -90,6 +91,7 @@ TerminalConsole::TerminalConsole(QWidget *parent) :
     initConnections();
 
     //Keep refreshing the serial port list
+    // 시리얼 포트 목록을 새로 고칩니다.
     connect(&m_timer,SIGNAL(timeout()),this,SLOT(populateSerialPorts()));
     connect(ui->localEchoCheckBox, SIGNAL(clicked(bool)),
             m_console, SLOT(setLocalEchoEnabled(bool)));
@@ -125,6 +127,7 @@ void TerminalConsole::fillPortsInfo(QComboBox &comboBox)
             comboBox.insertItem(0,list[0], list);
         } else {
             // Do nothing as the port is already listed
+            // 포트가 이미 나열되어 있으므로 아무 작업도 수행하지 않습니다.
         }
     }
     for (int i=0;i<comboBox.count();i++)
@@ -148,6 +151,7 @@ void TerminalConsole::showEvent(QShowEvent *event)
 {
     Q_UNUSED(event);
     // Start refresh Timer
+    // 새로 고침 타이머를 시작합니다.
     m_timer.start(2000);
 }
 
@@ -155,6 +159,7 @@ void TerminalConsole::hideEvent(QHideEvent *event)
 {
     Q_UNUSED(event);
     // Stop the port list refeshing
+    // 포트 목록 refeshing 중지
     m_timer.stop();
 }
 
@@ -202,6 +207,7 @@ void TerminalConsole::openSerialPort(const SerialSettings &settings)
 {
 #if defined(Q_OS_MACX) && ((QT_VERSION == 0x050402)||(QT_VERSION == 0x0500401))
     // temp fix Qt5.4.1 issue on OSX
+    // temp는 OSX에서 Qt5.4.1 문제를 해결합니다.
     // http://code.qt.io/cgit/qt/qtserialport.git/commit/?id=687dfa9312c1ef4894c32a1966b8ac968110b71e
     m_serial->setPortName("/dev/cu." + settings.name);
 #else
@@ -223,6 +229,7 @@ void TerminalConsole::openSerialPort(const SerialSettings &settings)
                                        .arg(settings.name).arg(QString::number(settings.baudRate)));
             QLOG_INFO() << "Open Terminal Console Serial Port";
             writeSettings(); // Save last successful connection
+                             // 마지막으로 성공적인 연결 저장
 
             sendResetCommand();
             m_timer.stop();
@@ -263,7 +270,7 @@ void TerminalConsole::closeSerialPort()
     ui->settingsButton->setEnabled(true);
     m_statusBar->showMessage(tr("Disconnected"));
     m_timer.start(2000); //re-start port scanning
-}
+}                        // 포트 스캐닝을 다시 시작합니다.
 
 void TerminalConsole::sendResetCommand()
 {
@@ -286,6 +293,7 @@ void TerminalConsole::readData()
     m_console->putData(data);
 
     // On reset, send the break sequence and display help
+    // 재설정시 휴식 시퀀스를 보내고 도움말을 표시합니다.
     if (data.contains("ENTER 3")) {
         m_serial->write("\r\r\r");
         m_serial->waitForBytesWritten(10);
@@ -294,6 +302,7 @@ void TerminalConsole::readData()
     if (m_serial->error() != QSerialPort::NoError && m_serial->error() != QSerialPort::UnknownError)
     {
         //Serial port has gone bad???
+        // 시리얼 포트가 잘못 됐습니까?
         QLOG_DEBUG() << "Serial port has bad things happening!!!" << m_serial->errorString();
        // break;
     }
@@ -310,6 +319,7 @@ void TerminalConsole::handleError(QSerialPort::SerialPortError error)
 void TerminalConsole::initConnections()
 {
     // Ui Connections
+    // Ui 연결
     connect(ui->connectButton, SIGNAL(released()), this, SLOT(openSerialPort()));
     connect(ui->disconnectButton, SIGNAL(released()), this, SLOT(closeSerialPort()));
     connect(ui->settingsButton, SIGNAL(released()), m_settingsDialog, SLOT(show()));
@@ -320,6 +330,7 @@ void TerminalConsole::initConnections()
     connect(ui->linkComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(setLink(int)));
 
     // Serial Port Connections
+    // 직렬 포트 연결
     connect(m_serial, SIGNAL(error(QSerialPort::SerialPortError)), this,
             SLOT(handleError(QSerialPort::SerialPortError)));
 
@@ -374,6 +385,7 @@ void TerminalConsole::setLink(int index)
 void TerminalConsole::loadSettings()
 {
     // Load defaults from settings
+    // 설정에서 기본값로드
     QSettings settings;
     settings.sync();
     settings.beginGroup("TERMINALCONSOLE");
@@ -396,6 +408,7 @@ void TerminalConsole::loadSettings()
 void TerminalConsole::writeSettings()
 {
     // Store settings
+    // 설정 저장
     QSettings settings;
     settings.beginGroup("TERMINALCONSOLE");
     settings.setValue("COMM_PORT", m_settings.name);

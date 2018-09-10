@@ -30,6 +30,16 @@ This file is part of the APM_PLANNER project
  *   @author QGROUNDCONTROL PROJECT - This code has GPLv3+ snippets from QGROUNDCONTROL, (c) 2009, 2010 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
  *
  */
+/**
+ * @file
+ * @ 간단한 MAVLinkDecoder
+ *이 클래스는 수신 mavlink_message_t 패킷의 값 필드를 디코딩합니다.
+ * valueChanged를 내보내 UAS 클래스에 전달되어 UI로 전달됩니다.
+ *
+ * @author Michael Carpenter <malcom2073@gmail.com>
+ * @author QGROUNDCONTROL PROJECT -이 코드에는 QGROUNDCONTROL의 GPLv3 + 스 니펫이 있습니다. (c) 2009, 2010 QGROUNDCONTROL PROJECT <http://www.qgroundcontrol.org>
+ *
+ */
 
 
 #include "MAVLinkDecoder.h"
@@ -47,6 +57,7 @@ MAVLinkDecoder::MAVLinkDecoder(QObject *parent):
     QLOG_DEBUG() << "Create MAVLinkDecoder: " << this;
 
     // copy message description into hashmap for fast access
+    // 빠른 액세스를 위해 메시지 설명을 해시 맵에 복사합니다.
     QVector<mavlink_message_info_t> mavlinkMsg = MAVLINK_MESSAGE_INFO;
     for(const auto &typeInfo : mavlinkMsg)
     {
@@ -62,9 +73,11 @@ MAVLinkDecoder::MAVLinkDecoder(QObject *parent):
     }
 
     // Allow system status
+    // 시스템 상태 허용
 //    messageFilter.insert(MAVLINK_MSG_ID_HEARTBEAT, false);
 //    messageFilter.insert(MAVLINK_MSG_ID_SYS_STATUS, false);
 //    messageFilter.insert(MAVLINK_MSG_ID_STATUSTEXT, false);
+
     messageFilter.insert(MAVLINK_MSG_ID_COMMAND_LONG, false);
     messageFilter.insert(MAVLINK_MSG_ID_COMMAND_ACK, false);
     messageFilter.insert(MAVLINK_MSG_ID_PARAM_SET, false);
@@ -160,7 +173,8 @@ void MAVLinkDecoder::receiveMessage(LinkInterface* link, mavlink_message_t messa
         return;
     }
 
-    // Handle time sync message
+    // Handle time sync message 
+    // 시간 동기화 메시지 처리
 #ifndef ENABLE_DEBUG_DATALOG_PARSING
     if (message.msgid == MAVLINK_MSG_ID_LOG_DATA)
     {
@@ -177,6 +191,7 @@ void MAVLinkDecoder::receiveMessage(LinkInterface* link, mavlink_message_t messa
     else
     {
         // See if first value is a time value
+        // 첫 번째 값이 시간 값인지 확인
         quint64 time = 0;
         quint8 fieldid = 0;
         quint8 *p_payload = reinterpret_cast<uint8_t*>(&message.payload64[0]);
@@ -196,7 +211,7 @@ void MAVLinkDecoder::receiveMessage(LinkInterface* link, mavlink_message_t messa
         {
             time = *(reinterpret_cast<quint64*>(p_payload + p_messageInfo->fields[fieldid].wire_offset));
             time = (time+500)/1000; // Scale to milliseconds, round up/down correctly
-
+                                    // 정확하게 반올림 / 내림하여 밀리 초 단위로 조정
             QPair<QString,QVariant> fieldval;
             fieldval.first = QString("M%1:%2.%3")
                              .arg(message.sysid)
@@ -208,13 +223,16 @@ void MAVLinkDecoder::receiveMessage(LinkInterface* link, mavlink_message_t messa
         else
         {
             // First value is not time, send out value 0
+            // 첫 번째 값은 시간이 아니며 값 0을 전송합니다.
             emitFieldValue(&message, fieldid, getUnixTimeFromMs(message.sysid, 0));
         }
 
         // Align time to global time
+        // 시간을 전역 시간에 맞 춥니 다.
         time = getUnixTimeFromMs(message.sysid, time);
 
         // do we have an active UAS? Check only if not local decoding
+        // 활성 UAS가 있습니까? 로컬 디코딩이 아닌 경우에만 확인
         if(!m_localDecode)
         {
             mp_uas = UASManager::instance()->getUASForId(message.sysid);
@@ -225,6 +243,7 @@ void MAVLinkDecoder::receiveMessage(LinkInterface* link, mavlink_message_t messa
         }
 
         // Store component ID
+         // 구성 요소 ID 저장
         if (!m_componentID.contains(message.msgid))
         {
             m_componentID[message.msgid] = message.compid;
@@ -232,6 +251,7 @@ void MAVLinkDecoder::receiveMessage(LinkInterface* link, mavlink_message_t messa
         else
         {
             // Got this message already
+            // 이미 이 메시지가 있습니다.
             if (m_componentID[message.msgid] != message.compid)
             {
                 m_componentMulti[message.msgid] = true;
@@ -239,6 +259,7 @@ void MAVLinkDecoder::receiveMessage(LinkInterface* link, mavlink_message_t messa
         }
 
         // Send out field values from 1..n
+        // 1.n에서 필드 값 보내기
         for (int i = 1; i < static_cast<int>(p_messageInfo->num_fields); ++i)
         {
             emitFieldValue(&message, i, time);
@@ -250,6 +271,7 @@ void MAVLinkDecoder::receiveMessage(LinkInterface* link, mavlink_message_t messa
 void MAVLinkDecoder::emitFieldValue(mavlink_message_t* msg, int fieldid, quint64 time)
 {
     // check if we have data about the message format
+    // 메시지 형식에 대한 데이터가 있는지 확인합니다.
     quint32 msgid = msg->msgid;
     const auto p_messageInfo = messageInfo.find(msgid);
     if ((messageFilter.contains(msgid)) || (p_messageInfo == messageInfo.end()))
@@ -269,6 +291,7 @@ void MAVLinkDecoder::emitFieldValue(mavlink_message_t* msg, int fieldid, quint64
     }
 
     // Debug vector messages
+    // 벡터 메시지를 디버그합니다.
     if (msgid == MAVLINK_MSG_ID_DEBUG_VECT)
     {
         mavlink_debug_vect_t debug;
@@ -278,7 +301,7 @@ void MAVLinkDecoder::emitFieldValue(mavlink_message_t* msg, int fieldid, quint64
         buf[10] = '\0';
         name.append( QString("%1.%2").arg(buf).arg(fieldName) );
         time = getUnixTimeFromMs(msg->sysid, (debug.time_usec+500)/1000); // Scale to milliseconds, round up/down correctly
-    }
+    }                                                                     // 정확하게 반올림 / 내림하여 밀리 초 단위로 조정
     else if (msgid == MAVLINK_MSG_ID_DEBUG)
     {
         mavlink_debug_t debug;
@@ -319,6 +342,7 @@ void MAVLinkDecoder::emitFieldValue(mavlink_message_t* msg, int fieldid, quint64
         {
             char* str = reinterpret_cast<char*>(p_payload + p_messageInfo->fields[fieldid].wire_offset);
             // Enforce null termination
+            // Null 종료를 적용합니다.
             str[p_messageInfo->fields[fieldid].array_length-1] = '\0';
             QString string(name + ": " + str);
             if (!textMessageFilter.contains(msgid))
@@ -329,6 +353,7 @@ void MAVLinkDecoder::emitFieldValue(mavlink_message_t* msg, int fieldid, quint64
         else
         {
             // Single char
+            // 단일 문자
             char b = *(reinterpret_cast<char*>(p_payload + p_messageInfo->fields[fieldid].wire_offset));
             QString unit = QString("char[%1]").arg(p_messageInfo->fields[fieldid].array_length);
             if (mp_uas == nullptr)
@@ -361,6 +386,7 @@ void MAVLinkDecoder::emitFieldValue(mavlink_message_t* msg, int fieldid, quint64
         else
         {
             // Single value
+            // 단일 값
             uint8_t u = *(p_payload+p_messageInfo->fields[fieldid].wire_offset);
             fieldType = "uint8_t";
             if (mp_uas == nullptr)
@@ -393,6 +419,7 @@ void MAVLinkDecoder::emitFieldValue(mavlink_message_t* msg, int fieldid, quint64
         else
         {
             // Single value
+            // 단일 값
             int8_t n = *(reinterpret_cast<int8_t*>(p_payload+p_messageInfo->fields[fieldid].wire_offset));
             fieldType = "int8_t";
             if (mp_uas == nullptr)
@@ -425,6 +452,7 @@ void MAVLinkDecoder::emitFieldValue(mavlink_message_t* msg, int fieldid, quint64
         else
         {
             // Single value
+            // 단일 값
             uint16_t n = *(reinterpret_cast<uint16_t*>(p_payload+p_messageInfo->fields[fieldid].wire_offset));
             fieldType = "uint16_t";
             if (mp_uas == nullptr)
@@ -457,6 +485,7 @@ void MAVLinkDecoder::emitFieldValue(mavlink_message_t* msg, int fieldid, quint64
         else
         {
             // Single value
+            // 단일 값
             int16_t n = *(reinterpret_cast<int16_t*>(p_payload+p_messageInfo->fields[fieldid].wire_offset));
             fieldType = "int16_t";
             if (mp_uas == nullptr)
@@ -489,6 +518,7 @@ void MAVLinkDecoder::emitFieldValue(mavlink_message_t* msg, int fieldid, quint64
         else
         {
             // Single value
+            // 단일 값
             uint32_t n = *(reinterpret_cast<uint32_t*>(p_payload+p_messageInfo->fields[fieldid].wire_offset));
             fieldType = "uint32_t";
             if (mp_uas == nullptr)
@@ -521,6 +551,7 @@ void MAVLinkDecoder::emitFieldValue(mavlink_message_t* msg, int fieldid, quint64
         else
         {
             // Single value
+            // 단일 값
             int32_t n = *(reinterpret_cast<int32_t*>(p_payload+p_messageInfo->fields[fieldid].wire_offset));
             fieldType = "int32_t";
             if (mp_uas == nullptr)
@@ -553,6 +584,7 @@ void MAVLinkDecoder::emitFieldValue(mavlink_message_t* msg, int fieldid, quint64
         else
         {
             // Single value
+            // 단일 값
             float f = *(reinterpret_cast<float*>(p_payload+p_messageInfo->fields[fieldid].wire_offset));
             fieldType = "float";
             if (mp_uas == nullptr)
@@ -585,6 +617,7 @@ void MAVLinkDecoder::emitFieldValue(mavlink_message_t* msg, int fieldid, quint64
         else
         {
             // Single value
+            // 단일 값
             double f = *(reinterpret_cast<double*>(p_payload+p_messageInfo->fields[fieldid].wire_offset));
             fieldType = "double";
             if (mp_uas == nullptr)
@@ -617,6 +650,7 @@ void MAVLinkDecoder::emitFieldValue(mavlink_message_t* msg, int fieldid, quint64
         else
         {
             // Single value
+            // 단일 값
             qulonglong n = *(reinterpret_cast<uint64_t*>(p_payload+p_messageInfo->fields[fieldid].wire_offset));
             fieldType = "uint64_t";
             if (mp_uas == nullptr)
@@ -649,6 +683,7 @@ void MAVLinkDecoder::emitFieldValue(mavlink_message_t* msg, int fieldid, quint64
         else
         {
             // Single value
+            // 단일 값
             int64_t n = *(reinterpret_cast<int64_t*>(p_payload+p_messageInfo->fields[fieldid].wire_offset));
             fieldType = "int64_t";
             if (mp_uas == nullptr)
@@ -688,6 +723,23 @@ quint64 MAVLinkDecoder::getUnixTimeFromMs(int systemID, quint64 time)
     // 60 seconds
     // 1000 milliseconds
     // 1000 microseconds
+
+    // 시간이 40 년보다 작은 지 확인합니다.
+    // Unix 타임 스탬프가없는 시스템이 없다고 가정합니다.
+    // 40 년 이상 연속 사용하지 않고
+    // 재부팅하십시오. 최악의 경우, 이것은 더하기 / 빼기
+    // GCS와 MAV 간의 통신 지연,
+    // 안전 장치에서 타임 스탬프를 변경하지 않습니다.
+    // 중요한 길.
+    //
+    // 계산 :
+    // 40 년
+    // 365 일
+    // 24 시간
+    // 60 분
+    // 60 초
+    // 1000 밀리 초
+    // 1000 마이크로 초
 #ifndef _MSC_VER
     else if (time < 1261440000000LLU)
 #else
@@ -710,6 +762,9 @@ quint64 MAVLinkDecoder::getUnixTimeFromMs(int systemID, quint64 time)
     {
         // Time is not zero and larger than 40 years -> has to be
         // a Unix epoch timestamp. Do nothing.
+        // 시간은 0이 아니고 40 년 이상이되어야합니다.>
+        // Unix epoch timestamp. 아무것도하지 마세요.
+        
         ret = time;
     }
     return ret;

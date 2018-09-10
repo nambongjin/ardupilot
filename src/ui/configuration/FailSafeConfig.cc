@@ -309,6 +309,7 @@ void FailSafeConfig::activeUASSet(UASInterface *uas)
         ui.label_6->setVisible(false);
 
         ui.throttlePwmSpinBox->setVisible(true); //Both
+                                                 //양자 모두
 
         ui.throttleCheckBox->setVisible(true);
         ui.throttleActionCheckBox->setVisible(true);
@@ -324,6 +325,7 @@ void FailSafeConfig::activeUASSet(UASInterface *uas)
         ui.label_6->setVisible(true);
 
         ui.throttlePwmSpinBox->setVisible(true); //Both
+                                                 //양자 모두
 
         ui.throttleCheckBox->setVisible(false);
         ui.throttleActionCheckBox->setVisible(false);
@@ -334,10 +336,13 @@ void FailSafeConfig::activeUASSet(UASInterface *uas)
     else
     {
         //Show all, just in case
+        // 모든 경우를 표시합니다.
+
         ui.batteryFailSafeComboBox->setVisible(true);
         ui.throttleFailSafeComboBox->setVisible(true);
         ui.batteryVoltSpinBox->setVisible(true);
         ui.throttlePwmSpinBox->setVisible(true); //Both
+                                                 //양자 모두
         ui.throttleCheckBox->setVisible(true);
         ui.throttleActionCheckBox->setVisible(true);
         ui.gcsCheckBox->setVisible(true);
