@@ -331,7 +331,7 @@ void FlightModeConfig::updateModeComboBox(QComboBox* modeComboBox, QVariant valu
     int index = modeComboBox->findData(value.toInt());
     modeComboBox->blockSignals(true);
     modeComboBox->setCurrentIndex(index);
-    // stop progress bar
+    // stop progress bar	  진행률 막대를 중지합니다.  
     if ((m_modesUpdated != 0) && (modeChanged==true)){
         ui.progressBar->setValue(ui.progressBar->value()+1);
         m_modesUpdated--;
@@ -345,7 +345,7 @@ void FlightModeConfig::parameterChanged(int uas, int component, QString paramete
     Q_UNUSED(uas);
     Q_UNUSED(component);
 
-    // Filter Log based on parameters we are interested in.
+    // Filter Log based on parameters we are interested in.	 관심있는 매개 변수에 따라 로그를 필터링하십시오.  
     if (parameterName.startsWith("FLTMODE")||parameterName.startsWith("MODE")){
         QLOG_DEBUG() << "FlightModeConfig:: name:" << parameterName << " value:" << value;
         ui.savePushButton->setEnabled(false);

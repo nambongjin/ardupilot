@@ -105,7 +105,7 @@ CompassConfig::CompassConfig(QWidget *parent) : AP2ConfigWidget(parent),
 
 void CompassConfig::readSettings()
 {
-    // Load defaults from settings
+    // Load defaults from settings	 설정에서 기본값로드  
     QSettings settings;
     settings.beginGroup("COMPASS");
     m_compatibilityMode = settings.value("COMPATIBILITY_MODE", false).toBool();
@@ -115,7 +115,7 @@ void CompassConfig::readSettings()
 
 void CompassConfig::writeSettings()
 {
-    // Load defaults from settings
+    // Load defaults from settings	  설정에서 기본값로드  
     QSettings settings;
     settings.beginGroup("COMPASS");
     settings.setValue("COMPATIBILITY_MODE", m_compatibilityMode);
@@ -334,7 +334,7 @@ void CompassConfig::liveCalibrationClicked()
     QMessageBox::information(this,tr("Live Compass calibration"),
                              tr("Data will be collected for 60 seconds, Please click ok and move the apm around all axes"));
 
-    // Initialiase to zero
+    // Initialiase to zero	  0으로 초기화합니다.  
     m_uas->setParameter( 1,"COMPASS_OFS_X", 0.0);
     m_uas->setParameter(1,"COMPASS_OFS_Y", 0.0);
     m_uas->setParameter(1,"COMPASS_OFS_Z", 0.0);
@@ -397,7 +397,7 @@ void CompassConfig::startDataCollection()
     connect(m_progressDialog, SIGNAL(canceled()), this, SLOT(cancelCompassCalibration()));
     m_timer = new QTimer(this);
     connect(m_timer, SIGNAL(timeout()), this, SLOT(progressCounter()));
-    m_timer->start(1); // second counting progress timer
+    m_timer->start(1); // second counting progress timer	 두 번째 카운팅 진행 타이머  
 }
 
 void CompassConfig::progressCounter()
@@ -445,9 +445,9 @@ void CompassConfig::finishCompassCalibration()
     m_calibratingCompass = false;
     m_timer->stop();
 
-    // Calculate and send the update message
+    // Calculate and send the update message	 업데이트 메시지를 계산하여 보냅니다.  
     QVariant deviceId;
-    QString message; // resultant calibration message
+    QString message; // resultant calibration message	 결과 교정 메시지  
     Vector3d centerCompass1;
     Vector3d centerCompass2;
 
@@ -467,7 +467,7 @@ void CompassConfig::finishCompassCalibration()
     }
 
     if(m_haveSecondCompass) {
-        // Second Compass Calibration
+        // Second Compass Calibration	 두 번째 컴퍼스 보정  
         if ( centerCompass2.setToLeastSquaresSphericalCenter(m_compass2RawImuList)){
             saveOffsets(centerCompass2, MAV_SENSOR_OFFSET_MAGNETOMETER2);
 
@@ -491,7 +491,7 @@ void CompassConfig::saveOffsets(const Vector3d &offset, int compassId)
     QGCUASParamManager* paramMgr = m_uas->getParamManager();
     paramMgr->setParameter(1, "COMPASS_LEARN", 0);
 
-    // set values
+    // set values	 값을 설정하십시오.  
     m_uas->executeCommand(MAV_CMD_PREFLIGHT_SET_SENSOR_OFFSETS, 1, compassId,
                           offset.x(), offset.y(), offset.z(), 0, 0, 0,
                           MAV_COMP_ID_PRIMARY);
@@ -503,7 +503,7 @@ void CompassConfig::updateImuList(const Vector3d &currentReading, Vector3d &comp
     if (isCalibratingCompass()){
         if (compassLastValue != currentReading){
             Vector3d adjustedValue;
-            // Remove the current offset from the reading.
+            // Remove the current offset from the reading.	 판독 값에서 현재 오프셋을 제거합니다.  
             adjustedValue = currentReading - compassOffset;
             list.append(adjustedValue);
 
@@ -528,7 +528,7 @@ void CompassConfig::scaledImu2MessageUpdate(UASInterface* uas, mavlink_scaled_im
 
     if (scaledImu.xmag == 0 && scaledImu.ymag == 0 && scaledImu.zmag == 0)
     {
-        //Don't use values of 0, since they could be a disconnected compass
+        //Don't use values of 0, since they could be a disconnected compass	 단절된 나침반 일 수 있으므로 값 0을 사용하지 마십시오.  
         return;
     }
     m_haveSecondCompass = true;
@@ -542,7 +542,7 @@ void CompassConfig::showCompassMotorCalibrationDialog()
 {
     CompassMotorCalibrationDialog *dialog = new CompassMotorCalibrationDialog();
     if(dialog->exec() == QDialog::Accepted){
-        // This modal, as you cannot do anything else while doing a compassMot
+        // This modal, as you cannot do anything else while doing a compassMot	 이 모달은 compassMot을 수행하는 동안 다른 작업을 수행 할 수 없으므로  
         QLOG_DEBUG() << "Compass Mot Success!";
     } else {
         QLOG_DEBUG() << "Compass Mot Cancelled!";
