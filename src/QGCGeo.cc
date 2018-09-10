@@ -10,7 +10,7 @@
 #include "QGCGeo.h"
 #include <stdexcept>
 
-// Using alglib for least squares calc
+// Using alglib for least squares calc	  최소 제곱근 계산을 위해 alglib 사용하기  
 #include "libs/alglib/src/ap.h"
 #include "libs/alglib/src/optimization.h"
 #include "libs/alglib/src/interpolation.h"
@@ -121,26 +121,26 @@ bool Vector3d::setToLeastSquaresSphericalCenter(const QVector<Vector3d> &pointsO
         return false;
     }
 
-    // initialize the set
+    // initialize the set	 집합을 초기화합니다.  
     alglib::real_1d_array x("[0.0 , 0.0 , 0.0 , 0.0]");
     alglib::minlmstate state;
     alglib::minlmcreatev(pointsOnSphere.count(), x, 100.0f,  state);
 
-    // termination conditions
+    // termination conditions	 종료 조건  
     double epsg = 0.0000000001;
     double epsf = 0;
     double epsx = 0;
     int maxits = 0;
     alglib::minlmsetcond(state, epsg, epsf, epsx, maxits);
 
-    // optimize it!
+    // optimize it!	 최적화해라!  
     alglib::minlmoptimize(state, &sphereError, NULL, (void *)&pointsOnSphere);
 
-    // retrieve output report
+    // retrieve output report	 출력 보고서를 가져옵니다.  
     alglib::minlmreport rep;
     alglib::minlmresults(state, x, rep);
 
-    // TODO: decide to run more optimization, if the termination type is 7 (see definition)
+    // TODO: decide to run more optimization, if the termination type is 7 (see definition)	     // TODO : 종료 유형이 7이면 더 많은 최적화를 실행하기로 결정합니다 (정의 참조).  
     //QLOG_INFO() << "rep.terminationType" << rep.terminationtype;
     //        QLOG_DEBUG() << "alglib" << alglib::ap::format(x, 2));
 
@@ -181,12 +181,18 @@ Vector3d &Vector3d::rotateWithQuaternion(const QQuaternion &q)
 {
     /** @link http://gamedev.stackexchange.com/questions/28395/rotating-vector3-by-a-quaternion */
     // Extract the vector part of the quaternion
+
+/*
+    / * * @link http://gamedev.stackexchange.com/questions/28395/rotating-vector3-by-a-quaternion * /
+    // 쿼터니언의 벡터 부분을 추출합니다.
+*/
+
     Vector3d u(q.vector());
 
-    // Extract the scalar part of the quaternion
+    // Extract the scalar part of the quaternion	 쿼터니언의 스칼라 부분을 추출합니다.  
     float s = q.scalar();
 
-    // Do the math
+    // Do the math	 수학을한다.  
     Vector3d v(*this);
     *this = 2.0 * dotProduct(u, v) * u
             + (s*s - dotProduct(u, u)) * v

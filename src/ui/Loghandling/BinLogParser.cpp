@@ -34,6 +34,12 @@ bool BinLogParser::binDescriptor::isValid() const
 {
     // Special handling for FMT messages as they are corrupt in some logs. This is not a real
     // problem as the FMT is parsed by a fixed scheme at the moment.
+
+/*
+    // 일부 로그에서 FMT 메시지가 손상된 특수 처리. 이것은 실제가 아니다.
+    // 문제는 FMT가 고정 된 체계에 의해 지금 당장 파싱된다.
+*/
+
     if(m_ID == BinLogParser::s_FMTMessageType)
     {
         if(m_format.size() != m_labels.size())
@@ -44,6 +50,11 @@ bool BinLogParser::binDescriptor::isValid() const
                (m_format.size() > 0) && (m_labels.size() > 0);
     }
     // STRT message has also a special behaviour as it has no data fields in older logs.
+
+/*
+    // STRT 메시지에는 이전 로그에 데이터 필드가 없으므로 특수한 동작이 있습니다.
+*/
+	 
     else if(m_name == "STRT")
     {
         if(m_format.size() == 0 && m_length == 3)
@@ -85,12 +96,12 @@ AP2DataPlotStatus BinLogParser::parse(QFile &logfile)
         return m_logLoadingState;
     }
 
-    int noMessageBytes = 0;     // to count all bytes that could no be parsed
+    int noMessageBytes = 0;     // to count all bytes that could no be parsed	 파싱 ​​할 수없는 모든 바이트를 계산한다.  
 
     while(!logfile.atEnd() && !m_stop)
     {
         m_callbackObject->onProgress(logfile.pos(),logfile.size());
-        // remove no message bytes from data block
+        // remove no message bytes from data block	 데이터 블록에서 메시지 바이트를 제거하지 않습니다.  
         if(m_dataPos > s_MinHeaderSize)
         {
             m_dataBlock.remove(0, m_dataPos - s_MinHeaderSize);
@@ -101,18 +112,18 @@ AP2DataPlotStatus BinLogParser::parse(QFile &logfile)
 
         while(((m_dataBlock.size() - m_dataPos) > s_MinHeaderSize) && !m_stop)
         {
-            if(!headerIsValid()) // checks the header and sets m_messageType
+            if(!headerIsValid()) // checks the header and sets m_messageType	 헤더를 검사하고 m_messageType을 설정합니다.  
             {
                 noMessageBytes++;
                 continue;
             }
-            // Format (FMT) message
+            // Format (FMT) message	 형식 (FMT) 메시지  
             if(m_messageType == s_FMTMessageType)
             {
                 binDescriptor descriptor;
                 if(parseFMTMessage(descriptor))
                 {
-                    // do some special handling if needed
+                    // do some special handling if needed	 필요하다면 특별한 처리를한다.  
                     specialDescriptorHandling(descriptor);
                     if(m_activeTimestamp.valid())
                     {
@@ -130,17 +141,17 @@ AP2DataPlotStatus BinLogParser::parse(QFile &logfile)
                 }
                 else
                 {
-                    break;  // not enough data break the inner loop to fetch some more...
+                    break;  // not enough data break the inner loop to fetch some more...	 데이터가 부족하여 더 많은 내용을 가져 오려면 내부 루프를 끊습니다.  
                 }
             }
-            // Data packet
+            // Data packet	 데이터 패킷  
             else if(m_typeToDescriptorMap.contains(m_messageType))
             {
                 QList<NameValuePair> NameValuePairList;
                 binDescriptor descriptor = m_typeToDescriptorMap.value(m_messageType);
                 if(parseDataByDescriptor(NameValuePairList, descriptor))
                 {
-                    if(NameValuePairList.size() >= 1)   // need at least one element
+                    if(NameValuePairList.size() >= 1)   // need at least one element	 적어도 하나의 요소 필요  
                     {
                         if(!extendedStoreNameValuePairList(NameValuePairList, descriptor))
                         {
@@ -160,7 +171,7 @@ AP2DataPlotStatus BinLogParser::parse(QFile &logfile)
                 }
                 else
                 {
-                    break;  // not enough data break the inner loop to fetch some more...
+                    break;  // not enough data break the inner loop to fetch some more...	 데이터가 부족하여 더 많은 내용을 가져 오려면 내부 루프를 끊습니다.  
                 }
             }
             else
@@ -211,9 +222,9 @@ bool BinLogParser::parseFMTMessage(binDescriptor &desc)
 {
     desc.m_ID     = static_cast<quint8>(m_dataBlock.at(m_dataPos++));
     desc.m_length = static_cast<quint8>(m_dataBlock.at(m_dataPos++));
-    if((m_dataBlock.size() - m_dataPos) < (desc.m_length - s_HeaderOffset - 2)) // the -2 is for the 2 increments made in lines above
+    if((m_dataBlock.size() - m_dataPos) < (desc.m_length - s_HeaderOffset - 2)) // the -2 is for the 2 increments made in lines above	 -2는 위의 줄에서 2 단위로 증가한 것입니다.  
     {
-        return false;   // do not have enough data to parse the packet
+        return false;   // do not have enough data to parse the packet	 패킷을 파싱하기에 충분한 데이터가 없다.  
     }
 
     desc.m_name = m_dataBlock.mid(m_dataPos, s_FMTNameSize);
@@ -227,7 +238,7 @@ bool BinLogParser::parseFMTMessage(binDescriptor &desc)
     }
     m_dataPos += s_FMTLabelsSize;
 
-    // remove successful parsed data from data block
+    // remove successful parsed data from data block	  데이터 블록에서 성공적으로 구문 분석 된 데이터 제거  
     m_dataBlock.remove(0, m_dataPos);
     m_dataPos = 0;
     return true;
@@ -241,7 +252,7 @@ bool BinLogParser::storeDescriptor(binDescriptor desc)
         {
             m_typeToDescriptorMap.insert(desc.m_ID, desc);
 
-            if(desc.m_ID != s_FMTMessageType)   // the descriptor for the FMT message itself shall not be stored in DB
+            if(desc.m_ID != s_FMTMessageType)   // the descriptor for the FMT message itself shall not be stored in DB	  FMT 메시지 자체의 기술자는 DB에 저장되지 않아야한다.  
             {
                 if(desc.hasNoTimestamp())
                 {
@@ -321,14 +332,14 @@ bool BinLogParser::parseDataByDescriptor(QList<NameValuePair> &NameValuePairList
         }
         else if (typeCode == 'f') //float
         {
-            // we want to read a float -> 4byte -> SinglePrecision
+            // we want to read a float -> 4byte -> SinglePrecision	  float를 읽고 싶다 -> 4byte -> SinglePrecision  
             packetstream.setFloatingPointPrecision(QDataStream::SinglePrecision);
             float val;
             packetstream >> val;
 
             if (qIsNaN(val))
             {
-                // Check if its a soft/quiet or a hard/signalling NaN
+                // Check if its a soft/quiet or a hard/signalling NaN	 그것의 soft / quiet 또는 hard / signaling NaN  
                 const quint32 *valPtr = reinterpret_cast<quint32*>(&val);
                 if (*valPtr != s_FloatSoftNaN)
                 {
@@ -337,20 +348,27 @@ bool BinLogParser::parseDataByDescriptor(QList<NameValuePair> &NameValuePairList
                     m_logLoadingState.corruptDataRead(static_cast<int>(m_MessageCounter), "Corrupt data element found when decoding " + desc.m_name + " data.");
                 }
                 // in both cases store a Qt Quiet NaN in the data which can be handled correctly by the graphing toolset
+
+/*
+               // 두 경우 모두 Qt Quiet NaN을 데이터에 저장하며 그래프 도구 세트로 올바르게 처리 할 수 ​​있습니다.
+*/
+
                 val = static_cast<float>(qQNaN());
             }
             NameValuePairList.append(NameValuePair(desc.getLabelAtIndex(i), val));
         }
         else if (typeCode == 'd')
         {
-            // we want to read a double -> 8byte -> DoublePrecision
+            // we want to read a double -> 8byte -> DoublePrecision	 double을 읽고 싶다 -> 8byte -> DoublePrecision  
+
+
             packetstream.setFloatingPointPrecision(QDataStream::DoublePrecision);
             double val;
             packetstream >> val;
 
             if (qIsNaN(val))
             {
-                // Check if its a soft/quiet or a hard/signalling NaN
+                // Check if its a soft/quiet or a hard/signalling NaN	       그것의 soft / quiet 또는 hard / signaling NaN  
                 const quint64 *valPtr = reinterpret_cast<quint64*>(&val);
                 if (*valPtr != s_DoubleSoftNaN)
                 {
@@ -359,6 +377,11 @@ bool BinLogParser::parseDataByDescriptor(QList<NameValuePair> &NameValuePairList
                     m_logLoadingState.corruptDataRead(static_cast<int>(m_MessageCounter), "Corrupt data element found when decoding " + desc.m_name + " data.");
                 }
                 // in both cases store a Qt Quiet NaN in the data which can be handled correctly by the graphing toolset
+
+/*
+                // 두 경우 모두 Qt Quiet NaN을 데이터에 저장하며 그래프 도구 세트로 올바르게 처리 할 수 ​​있습니다.
+*/
+
                 val = qQNaN();
             }
             NameValuePairList.append(NameValuePair(desc.getLabelAtIndex(i), val));
@@ -412,6 +435,12 @@ bool BinLogParser::parseDataByDescriptor(QList<NameValuePair> &NameValuePairList
             packetstream >> val;
             // backward compatibilty - if we have scaling data (ardupilot 3.6 and later) we use them when getting data out of storage
             // without scaling info we do the scaling here
+
+/*
+            // backward compatibilty - 우리가 스케일링 데이터를 가지고 있다면 (ardupilot 3.6 이후), 우리는 데이터를 스토리지에서 가져올 때 사용합니다
+            // 스케일링 정보없이 여기 스케일링을한다.
+*/
+
             double scaledVal = m_hasUnitData ? val : val / 100.0;
             NameValuePairList.append(NameValuePair(desc.getLabelAtIndex(i), scaledVal));
         }
@@ -471,6 +500,11 @@ bool BinLogParser::parseDataByDescriptor(QList<NameValuePair> &NameValuePairList
         }
     }
     // remove the successful parsed data from the data block
+
+/*
+    // 데이터 블록에서 성공적으로 파싱 된 데이터를 제거합니다.
+*/
+
     m_dataBlock.remove(0, desc.m_length + m_dataPos - s_HeaderOffset);
     m_dataPos = 0;
 

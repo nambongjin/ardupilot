@@ -25,13 +25,13 @@ Item {
     width: parent.width
     anchors.fill: parent
 
-    Item { // Artificial Horizon
+    Item { // Artificial Horizon     인공 지평
         id: artificialHorizonBackground
         height: parent.width
         width: parent.height
         anchors.fill: parent
 
-        Rectangle { // Blue Sky
+        Rectangle { // Blue Sky  푸른 하늘
                 id: blueSky
                 color: "skyblue"
                 smooth: true
@@ -42,11 +42,17 @@ Item {
                 //So we can pitch and roll the rectangle with no white background shown
                 //scale: parent.scale * 4.0
 
+                /*
+                // 흰색 배경이없는 사각형을 피치 롤을 할 수 있습니다.
+                // scale : parent.scale * 4.0
+                */
+
+
                 visible: !enableBackgroundVideo
         }
 
 
-        Rectangle { // Ground
+        Rectangle { // Ground    그라운드
                 id: ground
                 height: parent.height * 2.0
                 width: parent.width * 4.0
@@ -62,7 +68,7 @@ Item {
         }
 
         Rectangle {
-                id: videoImage // Just for testing
+                id: videoImage // Just for testing   테스트 용입니다.
                 anchors { fill: parent; centerIn: parent }
                 color: "darkgrey"
                 visible: enableBackgroundVideo
@@ -70,15 +76,15 @@ Item {
 
          transformOrigin: Item.Center
 
-        //Up and down pitch
+        //Up and down pitch  위아래 피치
         transform: Translate {y: pitchAngle * 1.75}
 
-        //Left and Right Roll
+        //Left and Right Roll    왼쪽 및 오른쪽 롤
         rotation: -rollAngle
 
-    } // End Artficial Horizon
+    } // End Artficial Horizon   Artficial Horizon 끝내기
 
-    Item { //Roll Indicator
+    Item { //Roll Indicator  롤 표시기
 
         id: rollIndicator
         width: parent.width
@@ -89,7 +95,7 @@ Item {
 
         z: 1
 
-        Image { // Roll Graticule
+        Image { // Roll Graticule    롤 계수기
             id: rollGraticule
             source: "../resources/components/rollPitchIndicator/rollGraticule.svg"
 
@@ -106,8 +112,8 @@ Item {
                 transformOrigin: Item.Bottom
                 rotation: rollAngle
             }
-          }//Roll Graticule
-       }//Roll Indicator
+          }//Roll Graticule  격자 계수 롤
+       }//Roll Indicator     롤 표시기
 
 
     Image { // Cross Hairs

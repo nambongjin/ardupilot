@@ -58,12 +58,22 @@ QString LogExporterBase::exportToFile(const QString &fileName, LogdataStorage::P
     }
 
     // create progress dialog
+
+/*
+    // 진행률 대화 상자를 만듭니다.
+*/
+
     scopedDelLaterPtr progressDialogPtr(new QProgressDialog("Exporting File", "Cancel", 0, 100, mp_parent));
     progressDialogPtr->setWindowModality(Qt::WindowModal);
     progressDialogPtr->show();
     QApplication::processEvents();
 
     // Export header data
+
+/*
+    // 헤더 데이터를 내 보냅니다.
+*/
+
     QString formatheader = "FMT,128,89,FMT,BBnNZ,Type,Length,Name,Format,Columns";
     writeLine(formatheader);
 
@@ -81,6 +91,11 @@ QString LogExporterBase::exportToFile(const QString &fileName, LogdataStorage::P
     }
 
     // Export unit data
+
+/*
+    // 단위 데이터 내보내기
+*/
+
     int artificialTimeStamp = 0;
     auto unitData = dataStoragePtr->getUnitData();
     auto unitIter = unitData.constBegin();
@@ -116,7 +131,7 @@ QString LogExporterBase::exportToFile(const QString &fileName, LogdataStorage::P
         outputLine.clear();
     }
 
-    // Export measurements
+    // Export measurements	     // 측정 값 내보내기  
     QVector<QVariant> measurements;
     for(auto i = 0; i < dataStoragePtr->rowCount(); ++i)
     {

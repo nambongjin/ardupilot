@@ -48,7 +48,7 @@ TlogParser::TlogParser(LogdataStorage::Ptr storagePtr, IParserCallback *object) 
     mp_ReceiveData(nullptr)
 {
     QLOG_DEBUG() << "TlogParser::TlogParser - CTOR";
-    // connect to the callbacks of the mavlink deoder - all data is delivered through them
+    // connect to the callbacks of the mavlink deoder - all data is delivered through them	 mavlink 디코더의 콜백에 연결한다. 모든 데이터는 그것들을 통해 전달된다.  
     connect(m_mavDecoderPtr.data(), &MAVLinkDecoder::valueChanged, this, &TlogParser::newValue);
     connect(m_mavDecoderPtr.data(), &MAVLinkDecoder::textMessageReceived, this, &TlogParser::newTextValue);
 }
@@ -71,10 +71,21 @@ AP2DataPlotStatus TlogParser::parse(QFile &logfile)
     }
 
     // tlogs always have this timestamp
+
+/*
+    // tlogs에는 항상이 타임 스탬프가 있습니다
+*/
+
     m_activeTimestamp = timeStampType("time_boot_ms", 1000.0);
 
     // tlogs do not provide special messages like MODE or MSG. As we can reconstruct the data
     // from other messages we add those descriptors artificially to the DB
+
+/*
+    // tlogs는 MODE 또는 MSG와 같은 특별한 메시지를 제공하지 않습니다. 우리가 데이터를 재구성 할 수있을 때
+    // 다른 메시지에서이 설명자를 인위적으로 DB에 추가합니다.
+*/
+
     addMissingDescriptors();
 
     int emptyMessages = 0;
@@ -109,7 +120,7 @@ AP2DataPlotStatus TlogParser::parse(QFile &logfile)
                         }
                     }
 
-                    // Read packet data - if there is something
+                    // Read packet data - if there is something	 패킷 데이터 읽기 - 무언가있는 경우  
                     QList<NameValuePair> NameValuePairList;
                     if(decodeData(mavlinkMessage, NameValuePairList))
                     {
@@ -118,24 +129,24 @@ AP2DataPlotStatus TlogParser::parse(QFile &logfile)
                             return m_logLoadingState;
                         }
 
-                        // Special message handling - Heartbeat
+                        // Special message handling - Heartbeat	 특별 메시지 처리 - 하트 비트  
                         if(mavlinkMessage.msgid == MAVLINK_MSG_ID_HEARTBEAT)
                         {
-                            // extract mode message from tlog data
+                            // extract mode message from tlog data	 tlog 데이터에서 모드 메시지 추출  
                             if(!extractModeMessage(NameValuePairList))
                             {
                                 return m_logLoadingState;
                             }
-                            // detect mav type
+                            // detect mav type	 mav 유형을 감지합니다.  
                             if(m_loadedLogType == MAV_TYPE_GENERIC)
                             {
                                 detectMavType(NameValuePairList);
                             }
                         }
-                        // Special message handling - Statustext
+                        // Special message handling - Statustext	 특별한 메시지 처리 - Statustext  
                         else if(mavlinkMessage.msgid == MAVLINK_MSG_ID_STATUSTEXT)
                         {
-                            // Create a MsgMessage from STATUSTEXT
+                            // Create a MsgMessage from STATUSTEXT	 STATUSTEXT에서 MsgMessage를 만듭니다.  
                             if(!extractMsgMessage(NameValuePairList))
                             {
                                 return m_logLoadingState;
@@ -155,7 +166,7 @@ AP2DataPlotStatus TlogParser::parse(QFile &logfile)
         }
     }
 
-    if(emptyMessages != 0) // Did we have messages named "EMPTY" ?
+    if(emptyMessages != 0) // Did we have messages named "EMPTY" ?	 "EMPTY"라는 메시지가 있었습니까?  
     {
         m_logLoadingState.corruptDataRead(0, "Found " + QString::number(emptyMessages) +" 'EMPTY' messages wich could not be processed");
     }
@@ -168,6 +179,12 @@ void TlogParser::addMissingDescriptors()
 {
     // Tlog does not contain MODE messages the mode information ins transmitted in
     // a heartbeat message. So we create the datatype for MODE here and put it into data model
+
+/*
+    // Tlog에 모드 정보가 전송 된 MODE 메시지가 없습니다.
+    // 하트 비트 메시지. 그래서 여기에서 MODE에 대한 데이터 유형을 생성하고 데이터 모델에 넣습니다.
+*/
+
     tlogDescriptor descriptor;
     descriptor.m_ID = 0;
     descriptor.m_name = ModeMessage::TypeName;
@@ -183,6 +200,12 @@ void TlogParser::addMissingDescriptors()
 
     // Tlog does not contain MSG messages. The information is gathered from STATUSTEXT tlog
     // messages. So we create the datatype for MSG here and put it into data model.
+
+/*
+    // Tlog에는 MSG 메시지가 없습니다. 정보는 STATUSTEXT tlog에서 수집됩니다.
+    // messages. 그래서 여기에 MSG에 대한 데이터 유형을 만들어 데이터 모델에 넣습니다.
+*/
+
     descriptor = tlogDescriptor();
     descriptor.m_ID = 0;
     descriptor.m_name = MsgMessage::TypeName;
@@ -210,12 +233,12 @@ bool TlogParser::parseDescriptor(tlogDescriptor &desc)
                 desc.m_labels.push_back(fieldinfo.name);
                 if (fieldinfo.array_length == 0)
                 {
-                    desc.m_format += "b";   // it is a single byte
+                    desc.m_format += "b";   // it is a single byte	 그것은 단일 바이트이다.  
                     desc.m_length += 1;
                 }
                 else
                 {
-                    desc.m_format += "Z";   // everything else is a string
+                    desc.m_format += "Z";   // everything else is a string	 그 외 모든 것은 문자열입니다.  
                     desc.m_length += 64;
                 }
             }
@@ -286,7 +309,7 @@ void TlogParser::extractDescriptorDataFields(tlogDescriptor &desc, const mavlink
 {
     if(fieldInfo.array_length == 0)
     {
-        // extract single value
+        // extract single value	 단일 값 추출  
         desc.m_labels.push_back(fieldInfo.name);
         desc.m_format += format;
         desc.m_length += size;
@@ -295,7 +318,7 @@ void TlogParser::extractDescriptorDataFields(tlogDescriptor &desc, const mavlink
     {
         for (unsigned int i = 0; i < fieldInfo.array_length; ++i)
         {
-            // extract array value
+            // extract array value	 배열 값 추출  
             QString name(fieldInfo.name);
             name.append('-');
             name.append(QString::number(i));
@@ -354,15 +377,22 @@ void TlogParser::newValue(int uasId, const QString &name, const QString &unit, c
     // "M1:RAW_IMU.time_usec" in standart case
     // "M1:BATTERY_STATUS.voltages.0" in case of an array
 
+/*
+    // 예상되는 데이터의 이름은 다음과 같습니다.
+    // standal 경우에는 "M1 : RAW_IMU.time_usec"
+    // 배열의 경우 "M1 : BATTERY_STATUS.voltages.0"
+*/
+
+
     if((mp_ReceiveData != nullptr) && value.isValid())
     {
         QStringList list = name.split(".");
         if(list.size() == 2)
-        {   // handle standart data
+        {   // handle standart data	 표준 데이터 처리  
             mp_ReceiveData->append(NameValuePair(list[1], value));
         }
         else if(list.size() == 3)
-        {   // handle array data
+        {   // handle array data	 배열 데이터를 처리합니다.  
             QString name(list[1] + "-" + list[2]);
             mp_ReceiveData->append(NameValuePair(name, value));
         }
@@ -387,9 +417,16 @@ void TlogParser::newTextValue(int uasId, int componentId, int severity, const QS
     // M1:STATUSTEXT.text: ArduCopter V3.6-dev (12a53ed6)
     // M1:STATUSTEXT.text: Frame: QUAD
 
+/*
+    // 예상되는 날짜는 다음과 같습니다.
+    // M1 : STATUSTEXT.text : ArduCopter V3.6-dev (12a53ed6)
+    // M1 : STATUSTEXT.text : 프레임 : QUAD
+*/
+
+
     if(mp_ReceiveData != nullptr && text.contains(':'))
     {
-         // we remove the "M1:STATUSTEXT.text:" part
+         // we remove the "M1:STATUSTEXT.text:" part	 "M1 : STATUSTEXT.text :"부분을 제거합니다.  
         int index = text.indexOf(':') + 1;
         index = text.indexOf(':', index) + 1;
 
@@ -405,12 +442,18 @@ bool TlogParser::extractModeMessage(const QList<NameValuePair> &NameValuePairLis
     // Tlog does not contain MODE messages the mode information ins transmitted in
     // a heartbeat message. So here we extract MODE data from heartbeat
 
-    // Only if mode val has canged
+/*
+    // Tlog에 모드 정보가 전송 된 MODE 메시지가 없습니다.
+    // 하트 비트 메시지. 여기서는 하트 비트에서 MODE 데이터를 추출합니다.
+*/
+
+
+    // Only if mode val has canged	 mode val이 뭉친 경우에만  
     if (m_lastModeVal != static_cast<quint8>(NameValuePairList[1].second.toInt()))
     {
         QList<NameValuePair> modeValuePairlist;
         tlogDescriptor modeDesc = m_nameToDescriptorMap.value(ModeMessage::TypeName);
-        // Extract MODE messages from heartbeat messages
+        // Extract MODE messages from heartbeat messages	 하트 비트 메시지에서 MODE 메시지 추출  
         m_lastModeVal = static_cast<quint8>(NameValuePairList[1].second.toInt());
 
         modeValuePairlist.append(QPair<QString, QVariant>(modeDesc.m_labels[0], nextValidTimestamp()));
@@ -431,6 +474,12 @@ bool TlogParser::extractMsgMessage(const QList<NameValuePair> &NameValuePairList
 {
     // Tlog does not contain MSG messages the MSG information ins transmitted in
     // a statustext message. So here we extract MSG data from statustext
+
+/*
+    // Tlog에는 MSG 정보가 전송 된 MSG 메시지가 없습니다.
+    // statustext 메시지. 그래서 여기서는 statustext에서 MSG 데이터를 추출합니다.
+*/
+
     QList<NameValuePair> msgValuePairlist;
     tlogDescriptor msgDesc = m_nameToDescriptorMap.value(MsgMessage::TypeName);
 

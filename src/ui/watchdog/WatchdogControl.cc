@@ -44,7 +44,7 @@ WatchdogControl::WatchdogControl(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    // UI is initialized, setup layout
+    // UI is initialized, setup layout	 UI가 초기화됩니다.  
     listLayout = new QVBoxLayout(ui->mainWidget);
     listLayout->setSpacing(6);
     listLayout->setMargin(0);
@@ -76,18 +76,41 @@ void WatchdogControl::updateWatchdog(int systemId, int watchdogId, unsigned int 
 {
     // request the watchdog with the given ID
     // Get the watchdog and request the info for it
+
+/*
+    // 주어진 ID로 워치 독을 요청한다.
+    // 워치 독을 가져와 정보를 요청합니다.
+*/
+
     WatchdogInfo& watchdog = this->getWatchdog(systemId, watchdogId);
 
     // if the proces count doesn't match, the watchdog is either new or has changed - create a new vector with new (and empty) ProcessInfo structs.
+
+/*
+   // 처리 횟수가 일치하지 않으면 워치 독은 새로운 것이거나 변경되었습니다. 새로운 (그리고 빈) ProcessInfo 구조체를 가진 새로운 벡터를 만듭니다.
+*/
+
     if (watchdog.processes_.size() != processCount) {
         watchdog.processes_ = std::vector<ProcessInfo>(processCount);
         // Create new UI widget
         //WatchdogView* view = new WatchdogView(this);
 
+/*
+        // 새 UI 위젯을 만듭니다.
+        // WatchdogView * view = 새로운 WatchdogView (this);
+*/
+
+
     }
 
     // start the timeout timer
     //watchdog.timeoutTimer_.reset();
+
+/*
+    // 타임 아웃 타이머를 시작합니다.
+    // watchdog.timeoutTimer_.reset ();
+*/
+
 
     QLOG_DEBUG() << "WATCHDOG RECEIVED";
 //    QLOG_TRACE() << "<-- received mavlink_watchdog_heartbeat_t " << msg->sysid << " / " << payload.watchdog_id << " / " << payload.process_count << std::endl;
@@ -95,11 +118,11 @@ void WatchdogControl::updateWatchdog(int systemId, int watchdogId, unsigned int 
 
 void WatchdogControl::addProcess(int systemId, int watchdogId, int processId, QString name, QString arguments, int timeout)
 {
-    // request the watchdog and the process with the given IDs
+    // request the watchdog and the process with the given IDs	 주어진 ID로 워치 독과 프로세스를 요청한다.  
     WatchdogInfo& watchdog = this->getWatchdog(systemId, watchdogId);
     ProcessInfo& process = watchdog.getProcess(processId);
 
-    // store the process information in the ProcessInfo struct
+    // store the process information in the ProcessInfo struct	  ProcessInfo 구조체에 프로세스 정보 저장  
     process.name_ = name.toStdString();
     process.arguments_ = arguments.toStdString();
     process.timeout_ = timeout;
@@ -111,11 +134,11 @@ void WatchdogControl::addProcess(int systemId, int watchdogId, int processId, QS
 
 void WatchdogControl::updateProcess(int systemId, int watchdogId, int processId, int state, bool muted, int crashes, int pid)
 {
-    // request the watchdog and the process with the given IDs
+    // request the watchdog and the process with the given IDs	 주어진 ID로 워치 독과 프로세스를 요청한다.  
     WatchdogInfo& watchdog = this->getWatchdog(systemId, watchdogId);
     ProcessInfo& process = watchdog.getProcess(processId);
 
-    // store the status information in the ProcessInfo struct
+    // store the status information in the ProcessInfo struct	 ProcessInfo 구조체에 상태 정보를 저장합니다.  
     process.state_ = static_cast<ProcessInfo::State::Enum>(state);
     process.muted_ = muted;
     process.crashes_ = crashes;
@@ -131,6 +154,11 @@ void WatchdogControl::updateProcess(int systemId, int watchdogId, int processId,
 /**
     @brief Returns a WatchdogInfo struct that belongs to the watchdog with the given system-ID and watchdog-ID
 */
+
+/*
+    @brief 지정된 system-ID 및 watchdog-ID를 가진 워치 독에 속한 WatchdogInfo 구조체를 반환합니다.
+*/
+
 WatchdogControl::WatchdogInfo& WatchdogControl::getWatchdog(uint8_t systemId, uint16_t watchdogId)
 {
     WatchdogID id(systemId, watchdogId);
@@ -138,9 +166,19 @@ WatchdogControl::WatchdogInfo& WatchdogControl::getWatchdog(uint8_t systemId, ui
     std::map<WatchdogID, WatchdogInfo>::iterator it = this->watchdogs_.find(id);
     if (it != this->watchdogs_.end()) {
         // the WatchdogInfo struct already exists in the map, return it
+
+/*
+        // WatchdogInfo 구조체가 이미 맵에 존재하면이를 반환합니다.
+*/
+
         return it->second;
     } else {
         // the WatchdogInfo struct doesn't exist - request info and status for all processes and create the struct
+
+/*
+        // WatchdogInfo 구조체가 존재하지 않습니다 - 모든 프로세스에 대한 정보와 상태를 요청하고 구조체를 생성합니다
+*/
+
         this->sendCommand(id, WatchdogControl::ALL, Command::RequestInfo);
         this->sendCommand(id, WatchdogControl::ALL, Command::RequestStatus);
         return this->watchdogs_[id];
@@ -150,9 +188,14 @@ WatchdogControl::WatchdogInfo& WatchdogControl::getWatchdog(uint8_t systemId, ui
 /**
     @brief Returns a ProcessInfo struct that belongs to the process with the given ID.
 */
+
+/*
+    @brief 지정된 ID를 가진 프로세스에 속한 ProcessInfo 구조체를 리턴합니다.
+*/
+
 WatchdogControl::ProcessInfo& WatchdogControl::WatchdogInfo::getProcess(uint16_t index)
 {
-    // if the index is out of bounds, resize the vector
+    // if the index is out of bounds, resize the vector	 인덱스가 경계를 벗어난 경우 벡터의 크기를 조정합니다.  
     if (index >= this->processes_.size())
         this->processes_.resize(index + 1);
 
@@ -165,6 +208,14 @@ WatchdogControl::ProcessInfo& WatchdogControl::WatchdogInfo::getProcess(uint16_t
     @param p_id The process-ID
     @param command The command-ID
 */
+
+/*
+    @brief 지정된 watchdog의 프로세스에 watchdog 명령을 보냅니다.
+    @param w_id 워치 독을 식별하는 WatchdogID 구조체 (시스템 ID와 워치 독 ID 포함)
+    @param p_id 프로세스 ID
+    @param command 커멘드 ID
+*/
+
 void WatchdogControl::sendCommand(const WatchdogID& w_id, uint16_t p_id, Command::Enum command)
 {
     emit sendProcessCommand(w_id.watchdog_id_, p_id, command);

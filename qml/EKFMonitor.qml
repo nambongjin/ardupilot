@@ -19,7 +19,7 @@ import QtQuick 2.2
 import "./components"
 
 Rectangle {
-    // Property Defintions
+    // Property Defintions   속성 정의
     id:root
 
     function activeUasSet() {

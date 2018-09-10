@@ -46,7 +46,7 @@ RadioFlashWizard::RadioFlashWizard(QWidget *parent) :
     connect(this, SIGNAL(finished(int)),SLOT(accept()));
     connect(this, SIGNAL(currentIdChanged(int)), this, SLOT(selectPage(int)));
 
-    // Set up Serial Port Baud Rate selection
+    // Set up Serial Port Baud Rate selection	 직렬 포트 전송 속도 선택 설정  
     ui->baudrateComboBox->addItem(QLatin1String("115200"), QSerialPort::Baud115200);
     ui->baudrateComboBox->addItem(QLatin1String("57600"), QSerialPort::Baud57600);
     ui->baudrateComboBox->addItem(QLatin1String("38400"), QSerialPort::Baud38400);
@@ -56,7 +56,7 @@ RadioFlashWizard::RadioFlashWizard(QWidget *parent) :
     ui->baudrateComboBox->addItem(QLatin1String("9600"), QSerialPort::Baud2400);
     ui->baudrateComboBox->addItem(QLatin1String("9600"), QSerialPort::Baud1200);
 
-    ui->baudrateComboBox->setCurrentIndex(ui->baudrateComboBox->findData(QSerialPort::Baud57600)); // Select 57600 default
+    ui->baudrateComboBox->setCurrentIndex(ui->baudrateComboBox->findData(QSerialPort::Baud57600)); // Select 57600 default	 57600 기본값을 선택하십시오.  
 }
 
 RadioFlashWizard::~RadioFlashWizard()
