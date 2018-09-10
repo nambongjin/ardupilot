@@ -27,6 +27,13 @@ This file is part of the APM_PLANNER project
  *   @author Michael Carpenter <malcom2073@gmail.com>
  *
  */
+/* *
+ * @file
+ * @brief APM 하드웨어 설정 위젯 소스.
+ *
+ * @author Michael Carpenter <malcom2073@gmail.com>
+ *
+ */
 #include "logging.h"
 #include "ApmHardwareConfig.h"
 
@@ -55,13 +62,13 @@ ApmHardwareConfig::ApmHardwareConfig(QWidget *parent) : AP2ConfigWidget(parent),
     ui.cameraGimbalButton->setVisible(false);
     ui.antennaTrackerButton->setVisible(false);
 
-    ui.hiddenPushButton->setVisible(false); // And it's checked.
-    ui.radio3DRLargeButton->setVisible(true); // [SHOW 3DR RADIO]
-    ui.antennaTrackerLargeButton->setVisible(false); // [HIDE Antenna Tracking]
+    ui.hiddenPushButton->setVisible(false); // And it's checked.// 그리고 검사가 끝났습니다.
+    ui.radio3DRLargeButton->setVisible(true); // [SHOW 3DR RADIO]// [3DR 라디오보기]
+    ui.antennaTrackerLargeButton->setVisible(false); // [HIDE Antenna Tracking]// [안테나 추적 숨기기]
 
     m_apmFirmwareConfig = new ApmFirmwareConfig(this);
     connect(m_apmFirmwareConfig,SIGNAL(showBlankingScreen()),this,SLOT(activateBlankingScreen()));
-    ui.stackedWidget->addWidget(m_apmFirmwareConfig); //Firmware placeholder.
+    ui.stackedWidget->addWidget(m_apmFirmwareConfig); //Firmware placeholder.// 펌웨어 자리 표시 자.
     m_buttonToConfigWidgetMap[ui.firmwareButton] = m_apmFirmwareConfig;
     connect(ui.firmwareButton,SIGNAL(clicked()),this,SLOT(activateStackedWidget()));
     connect(this, SIGNAL(advancedModeChanged(bool)), m_apmFirmwareConfig, SLOT(advancedModeChanged(bool)));
@@ -156,11 +163,13 @@ ApmHardwareConfig::ApmHardwareConfig(QWidget *parent) : AP2ConfigWidget(parent),
     }
 
     // Setup Parameter Progress bars
+    // 설정 매개 변수 진행률 막대
     ui.globalParamProgressBar->setRange(0,100);
 
     ui.mandatoryHardware->setChecked(true);
 
     // Set start up WarningMessageView view
+    // 시작 설정 WarningMessageView 뷰
     ui.stackedWidget->setCurrentWidget(m_buttonToConfigWidgetMap[ui.hiddenPushButton]);
     ui.hiddenPushButton->setChecked(true);
 }
@@ -202,6 +211,7 @@ void ApmHardwareConfig::uasConnected()
     connect(ui.mandatoryHardware, SIGNAL(clicked()),
             this, SLOT(mandatoryClicked()),Qt::UniqueConnection);
     // Hide offline options and show Optional and Mandatory buttons
+    // 오프라인 옵션 숨기기 및 옵션 및 필수 버튼 표시
     ui.radio3DRLargeButton->setVisible(false);
     ui.antennaTrackerLargeButton->setVisible(false);
 
@@ -224,6 +234,7 @@ void ApmHardwareConfig::uasDisconnected()
     }
     QLOG_DEBUG() << "AHC: uasDisconnected()";
     // Show offline options and hide Optional and Mandatory buttons
+    // 오프라인 옵션 표시 및 선택 및 필수 버튼 숨기기
     disconnect(ui.mandatoryHardware, SIGNAL(clicked()),
                 this, SLOT(mandatoryClicked()));
     disconnect(ui.optionalHardwareButton, SIGNAL(clicked()),
@@ -252,8 +263,8 @@ void ApmHardwareConfig::uasDisconnected()
     ui.osdButton->setVisible(false);
     ui.cameraGimbalButton->setVisible(false);
 
-    ui.radio3DRLargeButton->setVisible(true); // [SHOW 3DR RADIO]
-    ui.antennaTrackerLargeButton->setVisible(false); // [HIDE Antenna Tracking]
+    ui.radio3DRLargeButton->setVisible(true); // [SHOW 3DR RADIO]// [3DR 라디오보기]
+    ui.antennaTrackerLargeButton->setVisible(false); // [HIDE Antenna Tracking]// [안테나 추적 숨기기]
 
     ui.stackedWidget->setCurrentWidget(m_buttonToConfigWidgetMap[ui.hiddenPushButton]);
     ui.hiddenPushButton->setChecked(true);
@@ -293,9 +304,9 @@ void ApmHardwareConfig::optionalClicked()
         return;
     if (m_mandatory == false) {
         ui.optionalHardwareButton->setChecked(true);
-        return; // no change of state
+        return; // no change of state// 상태 변경 없음
     }
-    m_mandatory = false; // show optional options
+    m_mandatory = false; // show optional options// 선택적 옵션 표시
 
     toggleButtonsShown(m_mandatory);
     ui.mandatoryHardware->setChecked(false);
@@ -308,9 +319,9 @@ void ApmHardwareConfig::mandatoryClicked()
         return;
     if (m_mandatory == true){
         ui.mandatoryHardware->setChecked(true);
-        return; // no change of state
+        return; // no change of state// 상태 변경 없음
     }
-    m_mandatory = true; // show mandatory options.
+    m_mandatory = true; // show mandatory options.// 필수 옵션을 표시하십시오.
 
     toggleButtonsShown(m_mandatory);
     ui.optionalHardwareButton->setChecked(false);
@@ -327,9 +338,11 @@ void ApmHardwareConfig::toggleButtonsShown(bool show)
     if (m_uas->isMultirotor()){
         QLOG_DEBUG() << "Multirotor";
         // Buttons to disable
+        // 비활성화 할 버튼
         ui.airspeedButton->setVisible(false);
 
         // Mandatory Options to show
+        // 표시 할 필수 옵션
         ui.frameTypeButton->setVisible(show);
         ui.compassButton->setVisible(show);
         ui.accelCalibrateButton->setVisible(show);
@@ -338,6 +351,7 @@ void ApmHardwareConfig::toggleButtonsShown(bool show)
         ui.failSafeButton->setVisible(show);
 
         // Optional Options to Hide
+        // 숨길 옵션
         ui.batteryMonitorButton->setVisible(!show);
         ui.opticalFlowButton->setVisible(!show);
         ui.osdButton->setVisible(!show);
@@ -348,9 +362,11 @@ void ApmHardwareConfig::toggleButtonsShown(bool show)
     } else if (m_uas->isFixedWing()){
         QLOG_DEBUG() << "FixedWing";
         // Buttons to disable
+        // 비활성화 할 버튼
         ui.frameTypeButton->setVisible(false);
 
         // Mandatory Options to show
+        // 표시 할 필수 옵션
         ui.compassButton->setVisible(show);
         ui.accelCalibrateButton->setVisible(show);
         ui.radioCalibrateButton->setVisible(show);
@@ -358,6 +374,7 @@ void ApmHardwareConfig::toggleButtonsShown(bool show)
         ui.failSafeButton->setVisible(show);
 
         // Optional Options to Hide
+        // 숨길 옵션
         ui.batteryMonitorButton->setVisible(!show);
         ui.opticalFlowButton->setVisible(!show);
         ui.osdButton->setVisible(!show);
@@ -367,12 +384,15 @@ void ApmHardwareConfig::toggleButtonsShown(bool show)
 
     } else {
         // Assume Ground Vehicle et al.
+        // Ground Vehicle을 가정한다.
         QLOG_DEBUG() << "Ground Vehicle & Other";
         // Butons to disable
+        // 비활성화 할 Butons
         ui.frameTypeButton->setVisible(false);
         ui.airspeedButton->setVisible(false);
 
         // Mandatory Options to show
+        // 표시 할 필수 옵션
         ui.compassButton->setVisible(show);
         ui.accelCalibrateButton->setVisible(show);
         ui.radioCalibrateButton->setVisible(show);
@@ -380,6 +400,7 @@ void ApmHardwareConfig::toggleButtonsShown(bool show)
         ui.failSafeButton->setVisible(show);
 
         // Optional Options to Hide
+        // 숨길 옵션
 //        ui.radio3DRButton->setShown(!show); [HIDE 3DR RADIO]
         ui.batteryMonitorButton->setVisible(!show);
         ui.opticalFlowButton->setVisible(!show);
@@ -397,19 +418,23 @@ void ApmHardwareConfig::parameterChanged(int uas, int component, int parameterCo
 
     QString countString;
     // Create progress of downloading all parameters for UI
+    // UI의 모든 매개 변수를 다운로드하는 과정을 만듭니다.
     switch (m_paramDownloadState){
     case none:
         if (parameterId == UINT16_MAX){
             // This is an ACK package, not a full read
+            // 이것은 ACK 패키지이며 전체 읽기는 아닙니다.
             break;
         } else if ((parameterId == 0) && (parameterCount != UINT16_MAX)) {
             // Its a new download List, Start from zero.
+            // 새로운 다운로드 목록, 0부터 시작합니다.
             ui.globalParamStateLabel->setText(tr("Downloading Params..."));
         } else {
             break;
         }
 
         // Otherwise, trigger progress bar update.
+        // 그렇지 않으면 진행률 표시 줄 업데이트를 트리거합니다.
     case startRead:
         QLOG_INFO() << "Starting Global Param Progress Bar Updating sys:" << uas;
         m_paramDownloadCount = 1;
@@ -447,6 +472,6 @@ void ApmHardwareConfig::parameterChanged(int uas, int component, int parameterCo
         break;
 
     default:
-        ; // Do Nothing
+        ; // Do Nothing// 아무것도하지 마라.
     }
 }
