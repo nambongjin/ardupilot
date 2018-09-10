@@ -27,6 +27,12 @@ This file is part of the QGROUNDCONTROL project
  *   @author Lorenz Meier <mavteam@student.ethz.ch>
  *
  */
+/**
+ * @file
+ * @brief WatchdogView 클래스의 정의
+ * @author Lorenz Meier <mavteam@student.ethz.ch>
+ *
+ */
 
 #ifndef WATCHDOGVIEW_H
 #define WATCHDOGVIEW_H
@@ -41,6 +47,10 @@ class WatchdogView;
 /**
  * @brief Represents one onboard watchdog
  */
+/**
+ * @brief는 온보드 워치 독을 나타냅니다.
+ */
+
 class WatchdogView : public QWidget
 {
     Q_OBJECT

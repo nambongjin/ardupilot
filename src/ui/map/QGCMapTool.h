@@ -21,6 +21,8 @@ public:
 public slots:
     void setMapZoom(int zoom);
     /** @brief Update slider zoom from map change */
+    /** @brief지도 변경에서 업데이트 슬라이더 줌 */
+
     void setZoom(int zoom);
 
 signals:

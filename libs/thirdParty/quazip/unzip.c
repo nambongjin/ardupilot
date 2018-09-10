@@ -7,10 +7,21 @@
 
    Modified by Sergey A. Tachenov to integrate with Qt.
 */
+/* unzip.c - zlib를 사용하여 압축 해제 .zip 파일을위한 입출력
+   버전 1.01e, 2005 년 2 월 12 일
+   Copyright (C) 1998-2005 Gilles Vollant
+   자세한 정보는 unzip.h를 읽으십시오.
+   Sergey A. Tachenov가 Qt와 통합하기 위해 수정했습니다.
+*/
+
 
 /* Decryption code comes from crypt.c by Info-ZIP but has been greatly reduced in terms of
 compatibility with older software. The following is from the original crypt.c. Code
 woven in by Terry Thorsen 1/2003.
+*/
+/* 암호 해독 코드는 Info-ZIP에 의해 crypt.c에서 유래되었지만
+구형 소프트웨어와의 호환성. 다음은 원래 crypt.c에서 온 것입니다. 암호
+Terry Thorsen 1/2003에 의해 짠.
 */
 /*
   Copyright (c) 1990-2000 Info-ZIP.  All rights reserved.
@@ -21,6 +32,13 @@ woven in by Terry Thorsen 1/2003.
   also may be found at:  ftp://ftp.info-zip.org/pub/infozip/license.html
 */
 /*
+  Copyright (c) 1990-2000 Info-ZIP. 판권 소유.
+  첨부 파일 참조 LICENSE, 2000 년 4 월 -9 또는 이후 버전
+  (내용은 zip.h에도 포함되어 있습니다).
+  어떤 이유로 든 이러한 모든 파일이 누락 된 경우 Info-ZIP 라이센스
+  또한 ftp://ftp.info-zip.org/pub/infozip/license.html에서 찾을 수 있습니다.
+*/
+/*
   crypt.c (full version) by Info-ZIP.      Last revised:  [see crypt.h]
 
   The encryption/decryption parts of this source code (as opposed to the
@@ -28,12 +46,25 @@ woven in by Terry Thorsen 1/2003.
   whole source package can be freely distributed, including from the USA.
   (Prior to January 2000, re-export from the US was a violation of US law.)
  */
+/*
+  Info-ZIP에 의한 crypt.c (정식 버전). 마지막 개정 : [crypt.h 참조]
+  이 소스 코드의 암호화 / 암호 해독 부분 (
+  비 에코 비밀번호 부분)는 원래 유럽에서 작성되었습니다. 그만큼
+  전체 소스 패키지는 미국을 포함하여 자유롭게 배포 될 수 있습니다.
+  (2000 년 1 월 이전에 미국에서의 재수출은 미국 법률의 위반이었습니다.)
+ */
 
 /*
   This encryption code is a direct transcription of the algorithm from
   Roger Schlafly, described by Phil Katz in the file appnote.txt.  This
   file (appnote.txt) is distributed with the PKZIP program (even in the
   version without encryption capabilities).
+ */
+/*
+  이 암호화 코드는 다음과 같은 알고리즘의 직접적인 표현입니다.
+  Roger Schlafly, Phil Katz가 appnote.txt 파일에 설명했습니다. 이
+  파일 (appnote.txt)은 PKZIP 프로그램과 함께 배포됩니다 (
+  암호화 기능이없는 버전).
  */
 
 
@@ -59,7 +90,7 @@ woven in by Terry Thorsen 1/2003.
 #  define local static
 #endif
 /* compile with -Dlocal if your debugger can't find static symbols */
-
+/* 디버거가 정적 기호를 찾을 수없는 경우 -Dlocal로 컴파일하십시오 */
 
 #ifndef CASESENSITIVITYDEFAULT_NO
 #  if !defined(unix) && !defined(CASESENSITIVITYDEFAULT_YES)
@@ -93,62 +124,79 @@ const char unz_copyright[] =
    " unzip 1.01 Copyright 1998-2004 Gilles Vollant - http://www.winimage.com/zLibDll";
 
 /* unz_file_info_interntal contain internal info about a file in zipfile*/
+/* unz_file_info_interntal은 zipfile에있는 파일에 대한 내부 정보를 포함합니다 */
 typedef struct unz_file_info_internal_s
 {
     uLong offset_curfile;/* relative offset of local header 4 bytes */
-} unz_file_info_internal;
+} unz_file_info_internal;/* 로컬 헤더의 상대 오프셋 4 바이트 */
 
 
 /* file_in_zip_read_info_s contain internal information about a file in zipfile,
     when reading and decompress it */
+/* file_in_zip_read_info_s에는 zipfile에있는 파일에 대한 내부 정보가 들어 있습니다.
+    읽기 및 압축 해제시 */
 typedef struct
 {
     char  *read_buffer;         /* internal buffer for compressed data */
+                                /* 압축 된 데이터를위한 내부 버퍼 */
     z_stream stream;            /* zLib stream structure for inflate */
-
+                                /* zLib inflate를위한 스트림 구조 */
     uLong pos_in_zipfile;       /* position in byte on the zipfile, for fseek*/
+                                /* zip 파일의 바이트 위치, fseek의 경우 */
     uLong stream_initialised;   /* flag set if stream structure is initialised*/
+                                /* 스트림 구조가 초기화 된 경우 플래그가 설정됩니다. */
 
     uLong offset_local_extrafield;/* offset of the local extra field */
-    uInt  size_local_extrafield;/* size of the local extra field */
+                                  /* 로컬 추가 필드의 오프셋 */
+    uInt  size_local_extrafield;  /* size of the local extra field */
+                                  /* 로컬 추가 필드의 크기 */
     uLong pos_local_extrafield;   /* position in the local extra field in read*/
+                                  /* 읽기에서 로컬 추가 필드의 위치 */
 
     uLong crc32;                /* crc32 of all data uncompressed */
+                                /* 압축되지 않은 모든 데이터의 crc32 */
     uLong crc32_wait;           /* crc32 we must obtain after decompress all */
+                                /* crc32 모두 압축 해제 한 후에 가져와야합니다. */
     uLong rest_read_compressed; /* number of byte to be decompressed */
+                                /* 압축 해제 할 바이트 수 */
     uLong rest_read_uncompressed;/*number of byte to be obtained after decomp*/
+                                 /* decomp 다음에 얻어지는 바이트 수 */
     zlib_filefunc_def z_filefunc;
     voidpf filestream;        /* io structore of the zipfile */
+                              /* zip 파일의 구조체 */
     uLong compression_method;   /* compression method (0==store) */
+                                /* 압축 메소드 (0 == store) */
     uLong byte_before_the_zipfile;/* byte before the zipfile, (>0 for sfx)*/
-    int   raw;
+    int   raw;                    /* zip 파일 앞의 바이트 (sfx의 경우> 0) */
 } file_in_zip_read_info_s;
 
 
 /* unz_s contain internal information about the zipfile
 */
+/* unz_s에는 zip 파일에 대한 내부 정보가 들어 있습니다.
+*/
 typedef struct
 {
     zlib_filefunc_def z_filefunc;
-    voidpf filestream;        /* io structore of the zipfile */
-    unz_global_info gi;       /* public global information */
-    uLong byte_before_the_zipfile;/* byte before the zipfile, (>0 for sfx)*/
-    uLong num_file;             /* number of the current file in the zipfile*/
-    uLong pos_in_central_dir;   /* pos of the current file in the central dir*/
-    uLong current_file_ok;      /* flag about the usability of the current file*/
-    uLong central_pos;          /* position of the beginning of the central dir*/
+    voidpf filestream;        /* io structore of the zipfile */                    /* zip 파일의 구조체 */
+    unz_global_info gi;       /* public global information */                      /* 공공 글로벌 정보 */
+    uLong byte_before_the_zipfile;/* byte before the zipfile, (>0 for sfx)*/       /* zip 파일 앞의 바이트 (sfx의 경우> 0) */
+    uLong num_file;             /* number of the current file in the zipfile*/     /* zip 파일의 현재 파일 번호 */
+    uLong pos_in_central_dir;   /* pos of the current file in the central dir*/    /* 중앙 디렉토리에있는 현재 파일의 위치 */
+    uLong current_file_ok;      /* flag about the usability of the current file*/  /* 현재 파일의 유용성에 대한 플래그 */
+    uLong central_pos;          /* position of the beginning of the central dir*/  /* 중앙 디렉토리의 시작 위치 */
 
-    uLong size_central_dir;     /* size of the central directory  */
-    uLong offset_central_dir;   /* offset of start of central directory with
-                                   respect to the starting disk number */
+    uLong size_central_dir;     /* size of the central directory  */               /* 중앙 디렉토리 크기   */
+    uLong offset_central_dir;   /* offset of start of central directory with       // 중앙 디렉토리의 시작 오프셋시작
+                                   respect to the starting disk number */          // 디스크 번호와 관련된
 
-    unz_file_info cur_file_info; /* public info about the current file in zip*/
-    unz_file_info_internal cur_file_info_internal; /* private info about it*/
-    file_in_zip_read_info_s* pfile_in_zip_read; /* structure about the current
-                                        file if we are decompressing it */
+    unz_file_info cur_file_info; /* public info about the current file in zip*/    /* zip에있는 현재 파일에 대한 공개 정보 */
+    unz_file_info_internal cur_file_info_internal; /* private info about it*/      /* 개인 정보 */
+    file_in_zip_read_info_s* pfile_in_zip_read; /* structure about the current     // 현재의 구조
+                                        file if we are decompressing it */         // 압축을 풀 경우 파일
     int encrypted;
 #    ifndef NOUNCRYPT
-    unsigned long keys[3];     /* keys defining the pseudo-random sequence */
+    unsigned long keys[3];     /* keys defining the pseudo-random sequence */      /* 의사 랜덤 시퀀스를 정의하는 키 */
     const unsigned long* pcrc_32_tab;
 #    endif
 } unz_s;
@@ -162,6 +210,11 @@ typedef struct
      Read a byte from a gz_stream; update next_in and avail_in. Return EOF
    for end of file.
    IN assertion: the stream s has been sucessfully opened for reading.
+*/
+/* ====================================== ===============
+     gz_stream에서 1 바이트를 읽습니다. next_in 및 avail_in을 업데이트하십시오. EOF를 반환하십시오.
+   파일 끝.
+   IN 어설 션 : 스트림 s가 성공적으로 읽기 위해 열렸습니다.
 */
 
 
@@ -194,6 +247,9 @@ local int unzlocal_getByte(pzlib_filefunc_def,filestream,pi)
 
 /* ===========================================================================
    Reads a long in LSB order from the given gz_stream. Sets
+*/
+/* =====================================================
+   주어진 gz_stream에서 LSB 순서로 long을 읽습니다. 세트
 */
 local int unzlocal_getShort OF((
     const zlib_filefunc_def* pzlib_filefunc_def,
@@ -261,6 +317,7 @@ local int unzlocal_getLong (pzlib_filefunc_def,filestream,pX)
 
 
 /* My own strcmpi / strcasecmp */
+/* 내 자신의 strcmpi / strcasecmp */
 local int strcmpcasenosensitive_internal (fileName1,fileName2)
     const char* fileName1;
     const char* fileName2;
@@ -304,6 +361,14 @@ local int strcmpcasenosensitive_internal (fileName1,fileName2)
         (like 1 on Unix, 2 on Windows)
 
 */
+/*
+   두 파일 이름 (fileName1, fileName2)을 비교하십시오.
+   iCaseSenisivity = 1 인 경우 비교는 대소 문자를 구분합니다 (예 : strcmp)
+   iCaseSenisivity = 2 인 경우 비교는 대소 문자를 구분하지 않습니다 (예 : strcmpi
+                                                                또는 strcasecmp)
+   iCaseSenisivity = 0 인 경우 운영 체제에서 대소 문자를 구분하지 않습니다.
+        (Unix의 경우 1, Windows의 경우 2)
+*/
 extern int ZEXPORT unzStringFileNameCompare (fileName1,fileName2,iCaseSensitivity)
     const char* fileName1;
     const char* fileName2;
@@ -326,6 +391,10 @@ extern int ZEXPORT unzStringFileNameCompare (fileName1,fileName2,iCaseSensitivit
   Locate the Central directory of a zipfile (at the end, just before
     the global comment)
 */
+/*
+  zip 파일의 중앙 디렉토리를 찾으십시오 (끝에, 바로 앞에
+    글로벌 코멘트)
+*/
 local uLong unzlocal_SearchCentralDir OF((
     const zlib_filefunc_def* pzlib_filefunc_def,
     voidpf filestream));
@@ -338,7 +407,7 @@ local uLong unzlocal_SearchCentralDir(pzlib_filefunc_def,filestream)
     uLong uSizeFile;
     uLong uBackRead;
     uLong uMaxBack=0xffff; /* maximum size of global comment */
-    uLong uPosFound=0;
+    uLong uPosFound=0;     /* 전체 주석의 최대 크기 */
 
     if (ZSEEK(*pzlib_filefunc_def,filestream,0,ZLIB_FILEFUNC_SEEK_END) != 0)
         return 0;
@@ -396,6 +465,15 @@ local uLong unzlocal_SearchCentralDir(pzlib_filefunc_def,filestream)
      Else, the return value is a unzFile Handle, usable with other function
        of this unzip package.
 */
+/*
+  Zip 파일을 엽니 다. 경로에는 전체 경로 이름 (예 :
+     Windows NT 컴퓨터 "c : \\ test \\ zlib114.zip"또는 유닉스 컴퓨터
+     "zlib / zlib114.zip".
+     zip 파일을 열 수 없으면 (파일이 없거나 유효하지 않은 경우)
+       반환 값은 NULL입니다.
+     그렇지 않으면 반환 값은 unzFile Handle이며 다른 함수와 함께 사용할 수 있습니다.
+       이 압축 패키지의.
+*/
 extern unzFile ZEXPORT unzOpen2 (file, pzlib_filefunc_def)
     voidpf file;
     zlib_filefunc_def* pzlib_filefunc_def;
@@ -406,11 +484,18 @@ extern unzFile ZEXPORT unzOpen2 (file, pzlib_filefunc_def)
 
     uLong number_disk;          /* number of the current dist, used for
                                    spaning ZIP, unsupported, always 0*/
+                                /* 현재 dist의 번호.
+                                   스팬 ZIP, 지원되지 않음, 항상 0 */
     uLong number_disk_with_CD;  /* number the the disk with central dir, used
                                    for spaning ZIP, unsupported, always 0*/
+                                /* 사용 된 중앙 디렉토리가있는 디스크의 번호를 지정합니다.
+                                   ZIP 스팬 용, 지원되지 않음, 항상 0 */
     uLong number_entry_CD;      /* total number of entries in
                                    the central dir
                                    (same than number_entry on nospan) */
+                                /* 총 항목 수
+                                   중심 방향
+                                   (nospan의 number_entry와 동일) */
 
     int err=UNZ_OK;
 
@@ -438,22 +523,27 @@ extern unzFile ZEXPORT unzOpen2 (file, pzlib_filefunc_def)
         err=UNZ_ERRNO;
 
     /* the signature, already checked */
+    /* 이미 체크 된 서명 */
     if (unzlocal_getLong(&us.z_filefunc, us.filestream,&uL)!=UNZ_OK)
         err=UNZ_ERRNO;
 
     /* number of this disk */
+    /* 이 디스크의 번호 */
     if (unzlocal_getShort(&us.z_filefunc, us.filestream,&number_disk)!=UNZ_OK)
         err=UNZ_ERRNO;
 
     /* number of the disk with the start of the central directory */
+    /* 중앙 디렉토리 시작과 함께 디스크 번호 */
     if (unzlocal_getShort(&us.z_filefunc, us.filestream,&number_disk_with_CD)!=UNZ_OK)
         err=UNZ_ERRNO;
 
     /* total number of entries in the central dir on this disk */
+    /* 이 디스크의 중앙 디렉토리에있는 총 항목 수 */
     if (unzlocal_getShort(&us.z_filefunc, us.filestream,&us.gi.number_entry)!=UNZ_OK)
         err=UNZ_ERRNO;
 
     /* total number of entries in the central dir */
+    /* 중앙 디렉토리의 총 항목 수 */
     if (unzlocal_getShort(&us.z_filefunc, us.filestream,&number_entry_CD)!=UNZ_OK)
         err=UNZ_ERRNO;
 
@@ -463,15 +553,18 @@ extern unzFile ZEXPORT unzOpen2 (file, pzlib_filefunc_def)
         err=UNZ_BADZIPFILE;
 
     /* size of the central directory */
+    /* 중앙 디렉토리 크기 */
     if (unzlocal_getLong(&us.z_filefunc, us.filestream,&us.size_central_dir)!=UNZ_OK)
         err=UNZ_ERRNO;
 
     /* offset of start of central directory with respect to the
           starting disk number */
+    /* 해당 디렉토리에 대한 중앙 디렉토리의 시작 오프셋 디스크 번호 시작 */
     if (unzlocal_getLong(&us.z_filefunc, us.filestream,&us.offset_central_dir)!=UNZ_OK)
-        err=UNZ_ERRNO;
+           err=UNZ_ERRNO;
 
     /* zipfile comment length */
+    /* zipfile 주석 길이 */
     if (unzlocal_getShort(&us.z_filefunc, us.filestream,&us.gi.size_comment)!=UNZ_OK)
         err=UNZ_ERRNO;
 
@@ -510,6 +603,11 @@ extern unzFile ZEXPORT unzOpen (file)
   If there is files inside the .Zip opened with unzipOpenCurrentFile (see later),
     these files MUST be closed with unzipCloseCurrentFile before call unzipClose.
   return UNZ_OK if there is no problem. */
+/*
+  unzipOpen으로 열린 ZipFile을 닫습니다.
+  unzipOpenCurrentFile (나중에 보시오)로 열린 .Zip 안에 파일이 있다면,
+    이러한 파일은 unzipClose를 호출하기 전에 unzipCloseCurrentFile로 닫혀 있어야합니다 (MUST).
+  문제가 없으면 UNZ_OK를 리턴하십시오. */
 extern int ZEXPORT unzClose (file)
     unzFile file;
 {
@@ -531,6 +629,11 @@ extern int ZEXPORT unzClose (file)
   Write info about the ZipFile in the *pglobal_info structure.
   No preparation of the structure is needed
   return UNZ_OK if there is no problem. */
+/*
+  * pglobal_info 구조체에 ZipFile에 대한 정보를 작성하십시오.
+  구조의 준비가 필요 없습니다.
+  문제가 없으면 UNZ_OK를 리턴하십시오. */
+
 extern int ZEXPORT unzGetGlobalInfo (file,pglobal_info)
     unzFile file;
     unz_global_info *pglobal_info;
@@ -546,6 +649,9 @@ extern int ZEXPORT unzGetGlobalInfo (file,pglobal_info)
 
 /*
    Translate date/time from Dos format to tm_unz (readable more easilty)
+*/
+/*
+   Dos 형식에서 tm_unz (더 읽기 쉬운) 날짜 / 시간 번역
 */
 local void unzlocal_DosDateToTmuDate (ulDosDate, ptm)
     uLong ulDosDate;
@@ -564,6 +670,9 @@ local void unzlocal_DosDateToTmuDate (ulDosDate, ptm)
 
 /*
   Get Info about the current file in the zipfile, with internal only info
+*/
+/*
+  내부 전용 정보가있는 zip 파일의 현재 파일에 대한 정보 얻기
 */
 local int unzlocal_GetCurrentFileInfoInternal OF((unzFile file,
                                                   unz_file_info *pfile_info,
@@ -609,6 +718,7 @@ local int unzlocal_GetCurrentFileInfoInternal (file,
 
 
     /* we check the magic */
+    /* 우리는 마법을 확인합니다 */
     if (err==UNZ_OK) {
         if (unzlocal_getLong(&s->z_filefunc, s->filestream,&uMagic) != UNZ_OK)
             err=UNZ_ERRNO;
@@ -746,6 +856,11 @@ local int unzlocal_GetCurrentFileInfoInternal (file,
   No preparation of the structure is needed
   return UNZ_OK if there is no problem.
 */
+/*
+  * pglobal_info 구조체에 ZipFile에 대한 정보를 작성하십시오.
+  구조의 준비가 필요 없습니다.
+  문제가 없으면 UNZ_OK를 리턴하십시오.
+*/
 extern int ZEXPORT unzGetCurrentFileInfo (file,
                                           pfile_info,
                                           szFileName, fileNameBufferSize,
@@ -770,6 +885,10 @@ extern int ZEXPORT unzGetCurrentFileInfo (file,
   Set the current file of the zipfile to the first file.
   return UNZ_OK if there is no problem
 */
+/*
+  zip 파일의 현재 파일을 첫 번째 파일로 설정하십시오.
+  문제가없는 경우 UNZ_OK를 반환합니다.
+*/
 extern int ZEXPORT unzGoToFirstFile (file)
     unzFile file;
 {
@@ -792,6 +911,11 @@ extern int ZEXPORT unzGoToFirstFile (file)
   return UNZ_OK if there is no problem
   return UNZ_END_OF_LIST_OF_FILE if the actual file was the latest.
 */
+/*
+  zip 파일의 현재 파일을 다음 파일로 설정하십시오.
+  문제가없는 경우 UNZ_OK를 반환합니다.
+  실제 파일이 최신 파일이면 UNZ_END_OF_LIST_OF_FILE을 반환합니다.
+*/
 extern int ZEXPORT unzGoToNextFile (file)
     unzFile file;
 {
@@ -804,6 +928,7 @@ extern int ZEXPORT unzGoToNextFile (file)
     if (!s->current_file_ok)
         return UNZ_END_OF_LIST_OF_FILE;
     if (s->gi.number_entry != 0xffff)    /* 2^16 files overflow hack */
+                                         /* 2 ^ 16 파일 오버플 해킹 */
       if (s->num_file+1==s->gi.number_entry)
         return UNZ_END_OF_LIST_OF_FILE;
 
@@ -826,6 +951,13 @@ extern int ZEXPORT unzGoToNextFile (file)
   UNZ_OK if the file is found. It becomes the current file.
   UNZ_END_OF_LIST_OF_FILE if the file is not found
 */
+/*
+  zip 파일에서 szFileName 파일을 찾으십시오.
+  iCaseSensitivity의 의미는 unzipStringFileNameCompare를 참조하십시오.
+  반환 값 :
+  파일이 발견되면 UNZ_OK입니다. 현재 파일이됩니다.
+  파일을 찾을 수없는 경우 UNZ_END_OF_LIST_OF_FILE
+*/
 extern int ZEXPORT unzLocateFile (file, szFileName, iCaseSensitivity)
     unzFile file;
     const char *szFileName;
@@ -836,6 +968,9 @@ extern int ZEXPORT unzLocateFile (file, szFileName, iCaseSensitivity)
 
     /* We remember the 'current' position in the file so that we can jump
      * back there if we fail.
+     */
+    /* 우리는 점프 할 수 있도록 파일의 '현재'위치를 기억합니다
+     *우리가 실패하면 다시 거기에.
      */
     unz_file_info cur_file_infoSaved;
     unz_file_info_internal cur_file_info_internalSaved;
@@ -854,6 +989,7 @@ extern int ZEXPORT unzLocateFile (file, szFileName, iCaseSensitivity)
         return UNZ_END_OF_LIST_OF_FILE;
 
     /* Save the current state */
+    /* 현재 상태 저장 */
     num_fileSaved = s->num_file;
     pos_in_central_dirSaved = s->pos_in_central_dir;
     cur_file_infoSaved = s->cur_file_info;
@@ -879,6 +1015,9 @@ extern int ZEXPORT unzLocateFile (file, szFileName, iCaseSensitivity)
     /* We failed, so restore the state of the 'current file' to where we
      * were.
      */
+    /* 실패 했으므로 '현재 파일'의 상태를
+     *했다.
+     */
     s->num_file = num_fileSaved ;
     s->pos_in_central_dir = pos_in_central_dirSaved ;
     s->cur_file_info = cur_file_infoSaved;
@@ -896,13 +1035,23 @@ extern int ZEXPORT unzLocateFile (file, szFileName, iCaseSensitivity)
 // to cache the directory in memory. The goal being a single
 // comprehensive file read to put the file I need in a memory.
 */
+/*
+/////////////////////////////////////////////////////////////////////////////////////////
+// Ryan Haksi (mailto : //cryogen@infoserve.net) 기고자
+// 임의 액세스가 필요합니다.
+//
+// 추가 최적화는 능력을 추가함으로써 실현 될 수있다.
+// 디렉토리를 메모리에 캐시한다. 목표는 단일
+// 필요한 파일을 메모리에 저장하기위한 포괄적 인 파일 읽기.
+*/
 
 /*
 typedef struct unz_file_pos_s
 {
     uLong pos_in_zip_directory;   // offset in file
+                                  // 파일에서 오프셋
     uLong num_of_file;            // # of file
-} unz_file_pos;
+} unz_file_pos;                   // 파일 수
 */
 
 extern int ZEXPORT unzGetFilePos(file, file_pos)
@@ -935,14 +1084,17 @@ extern int ZEXPORT unzGoToFilePos(file, file_pos)
     s=(unz_s*)file;
 
     /* jump to the right spot */
+    /* 올바른 위치로 점프 */
     s->pos_in_central_dir = file_pos->pos_in_zip_directory;
     s->num_file           = file_pos->num_of_file;
 
     /* set the current file */
+    /* 현재 파일을 설정한다. */
     err = unzlocal_GetCurrentFileInfoInternal(file,&s->cur_file_info,
                                                &s->cur_file_info_internal,
                                                NULL,0,NULL,0,NULL,0);
     /* return results */
+    /* 결과를 반환 */
     s->current_file_ok = (err == UNZ_OK);
     return err;
 }
@@ -958,6 +1110,18 @@ extern int ZEXPORT unzGoToFilePos(file, file_pos)
         directory about this file
   store in *piSizeVar the size of extra info in local header
         (filename and size of extra field data)
+*/
+/*
+// 헬퍼 함수의 압축을 풉니 다. - 여기 있어야합니까?
+/////////////////////////////////////////////////////////////////////////////////////////
+*/
+
+/*
+  현재 zipfile의 로컬 헤더 읽기
+  중앙 헤더의 로컬 헤더와 정보의 일관성을 확인하십시오.
+        이 파일에 관한 디렉토리
+  * piSizeVar에 저장하면 로컬 헤더의 추가 정보 크기
+        (추가 필드 데이터의 파일 이름 및 크기)
 */
 local int unzlocal_CheckCurrentFileCoherencyHeader (s,piSizeVar,
                                                     poffset_local_extrafield,
@@ -993,6 +1157,10 @@ local int unzlocal_CheckCurrentFileCoherencyHeader (s,piSizeVar,
 /*
     else if ((err==UNZ_OK) && (uData!=s->cur_file_info.wVersion))
         err=UNZ_BADZIPFILE;
+*/
+/*
+    else if ((err == UNZ_OK) && (uData! = s-> cur_file_info.wVersion))
+        err = UNZ_BADZIPFILE;
 */
     if (unzlocal_getShort(&s->z_filefunc, s->filestream,&uFlags) != UNZ_OK)
         err=UNZ_ERRNO;
@@ -1050,6 +1218,10 @@ local int unzlocal_CheckCurrentFileCoherencyHeader (s,piSizeVar,
   Open for reading data the current file in the zipfile.
   If there is no error and the file is opened, the return value is UNZ_OK.
 */
+/*
+  zip 파일의 현재 파일을 읽기 위해 열립니다.
+  오류가없고 파일이 열려 있으면 반환 값은 UNZ_OK입니다.
+*/
 extern int ZEXPORT unzOpenCurrentFile3 (file, method, level, raw, password)
     unzFile file;
     int* method;
@@ -1062,7 +1234,9 @@ extern int ZEXPORT unzOpenCurrentFile3 (file, method, level, raw, password)
     unz_s* s;
     file_in_zip_read_info_s* pfile_in_zip_read_info;
     uLong offset_local_extrafield;  /* offset of the local extra field */
+                                    /* 로컬 추가 필드의 오프셋 */
     uInt  size_local_extrafield;    /* size of the local extra field */
+                                    /* 로컬 추가 필드의 크기 */
 #    ifndef NOUNCRYPT
     char source[12];
 #    else
@@ -1154,6 +1328,13 @@ extern int ZEXPORT unzOpenCurrentFile3 (file, method, level, raw, password)
          * In unzip, i don't wait absolutely Z_STREAM_END because I known the
          * size of both compressed and uncompressed data
          */
+        /* windowBits는 zlib 헤더가 없음을 알기 위해 <0으로 전달됩니다.
+         *이 경우 inflate *는 여분의 "dummy"바이트가 필요합니다.
+         * 감압을 완료하기 위해 압축 된 스트림 다음에
+         * Z_STREAM_END을 (를) 반환하십시오.
+         * 압축을 풀 때 절대적으로 기다리지 않습니다 Z_STREAM_END.
+         압축 된 데이터와 압축되지 않은 데이터의 크기
+         */
     }
     pfile_in_zip_read_info->rest_read_compressed =
             s->cur_file_info.compressed_size ;
@@ -1226,6 +1407,15 @@ extern int ZEXPORT unzOpenCurrentFile2 (file,method,level,raw)
   return 0 if the end of file was reached
   return <0 with error code if there is an error
     (UNZ_ERRNO for IO error, or zLib error for uncompress error)
+*/
+/*
+  현재 파일에서 바이트를 읽습니다.
+  buf는 데이터를 복사해야하는 버퍼를 포함합니다.
+  buf의 크기.
+  일부 바이트가 복사 된 경우 복사 된 바이트 수를 반환합니다.
+  파일의 끝에 도달하면 0을 반환한다.
+  오류가 있으면 오류 코드와 함께 <0을 반환합니다.
+    (IO 오류의 경우 UNZ_ERRNO, 압축 해제 오류의 경우 zLib 오류)
 */
 extern int ZEXPORT unzReadCurrentFile  (file, buf, len)
     unzFile file;
@@ -1388,6 +1578,9 @@ extern int ZEXPORT unzReadCurrentFile  (file, buf, len)
 /*
   Give the current position in uncompressed data
 */
+/*
+  압축되지 않은 데이터의 현재 위치 지정
+*/
 extern z_off_t ZEXPORT unztell (file)
     unzFile file;
 {
@@ -1407,6 +1600,9 @@ extern z_off_t ZEXPORT unztell (file)
 
 /*
   return 1 if the end of file was reached, 0 elsewhere
+*/
+/*
+  파일의 끝에 도달하면 1을 반환하고, 다른 곳에 0을 반환합니다.
 */
 extern int ZEXPORT unzeof (file)
     unzFile file;
@@ -1440,6 +1636,16 @@ extern int ZEXPORT unzeof (file)
     buf.
   the return value is the number of bytes copied in buf, or (if <0)
     the error code
+*/
+/*
+  현재 파일에서 추가 필드 읽기 (unzOpenCurrentFile에 의해 열림)
+  추가 필드의 로컬 헤더 버전입니다 (때로는
+    중앙 헤더보다 로컬 헤더 버전에 더 많은 정보가 있음)
+  buf == NULL의 경우, 읽어 낼 수있는 로컬의 여분의 필드의 크기를 돌려 준다
+  buf! = NULL의 경우, len는 버퍼의 사이즈, 여분의 헤더는 in
+    buf.
+  반환 값은 buf에 복사 된 바이트 수이거나 (0보다 작은 경우)
+    오류 코드
 */
 extern int ZEXPORT unzGetLocalExtrafield (file,buf,len)
     unzFile file;
@@ -1492,6 +1698,10 @@ extern int ZEXPORT unzGetLocalExtrafield (file,buf,len)
   Close the file in zip opened with unzipOpenCurrentFile
   Return UNZ_CRCERROR if all the file was read but the CRC is not good
 */
+/*
+  unzipOpenCurrentFile로 열린 zip 파일을 닫습니다.
+  모든 파일을 읽었지만 CRC가 좋지 않으면 UNZ_CRCERROR를 반환합니다.
+*/
 extern int ZEXPORT unzCloseCurrentFile (file)
     unzFile file;
 {
@@ -1535,6 +1745,11 @@ extern int ZEXPORT unzCloseCurrentFile (file)
   uSizeBuf is the size of the szComment buffer.
   return the number of byte copied or an error code <0
 */
+/*
+  szComment 버퍼에있는 ZipFile의 전역 주석 문자열을 가져옵니다.
+  uSizeBuf는 szComment 버퍼의 크기입니다.
+  카피 된 바이트 수 또는 에러 코드 <0을 리턴한다.
+*/
 extern int ZEXPORT unzGetGlobalComment (file, szComment, uSizeBuf)
     unzFile file;
     char *szComment;
@@ -1566,6 +1781,7 @@ extern int ZEXPORT unzGetGlobalComment (file, szComment, uSizeBuf)
 }
 
 /* Additions by RX '2004 */
+/* RX '2004 에 의한 추가 사항 */
 extern uLong ZEXPORT unzGetOffset (file)
     unzFile file;
 {
@@ -1595,6 +1811,7 @@ extern int ZEXPORT unzSetOffset (file, pos)
 
     s->pos_in_central_dir = pos;
     s->num_file = s->gi.number_entry;      /* hack */
+                                           /* 해킹 */
     err = unzlocal_GetCurrentFileInfoInternal(file,&s->cur_file_info,
                                               &s->cur_file_info_internal,
                                               NULL,0,NULL,0,NULL,0);

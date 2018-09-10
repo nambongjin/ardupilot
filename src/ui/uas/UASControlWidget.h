@@ -28,6 +28,13 @@ This file is part of the QGROUNDCONTROL project
  *   @author Lorenz Meier <mavteam@student.ethz.ch>
  *
  */
+/**
+ * @file
+ * @brief UASControlWidget 클래스의 정의
+ *
+ * @author Lorenz Meier <mavteam@student.ethz.ch>
+ *
+ */
 
 #ifndef _UASCONTROLWIDGET_H_
 #define _UASCONTROLWIDGET_H_
@@ -42,6 +49,9 @@ This file is part of the QGROUNDCONTROL project
 /**
  * @brief Widget controlling one MAV
  */
+/**
+ * 하나의 MAV를 제어하는 ​​간단한 위젯
+ */
 class UASControlWidget : public QWidget
 {
     Q_OBJECT
@@ -52,18 +62,25 @@ public:
 
 public slots:
     /** @brief Set the system this widget controls */
+    /** @ brief이 위젯이 제어하는 ​​시스템 설정 */
     void setUAS(UASInterface* uas);
     /** @brief Trigger next context action */
+    /** brief 다음 컨텍스트 액션을 트리거합니다 */
     void cycleContextButton();
     /** @brief Set the operation mode of the MAV */
+    /** @ brief MAV의 작동 모드를 설정합니다 */
     void setMode(int mode);
     /** @brief Transmit the operation mode */
+    /** @ brief 운영 모드 전송 */
     void transmitMode();
     /** @brief Update the mode */
+    /** @brief 모드 업데이트 */
     void updateMode(int uas,QString mode,QString description);
     /** @brief Update state */
+    /** 업데이트 상태 */
     void updateState(int state);
     /** @brief Update internal state machine */
+    /** @ brief 내부 상태 머신 업데이트 */
     void updateStatemachine();
 
 signals:
@@ -72,12 +89,17 @@ signals:
 
 protected slots:
     /** @brief Set the background color for the widget */
+    /**  brief 위젯의 배경색을 설정합니다 */
     void setBackgroundColor(QColor color);
 
 protected:
     int m_uas;              ///< Reference to the current uas
+                            /// <현재의 uas에 대한 참조
     unsigned int m_uasMode; ///< Current uas mode
+                            /// <현재 uas 모드
     bool m_engineOn;        ///< Engine state
+                            /// <엔진 상태
+
 
 private:
     Ui::uasControl ui;

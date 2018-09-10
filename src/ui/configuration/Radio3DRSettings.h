@@ -68,6 +68,44 @@ This file is part of the APM_PLANNER project
 //                S13: MANCHESTER=0
 //                S14: RTSCTS=0
 //                S15: MAX_WINDOW=131 // new for SiK 1.8 and greater
+//   3DR SiK 라디오에 대한 명령 세트
+//
+//         +++ - 명령 모드로 탈출 (작동하기 전에 1s 침묵 필요)
+//         ATI - 라디오 버전 표시
+//         ATI2 - 보드 유형 표시
+//         ATI3 - 보드 주파수 표시
+//         ATI4 - 보드 버전 표시
+//         ATI5 - 사용자가 설정할 수있는 모든 EEPROM 매개 변수 표시
+//         ATI6 - TDM 타이밍 보고서를 표시합니다.
+//         ATI7 - RSSI 신호 보고서 표시
+//         ATO - AT 명령 모드를 종료합니다.
+//         ATSn? - 라디오 매개 변수 번호 'n'표시
+//         ATSn = X - 라디오 매개 변수 번호 'n'을 'X'로 설정합니다.
+//         ATZ - 라디오를 재부팅합니다.
+//         AT & W - 현재 매개 변수를 EEPROM에 씁니다.
+//         AT & F - 모든 매개 변수를 공장 기본값으로 재설정합니다.
+//         AT & T = RSSI - RSSI 디버그보고 활성화
+//         AT & T = TDM - TDM 디버그보고 활성화
+//         AT & T - 디버그보고 사용 안함
+//
+//         예 : HM-TRP에서 ATI0 Version = SiK 1.5
+//                 ATI5
+//                 S0 : FORMAT = 25
+//                 S1 : SERIAL_SPEED = 57
+//                 S2 : AIR_SPEED = 64
+//                 S3 : NETID = 41
+//                 S4 : TXPOWER = 20
+//                 S5 : ECC = 1
+//                 S6 : MAVLINK = 1
+//                 S7 : OPPRESEND = 1
+//                 S8 : MIN_FREQ = 915000
+//                 S9 : MAX_FREQ = 928000
+//                 S10 : NUM_CHANNELS = 50
+//                 S11 : DUTY_CYCLE = 100
+//                 S12 : LBT_RSSI = 0
+//                 S13 : 맨체스터 = 0
+//                 S14 : RTSCTS = 0
+//                 S15 : SiK 1.8 이상에서는 새로운 // MAX_WINDOW = 131 // new
 
 #define SIK_LOWLATENCY_MIN_VERSION 1.8f
 #define LAST_PARAM_SIK17_AND_LESS "S14"
@@ -76,6 +114,7 @@ This file is part of the APM_PLANNER project
 class Radio3DREeprom
 {
     // Helper Object that stores Radio Settings
+    // 라디오 설정을 저장하는 도우미 객체
 public:
 
     enum Mode {local, remote};
@@ -104,6 +143,7 @@ public:
 
     Radio3DREeprom();
     // Take the repsonse from an A(R)TI5 repsonse.
+    // A (R) TI5의 repsonse에서 repsonse 가져 가라.
     bool setVersion(const QString &versionString);
     void numberOfParams(int numberOfParams) { m_numberOfParams = numberOfParams;}
     const QString endParam() { return m_endParam;}
@@ -111,9 +151,11 @@ public:
     bool setRadioFreqCode(int freqCode);
 
     // returns a valid AT string to set the eeprom
+    // 유효한 AT 문자열을 반환하여 eeprom을 설정합니다.
     const QString formattedParameter(Mode mode, int index);
 
     // accessors
+    // 접근 자
     float version() {return m_version;}
     const QString& versionString();
     QString deviceIdString();
@@ -140,6 +182,7 @@ public:
     int maxWindow() {return m_maxWindow;}
 
     // settors
+    // 설정자
     void deviceId(int deviceId){m_deviceId = deviceId;}
     void serialSpeed(int serialSpeed){ m_serialSpeed = serialSpeed;}
     void airSpeed(int airSpeed){ m_airSpeed = airSpeed;}
@@ -159,6 +202,7 @@ public:
 
 private:
     // EEPROM settings
+    // EEPROM 설정
     QString m_versionString;
     int m_deviceId;
     int m_numberOfParams;
@@ -193,6 +237,11 @@ public:
      *        methods to allow the receiver an approbiate coloring of the
      *        output
      */
+    /**
+     * stateColor 열거 형은 업데이트 상태에 의해 방출됩니다.
+     *받는 사람에게 적절한 색칠을 허용하는 방법
+     * 출력
+     */
     enum stateColor {
        black,
        green,
@@ -203,6 +252,11 @@ public:
      * @brief stateColorToString - converts a stateColor enum to a string
      * @param color - Color enum wich shall be converted
      * @return - the sting representation of the color
+     */
+    /**
+     * @brief stateColorToString - stateColor 열거 형을 문자열로 변환합니다.
+     * @param color - 변환 될 색상 열거 형
+     * @return - 색의 스팅 표현
      */
     static QString stateColorToString(stateColor color);
 
@@ -278,7 +332,9 @@ private:
     Radio3DREeprom m_newRemoteRadio;
 
     // Helper Variables
+    // 도우미 변수
     int m_freqStepSize; // 100 for 433Mhz, 1000 for 915/868Mhz & 1 for RFD900,
+                        // 433Mhz의 경우 100, 915 / 868Mhz의 경우 1000, RFD900의 경우 1,
 
     QScopedPointer<QSerialPort> m_serialPort;
     int m_retryCount;

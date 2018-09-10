@@ -26,6 +26,11 @@ This file is part of the QGROUNDCONTROL project
  *   @brief Class to hold the calibration data
  *   @author Bryan Godbolt <godbolt@ualberta.ca>
  */
+/**
+ * @file
+ * @brief 캘리브레이션 데이터를 저장하는 클래스
+ * @author Bryan Godbolt <godbolt@ualberta.ca>
+ */
 
 #ifndef RADIOCALIBRATIONDATA_H
 #define RADIOCALIBRATIONDATA_H
@@ -41,6 +46,10 @@ This file is part of the QGROUNDCONTROL project
 
 /**
   @brief Class to hold the calibration data.
+  @author Bryan Godbolt <godbolt@ece.ualberta.ca>
+  */
+/**
+  @brief 교정 데이터를 보관하는 클래스.
   @author Bryan Godbolt <godbolt@ece.ualberta.ca>
   */
 class RadioCalibrationData : public QObject
@@ -99,6 +108,7 @@ public slots:
 
 public:
     /// Creates a comma seperated list of the values for a particular element
+    /// 특정 요소에 대한 값의 쉼표로 구분 된 목록을 만듭니다.
     QString toString(const RadioElement element) const;
 
 protected:
