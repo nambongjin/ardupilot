@@ -21,15 +21,22 @@
 #include <QtGlobal>
 #include <QLoggingCategory>
 
-// Declare the base logging category - creation is done in main.cc
+// Declare the base logging category - creation is done in main.cc	 기본 로깅 카테고리 선언 - main.cc에서 작성 완료
 Q_DECLARE_LOGGING_CATEGORY(apmGeneral);
 
 // Define for enabling trace logging. As trace logging is not supported
 // by the Qt logging framework the trace level is handeled by the debug level.
 // Disabling the NO_TRACE define enabes the trace logging
+
+/*
+// 추적 로깅을 사용하도록 정의합니다. 추적 로깅은 지원되지 않으므로
+// Qt 로깅 프레임 워크에 의해 트레이스 레벨은 디버그 레벨에 의해 전달됩니다.
+// NO_TRACE 정의를 비활성화하면 추적 기록이 가능해집니다.
+*/
+
 #define NO_TRACE
 
-// logging macro
+// logging macro	 매크로 로깅
 #ifdef NO_TRACE
     #define QLOG_TRACE() if(1){} else qDebug()
 #else
@@ -40,9 +47,16 @@ Q_DECLARE_LOGGING_CATEGORY(apmGeneral);
 // The loglevels which have a corresponding Qt logging class (debug, info, warning) can be disabled
 // by using the Qt defines (QT_NO_DEBUG_OUTPUT, QT_NO_INFO_OUTPUT, QT_NO_WARNING_OUTPUT) at
 // compile time.
+
+/*
+// 해당 Qt 로깅 클래스 (debug, info, warning)가있는 loglevels를 비활성화 할 수 있습니다.
+// Qt 정의를 사용하여 (QT_NO_DEBUG_OUTPUT, QT_NO_INFO_OUTPUT, QT_NO_WARNING_OUTPUT)를 정의합니다.
+// 컴파일 시간.
+*/
+
 #define QLOG_DEBUG() qCDebug(apmGeneral)
 
-// Qt versions below 5.5.0 does not support qInfo() or qcinfo() logging
+// Qt versions below 5.5.0 does not support qInfo() or qcinfo() logging	 5.5 버전 이하의 Qt 버전은 qInfo () 또는 qcinfo () 로깅을 지원하지 않습니다.
 #if QT_VERSION < QT_VERSION_CHECK(5, 5, 0)
     #define QLOG_INFO() qCDebug(apmGeneral)
 #else

@@ -49,12 +49,19 @@ ArduPilotMegaMAV::ArduPilotMegaMAV(MAVLinkProtocol* mavlink, int id) :
     //This does not seem to work. Manually request each stream type at a specified rate.
     // Ask for all streams at 4 Hz
     //enableAllDataTransmission(4);
+
+/*
+    // 이것은 효과가없는 것 같습니다. 지정된 속도로 각 스트림 유형을 수동으로 요청하십시오.
+    // 4Hz에서 모든 스트림 요청
+    // enableAllDataTransmission (4);
+*/
+
     txReqTimer = new QTimer(this);
     connect(txReqTimer,SIGNAL(timeout()),this,SLOT(RequestAllDataStreams()));
 
-    QTimer::singleShot(5000,this,SLOT(RequestAllDataStreams())); //Send an initial TX request in 5 seconds.
+    QTimer::singleShot(5000,this,SLOT(RequestAllDataStreams())); //Send an initial TX request in 5 seconds.	 5 초 후에 초기 TX 요청을 보냅니다.  
 
-    txReqTimer->start(10000); //Resend the TX requests every 10 seconds.
+    txReqTimer->start(10000); //Resend the TX requests every 10 seconds.	  10 초마다 TX 요청을 다시 보냅니다.  
 
     connect(this,SIGNAL(connected()),this,SLOT(uasConnected()));
     connect(this,SIGNAL(disconnected()),this,SLOT(uasDisconnected()));
@@ -110,7 +117,7 @@ void ArduPilotMegaMAV::RequestAllDataStreams()
 void ArduPilotMegaMAV::uasConnected()
 {
     QLOG_INFO() << "ArduPilotMegaMAV APM Connected";
-    QTimer::singleShot(500,this,SLOT(RequestAllDataStreams())); //Send an initial TX request in 0.5 seconds.
+    QTimer::singleShot(500,this,SLOT(RequestAllDataStreams())); //Send an initial TX request in 0.5 seconds.	 0.5 초 후에 초기 TX 요청을 보냅니다.  
     createNewMAVLinkLog(type);
     LinkManager::instance()->startLogging();
 }
@@ -131,6 +138,13 @@ void ArduPilotMegaMAV::createNewMAVLinkLog(uint8_t type)
     // This creates a log in subdir based on the vehicle
     // first detected. When connecting to multiple vehicles
     // it will not log message based on each specific.
+
+/*
+    // 이것은 차량에 기반한 subdir에 log를 만든다.
+    // 처음 감지되었습니다. 여러 차량에 연결할 때
+    // 각 특정 메시지를 기반으로 메시지를 로깅하지 않습니다.
+*/
+
     switch(type) {
     case MAV_TYPE_TRICOPTER:
         subDir = "/tricopter/";
@@ -174,10 +188,26 @@ void ArduPilotMegaMAV::createNewMAVLinkLog(uint8_t type)
  *             messages can be sent back to the system via this link
  * @param message MAVLink message, as received from the MAVLink protocol stack
  */
+
+/*
+ *이 기능은 MAVLink가 완전하고 손상되지 않은 (CRC 검사 유효)
+ * mavlink 패킷이 수신되었습니다.
+ *
+ * @param link 메시지가 나온 하드웨어 링크 (예 : / dev / ttyUSB0 또는 UDP 포트).
+ *이 링크를 통해 메시지를 시스템에 다시 보낼 수 있습니다.
+ * @param message MAVLink 프로토콜 스택으로부터받은 MAVLink 메시지
+*/
+
 void ArduPilotMegaMAV::receiveMessage(LinkInterface* link, mavlink_message_t message)
 {
     // Let UAS handle the default message set
     //qDebug() << "Message type:" << message.sysid << message.msgid;
+
+/*
+    // UAS가 기본 메시지 세트를 처리하도록합니다.
+    // qDebug () << "메시지 유형 :"<< message.sysid << message.msgid;
+*/
+
 
     if (message.sysid == uasId) {
         // Handle your special messages
@@ -192,7 +222,7 @@ void ArduPilotMegaMAV::receiveMessage(LinkInterface* link, mavlink_message_t mes
             QByteArray b;
             b.resize(MAVLINK_MSG_STATUSTEXT_FIELD_TEXT_LEN+1);
             mavlink_msg_statustext_get_text(&message, b.data());
-            // Ensure NUL-termination
+            // Ensure NUL-termination	 NUL 종료를 보장한다.  
             b[b.length()-1] = '\0';
             QString messageText = QString(b);
             int severity = mavlink_msg_statustext_get_severity(&message);
@@ -203,14 +233,14 @@ void ArduPilotMegaMAV::receiveMessage(LinkInterface* link, mavlink_message_t mes
                         || messageText.contains(APM_ROVER_REXP)) {
                     QLOG_DEBUG() << "APM Version String detected:" << messageText;
                     m_firmwareVersion.parseVersion(messageText);
-                    // Process Version and keep.
+                    // Process Version and keep.	  버전을 처리하고 보관하십시오.  
                     m_severityCompatibilityMode = _isTextSeverityAdjustmentNeeded(m_firmwareVersion);
 
                     emit versionDetected(messageText);
                 }
             }
 
-            // Check is older APM and reset severity to correct MAVLINK spec.
+            // Check is older APM and reset severity to correct MAVLINK spec.	  MAVLINK 스펙을 수정하기 위해 이전 APM을 점검하고 심각도를 재설정하십시오.  
             if (m_severityCompatibilityMode) {
                 adjustSeverity(&message);
             }
@@ -228,27 +258,27 @@ void ArduPilotMegaMAV::receiveMessage(LinkInterface* link, mavlink_message_t mes
 
 void ArduPilotMegaMAV::adjustSeverity(mavlink_message_t* message) const
 {
-    // lets make QGC happy with right severity values
+    // lets make QGC happy with right severity values	 올바른 심각도 값으로 QGC를 행복하게 만듭니다.  
     mavlink_statustext_t statusText;
     mavlink_msg_statustext_decode(message, &statusText);
 
-    // Older APM detected, translate severity to MAVLink Standard severity
+    // Older APM detected, translate severity to MAVLink Standard severity	 이전 APM이 감지되고 심각도가 MAVLink 표준 심각도로 변환됩니다.  
     // SEVERITY_LOW     =1 MAV_SEVERITY_WARNING = 4
     // SEVERITY_MEDIUM  =2 MAV_SEVERITY_ALERT   = 1
     // SEVERITY_HIGH    =3 MAV_SEVERITY_CRITICAL= 2
     // SEVERITY_USER_RESPONSE =5 MAV_SEVERITY_CRITICAL= 2
 
     switch(statusText.severity) {
-    case 1:     /* gcs_severity::SEVERITY_LOW according to old codes */
+    case 1:     /* gcs_severity::SEVERITY_LOW according to old codes	  gcs_severity :: 이전 코드에 따른 SEVERITY_LOW   */
         statusText.severity = MAV_SEVERITY_WARNING;
         break;
-    case 2:     /* gcs_severity::SEVERITY_MEDIUM according to old codes  */
+    case 2:     /* gcs_severity::SEVERITY_MEDIUM according to old codes 	 gcs_severity :: 이전 코드에 따른 SEVERITY_MEDIUM   */
         statusText.severity = MAV_SEVERITY_ALERT;
         break;
-    case 3:     /* gcs_severity::SEVERITY_HIGH  according to old codes */
+    case 3:     /* gcs_severity::SEVERITY_HIGH  according to old codes	 gcs_severity :: SEVERITY_HIGH - 이전 코드에 따라   */
         statusText.severity = MAV_SEVERITY_CRITICAL;
         break;
-    case 5: /*gcs_severity::SEVERITY_USER_RESPONSE according to old codes*/
+    case 5: /*gcs_severity::SEVERITY_USER_RESPONSE according to old codes	  gcs_severity :: 이전 코드에 따른 SEVERITY_USER_RESPONSE  */
         statusText.severity = MAV_SEVERITY_CRITICAL;
         break;
     default:
@@ -288,7 +318,7 @@ bool ArduPilotMegaMAV::_isTextSeverityAdjustmentNeeded(const APMFirmwareVersion&
 
 void ArduPilotMegaMAV::setMountConfigure(unsigned char mode, bool stabilize_roll,bool stabilize_pitch,bool stabilize_yaw)
 {
-    //Only supported by APM
+    //Only supported by APM	 APM에서만 지원됨  
     mavlink_message_t msg;
     mavlink_msg_mount_configure_pack(255,1,&msg,this->uasId,1,mode,stabilize_roll,stabilize_pitch,stabilize_yaw);
     sendMessage(msg);
@@ -390,7 +420,7 @@ void ArduPilotMegaMAV::textMessageReceived(int /*uasid*/, int /*componentid*/, i
     QLOG_DEBUG() << "APM: Text Message rx'd" << text;
     if (text.startsWith("PreArm:")) {
         // Speak the PreArm warning
-        QString audioString = "Pre-arm check:" + text.remove("PreArm:");
+        QString audioString = "Pre-ar	 PreArm 경고를한다.  m check:" + text.remove("PreArm:");
         GAudioOutput::instance()->say(audioString, severity);
     } else if (text.startsWith("Arm:")){
         QString audioString = "Arm check:" + text.remove("Arm:");
@@ -430,7 +460,7 @@ void ArduPilotMegaMAV::playArmStateChangedAudioMessage(bool armedState)
 }
 
 
-//******************* Classes for Sepcial message handling **************************
+//******************* Classes for Sepcial message handling 	  Sepcial 메시지 처리 클래스  **************************
 
 MessageBase::MessageBase() : m_Index(0), m_TimeStamp(0)
 {}
@@ -468,14 +498,14 @@ const QString ErrorMessage::TypeName("ERR");
 
 ErrorMessage::ErrorMessage() : m_SubSys(0), m_ErrorCode(0)
 {
-    // Set up base class vars for this message
+    // Set up base class vars for this message	 이 메시지의 기본 클래스 변수 설정  
     m_TypeName = TypeName;
     m_Color    = QColor(150,0,0);
 }
 
 ErrorMessage::ErrorMessage(const QString &TimeFieldName) : m_SubSys(0), m_ErrorCode(0)
 {
-    // Set up base class vars for this message
+    // Set up base class vars for this message	 이 메시지의 기본 클래스 변수 설정  
     m_TypeName = TypeName;
     m_Color    = QColor(150,0,0);
     m_TimeFieldName = TimeFieldName;
@@ -546,14 +576,14 @@ const QString ModeMessage::TypeName("MODE");
 
 ModeMessage::ModeMessage() : m_Mode(0), m_ModeNum(0), m_Reason(0)
 {
-    // Set up base class vars for this message
+    // Set up base class vars for this message	 이 메시지의 기본 클래스 변수 설정  
     m_TypeName = TypeName;
     m_Color    = QColor(50,125,0);
 }
 
 ModeMessage::ModeMessage(const QString &TimeFieldName) : m_Mode(0), m_ModeNum(0), m_Reason(0)
 {
-    // Set up base class vars for this message
+    // Set up base class vars for this message	  이 메시지의 기본 클래스 변수 설정  
     m_TypeName = TypeName;
     m_Color    = QColor(50,125,0);
     m_TimeFieldName = TimeFieldName;
@@ -608,12 +638,12 @@ bool ModeMessage::setFromNameValuePairList(const QList<NameValuePair> &values, c
         else if(values.at(i).first == "ModeNum")
         {
             m_ModeNum = values.at(i).second.toUInt();
-            // ModeNum does not influence the returncode as its optional
+            // ModeNum does not influence the returncode as its optional	 ModeNum은 반환 코드에 영향을 미치지 않는다.  
         }
         else if(values.at(i).first == "Rsn")
         {
             m_Reason = values.at(i).second.toUInt();
-            // Reason does not influence the returncode as its optional. Came with AC 3.4
+            // Reason does not influence the returncode as its optional. Came with AC 3.4	 Reason은 리턴 코드를 선택적으로 영향을주지 않습니다. AC 3.4와 함께했습니다.  
         }
     }
     return rc1 && rc2 && rc3;
@@ -635,14 +665,14 @@ const QString EventMessage::TypeName("EV");
 
 EventMessage::EventMessage() : m_EventID(0)
 {
-    // Set up base class vars for this message
+    // Set up base class vars for this message	 이 메시지의 기본 클래스 변수 설정  
     m_TypeName = TypeName;
     m_Color    = QColor(0,0,125);
 }
 
 EventMessage::EventMessage(const QString &TimeFieldName) : m_EventID(0)
 {
-    // Set up base class vars for this message
+    // Set up base class vars for this message	 이 메시지의 기본 클래스 변수 설정  
     m_TypeName = TypeName;
     m_Color    = QColor(0,0,125);
     m_TimeFieldName = TimeFieldName;
@@ -701,15 +731,15 @@ const QString MsgMessage::TypeName("MSG");
 
 MsgMessage::MsgMessage()
 {
-    // Set up base class vars for this message
+    // Set up base class vars for this message	 이 메시지의 기본 클래스 변수 설정  
     m_TypeName = TypeName;
     m_Color    = QColor(0,0,0);
 }
 
 MsgMessage::MsgMessage(const QString &TimeFieldName)
 {
-    // Set up base class vars for this message
-    m_TypeName = TypeName;
+    // Set up base class vars for this message	 이 메시지의 기본 클래스 변수 설정  
+    m_TypeName = TypeName;	 
     m_Color    = QColor(0,0,0);
     m_TimeFieldName = TimeFieldName;
 }
@@ -801,7 +831,7 @@ QString Copter::MessageFormatter::format(MessageBase::Ptr &p_message)
     {
         if (p_message->typeName() == ErrorMessage::TypeName)
         {
-            // can use the internal pointer here avoiding dynamic pointer cast with refcount increase
+            // can use the internal pointer here avoiding dynamic pointer cast with refcount increase	 refcount 증가로 동적 포인터 캐스트를 피하면서 여기에 내부 포인터를 사용할 수 있습니다.  
             retval = format(*dynamic_cast<ErrorMessage*>(p_message.data()));
         }
         else if (p_message->typeName() == ModeMessage::TypeName)
@@ -812,7 +842,7 @@ QString Copter::MessageFormatter::format(MessageBase::Ptr &p_message)
         {
             retval = format(*dynamic_cast<EventMessage*>(p_message.data()));
         }
-        else // The msgMessage does not need a formatter -> handled by else
+        else // The msgMessage does not need a formatter -> handled by else	 msgMessage는 포맷터가 필요 없다 -> else에 의해 처리됨  
         {
             retval = p_message->toString();
         }
@@ -829,6 +859,13 @@ QString Copter::MessageFormatter::format(const ErrorMessage &message)
     // SubSys ans ErrorCode interpretation was taken from
     // Ardupilot/ArduCopter/defines.h
     // last verification 04.03.2018
+
+/*
+    // SubSys 및 ErrorCode 해석이 수행되었습니다.
+    // Ardupilot / ArduCopter / defines.h
+    // 지난 확인 04.03.2018
+*/
+
 
     QString output;
     QTextStream outputStream(&output);
@@ -1090,6 +1127,13 @@ QString Copter::MessageFormatter::format(const ModeMessage &message)
     // Ardupilot/ArduCopter/defines.h
     // last verification 04.03.2018
 
+/*
+    // 해석 :
+    // Ardupilot / ArduCopter / defines.h
+    // 지난 확인 04.03.2018
+*/
+
+
     QString output;
     QTextStream outputStream(&output);
 
@@ -1160,7 +1204,7 @@ QString Copter::MessageFormatter::format(const ModeMessage &message)
         break;
     }
 
-    // only if we have a valid reason
+    // only if we have a valid reason	  우리가 유효한 이유가있는 경우에만  
     if (message.getReason() != 0)
     {
         outputStream << endl << "by " ;
@@ -1235,6 +1279,13 @@ QString Copter::MessageFormatter::format(const EventMessage &message)
     // Interpretation taken from
     // Ardupilot/ArduCopter/defines.h
     // last verification 04.03.2018
+
+/*
+    // 해석 :
+    // Ardupilot / ArduCopter / defines.h
+    // 지난 확인 04.03.2018
+*/
+
 
     QString output;
     QTextStream outputStream(&output);
@@ -1429,10 +1480,10 @@ QString Plane::MessageFormatter::format(MessageBase::Ptr &p_message)
     QString retval("Unknown Type");
     if (p_message)
     {
-        // Only mode message formatter is implemented for planes
+        // Only mode message formatter is implemented for planes	 비행기에 모드 메시지 포맷터 만 구현 됨  
         if (p_message->typeName() == ModeMessage::TypeName)
         {
-            // can use the internal pointer here avoiding dynamic pointer cast with refcount increase
+            // can use the internal pointer here avoiding dynamic pointer cast with refcount increase	 refcount 증가로 동적 포인터 캐스트를 피하면서 여기에 내부 포인터를 사용할 수 있습니다.  
             retval = format(*dynamic_cast<ModeMessage*>(p_message.data()));
         }
         else
@@ -1451,7 +1502,10 @@ QString Plane::MessageFormatter::format(const ModeMessage &message)
 {
     // Interpretation taken from
     // Ardupilot/ArduPlane/defines.h
-    // last verification 24.01.2016
+    // last verification 24.01.2016	     
+    // 해석 :
+    // Ardupilot / ArduPlane / defines.h
+    // 지난 확인 24.01.2016  
 
     QString output;
     QTextStream outputStream(&output);
@@ -1531,10 +1585,10 @@ QString Rover::MessageFormatter::format(MessageBase::Ptr &p_message)
     QString retval("Unknown Type");
     if (p_message)
     {
-        // Only mode message formatter is implemented for rovers
+        // Only mode message formatter is implemented for rovers	 로버에 모드 메시지 포맷터 만 구현 됨  
         if (p_message->typeName() == ModeMessage::TypeName)
         {
-            // can use the internal pointer here avoiding dynamic pointer cast with refcount increase
+            // can use the internal pointer here avoiding dynamic pointer cast with refcount increase	 refcount 증가로 동적 포인터 캐스트를 피하면서 여기에 내부 포인터를 사용할 수 있습니다.  
             retval = format(*dynamic_cast<ModeMessage*>(p_message.data()));
         }
         else
@@ -1554,6 +1608,13 @@ QString Rover::MessageFormatter::format(const ModeMessage &message)
     // Interpretation taken from
     // Ardupilot/APMRover2/defines.h
     // last verification 24.01.2016
+
+/*
+    // 해석 :
+    // Ardupilot / APMRover2 / defines.h
+    // 지난 확인 24.01.2016
+*/
+
 
     QString output;
     QTextStream outputStream(&output);
