@@ -158,6 +158,13 @@ void CopterPidConfig::mapParamNamesToBox()
     // TODO: Move to baseclass and syncronize with BasicPidConfig class
     // as it uses exactly the same mechanics
     // version check
+
+/*
+    // TODO : BasicClass로 이동하고 BasicPidConfig 클래스와 동기화합니다.
+    // 정확히 같은 기능을 사용하기 때문에
+    // 버전 확인
+*/
+
     ArduPilotMegaMAV* apmMav = dynamic_cast<ArduPilotMegaMAV*>(m_uas);
     if (apmMav == nullptr)
     {
@@ -358,9 +365,9 @@ void CopterPidConfig::refreshButtonClicked()
 
 void CopterPidConfig::setupPID_Default()
 {
-    m_nameToBoxMap["STB_RLL_P"] = ui.stabilRollPSpinBox;        // stabilize roll P
-    m_nameToBoxMap["STB_PIT_P"] = ui.stabilPitchPSpinBox;       // stabilize pitch P
-    m_nameToBoxMap["STB_YAW_P"] = ui.stabilYawPSpinBox;         // stabilize yaw P
+    m_nameToBoxMap["STB_RLL_P"] = ui.stabilRollPSpinBox;        // stabilize roll P	 롤 P 안정화  
+    m_nameToBoxMap["STB_PIT_P"] = ui.stabilPitchPSpinBox;       // stabilize pitch P	 피치 P를 안정시킵니다.  
+    m_nameToBoxMap["STB_YAW_P"] = ui.stabilYawPSpinBox;         // stabilize yaw P	 yaw P를 안정시킵니다.  
 
     m_nameToBoxMap["RATE_RLL_P"] = ui.rateRollPSpinBox;          // rate roll P
     m_nameToBoxMap["RATE_RLL_I"] = ui.rateRollISpinBox;          // rate roll I
@@ -380,42 +387,42 @@ void CopterPidConfig::setupPID_Default()
     m_nameToBoxMap["RATE_YAW_FILT_HZ"] = ui.rateYawFiltHzSpinBox;   // rate yaw filter Hz
     m_nameToBoxMap["RATE_YAW_IMAX"] = ui.rateYawIMAXSpinBox;     // rate yaw I Max
 
-    m_nameToBoxMap["VEL_XY_P"] = ui.velXYPSpinBox;               // horizontal velocity P
+    m_nameToBoxMap["VEL_XY_P"] = ui.velXYPSpinBox;               // horizontal velocity P	 수평 속도 P  
     m_nameToBoxMap["VEL_XY_I"] = ui.velXYISpinBox;               // horizontal velocity I
     m_nameToBoxMap["VEL_XY_IMAX"] = ui.velXYIMAXSpinBox;         // horizontal velocity I Max
     m_nameToBoxMap["VEL_XY_FILT_HZ"] = ui.velXYFilterSpinBox;      // horizontal velocity filter Hz
 
-    m_nameToBoxMap["ACCEL_Z_P"] = ui.accelZPSpinBox;               // vertical acceleration P
+    m_nameToBoxMap["ACCEL_Z_P"] = ui.accelZPSpinBox;               // vertical acceleration P	 수직 가속도 P  
     m_nameToBoxMap["ACCEL_Z_I"] = ui.accelZISpinBox;               // vertical acceleration I
     m_nameToBoxMap["ACCEL_Z_D"] = ui.accelZDSpinBox;               // vertical acceleration D
     m_nameToBoxMap["ACCEL_Z_IMAX"] = ui.accelZIMAXSpinBox;         // vertical acceleration I Max
     m_nameToBoxMap["ACCEL_Z_FILT"] = ui.accelZFiltHzSpinBox;       // vertical acceleration filter Hz
 
-    m_nameToBoxMap["VEL_Z_P"] = ui.velZPSpinBox;     // vertical velocity P
+    m_nameToBoxMap["VEL_Z_P"] = ui.velZPSpinBox;     // vertical velocity P	 수직 속도 P  
 
-    m_nameToBoxMap["POS_Z_P"] = ui.posZPSpinBox;     // vertical position P
+    m_nameToBoxMap["POS_Z_P"] = ui.posZPSpinBox;     // vertical position P	 수직 위치 P  
 
-    m_nameToBoxMap["POS_XY_P"] = ui.posXYPSpinBox;   // horizontal position P
+    m_nameToBoxMap["POS_XY_P"] = ui.posXYPSpinBox;   // horizontal position P	  수평 위치 P  
 
-    m_nameToBoxMap["WPNAV_SPEED"] = ui.wpNavSpeedSpinBox;           // wpnav speed cm per sec
-    m_nameToBoxMap["WPNAV_RADIUS"] = ui.wpNavRadiusSpinBox;         // wpnav radius cm per sec
-    m_nameToBoxMap["WPNAV_SPEED_DN"] = ui.wpNavSpeedDownSpinBox;    // wpnav speed down cm per sec
-    m_nameToBoxMap["WPNAV_LOIT_SPEED"] = ui.wpNavLoiterSpeedSpinBox;// wpnav loiter speed cm per sec
-    m_nameToBoxMap["WPNAV_SPEED_UP"] = ui.wpNavSpeedUpSpinBox;      // wpnav speed up cm per sec
+    m_nameToBoxMap["WPNAV_SPEED"] = ui.wpNavSpeedSpinBox;           // wpnav speed cm per sec	 wpnav 초당 속도 cm  
+    m_nameToBoxMap["WPNAV_RADIUS"] = ui.wpNavRadiusSpinBox;         // wpnav radius cm per sec	 wpnav 반경 cm / 초  
+    m_nameToBoxMap["WPNAV_SPEED_DN"] = ui.wpNavSpeedDownSpinBox;    // wpnav speed down cm per sec	 wpnav 초당 속도 cm  
+    m_nameToBoxMap["WPNAV_LOIT_SPEED"] = ui.wpNavLoiterSpeedSpinBox;// wpnav loiter speed cm per sec	 wpnav loiter 초당 속도 cm  
+    m_nameToBoxMap["WPNAV_SPEED_UP"] = ui.wpNavSpeedUpSpinBox;      // wpnav speed up cm per sec	 wpnav 속도 up cm / sec  
 
-    // rc option channel names
+    // rc option channel names	  rc 옵션 채널 이름  
     m_channel7Option = "CH7_OPT";
     m_channel8Option = "CH8_OPT";
 
-    // setup UI
-    ui.velXYDSpinBox->hide();   // default has no horizontal velocity D param
+    // setup UI	 UI 설정  
+    ui.velXYDSpinBox->hide();   // default has no horizontal velocity D param	 디폴트는 수평 속도가 없다. D param  
     ui.LabelHorVel_D->hide();
 }
 
 void CopterPidConfig::setupPID_APM_34()
 {
     // AC3.4+ paramter names
-    m_nameToBoxMap["ATC_ANG_RLL_P"] = ui.stabilRollPSpinBox;        // stabilize roll P
+    m_nameToBoxMap["ATC_ANG_RLL_P"] = ui.stabilRollPSpinBox;        // stabilize roll P	 롤 P 안정화  
     m_nameToBoxMap["ATC_ANG_PIT_P"] = ui.stabilPitchPSpinBox;       // stabilize pitch P
     m_nameToBoxMap["ATC_ANG_YAW_P"] = ui.stabilYawPSpinBox;         // stabilize yaw P
 
@@ -437,22 +444,22 @@ void CopterPidConfig::setupPID_APM_34()
     m_nameToBoxMap["ATC_RAT_YAW_FILT"] = ui.rateYawFiltHzSpinBox;   // rate yaw filter Hz
     m_nameToBoxMap["ATC_RAT_YAW_IMAX"] = ui.rateYawIMAXSpinBox;     // rate yaw I Max
 
-    m_nameToBoxMap["VEL_XY_P"] = ui.velXYPSpinBox;               // horizontal velocity P
+    m_nameToBoxMap["VEL_XY_P"] = ui.velXYPSpinBox;               // horizontal velocity P	 수평 속도 P  
     m_nameToBoxMap["VEL_XY_I"] = ui.velXYISpinBox;               // horizontal velocity I
     m_nameToBoxMap["VEL_XY_IMAX"] = ui.velXYIMAXSpinBox;         // horizontal velocity I Max
     m_nameToBoxMap["VEL_XY_FILT_HZ"] = ui.velXYFilterSpinBox;    // horizontal velocity filter Hz
 
-    m_nameToBoxMap["ACCEL_Z_P"] = ui.accelZPSpinBox;               // vertical acceleration P
+    m_nameToBoxMap["ACCEL_Z_P"] = ui.accelZPSpinBox;               // vertical acceleration P	 수직 가속도 P  
     m_nameToBoxMap["ACCEL_Z_I"] = ui.accelZISpinBox;               // vertical acceleration I
     m_nameToBoxMap["ACCEL_Z_D"] = ui.accelZDSpinBox;               // vertical acceleration D
     m_nameToBoxMap["ACCEL_Z_IMAX"] = ui.accelZIMAXSpinBox;         // vertical acceleration I Max
     m_nameToBoxMap["ACCEL_Z_FILT"] = ui.accelZFiltHzSpinBox;       // vertical acceleration filter Hz
 
-    m_nameToBoxMap["VEL_Z_P"] = ui.velZPSpinBox;     // vertical velocity P
+    m_nameToBoxMap["VEL_Z_P"] = ui.velZPSpinBox;     // vertical velocity P	  수직 속도 P  
 
-    m_nameToBoxMap["POS_Z_P"] = ui.posZPSpinBox;     // vertical position P
+    m_nameToBoxMap["POS_Z_P"] = ui.posZPSpinBox;     // vertical position P	 수직 위치 P  
 
-    m_nameToBoxMap["POS_XY_P"] = ui.posXYPSpinBox;   // horizontal position P
+    m_nameToBoxMap["POS_XY_P"] = ui.posXYPSpinBox;   // horizontal position P	 수평 위치 P  
 
     m_nameToBoxMap["WPNAV_SPEED"] = ui.wpNavSpeedSpinBox;           // wpnav speed cm per sec
     m_nameToBoxMap["WPNAV_RADIUS"] = ui.wpNavRadiusSpinBox;         // wpnav radius cm per sec
@@ -503,8 +510,8 @@ void CopterPidConfig::setupPID_APM_36()
     m_nameToBoxMap["PSC_ACCZ_P"] = ui.accelZPSpinBox;               // vertical acceleration P
     m_nameToBoxMap["PSC_ACCZ_I"] = ui.accelZISpinBox;               // vertical acceleration I
     m_nameToBoxMap["PSC_ACCZ_D"] = ui.accelZDSpinBox;               // vertical acceleration D
-    m_nameToBoxMap["PSC_ACCZ_IMAX"] = ui.accelZIMAXSpinBox;         // vertical acceleration I Max
-    m_nameToBoxMap["PSC_ACCZ_FILT"] = ui.accelZFiltHzSpinBox;       // vertical acceleration filter Hz
+    m_nameToBoxMap["PSC_ACCZ_IMAX"] = ui.accelZIMAXSpinBox;         // vertical acceleration I Max	 수직 가속도 I Max  
+    m_nameToBoxMap["PSC_ACCZ_FILT"] = ui.accelZFiltHzSpinBox;       // vertical acceleration filter Hz	  수직 가속도 필터 Hz  
 
     m_nameToBoxMap["PSC_VELZ_P"] = ui.velZPSpinBox;     // vertical velocity P
 

@@ -197,13 +197,13 @@ void Worker::readData() {
 
 void Worker::onCancel() {
     QLOG_DEBUG() << "onCancel()";
-    // Happens when the worker is cancelled
+    // Happens when the worker is cancelled	 작업자가 취소 될 때 발생합니다.  
     disconnect(m_port, SIGNAL(readyRead()), this, SLOT(readData()));
     emit cancelled();
 }
 
 //
-// Main UI for the log console
+// Main UI for the log console	 로그 콘솔의 기본 UI  
 //
 LogConsole::LogConsole(QWidget *parent) :
     QWidget(parent),
@@ -249,7 +249,7 @@ void LogConsole::onShow(bool shown) {
             return;
         }
 
-        // Get to the logs prompt
+        // Get to the logs prompt	 로그 프롬프트로 이동  
         connect(m_serial, SIGNAL(readyRead()), this, SLOT(readData()));
     }
     else {
@@ -282,17 +282,17 @@ void LogConsole::processLine(QByteArray &data) {
 
     switch(m_pullMode) {
         case ListLogs: {
-            // start of the data
+            // start of the data	 데이터의 시작  
             if(line.indexOf("logs enabled:") >= 0) {
                 clearListItems();
             }
             else {
-                // If a "Log" line
+                // If a "Log" line	  "로그"라인 인 경우  
                 if(line.indexOf("Log ") >= 0) {
                     addListItem(line);
                 }
 
-                // Back at the prompt, got all the names
+                // Back at the prompt, got all the names	  프롬프트로 돌아가서 모든 이름을 얻습니다.  
                 if(line.indexOf("Log]") >= 0) {
                     m_pullMode = None;
                 }
