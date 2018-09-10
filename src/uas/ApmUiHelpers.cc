@@ -11,6 +11,7 @@ void ApmUiHelpers::addRoverModes(QComboBox* comboBox)
         if (!(modeStr.contains("Unknown", Qt::CaseInsensitive)
               || modeStr.contains("Reserved", Qt::CaseInsensitive))){
             // If mode valid add it and mode Id to comboBox
+            // 유효한 모드가 comboBox에 해당 모드 및 모드 ID를 추가하는 경우
             comboBox->addItem(modeStr, count);
         }
     }
@@ -25,6 +26,7 @@ void ApmUiHelpers::addPlaneModes(QComboBox* comboBox)
         if (!(modeStr.contains("Unknown", Qt::CaseInsensitive)
               ||(modeStr.contains("Reserved", Qt::CaseInsensitive)))){
             // If mode valid add it and mode Id to comboBox
+            // 유효한 모드가 comboBox에 해당 모드 및 모드 ID를 추가하는 경우
             comboBox->addItem(modeStr, count);
         }
     }
@@ -39,6 +41,7 @@ void ApmUiHelpers::addCopterModes(QComboBox* comboBox)
         if (!(modeStr.contains("Unknown", Qt::CaseInsensitive)
               ||(modeStr.contains("Reserved", Qt::CaseInsensitive)))){
             // If mode valid add it and mode Id to comboBox
+            // 유효한 모드가 comboBox에 해당 모드 및 모드 ID를 추가하는 경우
             comboBox->addItem(modeStr, count);
         }
     }

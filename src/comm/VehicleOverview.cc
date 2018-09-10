@@ -26,7 +26,7 @@ void VehicleOverview::parseHeartbeat(LinkInterface* link,const mavlink_message_t
 {
     Q_UNUSED(link)
     Q_UNUSED(message)
-    // Set new type if it has changed
+    // Set new type if it has changed	 변경된 경우 새 유형 설정  
     if (m_type != state.type)
     {
         /*if (isFixedWing()) {
@@ -51,7 +51,7 @@ void VehicleOverview::parseHeartbeat(LinkInterface* link,const mavlink_message_t
 
        // emit systemTypeSet(this, type);
     }
-    //Set properties to trigger UI updates
+    //Set properties to trigger UI updates	 UI 업데이트를 트리거하는 속성 설정  
     this->setAutopilot(state.autopilot);
     this->setCustomMode(state.custom_mode);
     this->setType(state.type);
@@ -64,11 +64,11 @@ void VehicleOverview::parseHeartbeat(LinkInterface* link,const mavlink_message_t
     {
         if (currentlyArmed)
         {
-            //Gone from not armed, to armed
+            //Gone from not armed, to armed	 	 무장하지 않은 상태에서 무장 상태로 간다.  
         }
         else
         {
-            //Gone from armed, to not armed
+            //Gone from armed, to not armed	 무장에서 무장으로 간다.  
         }
         this->setArmedState(currentlyArmed);
     }

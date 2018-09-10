@@ -69,7 +69,7 @@ LinkManager::LinkManager(QObject *parent) :
 void LinkManager::reloadSettings()
 {
     loadSettings();
-    //Check to see if we have a single serial and single UDP connection, since they are the defaults
+    //Check to see if we have a single serial and single UDP connection, since they are the defaults	 우리가 하나의 시리얼과 싱글 UDP 연결을 가지고 있는지 확인한다.  
 
     bool foundserial = false;
     bool foundudp = false;
@@ -335,8 +335,14 @@ void LinkManager::removeLink(LinkInterface *link)
 {
    // This is called with a LINK_ID not an interface. needs mor rework
     //This function is not yet supported, it will be once we support multiple MAVs
-    Q_ASSERT(link == nullptr); // This shoud not be called, assert if it anything but NULL
-}
+
+/*
+   // 인터페이스가 아닌 LINK_ID로 호출됩니다. mor 재 작업이 필요하다.
+    // 이 함수는 아직 지원되지 않습니다. 일단 다중 MAV를 지원하면됩니다.
+*/
+
+    Q_ASSERT(link == nullptr); // This shoud not be called, assert if it anything but NULL	 이 소리는 호출되지 않고 NULL이라면 단언하십시오.  
+}	 
 
 void LinkManager::removeLink(int linkId)
 {
@@ -503,9 +509,9 @@ UASInterface* LinkManager::createUAS(MAVLinkProtocol* mavlink, LinkInterface* li
     case MAV_AUTOPILOT_GENERIC:
     {
         UAS* mav = new UAS(nullptr, sysid);
-        // Set the system type
+        // Set the system type	 시스템 타입을 설정한다.  
         mav->setSystemType(static_cast<int>(heartbeat->type));
-        // Connect this robot to the UAS object
+        // Connect this robot to the UAS object	 이 로봇을 UAS 객체에 연결합니다.  
         connect(mavlink, SIGNAL(messageReceived(LinkInterface*, mavlink_message_t)), mav, SLOT(receiveMessage(LinkInterface*, mavlink_message_t)));
 #ifdef QGC_PROTOBUF_ENABLED
         connect(mavlink, SIGNAL(extendedMessageReceived(LinkInterface*, std::tr1::shared_ptr<google::protobuf::Message>)), mav, SLOT(receiveExtendedMessage(LinkInterface*, std::tr1::shared_ptr<google::protobuf::Message>)));
@@ -529,15 +535,43 @@ UASInterface* LinkManager::createUAS(MAVLinkProtocol* mavlink, LinkInterface* li
 //        uas = mav;
 //    }
 //    break;
+
+/*
+//     case MAV_AUTOPILOT_PX4 :
+//     {
+//         PxQuadMAV * mav = new PxQuadMAV (0, sysid);
+//         // 시스템 타입을 설정한다.
+//         mav-> setSystemType ((int) heartbeat-> type);
+//         //이 로봇을 UAS 객체에 연결합니다.
+//         여기서 올바른 객체 유형을 사용하는 것이 중요합니다.
+//         // else 부모 객체의 슬롯이 호출됩니다 (따라서 특수
+//         목표에 도달하지 못하는 패킷)
+//         연결 (mavlink, SIGNAL (messageReceived (LinkInterface *, mavlink_message_t)), mav, SLOT (receiveMessage (LinkInterface *, mavlink_message_t))));
+// #ifdef QGC_PROTOBUF_ENABLED
+//         연결 (mavlink, SIGNAL (LinkMethodReceived (LinkInterface *, std :: tr1 :: shared_ptr <google :: protobuf :: Message>)), mav, SLOT (receiveExtendedMessage (LinkInterface *, std :: tr1 :: shared_ptr < :: protobuf :: 메시지>)));
+// #endif
+//         uas = mav;
+//     }
+//     break;
+*/
+
     case MAV_AUTOPILOT_SLUGS:
     {
         SlugsMAV* mav = new SlugsMAV(nullptr, sysid);
-        // Set the system type
+        // Set the system type	 시스템 유형 설정  
         mav->setSystemType(static_cast<int>(heartbeat->type));
         // Connect this robot to the UAS object
         // it is IMPORTANT here to use the right object type,
         // else the slot of the parent object is called (and thus the special
         // packets never reach their goal)
+
+/*
+        // 이 로봇을 UAS 객체에 연결합니다.
+        // 여기서 올바른 객체 유형을 사용하는 것이 중요합니다.
+        // else 부모 객체의 슬롯이 호출됩니다 (따라서 특수
+        // 패킷이 목표에 도달하지 못함)
+*/
+
         connect(mavlink, SIGNAL(messageReceived(LinkInterface*, mavlink_message_t)), mav, SLOT(receiveMessage(LinkInterface*, mavlink_message_t)));
         uas = mav;
     }
@@ -546,12 +580,20 @@ UASInterface* LinkManager::createUAS(MAVLinkProtocol* mavlink, LinkInterface* li
     {
         ArduPilotMegaMAV* mav = new ArduPilotMegaMAV(nullptr, sysid);
 
-        // Set the system type
+        // Set the system type	 시스템 유형 설정  
         mav->setSystemType(static_cast<int>(heartbeat->type));
         // Connect this robot to the UAS object
         // it is IMPORTANT here to use the right object type,
         // else the slot of the parent object is called (and thus the special
         // packets never reach their goal)
+
+/*
+        // 이 로봇을 UAS 객체에 연결합니다.
+        // 여기서 올바른 객체 유형을 사용하는 것이 중요합니다.
+        // else 부모 객체의 슬롯이 호출됩니다 (따라서 특수
+        // 패킷이 목표에 도달하지 못함)
+*/
+
         connect(mavlink, SIGNAL(messageReceived(LinkInterface*, mavlink_message_t)), mav, SLOT(receiveMessage(LinkInterface*, mavlink_message_t)));
         uas = mav;
     }
@@ -574,6 +616,14 @@ UASInterface* LinkManager::createUAS(MAVLinkProtocol* mavlink, LinkInterface* li
         // it is IMPORTANT here to use the right object type,
         // else the slot of the parent object is called (and thus the special
         // packets never reach their goal)
+
+/*
+        // 이 로봇을 UAS 객체에 연결합니다.
+        // 여기서 올바른 객체 유형을 사용하는 것이 중요합니다.
+        // else 부모 객체의 슬롯이 호출됩니다 (따라서 특수
+        // 패킷이 목표에 도달하지 못함)
+*/
+
         connect(mavlink, SIGNAL(messageReceived(LinkInterface*, mavlink_message_t)), mav, SLOT(receiveMessage(LinkInterface*, mavlink_message_t)));
         uas = mav;
     }
@@ -586,13 +636,13 @@ UASInterface* LinkManager::createUAS(MAVLinkProtocol* mavlink, LinkInterface* li
 
     m_uasMap.insert(sysid,uas);
 
-    // Set the autopilot type
+    // Set the autopilot type	 자동 조종 장치 유형 설정  
     uas->setAutopilotType(static_cast<int>(heartbeat->autopilot));
 
-    // Make UAS aware that this link can be used to communicate with the actual robot
+    // Make UAS aware that this link can be used to communicate with the actual robot	  UAS가이 링크를 사용하여 실제 로봇과 통신 할 수 있음을 알린다.  
     uas->addLink(link);
 
-    // Now add UAS to "official" list, which makes the whole application aware of it
+    // Now add UAS to "official" list, which makes the whole application aware of it	  이제 UAS를 "공식"목록에 추가하면 전체 응용 프로그램이이를 인식합니다  
     UASManager::instance()->addUAS(uas);
 
     return uas;
@@ -636,6 +686,14 @@ void LinkManager::linkTimeoutTriggered(LinkInterface *link)
     //Disabled until it is fixed and more more robust - MLC
     //emit linkError(link->getId(),"Connected to link, but unable to receive any mavlink packets, (link is silent). Disconnecting");
     //link->disconnect();
+
+/*
+    // 링크가 시간 초과되었습니다.
+    // 고정되고 더 견고해질 때까지 비활성화 됨 - MLC
+    // linkError (link-> getId (), "링크에 연결되었지만 어떤 mavlink 패킷도 수신 할 수 없습니다. (링크가 조용합니다).");
+    // link-> disconnect ();
+*/
+
 }
 
 void LinkManager::disableTimeouts(int index)

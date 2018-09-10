@@ -27,10 +27,13 @@ LinkInterface::LinkInterface() :
     QThread(0)
 {
     // Initialize everything for the data rate calculation buffers.
+    // 데이터 속도 계산 버퍼의 모든 것을 초기화하십시오.
     inDataIndex = 0;
     outDataIndex = 0;
 
     // Initialize our data rate buffers manually, cause C++<03 is dumb.
+    // 데이터 속도 버퍼를 수동으로 초기화하여 C ++ <03 is dumb.
+
     for (int i = 0; i < dataRateBufferSize; ++i)
     {
         inDataWriteAmounts[i] = 0;

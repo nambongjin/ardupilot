@@ -221,6 +221,8 @@ void CameraGimbalConfig::requestParameterUpdate()
 {
     if (!m_uas) return;
     // The List of Params we care about
+    // 우리가 신경 쓰는 매개 변수 목록
+
 
     for (int channelCount=5; channelCount <= 11; ++channelCount) {
         QString function = "RC?_FUNCTION";
@@ -329,6 +331,7 @@ void CameraGimbalConfig::updateTilt(int index)
     m_newTiltPrefix = ui.tiltChannelComboBox->itemText(index);
     if(index == 0) {
         // Disable Tilt Controls
+        // 기울이기 컨트롤 사용 안 함
         ui.tiltGroupBox->setEnabled(false);
     }else {
         ui.tiltGroupBox->setEnabled(true);
@@ -341,6 +344,7 @@ void CameraGimbalConfig::updatePan(int index)
     m_newPanPrefix = ui.panChannelComboBox->itemText(index);
     if(index == 0) {
         // Disable Pan Controls
+        // 팬 컨트롤 사용 중지
         ui.panGroupBox->setEnabled(false);
     } else {
         ui.panGroupBox->setEnabled(true);
@@ -353,6 +357,7 @@ void CameraGimbalConfig::updateRoll(int index)
     m_newRollPrefix = ui.rollChannelComboBox->itemText(index);
     if(index == 0) {
         // Disable Roll Controls
+        // 롤 컨트롤 사용 중지
         ui.rollGroupBox->setEnabled(false);
     } else {
         ui.rollGroupBox->setEnabled(true);
@@ -399,6 +404,7 @@ void CameraGimbalConfig::updateCameraGimbalParams(QString& chPrefix, const QStri
     if (!chPrefix.isEmpty() && (!newChPrefix.isEmpty())
             && (newChPrefix != chPrefix) && (!chPrefix.contains("Disable"))){
         //We need to disable the old assignment first if chnaged
+        // chnaged 인 경우 먼저 이전 할당을 비활성화해야합니다.
         QLOG_DEBUG() << "Set old " << chPrefix << " disabled";
         pm->setParameter(1, chPrefix + "_FUNCTION", static_cast<int>(RC_FUNCTION::Disabled));
     }
@@ -407,12 +413,14 @@ void CameraGimbalConfig::updateCameraGimbalParams(QString& chPrefix, const QStri
 
     if (outputChCombo->currentIndex() == 0) {
         //Disabled
+        // 사용 중지됨
         return;
     }
 
     QString channel = outputChCombo->itemData(outputChCombo->currentIndex()).toString();
 
     // component is currently ignored by APM, so MAV_COMP_ID_CAMERA seems ideal.
+    // 현재 구성 요소가 APM에 의해 무시되므로 MAV_COMP_ID_CAMERA가 이상적입니다.
     QLOG_DEBUG() << "Setting RC Parameters Channel:" << channel << "function:" << rcFunction
              << " min:" << servoMin->value() << " max:" << servoMax->value()
              << " reverse:" << servoReverse->checkState() << "comp:" << 1;
@@ -435,10 +443,11 @@ void CameraGimbalConfig::updateCameraGimbalParams(QString& chPrefix, const QStri
     pm->setParameter(1, "MNT_RC_IN_" + mountType , inChannel);
     QString type = mountType;
     type.resize(3);// makes the string either ROL or TIL
+                   // 문자열을 ROL 또는 TIL로 만듭니다.
     pm->setParameter(1, "MNT_ANGMIN_" + type, QVariant(angleMin->value() * 100).toInt()); // centiDegrees
     pm->setParameter(1, "MNT_ANGMAX_" + type, QVariant(angleMax->value() * 100).toInt()); // centiDegrees
-    pm->setParameter(1, "MNT_STAB_" + mountType, QVariant(stabilize->isChecked()?1:0)); // Enable Stabilization
-    pm->setParameter(1, "MNT_MODE", QVariant(3)); // Set the mount mode to RC Targetting
+    pm->setParameter(1, "MNT_STAB_" + mountType, QVariant(stabilize->isChecked()?1:0)); // Enable Stabilization  // 안정화 활성화
+    pm->setParameter(1, "MNT_MODE", QVariant(3)); // Set the mount mode to RC Targetting   // 마운트 모드를 RC로 설정합니다. Targeting
 }
 
 
@@ -451,12 +460,14 @@ void CameraGimbalConfig::updateCameraTriggerOutputCh(int index)
 
     if (!m_triggerPrefix.isEmpty() && (m_triggerPrefix != m_newTriggerPrefix)){
         // We need to disable the old assignment first
+        // 이전 할당을 먼저 비활성화해야합니다.
         QLOG_DEBUG() << "Set old camera trigger out " << m_triggerPrefix << " to disabled";
         m_uas->getParamManager()->setParameter(1, m_triggerPrefix + "_FUNCTION", RC_FUNCTION::Disabled);
     }
 
     if(ui.camTriggerOutChannelComboBox->currentIndex() == 0) {
         // Disabled
+        // 사용 중지됨
         ui.camTriggerGroupBox->setEnabled(false);
         return;
     }
@@ -466,7 +477,7 @@ void CameraGimbalConfig::updateCameraTriggerOutputCh(int index)
     QGCUASParamManager* pm = m_uas->getParamManager();
     pm->setParameter(1, m_triggerPrefix + "_FUNCTION", RC_FUNCTION::camera_trigger);
     updateCameraTriggerSettings(); // and set all the other related params
-}
+}                                  // 그리고 다른 모든 관련 매개 변수를 설정합니다.
 
 void CameraGimbalConfig::updateCameraTriggerSettings()
 {
@@ -564,6 +575,7 @@ void CameraGimbalConfig::parameterChanged(int uas, int component, QString parame
         return;
 
     // Silently ignore all params we don't care about
+    // 우리가 신경 쓰지 않는 모든 매개 변수를 자동으로 무시합니다.
     if (!m_cameraParams.contains(parameterName))
         return;
 
@@ -580,6 +592,7 @@ void CameraGimbalConfig::parameterChanged(int uas, int component, QString parame
 
     } else if (parameterName.contains(QRegExp("RC[1-9][1-16]?_FUNCTION$"))){
         // Matches RCXX_FUNCTION for RC channels 1 - 16
+        // RC 채널 1 - 16에 대해 RCXX_FUNCTION과 일치합니다.
         refreshRcFunctionComboxBox(parameterName, value);
 
     } else if (parameterName.startsWith(m_tiltPrefix) && !m_tiltPrefix.isEmpty()) {
@@ -662,6 +675,7 @@ void CameraGimbalConfig::refreshRcFunctionComboxBox(QString rcChannelName, QVari
     QString rcChannelId = rcChannelIds[0];
 
     //in case another function takes over a used function...
+    // 다른 함수가 사용한 함수를 대신 사용하는 경우를 대비하여 ...
     if ( rcChannelId == m_rollPrefix && value.toInt() != 0 && value.toInt() != RC_FUNCTION::mount_roll ){
         ui.rollChannelComboBox->setCurrentIndex(0);
         updateRoll(0);
@@ -709,7 +723,7 @@ void CameraGimbalConfig::updateMountMode(int index)
         int mode = ui.mountModeComboBox->itemData(index).toInt();
         if(pm){
             pm->setParameter(1, "MNT_MODE", QVariant(static_cast<int>(mode))); // Set the mount mode to RC Targetting
-        }
+        }                                                                      // 마운트 모드를 RC로 설정합니다. Targeting
     }
 }
 

@@ -22,6 +22,7 @@ const float PI = 3.14159265;
 
 static const QString kModesToColors[][2] = {
     // Colors are expressed in aabbggrr.
+    // 색상은 aabbggrr로 표현됩니다.
     {"AUTO", "FFFF00FF"},       // Plane/Copter/Rover
     {"STABILIZE", "FF00FF00"},  // Plane/Copter
     {"QSTABILIZE", "FF00FF00"}, // QuadPlane
@@ -52,13 +53,16 @@ static const QString kModesToColors[][2] = {
 };
 
 /** @brief Return the specified degrees converted to radians */
+/** @ brief 지정된 각도를 라디안으로 변환합니다. */
 static float toRadians(float deg) {
     return deg * (PI / 180);
 }
 
 /** @brief Return the distance between the two specified lat/lng pairs in km */
+/** @brief 두 개의 지정된 위도 / 경도 쌍 사이의 거리를 km 단위로 반환합니다. */
 static float distanceBetween(float hereLat, float hereLng, float thereLat, float thereLng) {
     const float R = 6371; // earth radius in km
+                          // km 단위의 지구 반경
 
     float dLat = toRadians(thereLat - hereLat);
     float dLon = toRadians(thereLng - hereLng);
@@ -79,6 +83,11 @@ static float distanceBetween(float hereLat, float hereLng, float thereLat, float
  * @brief Given a mode string, return a color for it.
  * @param str the mode string
  * @return a color value suitable for use in a KML file.
+ */
+/**
+ * @brief 모드 문자열이 주어지면 그것을위한 색을 반환합니다.
+ * @param str 모드 문자열
+ * @return은 KML 파일에서 사용하기에 적합한 색상 값입니다.
  */
 static QString getColorFor(QString &str) {
 
@@ -188,24 +197,28 @@ static GPSRecord gpsFromPOS(POSRecord& pos, qint64 gpsOffset, QList<GPSRecord> g
 }
 
 // get euler roll angle
+// 오일러 롤 각을 얻습니다.
 float get_euler_roll(QQuaternion& q)
 {
     return (atan2f(2.0f*(q.scalar()*q.x() + q.y()*q.z()), 1.0f - 2.0f*(q.x()*q.x() + q.y()*q.y())));
 }
 
 // get euler pitch angle
+// 오일러 피치 각을 얻는다.
 float get_euler_pitch(QQuaternion& q)
 {
     return asinf(2.0f*(q.scalar()*q.y() - q.z()*q.x()));
 }
 
 // get euler yaw angle
+// 오일러 각도를 얻는다.
 float get_euler_yaw(QQuaternion& q)
 {
     return atan2f(2.0f*(q.scalar()*q.z() + q.x()*q.y()), 1.0f - 2.0f*(q.y()*q.y() + q.z()*q.z()));
 }
 
 // create eulers from a quaternion
+// 쿼터니언으로부터 오일러 생성
 void quat_to_euler(QQuaternion& q, float &roll, float &pitch, float &yaw)
 {
     float rad2deg = 180 / M_PI;
@@ -221,17 +234,24 @@ static Attitude attFromNKQ1(NKQ1& q) {
 
     // special handling for pitch angles near 90 degrees
     // Google Earth KML orientations are sometimes incorrect without this
+    // 90도 근처의 피치 각에 대한 특수 처리
+    // Google 어스 KML 방향이 때때로 올바르지 않을 때가 있습니다.
     if (abs(pitch) > 80) {
 
         // rotate quaternion by 90 degrees in pitch
+        // 쿼터니온을 90도 회전시킵니다.
         quat *= QQuaternion::fromAxisAndAngle(0, 1, 0, -90);
 
         // get rotated euler angles
         // Qt Euler angles are ordered [pitch, yaw, roll] instead of RPY (xyz fixed)
         // so use the logic from AP_Math.cpp instead
+        // 회전 된 오일러 각을 얻습니다.
+        // Qt 오일러 각은 RPY (고정 된 xyz) 대신에 [pitch, yaw, roll]로 정렬됩니다.
+        // 대신 AP_Math.cpp의 논리를 사용하십시오.
         quat_to_euler(quat, roll, pitch, yaw);
 
         // then rotate back
+        // 다시 회전합니다.
         if (pitch < 0) {
             pitch += 90;
         }
@@ -363,6 +383,8 @@ void KMLCreator::processLine(QString &line)
     else if(line.indexOf("GPS,") == 0) {
         // calculate offset from GPS time to TimeUS timestamp
         // This is used in function gpsFromPOS to construct a "fake" GPS record from an attitude record
+        // GPS 시간에서 TimeUS 타임 스탬프까지 오프셋을 계산합니다.
+        // 이것은 gpsFromPOS 함수에서 태도 레코드로부터 "fake"GPS 레코드를 만드는 데 사용됩니다
         FormatLine fl = m_formatLines.value("GPS");
         if(fl.hasData()) {
             GPSRecord gps = GPSRecord::from(fl, line);
@@ -386,6 +408,7 @@ void KMLCreator::processLine(QString &line)
         }
     }
     // POS, ATT, AHR2, NKQ1, and XKQ1 messages are all logged at 25Hz (by default).
+    // POS, ATT, AHR2, NKQ1 및 XKQ1 메시지는 모두 기본적으로 25Hz로 기록됩니다.
     else if(line.indexOf("POS,") == 0 && (gpsOffset > 0)) {
         Placemark* pm = lastPlacemark();
         if(!pm) {
@@ -393,6 +416,7 @@ void KMLCreator::processLine(QString &line)
         }
         else {
             // use last read attitude with highest priority: EKF3, EKF2, AHR2, ATT
+            // 가장 우선 순위가 높은 마지막 읽기 태도를 사용합니다 : EKF3, EKF2, AHR2, ATT
             if (m_newXKQ1) {
                 Attitude att = attFromXKQ1(m_xkq1);
                 pm->addquat(att);
@@ -414,6 +438,7 @@ void KMLCreator::processLine(QString &line)
         if(fl.hasData()) {
             POSRecord pos = POSRecord::from(fl, line);
             // create a gps record using attitude from POS and other data from most recent GPS msg
+            // POS로부터의 태도와 가장 최근의 GPS 메시지로부터의 다른 데이터를 사용하여 GPS 레코드를 생성한다.
             GPSRecord gps = gpsFromPOS(pos, gpsOffset, pm->mGPS);
 
             if(gps.hasData()) {
@@ -433,6 +458,7 @@ void KMLCreator::processLine(QString &line)
         }
     }
     // EKF3 quaternion attitude
+    // EKF3 쿼터니온 태도
     else if((line.indexOf("XKQ1,") == 0)) {
 
         FormatLine fl = m_formatLines.value("XKQ1");
@@ -445,6 +471,7 @@ void KMLCreator::processLine(QString &line)
         }
     }
     // EKF2 quaternion attitude
+    // EKF2 쿼터니온 태도
     else if((line.indexOf("NKQ1,") == 0)) {
         FormatLine fl = m_formatLines.value("NKQ1");
         if(fl.hasData()) {
@@ -494,6 +521,7 @@ void KMLCreator::processLine(QString &line)
             ModeRecord mrec = ModeRecord::from(fl, line);
             if (mrec.hasData()) {
                 // Time for a new placemark
+                // 새로운 장소 표시를위한 시간
                 QString mode = toModeString(m_mav_type, mrec.modeNum());
                 QString title = QString("Flight Mode %1").arg(mode.trimmed());
                 QString color = getColorFor(mode);
@@ -557,6 +585,9 @@ QString KMLCreator::finish(bool kmz) {
     /*
      * Flight path (complete)
      */
+    /*
+     * 비행 경로 (완료)
+     */
     foreach(Placemark *pm, m_placemarks) {
         writePathElement(writer, pm);
     }
@@ -570,6 +601,9 @@ QString KMLCreator::finish(bool kmz) {
     /*
      * Flight path (segmented)
      */
+    /*
+     * 비행 경로 (세분화 된)
+     */
     foreach(Placemark *pm, m_placemarks) {
         writeLogPlacemarkElement(writer, pm);
     }
@@ -578,6 +612,9 @@ QString KMLCreator::finish(bool kmz) {
 
     /*
      * Planes element
+     */
+    /*
+     * 평면 요소
      */
     writer.writeStartElement("Folder");
     writer.writeTextElement("name", "Attitudes");
@@ -592,6 +629,9 @@ QString KMLCreator::finish(bool kmz) {
     /*
      * Planes element (quaternion)
      */
+    /*
+     * 평면 요소 (4 원)
+     */
     writer.writeStartElement("Folder");
     writer.writeTextElement("name", "EKFattitudes");
 
@@ -604,6 +644,9 @@ QString KMLCreator::finish(bool kmz) {
 
     /*
      * Waypoints element
+     */
+    /*
+     * Waypoints 요소
      */
     writer.writeStartElement("Folder");
     writer.writeTextElement("name", "Waypoints");
@@ -619,6 +662,9 @@ QString KMLCreator::finish(bool kmz) {
     /*
      * Cleanup
      */
+    /*
+     * 정리
+     */
     foreach(Placemark *pm, m_placemarks) {
         delete pm;
     }
@@ -631,6 +677,7 @@ QString KMLCreator::finish(bool kmz) {
     QDir outDir = fileInfo.absoluteDir();
 
     // Make sure the model file is in place.
+    // 모델 파일이 제 위치에 있는지 확인하십시오.
     QFile model(":/files/vehicles/block_plane/block_plane_0.dae");
     QFileInfo modelInfo(model);
     QString baseModelFile = modelInfo.fileName();
@@ -677,6 +724,7 @@ void KMLCreator::writeWaypointsPlacemarkElement(QXmlStreamWriter &writer) {
     foreach(CommandedWaypoint c, m_waypoints) {
         if ( c.isNavigationCommand() ) {
             // Add waypoints that are NAV points.
+            // NAV 포인트 인 웨이 포인트를 추가합니다.
             coordString += c.toStringForKml();
             coordString += " ";
         }
@@ -754,6 +802,7 @@ static QString RPYdescription(Attitude &att, GPSRecord &gps) {
 QString utc2KmlTimeStamp(qint64 utc_msec) {
     QDateTime time = QDateTime::fromMSecsSinceEpoch(utc_msec);
     // Qt::ISODateWithMs is not defined?
+    // Qt :: ISODateWithMs가 정의되지 않았습니까?
     int msec = utc_msec - (utc_msec / 1000) * 1000;
     return time.toString(Qt::ISODate) + "." + QString::number(msec);
 }
@@ -767,6 +816,7 @@ void KMLCreator::writePlanePlacemarkElement(QXmlStreamWriter &writer, Placemark 
     foreach(GPSRecord c, p->mPoints) {
 
         // decimate by 5 to reduce the default logging rate to 5Hz
+        // 기본 로깅 속도를 5Hz로 줄이기 위해 5로 데시 메이트
         if ((index %5) == 0) {
             writer.writeStartElement("Placemark");
             QString dateTime = utc2KmlTimeStamp(c.getUtc_ms());
@@ -807,6 +857,7 @@ void KMLCreator::writePlanePlacemarkElement(QXmlStreamWriter &writer, Placemark 
                         writer.writeStartElement("Orientation");
                         writer.writeTextElement("heading", yaw);
                             // the sign of tilt and roll has to be changed
+                            // 틸트와 롤의 부호를 변경해야합니다.
                             QString signChangedPitch = QString::number(a.pitch().toDouble() * -1);
                             QString signChangedRoll = QString::number(a.roll().toDouble() * -1);
                             writer.writeTextElement("tilt", signChangedPitch);
@@ -838,6 +889,7 @@ void KMLCreator::writePlanePlacemarkElementQ(QXmlStreamWriter &writer, Placemark
     }
 
     // generate placemarks for quaternion attitudes
+    // 쿼터니언 태도에 대한 장소 표시 생성
     int index = 0;
     Attitude att;
     double distance;
@@ -883,6 +935,7 @@ void KMLCreator::writePlanePlacemarkElementQ(QXmlStreamWriter &writer, Placemark
                     writer.writeStartElement("Orientation");
                     writer.writeTextElement("heading", yaw);
                         // the sign of tilt and roll has to be changed
+                        // 틸트와 롤의 부호를 변경해야합니다.
                         QString signChangedPitch = QString::number(att.pitch().toDouble() * -1);
                         QString signChangedRoll = QString::number(att.roll().toDouble() * -1);
                         writer.writeTextElement("tilt", signChangedPitch);
@@ -916,12 +969,14 @@ void KMLCreator::writePlanePlacemarkElementQ(QXmlStreamWriter &writer, Placemark
 }
 
 // create a Placemark element containing the entire trajectory
+// 전체 궤적을 포함하는 위치 표시 요소를 만듭니다.
 void KMLCreator::writePathElement(QXmlStreamWriter &writer, Placemark *p) {
     if(!p || p->mGPS.size()==0) {
         return;
     }
 
     // construct list of lat/lng/alt coordinates
+    // 위도 / 경도 / 고도 좌표 목록 구성
     QString coords("\n");
     qint64 endUtc = p->mGPS.last().getUtc_ms();
     qint64 startUtc = p->mGPS.first().getUtc_ms();
@@ -931,6 +986,7 @@ void KMLCreator::writePathElement(QXmlStreamWriter &writer, Placemark *p) {
     }
 
     // create Placemark element
+    // Placemark 요소를 만듭니다.
     writer.writeStartElement("Placemark");
 
     writer.writeStartElement("TimeSpan");
@@ -959,6 +1015,7 @@ void KMLCreator::writePathElement(QXmlStreamWriter &writer, Placemark *p) {
 }
 
 // end current Placemark
+// 현재 현재 위치 표시
 void KMLCreator::endLogPlaceMark(int seq, qint64 startUtc, qint64 endUtc,
         QString& coords, QXmlStreamWriter& writer, Placemark* p) {
 
@@ -994,6 +1051,7 @@ void KMLCreator::writeLogPlacemarkElement(QXmlStreamWriter &writer, Placemark *p
     }
 
     // for each 1000 milliseconds of data, create a Placemark representing that segment of the trajectory
+    // 각 1000 밀리 초의 데이터에 대해 궤도의 해당 세그먼트를 나타내는 위치 표시를 만듭니다.
     QString coords("\n");
     QString lastCoords;
     qint64 startUtc=0, endUtc=0;
@@ -1002,16 +1060,20 @@ void KMLCreator::writeLogPlacemarkElement(QXmlStreamWriter &writer, Placemark *p
         if (startUtc == 0) {
             startUtc = c.getUtc_ms();
             // create first Placemark
+            // 첫 번째 위치 표시 만들기
             writer.writeStartElement("Placemark");
         }
         if (endUtc >= startUtc+1000) {
             // end current Placemark
+            // 현재 현재 위치 표시
             endLogPlaceMark(seq++, startUtc, endUtc, coords, writer, p);
             // leave the last set of coordinates in the buffer so that segments are contiguous
+            // 세그먼트가 인접하도록 버퍼의 마지막 좌표 집합을 그대로 둡니다.
             coords.clear();
             coords += lastCoords + "\n";
 
             // start a new Placemark
+            // 새 장소 표시를 시작합니다.
             startUtc = endUtc;
             writer.writeStartElement("Placemark");
         }
@@ -1020,6 +1082,7 @@ void KMLCreator::writeLogPlacemarkElement(QXmlStreamWriter &writer, Placemark *p
         endUtc = c.getUtc_ms();
     }
     // end current Placemark
+     // 현재 현재 위치 표시
     endLogPlaceMark(seq, startUtc, endUtc, coords, writer, p);
 }
 

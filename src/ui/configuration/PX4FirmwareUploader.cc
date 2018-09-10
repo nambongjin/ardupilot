@@ -75,6 +75,7 @@ static quint32 crc32(const QByteArray src)
 {
     quint32 state = 0;
     for (int i = 0; i < src.size(); i++) //Limited to half of 32bits, since QByteArray::size() is an integer. Shouldn't ever be larger anyway
+// 32 비트의 절반에 제한을 QByteArray : 크기 () 정수 때문이다. 어차피 더 커야하지 마라.
     {
         state = crctab[(state ^ static_cast<unsigned char>(src[i])) & 0xff] ^ (state >> 8);
     }
@@ -115,6 +116,9 @@ void PX4FirmwareUploader::loadFile(QString filename)
     //This chunk of code is from QUpgrade
     //Available https://github.com/LorenzMeier/qupgrade
     // BOARD ID
+    // 이 코드는 QUpgrade에서 가져온 것입니다.
+    // 사용 가능한 https://github.com/LorenzMeier/qupgrade
+    // 보드 ID
     QStringList decode_list = jsonstring.split("\"board_id\":");
     decode_list = decode_list.last().split(",");
     if (decode_list.count() < 1)
@@ -126,6 +130,7 @@ void PX4FirmwareUploader::loadFile(QString filename)
     //int m_loadedBoardID = board_id.toInt();
 
     // IMAGE SIZE
+    // 이미지 크기
     decode_list = jsonstring.split("\"image_size\":");
     decode_list = decode_list.last().split(",");
     if (decode_list.count() < 1)
@@ -137,6 +142,7 @@ void PX4FirmwareUploader::loadFile(QString filename)
     int m_loadedFwSize = image_size.toInt();
 
     // DESCRIPTION
+    // 기술
     decode_list = jsonstring.split("\"description\": \"");
     decode_list = decode_list.last().split("\"");
     if (decode_list.count() < 1)
@@ -150,6 +156,8 @@ void PX4FirmwareUploader::loadFile(QString filename)
 
     //Create the "image" to be written to the board
     //from loaded data
+    // 보드에 쓰게 될 "이미지"를 만든다.
+    // 로드 된 데이터에서
 
     QByteArray fwimage;
 
@@ -170,6 +178,7 @@ void PX4FirmwareUploader::loadFile(QString filename)
         return;
     }
     //Per QUpgrade, pad it to a 4 byte multiple.
+    // QUpgrade에 따라 4 바이트 배수로 채 웁니다.
     while ((uncompressed.count() % 4) != 0)
     {
         uncompressed.append((char)0xFF);
@@ -186,6 +195,7 @@ void PX4FirmwareUploader::loadFile(QString filename)
 void PX4FirmwareUploader::stop()
 {
     //Stop has been requested, close out the port, kill the thread.
+    // 중지가 요청되었거나, 포트를 닫고, 스레드를 종료합니다.
     if (m_port)
     {
         if (m_checkTimer)
@@ -251,11 +261,13 @@ void PX4FirmwareUploader::checkForPort()
         {
 #ifdef Q_OS_LINUX
             //Needed to weird issue where ports reorder and re-appear in linux.
+            // 포트가 어디에서 재주문되고 다시 나타나는 지 이상한 문제가 필요합니다.
             if (info.portName().contains("ttyACM"))
             {
 #endif
             m_portToUse = info.portName();
             //Found a port!
+            // 포트를 찾았습니다!
             QLOG_INFO() << "Port found!" << m_portToUse;
             m_devInfoList.append(PROTO_DEVICE_BL_REV);
             m_devInfoList.append(PROTO_DEVICE_BOARD_ID);
@@ -298,6 +310,7 @@ void PX4FirmwareUploader::kickOffTriggered()
 
 #if defined(Q_OS_MACX) && ((QT_VERSION == 0x050402)||(QT_VERSION == 0x0500401))
     // temp fix Qt5.4.1 issue on OSX
+    // temp는 OSX에서 Qt5.4.1 문제를 해결합니다.
     // http://code.qt.io/cgit/qt/qtserialport.git/commit/?id=687dfa9312c1ef4894c32a1966b8ac968110b71e
     m_port->setPortName("/dev/cu." + m_portToUse);
 #else
@@ -336,11 +349,12 @@ void PX4FirmwareUploader::eraseSyncCheck()
     if (getSync())
     {
         //Done erasing
+        // 지우기 완료
         QLOG_INFO() << "Erase complete";
         emit statusUpdate("Erase Complete");
         m_eraseTimeoutTimer->stop();
         m_eraseTimeoutTimer->deleteLater(); //Can't do a direct delete since we're in its slot
-        m_eraseTimeoutTimer = 0;
+        m_eraseTimeoutTimer = 0;            // 슬롯에 있기 때문에 직접 삭제할 수 없습니다.
         reqFlash();
     }
     else
@@ -350,8 +364,9 @@ void PX4FirmwareUploader::eraseSyncCheck()
         {
             m_eraseTimeoutTimer->stop();
             m_eraseTimeoutTimer->deleteLater(); //Can't do a direct delete since we're in its slot
-            m_eraseTimeoutTimer = 0;
+            m_eraseTimeoutTimer = 0;            // 슬롯에 있기 때문에 직접 삭제할 수 없습니다.
             //Emit error here
+            // 여기서 오류를 내 보냅니다.
             QLOG_INFO() << "Error flashing, never returned from erase";
         }
     }
@@ -425,6 +440,7 @@ bool PX4FirmwareUploader::reqNextSNAddress()
     if (m_currentSNAddress >= 12)
     {
         //All SN is complete
+        // 모든 SN이 완성되었습니다.
         return false;
     }
     getSNAddress(m_currentSNAddress);
@@ -460,6 +476,7 @@ bool PX4FirmwareUploader::reqNextOtpAddress()
     if (m_currentOtpAddress >= 512)
     {
         //All OTP is complete
+        // 모든 OTP가 완료되었습니다.
         return false;
     }
     //qDebug() << m_currentOtpAddress << "OTP";
@@ -606,12 +623,15 @@ bool PX4FirmwareUploader::verifyOtp()
     }
 #else
     // [TODO] Need to read XML file of list of authorized keys.
-
+    // [TODO] 인증 된 키 목록의 XML 파일을 읽어야합니다.
     // 3DR COA Public Key
+    // 3DR COA 공개 키
     QStringList publicKeyList;
     // 3DR Public Key 1
+    // 3DR 공개 키 1
     publicKeyList << "\r\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDqi8E6EdZ11iE7nAc95bjdUTwd\r\n/gLetSAAx8X9jgjInz5j47DIcDqFVFKEFZWiAc3AxJE/fNrPQey16SfI0FyDAX/U\t\n4jyGIv9w+M1dKgUPI8UdpEMS2w1YnfzW0GO3PX0SBL6pctEIdXr0NGsFFaqU9Yz4\r\nDbgBdR6wBz9qdfRRoQIDAQAB";
     // 3DR Public Key 2
+    // 3DR 공개 키 2
     publicKeyList << "\r\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQCei8vGvc+jPXfbAAUkiu7o9fiQ\r\nhQ6/xdJcrmsJqa2/Onf4xDk6mMoZaNXNaNsEmE/xdeYgLqbPoivCba7A0YiGzonp\r\nOiEZlfUKJPzXvGSNrKbIDsOrvhPQpFwBEU+hO5usHoWCO5VzN5+wKTpGVZ300ny4\r\nNHbIGjZUF/RUz84lVwIDAQAB";
     // Arsov RC Technology USA
     publicKeyList << "\r\nMIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDJQfXiYHrYIHGadPwDPkUuHnQG\r\nubN4x0UAyvhP1VGzAk/CNYkcSCEKVGbi+Ro3l60xpoiOIR5HfHtzGgzdl+oBu55t\r\n2xjvbJbGIPKkA8pBU10Nj2dg/vjNphWMQpSw2yRdHuqvnrGjOq2fLduS0ITp11ST\r\nRX6cRfeDDXsVkL+XzwIDAQAB";
@@ -657,6 +677,7 @@ bool PX4FirmwareUploader::checkCOA(const QByteArray& serial, const QByteArray& s
     if (verify)
     {
         //Failed!
+        // 실패!
         QLOG_DEBUG() << "Failed to verify against public key:" << publicKey;
         return false;
     }
@@ -716,6 +737,7 @@ void PX4FirmwareUploader::portReadyRead()
                 if (!reqNextDeviceInfo())
                 {
                     //Al device info req's are done
+                    // 알 장치 정보 요청이 완료되었습니다.
                     QLOG_INFO() << "Device Info read complete";
                     emit statusUpdate("Requesting board Serial Number");
                     m_currentState = REQ_SN;
@@ -727,7 +749,7 @@ void PX4FirmwareUploader::portReadyRead()
         {
             m_waitingForSync = true;
             portReadyRead();  //Check for sync before popping out.
-        }
+        }                      // 튀어 나오기 전에 동기화를 확인하십시오.
     }
     else if (m_currentState == REQ_SN)
     {
@@ -750,7 +772,7 @@ void PX4FirmwareUploader::portReadyRead()
         {
             m_waitingForSync = true;
         portReadyRead();  //Check for sync before popping out.
-        }
+        }                 // 튀어 나오기 전에 동기화를 확인하십시오.
     }
     else if (m_currentState == SEND_FW)
     {
@@ -762,6 +784,7 @@ void PX4FirmwareUploader::portReadyRead()
                 if (!sendNextFwBytes())
                 {
                     //At end
+                    // 끝에
                     QLOG_INFO() << "finished writing firmware";
                     emit statusUpdate("Flashing complete, verifying firmware");
                     m_waitingForSync = false;
@@ -779,10 +802,13 @@ void PX4FirmwareUploader::portReadyRead()
             if (getSync())
             {
                 //Everything's happy, reboot and close out
+                // 모든 것이 행복하고 재부팅하고 닫습니다.
                 reqReboot();
                 m_port->close();
                 m_port->deleteLater(); //We're in a slot for m_port, so don't delete it now.
+                                       // 우리는 m_port 슬롯에 있으므로 삭제하지 마십시오.
                 m_port = NULL; //But since we called deleteLater, it's safe to clear it out, Qt promises.
+                               // 그러나 우리가 deleteLater를 호출 한 이후, 그것을 지우는 것이 안전합니다. Qt는 약속합니다.
                 emit complete();
             }
             return;
@@ -792,6 +818,7 @@ void PX4FirmwareUploader::portReadyRead()
             if (m_localChecksum == m_checksum)
             {
                 //Good to go!
+                // 잘 가라!
                 QLOG_INFO() << "everything's happy!";
                 emit statusUpdate("Verify successful, rebooting");
             }
@@ -807,8 +834,9 @@ void PX4FirmwareUploader::portReadyRead()
                 return;
             }
             //We've read the checksum
+            // 체크섬을 읽었습니다.
             m_waitingForSync = true;
             portReadyRead();  //Check for sync before popping out.
-        }
+        }                     // 튀어 나오기 전에 동기화를 확인하십시오.
     }
 }

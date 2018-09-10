@@ -25,6 +25,13 @@ This file is part of the APM_PLANNER project
  * @date 13 Apr 2017
  * @brief File providing implementation for the Preset manager class
  */
+/**
+ * @file PresetManager.cpp
+ * @author Arne Wischmann <wischmann-a@gmx.de>
+ * @ 날짜 : 201 년 4 월 13 일
+ * @brief Preset manager 클래스에 대한 구현을 제공하는 파일
+ */
+
 
 #include <QFileDialog>
 #include <QSettings>
@@ -44,6 +51,7 @@ PresetManager::PresetManager(QWidget *p_parent, QMenuBar *p_menuBar) :
     qRegisterMetaType<PresetManager::presetElementVec>("PresetManager::presetElementVec");
 
     // create own menu and add the management items
+    // 자신 만의 메뉴를 만들고 관리 항목을 추가합니다.
     mp_menu = new QMenu("Analyzing Presets", p_parent);
     p_menuBar->addMenu(mp_menu);
 
@@ -90,10 +98,12 @@ void PresetManager::saveSpecialSet(const presetElementVec &preset, bool usesTime
 {
     // This preset is stored in the APM Planner ini file and loaded / stored on every
     // access. This guarantees that a saved set is immediate loadable from another analysis window.
+    // 이 사전 설정은 APM Planner ini 파일에 저장되고 모든
+    // access. 이렇게하면 저장된 세트를 다른 분석 창에서 즉시로드 할 수 있습니다.
     QSettings graphSettings;
     graphSettings.beginGroup("LOGANALYSIS");
     graphSettings.remove("");   // removes all entries from this group
-
+                                // 이 그룹에서 모든 항목을 제거합니다.
     graphSettings.beginWriteArray("GRAPH_ELEMENTS");
     for(int i = 0; i < preset.size(); ++i)
     {
@@ -104,11 +114,13 @@ void PresetManager::saveSpecialSet(const presetElementVec &preset, bool usesTime
         graphSettings.setValue("COLOR/BLUE", preset.at(i).m_color.blue());
         if(preset.at(i).m_manualRange)
         {   // only store scaling if set to manual
+            // 수동으로 설정된 경우에만 배율 저장
             graphSettings.setValue("Y_AXIS_MIN", preset.at(i).m_range.lower);
             graphSettings.setValue("Y_AXIS_MAX", preset.at(i).m_range.upper);
         }
         else if(preset.at(i).m_group.size() > 0)
         {   // store group name if grouped
+            // 그룹화 된 경우 그룹 이름 저장
             graphSettings.setValue("GROUP", preset.at(i).m_group);
         }
     }
@@ -129,8 +141,10 @@ bool PresetManager::loadSpecialSet(presetElementVec &preset) const
 {
     // This preset is stored in the APM Planner ini file and loaded / stored on every
     // access. This guarantees that a saved set is immediate loadable from another analysis window.
-
+    // 이 사전 설정은 APM Planner ini 파일에 저장되고 모든
+    // access. 이렇게하면 저장된 세트를 다른 분석 창에서 즉시로드 할 수 있습니다.
     // Load X-Axis settings
+    // X 축 설정로드
     QSettings graphSettings;
     graphSettings.beginGroup("LOGANALYSIS");
     graphSettings.beginGroup("GRAPH_SETTINGS");
@@ -138,6 +152,7 @@ bool PresetManager::loadSpecialSet(presetElementVec &preset) const
     graphSettings.endGroup();   // "GRAPH_SETTINGS"
 
     // now load the enabled graphs
+    // 이제 활성화 된 그래프를로드합니다.
     int size = graphSettings.beginReadArray("GRAPH_ELEMENTS");
     for(int i = 0; i < size; ++i)
     {
@@ -199,6 +214,7 @@ void PresetManager::addToCurrentPresets(const presetElementVec &preset)
 void PresetManager::readPresetFile()
 {
     // first remove all loaded presets
+    // 로드 된 모든 사전 설정을 먼저 제거합니다.
     removeAllPresets();
     QSettings presets(m_presetFile.absoluteFilePath(), QSettings::IniFormat);
     presets.beginGroup("GRAPHING_PRESETS");
@@ -212,6 +228,7 @@ void PresetManager::readPresetFile()
             readPresetFileVersion10(presets);
         }
         // Add new preset versions here!
+        // 새로운 프리셋 버전을 여기에 추가하십시오!
         else
         {
             QLOG_ERROR() << "Could not load preset file " << m_presetFile.absoluteFilePath() << ". Unknown Version:" << presetVersion;
@@ -227,13 +244,15 @@ void PresetManager::readPresetFile()
     presets.endGroup(); // "GRAPHING_PRESETS"
 
     m_presetHasChanged = false;    // a fresh loaded preset has not changed
-    adaptWindowTitle();
+    adaptWindowTitle();            // 로드 된 새 프리셋은 변경되지 않았습니다.
 }
 
 void PresetManager::readPresetFileVersion10(QSettings &presets)
 {
     // "GRAPHING_PRESETS" group is handeled by caller
     // check if valid - at least there must be one name
+    // 발신자가 "GRAPHING_PRESETS"그룹을 전달합니다.
+    // 유효한지 확인하십시오. 적어도 하나의 이름이 있어야합니다.
     if(!presets.contains("SETNAMES/1/NAME"))
     {
         QLOG_WARN() << "PresetManager::readPresetFile() - ini file seems to be corrupt - not loaded";
@@ -242,6 +261,7 @@ void PresetManager::readPresetFileVersion10(QSettings &presets)
     }
 
     // first fetch the names of all presets
+    // 모든 사전 설정의 이름을 먼저 가져옵니다.
     int size = presets.beginReadArray("SETNAMES");
     for(int i = 0; i < size; ++i)
     {
@@ -264,6 +284,7 @@ void PresetManager::readPresetFileVersion10(QSettings &presets)
     presets.endArray();
 
     // now get the content of the presets
+    // 이제 프리셋의 내용을 가져옵니다.
     QMap<QString, presetData>::Iterator iter;
     for(iter = m_NameToPresetMap.begin(); iter != m_NameToPresetMap.end(); ++iter)
     {
@@ -280,11 +301,11 @@ void PresetManager::readPresetFileVersion10(QSettings &presets)
             QColor color(red, green, blue);
             element.m_color = color;
             if(presets.contains("GROUP"))   // is optional
-            {
+            {                               // 는 선택 사항입니다.
                 element.m_group = presets.value("GROUP").toString();
             }
             else if(presets.contains("Y_AXIS_MIN") && presets.contains("Y_AXIS_MAX"))   // is optional
-            {
+            {                                                                           // 는 선택 사항입니다.
                 QCPRange yAxisRange(presets.value("Y_AXIS_MIN").toDouble(), presets.value("Y_AXIS_MAX").toDouble());
                 element.m_range = yAxisRange;
                 element.m_manualRange = true;
@@ -328,10 +349,10 @@ void PresetManager::adaptWindowTitle() const
         if(index > 0)
         {
             title.truncate(index - 1);   // If found just remove one more getting the space before '[' (see next lines)
-        }
+        }                                // '['앞에 공백을 하나 더 제거하면됩니다 (다음 라인을보십시오)
         title.append(" [");
         title.append(m_presetFile.fileName());     // now add the preset filename to window title
-        title.append(']');
+        title.append(']');                         // 이제 창 제목에 미리 설정된 파일 이름을 추가합니다.
 
         window->setWindowTitle(title);
     }
@@ -357,6 +378,7 @@ void PresetManager::loadDialogAccepted()
     dialog->deleteLater();
 
     // read presets
+    // 사전 설정 읽기
     readPresetFile();
 }
 
@@ -400,6 +422,7 @@ void PresetManager::savePresets()
     graphPresets.setValue("PRESET_FILE_VERSION", "1.0");
 
     // create the names of the presets
+    // 사전 설정의 이름을 만듭니다.
     graphPresets.beginWriteArray("SETNAMES");
     int index = 0;
     QMap<QString, presetData>::iterator iter;
@@ -411,6 +434,7 @@ void PresetManager::savePresets()
     graphPresets.endArray();
 
     // store the preset data itself
+    // 사전 설정 데이터 자체를 저장합니다.
     for(iter = m_NameToPresetMap.begin(); iter != m_NameToPresetMap.end(); ++iter)
     {
         graphPresets.beginWriteArray(iter->m_presetName);
@@ -451,12 +475,12 @@ void PresetManager::savePresetsAs()
    if(!name.isEmpty())
    {
        int pointIndex = name.lastIndexOf('.');  // lastIndexOf '.' shall find the . right before the extension
-       if(pointIndex > 0)
+       if(pointIndex > 0)                       // lastIndexOf '.' 를 찾을 것이다. 확장 직전에
        {
            name.truncate(pointIndex);   // If found just remove the old extension completely
-       }
+       }                                // 발견되면 이전 확장을 완전히 제거합니다.
        name.append(".ini");     // now add the new ".ini" extension
-
+                                // 이제 새 ".ini"확장명을 추가합니다.
        m_presetFile.setFile(name);
        savePresets();
    }

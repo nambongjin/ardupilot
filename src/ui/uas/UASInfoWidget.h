@@ -40,7 +40,7 @@ This file is part of the QGROUNDCONTROL project
 #include "ui_UASInfo.h"
 
 /**
- * @brief Info indicator for the currently active UAS
+ * @brief Info indicator for the currently active UAS	  현재 사용중인 UAS에 대한 정보 표시기
  *
  **/
 class UASInfoWidget : public QWidget
@@ -62,6 +62,13 @@ public slots:
 	 * @param uasId UNUSED
 	 * @param receiveLoss A percentage value (0-100) of how many message the UAS has failed to receive.
 	 */
+
+/*
+	 * @brief MAV가 수신 한 패킷의 손실률을 설정합니다.
+	 * @param uasId UNUSED
+	 * @param receiveLoss UAS가 수신하지 못한 메시지의 백분율 값 (0-100)입니다.
+*/
+
     void updateReceiveLoss(int uasId, float receiveLoss);
 
     /**
@@ -69,9 +76,16 @@ public slots:
 	 * @param uasId UNUSED
 	 * @param sendLoss A percentage value (0-100) of how many message QGC has failed to receive.
 	 */
+
+/*
+	 * @brief MAV에서 보낸 패킷의 손실률을 설정합니다. 
+	 * @param uasId UNUSED
+	 * @param sendLoss 수신 실패한 QGC 메시지의 백분율 값 (0-100)입니다.
+*/
+
     void updateSendLoss(int uasId, float sendLoss);
 	
-    /** @brief Update the error count */
+    /** @brief Update the error count 	 오류 카운트 업데이트 */
     void updateErrorCount(int uasid, QString component, QString device, int count);
 
     void setVoltage(UASInterface* uas, double voltage);
@@ -87,13 +101,13 @@ protected:
 
     UASInterface* activeUAS;
 
-    // Configuration variables
+    // Configuration variables	 설정 변수
     int voltageDecimals;
     int loadDecimals;
 
-    // State variables
+    // State variables	 상태 변수
 
-    // Voltage
+    // Voltage	 전압
     double voltage;
     double chargeLevel;
     double timeRemaining;
@@ -105,7 +119,7 @@ protected:
     QString name;
     quint64 startTime;
     QMap<QString, int> errors;
-    static const int updateInterval = 800; ///< Refresh interval in milliseconds
+    static const int updateInterval = 800; ///< Refresh interval in milliseconds	 새로 고침 간격 (밀리 초)
 
     void showEvent(QShowEvent* event);
     void hideEvent(QHideEvent* event);

@@ -27,6 +27,12 @@ This file is part of the QGROUNDCONTROL project
  *   @author Lorenz Meier <mavteam@student.ethz.ch>
  *
  */
+/**
+ * @file
+ 무인 차량을위한 UDP 연결 (서버) 정의
+ * @author Lorenz Meier <mavteam@student.ethz.ch>
+ *
+ */
 #include <QtGlobal>
 
 #include <QTimer>
@@ -51,6 +57,7 @@ UDPLink::UDPLink(QHostAddress host, quint16 port) :
     this->host = host;
     this->port = port;
     // Set unique ID and add link to the list of links
+    // 고유 ID를 설정하고 링크 목록에 링크를 추가합니다.
     this->id = getNextLinkId();
     this->name = tr("UDP Link (port:%1)").arg(this->port);
     emit nameChanged(this->name);
@@ -60,9 +67,11 @@ UDPLink::UDPLink(QHostAddress host, quint16 port) :
 UDPLink::~UDPLink()
 {
     // Tell the thread to exit
+    // 스레드에 종료를 알립니다.
     _running = false;
 
     // Wait for it to exit
+    // 종료 될 때까지 기다립니다.
     wait();
     while(_outQueue.count() > 0) {
         delete _outQueue.dequeue();
@@ -74,6 +83,10 @@ UDPLink::~UDPLink()
  * @brief Runs the thread
  *
  **/
+/**
+ * @brief 스레드를 실행합니다.
+ *
+**/
 void UDPLink::run()
 {
     forever {
@@ -101,6 +114,7 @@ void UDPLink::run()
         }
 
         //-- Loop right away if busy
+        // - 사용 중이면 즉시 루프하기
         if((_dequeBytes() || loop) && _running)
             continue;
 
@@ -116,6 +130,7 @@ void UDPLink::run()
         }
 
         //-- Settle down (it gets here if there is nothing to read or write)
+        // - 정착 (읽기 또는 쓰기가 없으면 여기에 옵니다)
         msleep(50);
     }
 }
@@ -139,6 +154,9 @@ void UDPLink::setPort(int port)
 /**
  * @param host Hostname in standard formatting, e.g. localhost:14551 or 192.168.1.1:14551
  */
+/**
+ * @param host 표준 형식의 호스트 명. 예 : localhost : 14551 또는 192.168.1.1:14551
+ */
 void UDPLink::addHost(const QString& host)
 {
     QLOG_INFO() << "UDP:" << "ADDING HOST:" << host;
@@ -149,11 +167,13 @@ void UDPLink::addHost(const QString& host)
         if (info.error() == QHostInfo::NoError)
         {
             // Add host
+            // 호스트 추가
             QList<QHostAddress> hostAddresses = info.addresses();
             QHostAddress address;
             for (int i = 0; i < hostAddresses.size(); i++)
             {
                 // Exclude loopback IPv4 and all IPv6 addresses
+                // 루프백 IPv4 및 모든 IPv6 주소 제외
                 if (!hostAddresses.at(i).toString().contains(":"))
                 {
                     address = hostAddresses.at(i);
@@ -162,6 +182,7 @@ void UDPLink::addHost(const QString& host)
             hosts.append(address);
             QLOG_DEBUG() << "Address:" << address.toString();
             // Set port according to user input
+            // 사용자 입력에 따라 포트 설정
             ports.append(host.split(":").last().toInt());
         }
     }
@@ -171,8 +192,10 @@ void UDPLink::addHost(const QString& host)
         if (info.error() == QHostInfo::NoError)
         {
             // Add host
+            // 호스트 추가
             hosts.append(info.addresses().first());
             // Set port according to default (this port)
+            // 기본값 (이 포트)에 따라 포트를 설정합니다.
             ports.append(port);
         }
     }
@@ -191,6 +214,7 @@ void UDPLink::removeHost(const QString& hostname)
     for (int i = 0; i < hostAddresses.size(); i++)
     {
         // Exclude loopback IPv4 and all IPv6 addresses
+        // 루프백 IPv4 및 모든 IPv6 주소 제외
         if (!hostAddresses.at(i).toString().contains(":"))
         {
             address = hostAddresses.at(i);
@@ -233,6 +257,7 @@ bool UDPLink::_dequeBytes()
 void UDPLink::_sendBytes(const char* data, qint64 size)
 {
     // Broadcast to all connected systems
+    // 연결된 모든 시스템에 브로드 캐스트
     for (int h = 0; h < hosts.size(); h++)
     {
         QHostAddress currentHost = hosts.at(h);
@@ -261,6 +286,7 @@ void UDPLink::_sendBytes(const char* data, qint64 size)
         socket->writeDatagram(data, size, currentHost, currentPort);
 
         // Log the amount and time written out for future data rate calculations.
+         // 미래의 데이터 속도 계산을 위해 기록 된 양과 시간을 기록하십시오.
         QMutexLocker dataRateLocker(&dataRateMutex);
         logDataRateToBuffer(outDataWriteAmounts, outDataWriteTimes, &outDataIndex, size, QDateTime::currentMSecsSinceEpoch());
     }
@@ -272,6 +298,12 @@ void UDPLink::_sendBytes(const char* data, qint64 size)
  * @param data Pointer to the data byte array to write the bytes to
  * @param maxLength The maximum number of bytes to write
  **/
+/**
+ * @brief 인터페이스에서 여러 바이트를 읽습니다.
+ *
+ 파라미터 : data - 바이트 배열을 기입하는 데이터 바이트 배열의 포인터.
+ * @param maxLength 기입 해지는 최대 바이트 수
+**/
 void UDPLink::readBytes()
 {
     while (socket->hasPendingDatagrams())
@@ -284,14 +316,17 @@ void UDPLink::readBytes()
         socket->readDatagram(datagram.data(), datagram.size(), &sender, &senderPort);
 
         // FIXME TODO Check if this method is better than retrieving the data by individual processes
+        // FIXME TODO이 메소드가 개별 프로세스에 의해 데이터를 검색하는 것보다 낫지 않은지 점검한다.
         emit bytesReceived(this, datagram);
 
         // Log this data reception for this timestep
+        // 이 timestep에 대해이 데이터 수신을 기록합니다.
         QMutexLocker dataRateLocker(&dataRateMutex);
         logDataRateToBuffer(inDataWriteAmounts, inDataWriteTimes, &inDataIndex, datagram.length(), QDateTime::currentMSecsSinceEpoch());
 
 #ifdef UDPLINK_DEBUG
         // Echo data for debugging purposes
+         // 디버깅 목적으로 에코 데이터
         std::cerr << __FILE__ << __LINE__ << "Received datagram:" << std::endl;
 //        int i;
 //        for (i=0; i<s; i++)
@@ -303,6 +338,7 @@ void UDPLink::readBytes()
 #endif
 
         // Add host to broadcast list if not yet present
+        // 아직 존재하지 않으면 브로드 캐스트 목록에 호스트 추가
         if (!hosts.contains(sender))
         {
             hosts.append(sender);
@@ -325,6 +361,12 @@ void UDPLink::readBytes()
  *
  * @return The number of bytes to read
  **/
+
+/**
+ * @brief 읽을 바이트 수를 가져옵니다.
+ *
+ * @return 읽을 바이트 수
+**/
 qint64 UDPLink::bytesAvailable()
 {
     return socket->pendingDatagramSize();
@@ -335,6 +377,11 @@ qint64 UDPLink::bytesAvailable()
  *
  * @return True if connection has been disconnected, false if connection couldn't be disconnected.
  **/
+/**
+ * @brief 연결을 끊습니다.
+ *
+ * @return 연결이 끊어진 경우 true, 연결을 끊을 수없는 경우 false.
+**/
 bool UDPLink::disconnect()
 {
     QLOG_INFO() << "UDP disconnect";
@@ -347,6 +394,11 @@ bool UDPLink::disconnect()
  *
  * @return True if connection has been established, false if connection couldn't be established.
  **/
+/**
+ * @brief 연결을 연결하십시오.
+ *
+ * @return 접속이 확립하면 true, 접속을 확립 할 수없는 경우는 false
+**/
 bool UDPLink::connect()
 {
     QLOG_INFO() << "UDPLink::UDP connect " << host << ":" << port;
@@ -379,6 +431,11 @@ bool UDPLink::hardwareConnect(void)
  *
  * @return True if link is connected, false otherwise.
  **/
+/**
+ * @brief 연결이 활성화되어 있는지 확인하십시오.
+ *
+ * @return 링크가 연결되어 있으면 true이고, 그렇지 않으면 false입니다.
+**/
 bool UDPLink::isConnected() const
 {
     return connectState;

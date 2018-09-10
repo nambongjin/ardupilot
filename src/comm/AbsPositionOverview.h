@@ -3,7 +3,8 @@
 
 #include <QObject>
 #include <mavlink_types.h>
-extern mavlink_status_t m_mavlink_status[MAVLINK_COMM_NUM_BUFFERS];  // defined in src/main.cc
+extern mavlink_status_t m_mavlink_status[MAVLINK_COMM_NUM_BUFFERS];  // defined in src/main.cc 
+                                                                     // src / main.cc에 정의되어있다.
 #include <mavlink.h>
 #include "LinkInterface.h"
 
