@@ -27,6 +27,14 @@ This file is part of the APM_PLANNER project
  *   @author Arne Wischmann <wischmann-a@gmx.de>
  *
  */
+/* *
+ * @file
+ * @brief Airframe type 설정 위젯 헤더.
+ *
+ * @author Michael Carpenter <malcom2073@gmail.com>
+ * @author Arne Wischmann <wischmann-a@gmx.de>
+ *
+ */
 
 #ifndef FRAMETYPECONFIG_H
 #define FRAMETYPECONFIG_H
@@ -46,12 +54,16 @@ This file is part of the APM_PLANNER project
  * @brief The FrameTypeConfig class provides the outer Frame of the config dialog
  *        and loads a specialized inner dialog depending on the APM FW version.
  */
+/* *
+ * @brief FrameTypeConfig 클래스는 설정 대화 상자의 외부 프레임을 제공합니다
+ * APM FW 버전에 따라 특수한 내부 대화 상자를로드합니다.
+ */
 class FrameTypeConfig : public AP2ConfigWidget
 {
     Q_OBJECT
     
 public:
-    static const int FRAME_INIT_VALUE = 100;    /// Used to check if frameClass and FrameType have useful value
+    static const int FRAME_INIT_VALUE = 100;    /// Used to check if frameClass and FrameType have useful value// // frameClass 및 FrameType에 유용한 값이 있는지 확인하는 데 사용됩니다.
 
     explicit FrameTypeConfig(QWidget *parent = 0);
     ~FrameTypeConfig();
@@ -66,6 +78,11 @@ signals:
      *        and the "FRAME" parameter is set.
      * @param frameType - Frame type ID of ArduPilot FW (@see FrameTypeConfigOld::FRAME_PLUS for example)
      */
+    /* *
+     * @brief detectedOldFrameType - ArduPilot FW <3.5.0이 감지되면 방출됩니다.
+     * "FRAME"파라미터가 설정됩니다.
+     * @param frameType - ArduPilot FW의 프레임 유형 ID (예 : FrameTypeConfigOld :: FRAME_PLUS 참조)
+     */
     void detectedOldFrameType(int frameType);
 
     /**
@@ -73,6 +90,12 @@ signals:
      *        and "FRAME_TYPE" and "FRAME_CLASS" are set.
      * @param frameClass - Frame class ID of ArduPilot FW (@see FrameTypeConfigNew::FRAME_CLASS_QUAD for example)
      * @param frameType  - Frame type ID of ArduPilot FW (@see FrameTypeConfigNew::FRAME_TYPE_PLUS for example)
+     */
+    /* *
+     * @brief detectedNewFrameType - ArduPilot FW> = 3.5.0이 감지되면 방출됩니다.
+     * 및 "FRAME_TYPE"및 "FRAME_CLASS"가 설정됩니다.
+     * @param frameClass - ArduPilot FW의 프레임 클래스 ID (예 : @see FrameTypeConfigNew :: FRAME_CLASS_QUAD)
+     * @param frameType - ArduPilot FW의 프레임 유형 ID (예 : @see FrameTypeConfigNew :: FRAME_TYPE_PLUS)
      */
     void detectedNewFrameType(int frameClass, int frameType);
 
@@ -86,7 +109,7 @@ private:
 
     QMap<QString, UASParameter*> m_parameterList;
     QString m_paramFileToCompare;
-    APMFirmwareVersion m_currentFirmwareVersion;    /// holds the actual FW version as soon as it has been set.
+    APMFirmwareVersion m_currentFirmwareVersion;    /// holds the actual FW version as soon as it has been set.// / 설정되면 실제 FW 버전을 보유합니다.
     int m_frameClass;
     int m_frameType;
 };
@@ -95,6 +118,11 @@ private:
  * @brief The FrameTypeConfigOld class provides the complete air frame config for
  *        APM versions prior 3.5.0
  *        Those Firmwares support only a parameter named "FRAME"
+ */
+/* *
+ FrameTypeConfigOld 클래스는 다음을위한 완전한 에어 프레임 설정을 제공합니다.
+ * APM 버전 3.5.0 이전
+ * 해당 펌웨어는 "FRAME"이라는 매개 변수 만 지원합니다.
  */
 class FrameTypeConfigOld : public QWidget
 {
@@ -121,6 +149,11 @@ public slots:
      *        Sets up gui to reflect the settings
      * @param frameType  - Frame type ID of ArduPilot FW - @see Frame
      */
+    /* *
+     * @brief setFrameType - 매개 변수 "FRAME"이 알려지 자마자 호출됩니다.
+     * 설정을 반영하도록 GUI 설정
+     * @param frameType - ArduPilot FW의 프레임 유형 ID - @see 프레임
+     */
     void setFrameType(int frameType);
 
 private slots:
@@ -144,6 +177,11 @@ private:
  * @brief The FrameTypeConfigNew class provides the complete air frame config for
  *        APM versions since 3.5.0
  *        Those Firmwares support two parameters named "FRAME_CLASS" and "FRAME_TYPE"
+ */
+/* *
+ * @brief FrameTypeConfigNew 클래스는 다음을위한 완벽한 에어 프레임 설정을 제공합니다.
+ * 3.5.0 이후 APM 버전
+ * 이들 펌웨어는 "FRAME_CLASS"및 "FRAME_TYPE"이라는 두 개의 매개 변수를 지원합니다.
  */
 class FrameTypeConfigNew : public QWidget
 {
@@ -190,11 +228,20 @@ public slots:
      * @param frameClass - Frame class ID of ArduPilot FW - @see Frame class
      * @param frameType  - Frame type ID of ArduPilot FW - @see Frame type
      */
+    /* *
+     * @brief setFrameType - "FRAME_CLASS"와 "FRAME_TYPE"이 알려지 자마자 호출됩니다.
+     * 설정을 반영하도록 GUI 설정
+     * @param frameClass - ArduPilot FW의 프레임 클래스 ID - @see Frame 클래스
+     * @param frameType - ArduPilot FW의 프레임 유형 ID - @see 프레임 유형
+     */
     void setFrameType(int frameClass, int frameType);
 
 private slots:
     /**
      * @brief FrameClass button handlers
+     */
+    /* *
+     * @brief FrameClass 버튼 핸들러
      */
     void FrameClassQuadSelected();
     void FrameClassHexaSelected();
@@ -208,6 +255,9 @@ private slots:
 
     /**
      * @brief FrameType button handlers
+     */
+    /* *
+     * @brief FrameType 버튼 핸들러
      */
     void FrameTypePlusSelected();
     void FrameTypeXSelected();
@@ -228,6 +278,10 @@ private:
      * @brief enableClassButtons - En / Disables all frame class buttons.
      * @param enabled - true enable, false disable.
      */
+    /* *
+     * @brief enableClassButtons - En / 모든 프레임 클래스 버튼을 비활성화합니다.
+     파라미터 : enabled - true, false를 무효로합니다.
+     */
     void enableClassButtons(bool enabled);
 
     /**
@@ -238,11 +292,23 @@ private:
      * @param AVTail : true - A/V-Tail frame type visible, false - not visible
      * @param Y6B : true - Y6B frame type visible, false - not visible
      */
+    /* *
+     * @ brief enableTypeWidgets - 프레임 유형 버튼을 보이거나 보이지 않게합니다.
+     * @param plus : true - 플러스 프레임 유형 표시, false - 표시 안 함
+     * @param X : true - X 프레임 유형 표시, false - 표시 안 함
+     * @param HV : true - H 및 V 프레임 유형이 표시되고, false - 표시되지 않음
+     * @param AVTail : true - A / V-Tail 프레임 유형 표시, false - 표시되지 않음
+     * @param Y6B : 참 - Y6B 프레임 유형 표시, 거짓 - 표시되지 않음
+     */
     void enableTypeWidgets(bool plus, bool X, bool HV, bool AVTail, bool Y6B);
 
     /**
      * @brief writeFrameParams - Writes the content of the members m_frameClass and m_frameType
      *        to the MAV.
+     */
+    /* *
+     * @brief writeFrameParams - 멤버 m_frameClass 및 m_frameType의 내용을 씁니다.
+     * MAV에.
      */
     void writeFrameParams();
 
