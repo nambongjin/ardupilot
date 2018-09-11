@@ -50,6 +50,11 @@ void MAV2DIcon::setSelectedUAS(bool selected)
  *
  * @param yaw in radians, 0 = north, positive = clockwise
  */
+/* *
+ * ± 15도 미만의 요 변화는 무시됩니다.
+ *
+ * 라디안 단위의 @param yaw, 0 = 북쪽, 양수 ​​= 시계 방향
+ */
 void MAV2DIcon::setYaw(float yaw)
 {
     float diff = fabs(yaw - this->yaw);
@@ -75,9 +80,11 @@ void MAV2DIcon::drawIcon()
     radius = qMin(picture.width(), picture.height());
 
     // Rotate by yaw
+    // 요잉으로 회전
     painter.translate(radius/2, radius/2);
 
     // Draw selected indicator
+    // 선택된 표시기 그리기
     painter.setBrush(Qt::NoBrush);
     if (selected) {
         QPen pen(Qt::yellow);
@@ -103,6 +110,10 @@ void MAV2DIcon::drawAirframePolygon(int airframe, QPainter& painter, int radius,
 
             // Rotate 180 degs more since the icon is oriented downwards
             //float yawRotate = (yaw/(float)M_PI)*180.0f + 180.0f+180.0f;
+            // AIRPLANE를 그립니다.
+
+            // 아이콘이 아래를 향하고 있으므로 180도 회전
+            // float yawRotate = (yaw / (float) M_PI) * 180.0f + 180.0f + 180.0f;
 
             const float yawDeg = ((yaw/M_PI)*180.0f)+180.0f+180.0f;
             int yawRotate = static_cast<int>(yawDeg) % 360;
