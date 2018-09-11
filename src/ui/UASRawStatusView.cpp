@@ -20,6 +20,8 @@ UASRawStatusView::UASRawStatusView(QWidget *parent) : QWidget(parent)
     connect(m_updateTimer,SIGNAL(timeout()),this,SLOT(updateTimerTick()));
 
     // FIXME reinstate once fixed.
+    // 고정 된 FIXME 복직.
+
 
     //timer->start(2000);
     connect(UASManager::instance(),SIGNAL(activeUASSet(UASInterface*)),this,SLOT(activeUASSet(UASInterface*)));
@@ -44,6 +46,7 @@ void UASRawStatusView::showEvent(QShowEvent *event)
 {
     Q_UNUSED(event)
     //Check every 2 seconds to see if we need an update
+    // 업데이트가 필요한지 2 초마다 확인합니다.
     updateTableTimerTick();
     m_updateTimer->start(500);
     m_tableRefreshTimer->start(2000);
@@ -152,10 +155,11 @@ void UASRawStatusView::updateTableTimerTick()
                     if (currcolumn >= columncount)
                     {
                         //We're over what we can do. Add a column and continue.
+                        // 우리가 할 수있는 일을 끝 냈어. 열을 추가하고 계속하십시오.
                         columncount+=2;
                         broke = true;
                         i = valueMap.constEnd(); // Ensure loop breakout.
-                        break;
+                        break;                   // 루프 브레이크 아웃을 확인하십시오.
                     }
                 }
             }

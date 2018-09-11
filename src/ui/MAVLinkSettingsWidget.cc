@@ -48,6 +48,7 @@ MAVLinkSettingsWidget::MAVLinkSettingsWidget(MAVLinkProtocol* protocol, QWidget 
     m_ui->gridLayout->setAlignment(Qt::AlignTop);
 
     // Initialize state
+    // 상태를 초기화합니다.
     //m_ui->heartbeatCheckBox->setChecked(protocol->heartbeatsEnabled());
     //m_ui->loggingCheckBox->setChecked(protocol->loggingEnabled());
     //m_ui->versionCheckBox->setChecked(protocol->versionCheckEnabled());
@@ -62,6 +63,7 @@ MAVLinkSettingsWidget::MAVLinkSettingsWidget(MAVLinkProtocol* protocol, QWidget 
     //m_ui->actionRetransmissionSpinBox->setValue(protocol->getActionRetransmissionTimeout());
 
     // AUTH
+    // 저자
     //m_ui->droneOSCheckBox->setChecked(protocol->getAuthEnabled());
     QSettings settings;
     //m_ui->droneOSComboBox->setCurrentIndex(m_ui->droneOSComboBox->findText(settings.value("DRONEOS_HOST", "droneos.com:14555").toString()));
@@ -69,22 +71,30 @@ MAVLinkSettingsWidget::MAVLinkSettingsWidget(MAVLinkProtocol* protocol, QWidget 
 
     // Connect actions
     // Heartbeat
+    // 액션 연결
+    // 하트 비트
     connect(protocol, SIGNAL(heartbeatChanged(bool)), m_ui->heartbeatCheckBox, SLOT(setChecked(bool)));
     connect(m_ui->heartbeatCheckBox, SIGNAL(toggled(bool)), protocol, SLOT(enableHeartbeats(bool)));
     // Logging
+    // 로깅
     connect(protocol, SIGNAL(loggingChanged(bool)), m_ui->loggingCheckBox, SLOT(setChecked(bool)));
     // Version check
+    // 버전 확인
     connect(protocol, SIGNAL(versionCheckChanged(bool)), m_ui->versionCheckBox, SLOT(setChecked(bool)));
     connect(m_ui->versionCheckBox, SIGNAL(toggled(bool)), protocol, SLOT(enableVersionCheck(bool)));
     // Logfile
+    // 로그 파일
     connect(m_ui->logFileButton, SIGNAL(clicked()), this, SLOT(chooseLogfileName()));
     // System ID
+    // 시스템 ID
     connect(protocol, SIGNAL(systemIdChanged(int)), m_ui->systemIdSpinBox, SLOT(setValue(int)));
     connect(m_ui->systemIdSpinBox, SIGNAL(valueChanged(int)), protocol, SLOT(setSystemId(int)));
     // Multiplexing
+    // 다중화
     connect(protocol, SIGNAL(multiplexingChanged(bool)), m_ui->multiplexingCheckBox, SLOT(setChecked(bool)));
     connect(m_ui->multiplexingCheckBox, SIGNAL(toggled(bool)), protocol, SLOT(enableMultiplexing(bool)));
     // Parameter guard
+    // 매개 변수 가드
     connect(protocol, SIGNAL(paramGuardChanged(bool)), m_ui->paramGuardCheckBox, SLOT(setChecked(bool)));
     connect(m_ui->paramGuardCheckBox, SIGNAL(toggled(bool)), protocol, SLOT(enableParamGuard(bool)));
     connect(protocol, SIGNAL(paramRetransmissionTimeoutChanged(int)), m_ui->paramRetransmissionSpinBox, SLOT(setValue(int)));
@@ -92,6 +102,7 @@ MAVLinkSettingsWidget::MAVLinkSettingsWidget(MAVLinkProtocol* protocol, QWidget 
     connect(protocol, SIGNAL(paramRewriteTimeoutChanged(int)), m_ui->paramRewriteSpinBox, SLOT(setValue(int)));
     connect(m_ui->paramRewriteSpinBox, SIGNAL(valueChanged(int)), protocol, SLOT(setParamRewriteTimeout(int)));
     // Action guard
+    // 액션 가드
     connect(protocol, SIGNAL(actionGuardChanged(bool)), m_ui->actionGuardCheckBox, SLOT(setChecked(bool)));
     connect(m_ui->actionGuardCheckBox, SIGNAL(toggled(bool)), protocol, SLOT(enableActionGuard(bool)));
     connect(protocol, SIGNAL(actionRetransmissionTimeoutChanged(int)), m_ui->actionRetransmissionSpinBox, SLOT(setValue(int)));
@@ -105,21 +116,26 @@ MAVLinkSettingsWidget::MAVLinkSettingsWidget(MAVLinkProtocol* protocol, QWidget 
     // Drone OS
     connect(m_ui->droneOSComboBox, SIGNAL(currentIndexChanged(QString)), this, SLOT(setDroneOSHost(QString)));
     // FIXME Manually trigger this action here, this brings control code to UI = BAD!
+    // FIXME이 액션을 수동으로 여기에서 트리거하면 컨트롤 코드가 UI = BAD!
     setDroneOSHost(m_ui->droneOSComboBox->currentText());
 
     // Update values
+    // 값을 업데이트합니다.
     //m_ui->versionLabel->setText(tr("MAVLINK_VERSION: %1").arg(protocol->getVersion()));
     //updateLogfileName(protocol->getLogfileName());
 
     // Connect visibility updates
+    // 가시성 업데이트 연결
     connect(protocol, SIGNAL(versionCheckChanged(bool)), m_ui->versionLabel, SLOT(setVisible(bool)));
     //m_ui->versionLabel->setVisible(protocol->versionCheckEnabled());
 //    // Multiplexing visibility
+//    // 멀티플렉싱 가시성
 //    connect(protocol, SIGNAL(multiplexingChanged(bool)), m_ui->multiplexingFilterCheckBox, SLOT(setVisible(bool)));
 //    m_ui->multiplexingFilterCheckBox->setVisible(protocol->multiplexingEnabled());
 //    connect(protocol, SIGNAL(multiplexingChanged(bool)), m_ui->multiplexingFilterLineEdit, SLOT(setVisible(bool)));
 //    m_ui->multiplexingFilterLineEdit->setVisible(protocol->multiplexingEnabled());
     // Param guard visibility
+    // Param guard 가시성
     connect(protocol, SIGNAL(paramGuardChanged(bool)), m_ui->paramRetransmissionSpinBox, SLOT(setVisible(bool)));
     //m_ui->paramRetransmissionSpinBox->setVisible(protocol->paramGuardEnabled());
     connect(protocol, SIGNAL(paramGuardChanged(bool)), m_ui->paramRetransmissionLabel, SLOT(setVisible(bool)));
@@ -136,10 +152,13 @@ MAVLinkSettingsWidget::MAVLinkSettingsWidget(MAVLinkProtocol* protocol, QWidget 
 
     // TODO implement filtering
     // and then remove these two lines
+    // TODO 구현 필터링
+    // 다음 두 줄을 제거하십시오.
     m_ui->multiplexingFilterCheckBox->setVisible(false);
     m_ui->multiplexingFilterLineEdit->setVisible(false);
 
 //    // Update settings
+//    // 설정 업데이트
 //    m_ui->loggingCheckBox->setChecked(protocol->loggingEnabled());
 //    m_ui->heartbeatCheckBox->setChecked(protocol->heartbeatsEnabled());
 //    m_ui->versionCheckBox->setChecked(protocol->versionCheckEnabled());
@@ -184,12 +203,15 @@ void MAVLinkSettingsWidget::chooseLogfileName()
 void MAVLinkSettingsWidget::enableDroneOS(bool enable)
 {
     // Enable multiplexing
+    // 멀티플렉싱 사용
     //protocol->enableMultiplexing(enable);
     // Get current selected host and port
+    // 현재 선택된 호스트 및 포트 가져 오기
     QString hostString = m_ui->droneOSComboBox->currentText();
     //QString host = hostString.split(":").first();
 
     // Delete from all lists first
+    // 모든 목록에서 먼저 삭제
     UDPLink* firstUdp = NULL;
     /*QList<LinkInterface*> links = LinkManager::instance()->getLinksForProtocol(protocol);
     foreach (LinkInterface* link, links)
@@ -199,6 +221,7 @@ void MAVLinkSettingsWidget::enableDroneOS(bool enable)
         {
             if (!firstUdp) firstUdp = udp;
             // Remove current hosts
+            // 현재 호스트를 제거합니다.
             for (int i = 0; i < m_ui->droneOSComboBox->count(); ++i)
             {
                 QString oldHostString = m_ui->droneOSComboBox->itemText(i);
@@ -209,6 +232,7 @@ void MAVLinkSettingsWidget::enableDroneOS(bool enable)
     }*/
 
     // Re-add if enabled
+    // 활성화 된 경우 다시 추가
     if (enable)
     {
         if (firstUdp)
@@ -216,6 +240,7 @@ void MAVLinkSettingsWidget::enableDroneOS(bool enable)
             firstUdp->addHost(hostString);
         }
         // Set key
+        // 키 설정
        // protocol->setAuthKey(m_ui->droneOSLineEdit->text().trimmed());
         QSettings settings;
         settings.setValue("DRONEOS_HOST", m_ui->droneOSComboBox->currentText());

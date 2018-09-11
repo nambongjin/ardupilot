@@ -19,10 +19,13 @@ public:
 
 public slots:
     /** @brief Update the log file name display */
+     /** @brief 로그 파일 이름 표시 업데이트 */
     void updateLogfileName(const QString& fileName);
     /** @brief Start the file select dialog for the log file */
+    /** @brief 로그 파일의 파일 선택 대화 상자 시작 */
     void chooseLogfileName();
     /** @brief Enable DroneOS forwarding */
+    /** brief DroneOS 포워딩 활성화 */
     void enableDroneOS(bool enable);
 
     void setDroneOSKey(QString key);

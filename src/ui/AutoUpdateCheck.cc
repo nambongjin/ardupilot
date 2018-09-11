@@ -93,8 +93,10 @@ void AutoUpdateCheck::httpFinished()
     QVariant redirectionTarget = reply->attribute(QNetworkRequest::RedirectionTargetAttribute);
 
     // Finished donwloading the version information
+    // 버전 정보를 마쳤습니다.
     if (reply->error()) {
         // [TODO] cleanup download failed
+        // [TODO] 정리 다운로드에 실패했습니다.
 #ifdef QT_DEBUG
         QMessageBox::information(NULL, tr("HTTP"),
                                  tr("Download failed: %1.")
@@ -113,6 +115,7 @@ void AutoUpdateCheck::httpFinished()
         return;
     } else {
         // Process downloadeed object
+        // 다운로드 된 객체 처리
         processDownloadedVersionObject(m_networkReply->readAll());
     }
 
@@ -176,17 +179,19 @@ void AutoUpdateCheck::updateDataReadProgress(qint64 bytesRead, qint64 totalBytes
 bool AutoUpdateCheck::compareVersionStrings(const QString& newVersion, const QString& currentVersion)
 {
     // [TODO] DRY this out by creating global function for use in APM Firmware as well
+    // [TODO] APM 펌웨어에서 사용할 전역 함수를 생성하여 이것을 처리합니다.
     int newMajor = 0,newMinor = 0,newBuild = 0;
     int currentMajor = 0, currentMinor = 0,currentBuild = 0;
 
     QString newBuildSubMoniker, oldBuildSubMoniker; // holds if the build is a rc or dev build
-
+                                                    // 빌드가 rc 또는 dev 빌드 인 경우 보유
 
     QRegExp versionEx(VersionCompareRegEx);
     QString versionstr = "";
     int pos = versionEx.indexIn(newVersion);
     if (pos > -1) {
         // Split first sub-element to get numercal major.minor.build version
+        // 첫 번째 하위 요소를 분할하여 numercal major.minor.build 버전을 가져옵니다.
         QLOG_DEBUG() << "Detected newVersion:" << versionEx.capturedTexts()<< " count:"
                      << versionEx.captureCount();
         versionstr = versionEx.cap(1);
@@ -197,6 +202,7 @@ bool AutoUpdateCheck::compareVersionStrings(const QString& newVersion, const QSt
             newBuild = versionList[2].toInt();
         }
         // second subelement is either rcX candidate or developement build
+        // 두 번째 하위 요소는 rcX candidate 또는 developement build입니다.
         if (versionEx.captureCount() == 2)
             newBuildSubMoniker = versionEx.cap(2);
     }
@@ -215,6 +221,7 @@ bool AutoUpdateCheck::compareVersionStrings(const QString& newVersion, const QSt
             currentBuild = versionList[2].toInt();
         }
         // second subelement is either rcX candidate or developement build
+        // 두 번째 하위 요소는 rcX candidate 또는 developement build입니다.
         if (versionEx2.captureCount() == 2)
             oldBuildSubMoniker = versionEx2.cap(2);
     }
@@ -223,18 +230,23 @@ bool AutoUpdateCheck::compareVersionStrings(const QString& newVersion, const QSt
                                                  newMajor,newMinor,newBuild, currentMajor, currentMinor,currentBuild);
     if (newMajor>currentMajor){
         // A Major release
+        // 메이저 릴리스
         return true;
     } else if (newMajor == currentMajor){
         if (newMinor >  currentMinor){
             // A minor release
+            // 마이너 릴리스
             return true;
         } else if (newMinor ==  currentMinor){
             if (newBuild > currentBuild)
                 // new build (or tiny release)
+                // 새로운 빌드 (또는 작은 릴리즈)
                 return true;
             else if (newBuild == currentBuild) {
                 // Check if RC is newer
                 // If the version isn't newer, it might be a new release candidate
+                // RC가 최신인지 확인
+                // 버전이 최신이 아닌 경우 새 출시 후보가 될 수 있습니다.
                 int newRc = 0, oldRc = 0;
 
                 if (newBuildSubMoniker.startsWith("RC", Qt::CaseInsensitive)
@@ -261,7 +273,7 @@ bool AutoUpdateCheck::compareVersionStrings(const QString& newVersion, const QSt
                         && oldBuildSubMoniker.startsWith("RC", Qt::CaseInsensitive)) {
                     QLOG_DEBUG() << "Stable build newer that last unstable release candidate ";
                     return true; // this means a new stable build of the unstable rc is available
-                }
+                }                // 이것은 불안정한 rc의 새로운 stable 빌드가 사용 가능하다는 것을 의미한다.
             }
         }
     }
@@ -291,6 +303,7 @@ bool AutoUpdateCheck::isUpdateEnabled()
 void AutoUpdateCheck::loadSettings()
 {
     // Load defaults from settings
+    // 설정에서 기본값로드
     QSettings settings;
     settings.beginGroup("AUTO_UPDATE");
     m_isAutoUpdateEnabled = settings.value("ENABLED", true).toBool();
@@ -302,6 +315,7 @@ void AutoUpdateCheck::loadSettings()
 void AutoUpdateCheck::writeSettings()
 {
     // Store settings
+    // 설정 저장
     QSettings settings;
     settings.beginGroup("AUTO_UPDATE");
     settings.setValue("ENABLED", m_isAutoUpdateEnabled);

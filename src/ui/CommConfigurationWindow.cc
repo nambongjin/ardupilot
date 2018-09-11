@@ -66,19 +66,23 @@ CommConfigurationWindow::CommConfigurationWindow(int linkid, ProtocolInterface* 
     Q_UNUSED(protocol);
 
     // Setup the user interface according to link type
+    // 링크 유형에 따라 사용자 인터페이스를 설정합니다.
     ui.setupUi(this);
 
     setWindowFlags(Qt::Dialog | Qt::WindowStaysOnTopHint);
 
     // Initialize basic ui state
+    // 기본 UI 상태 초기화
 
     // Do not allow changes here unless advanced is checked
+    // 고급을 체크하지 않으면 여기서 변경을 허용하지 않는다.
     ui.connectionType->setEnabled(false);
     ui.linkType->setEnabled(false);
     ui.protocolGroupBox->setVisible(false);
     ui.protocolTypeGroupBox->setVisible(false);
 
     // Connect UI element visibility to checkbox
+    // UI 요소 가시성을 확인란에 연결
     ui.advancedOptionsCheckBox->setVisible(false);
     connect(ui.advCheckBox, SIGNAL(clicked(bool)), ui.connectionType, SLOT(setEnabled(bool)));
     connect(ui.advCheckBox, SIGNAL(clicked(bool)), ui.linkType, SLOT(setEnabled(bool)));
@@ -86,12 +90,13 @@ CommConfigurationWindow::CommConfigurationWindow(int linkid, ProtocolInterface* 
     ui.advCheckBox->setVisible(false);
 
     // add link types
+    // 링크 유형 추가
     ui.linkType->addItem(tr("Serial"), QGC_LINK_SERIAL);
     ui.linkType->addItem(tr("UDP"), QGC_LINK_UDP);
     ui.linkType->addItem(tr("UDP Client"), QGC_LINK_UDP_CLIENT);
     ui.linkType->addItem(tr("TCP"), QGC_LINK_TCP);
     //    ui.linkType->addItem(tr("Simulation"), QGC_LINK_SIMULATION); // [TODO] left as key where to add simulation mode
-
+    //     ui.linkType-> addItem (tr ( "Simulation"), QGC_LINK_SIMULATION); // [TODO] 키로 남음 시뮬레이션 모드를 추가 할 위치
 #ifdef OPAL_RT
     ui.linkType->addItem(tr("Opal-RT Link"), QGC_LINK_OPAL);
 #endif
@@ -103,6 +108,9 @@ CommConfigurationWindow::CommConfigurationWindow(int linkid, ProtocolInterface* 
     // Create action to open this menu
     // Create configuration action for this link
     // Connect the current UAS
+    // 이 메뉴를 열려면 액션 만들기
+    // 이 링크에 대한 구성 작업 만들기
+    // 현재 UAS 연결
     action = new QAction(QIcon(":/files/images/devices/network-wireless.svg"), "", this);
     action->setData(linkid);
     action->setEnabled(true);
@@ -112,6 +120,7 @@ CommConfigurationWindow::CommConfigurationWindow(int linkid, ProtocolInterface* 
     connect(action, SIGNAL(triggered()), this, SLOT(show()));
 
     // Setup user actions and link notifications
+    // 사용자 작업 및 링크 알림 설정
     connect(ui.connectButton, SIGNAL(clicked()), this, SLOT(setConnection()));
     connect(ui.closeButton, SIGNAL(clicked()), this->window(), SLOT(close()));
     connect(ui.deleteButton, SIGNAL(clicked()), this, SLOT(remove()));
@@ -119,11 +128,13 @@ CommConfigurationWindow::CommConfigurationWindow(int linkid, ProtocolInterface* 
     connect(LinkManager::instance(),SIGNAL(linkChanged(int)),this,SLOT(linkUpdate(int)));
 
     // Fill in the current data
+    // 현재 데이터를 채운다.
     if(LinkManager::instance()->getLinkConnected(m_linkid)) ui.connectButton->setChecked(true);
 
     connectButtonStatus(linkid);
 
     // Open details pane for serial link if necessary
+    // 필요한 경우 직렬 링크의 세부 정보 창을 엽니 다.
 
     if (LinkManager::instance()->getLinkType(linkid) == LinkInterface::SERIAL_LINK)
     {
@@ -156,6 +167,7 @@ CommConfigurationWindow::CommConfigurationWindow(int linkid, ProtocolInterface* 
     }
 
     // Display the widget
+    // 위젯을 표시합니다.
     this->window()->setWindowTitle(tr("Settings for ") + LinkManager::instance()->getLinkName(linkid));
     this->hide();
 }
@@ -224,10 +236,10 @@ void CommConfigurationWindow::setLinkName(QString name)
 void CommConfigurationWindow::remove()
 {
     if(action) delete action; //delete action first since it has a pointer to link
-    action=NULL;
+    action=NULL;              // 링크를 가리키는 포인터가 있기 때문에 먼저 액션을 삭제하십시오.
 
     LinkManager::instance()->removeLink(m_linkid); //close & remove link from LinkManager list
-
+                                                   // LinkManager 목록에서 링크를 닫고 제거합니다.
     this->window()->close();
     this->deleteLater();
 }

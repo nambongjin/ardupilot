@@ -26,6 +26,11 @@ This file is part of the QGROUNDCONTROL project
  *   @brief Definition of the configuration Window for Slugs' HIL Simulator
  *   @author Mariano Lizarraga <malife@gmail.com>
  */
+/**
+ * @file
+ * 슬럼프의 HIL 시뮬레이터 구성 창 정의
+ * @author Mariano Lizarraga <malife@gmail.com>
+ */
 
 #ifndef SLUGSHILSIM_H
 #define SLUGSHILSIM_H
@@ -88,12 +93,26 @@ public slots:
      *
      * @param theLink the link that is being added to the combo box
      */
+    /**
+     * @brief 사용자가 링크를 선택할 수 있도록 콤보 상자 목록에 링크를 추가합니다.
+     *
+     * 사용자가 Slug가있는 링크를 선택할 수있는 콤보 상자를 채 웁니다.
+     * Simulink에서 시뮬레이션 된 센서 데이터 수신
+     *
+     * combobox에 추가되고있는 링크를 @param에 링크합니다.
+     */
     void addToCombo(LinkInterface* theLink);
 
     /**
      * @brief Puts Slugs in HIL Mode
      *
      * Sends the required messages through the main communication link to set Slugs in HIL Mode
+     *
+     */
+    /**
+     * @brief는 슬러그를 HIL 모드로 만든다.
+     *
+     * HIL 모드에서 슬러그를 설정하기 위해 메인 통신 링크를 통해 필요한 메시지를 보냅니다.
      *
      */
     void putInHilMode(void);
@@ -105,6 +124,13 @@ public slots:
      * forwarded to Slugs to use as input to the attitude estimation and navigation algorithms.
      *
      */
+    /**
+     * @brief 센서 데이터가 포함 된 Simulink에서 데이터 그램을받습니다.
+     *
+     * 시뮬레이션 된 센서 데이터가 포함 된 Simulink에서 데이터 그램을 수신합니다. 이 데이터는
+     * 자세 추정 및 탐색 알고리즘의 입력으로 사용하기 위해 민달팽이에게 전달.
+     *
+     */
     void readDatagram(void);
 
     /**
@@ -114,12 +140,24 @@ public slots:
      *
      * @param uas The new active UAS
      */
+    /**
+     * @brief 새 UAS가 활성으로 설정된 경우 호출됩니다.
+     *
+     * 새 UAS가 활성으로 설정된 경우 호출됩니다.
+     *
+     * @param uas 새로운 활성 UAS
+     */
     void activeUasSet(UASInterface* uas);
 
     /**
      * @brief Called when the Link combobox selects a new link.
      *
      * @param uas The new index of the selected link
+     */
+    /**
+     * @brief 링크 콤보 박스가 새로운 링크를 선택할 때 호출됩니다.
+     *
+     * @param uas 선택한 링크의 새 색인
      */
     void linkSelected (int cbIndex);
 

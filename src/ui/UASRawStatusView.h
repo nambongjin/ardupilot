@@ -30,7 +30,7 @@ private:
     Ui::UASRawStatusView ui;
     QTimer *m_updateTimer;
     QTimer *m_tableRefreshTimer; //This time triggers a reorganization of the cells, for when new cells are added
-    bool m_tableDirty;
+    bool m_tableDirty;           //이 시간은 새 셀이 추가 될 때마다 셀의 재구성을 트리거합니다.
 };
 
 #endif // UASRAWSTATUSVIEW_H

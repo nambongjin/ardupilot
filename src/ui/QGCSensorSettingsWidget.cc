@@ -38,6 +38,7 @@ QGCSensorSettingsWidget::QGCSensorSettingsWidget(UASInterface* uas, QWidget *par
 {
     ui->setupUi(this);
     // Set up delay timers
+    // 지연 타이머 설정
      delayedSendRawSensorTimer.setInterval(800);
      delayedSendControllerTimer.setInterval(800);
      delayedSendExtendedTimer.setInterval(800);
@@ -57,6 +58,7 @@ QGCSensorSettingsWidget::QGCSensorSettingsWidget(UASInterface* uas, QWidget *par
     connect(&delayedSendExtra3Timer, SIGNAL(timeout()), this, SLOT(sendExtra3()));
 
     // Connect UI
+    // UI 연결
     connect(ui->spinBox_rawSensor, SIGNAL(valueChanged(int)), this, SLOT(delayedSendRawSensor(int)));//mav, SLOT(enableRawSensorDataTransmission(int)));
     connect(ui->spinBox_controller, SIGNAL(valueChanged(int)), this, SLOT(delayedSendController(int)));
     connect(ui->spinBox_extended, SIGNAL(valueChanged(int)), this, SLOT(delayedSendExtended(int)));
@@ -67,12 +69,14 @@ QGCSensorSettingsWidget::QGCSensorSettingsWidget(UASInterface* uas, QWidget *par
     connect(ui->spinBox_extra3, SIGNAL(valueChanged(int)), this, SLOT(delayedSendExtra3(int)));
 
     // Calibration
+    // 교정
     connect(ui->rcCalButton, SIGNAL(clicked()), mav, SLOT(startRadioControlCalibration()));
     connect(ui->magCalButton, SIGNAL(clicked()), mav, SLOT(startMagnetometerCalibration()));
     connect(ui->pressureCalButton, SIGNAL(clicked()), mav, SLOT(startPressureCalibration()));
     connect(ui->gyroCalButton, SIGNAL(clicked()), mav, SLOT(startGyroscopeCalibration()));
 
     // Hide the calibration stuff - done in custom widgets anyway
+    // 교정 물건 숨기기 - 어쨌든 맞춤 위젯에서 완료
     ui->groupBox_3->hide();
 }
 

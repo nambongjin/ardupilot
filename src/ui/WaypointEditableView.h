@@ -30,6 +30,16 @@ This file is part of the QGROUNDCONTROL project
  *   @author Alex Trofimov <talex@student.ethz.ch>
  *   @author Bill Bonney <billbonney@communistech.com>
  */
+/**
+ * @file
+ * @brief 한 웨이 포인트를 표시합니다.
+ *
+ * @author Lorenz Meier <mavteam@student.ethz.ch>
+ * @author Benjamin Knecht <mavteam@student.ethz.ch>
+ * @author Petri Tanskanen <mavteam@student.ethz.ch>
+ * @author Alex Trofimov <talex@student.ethz.ch>
+ * @author Bill Bonney <billbonney@communistech.com>
+ */
 
 #ifndef WAYPOINTEDITABLEVIEW_H
 #define WAYPOINTEDITABLEVIEW_H
@@ -91,6 +101,7 @@ public slots:
 
     void remove();
     /** @brief Waypoint matching this widget has been deleted */
+    /** brief이 위젯과 일치하는 웨이 포인트가 삭제되었습니다. */
     void deleted(QObject* waypoint);
     void changedAutoContinue(int);    
     void changedFrame(int state);
@@ -99,7 +110,9 @@ public slots:
     void changedCurrent(int);
     void updateValues(void);
     void changedAction(int state); //change commandID, including the view
+                                   // 보기를 포함하여 commandID를 변경하십시오.
     void changedCommand(int mav_cmd_id); //only update WP->command, but do not change the view. Should only be used for "other" waypoint-type.
+    // WP-> 명령 만 업데이트하지만 뷰는 변경하지 마십시오. "다른"웨이 포인트 유형에만 사용해야합니다.
     void changedParam1(double value);
     void changedParam2(double value);
     void changedParam3(double value);
@@ -115,6 +128,7 @@ protected:
     Waypoint* wp;
     QGC_WAYPOINTEDITABLEVIEW_MODE viewMode;
     // Widgets for every mission element
+    // 모든 임무 요소에 대한 위젯
     QWidget* m_missionWidget;
     int m_currentAction;
 

@@ -38,9 +38,13 @@ QGCHilFlightGearConfiguration::~QGCHilFlightGearConfiguration()
 void QGCHilFlightGearConfiguration::on_startButton_clicked()
 {
     //XXX check validity of inputs
+    // XXX 입력의 유효성 검사
     QString options = ui->optionsPlainTextEdit->toPlainText();
     options.append(" --aircraft=" + ui->aircraftComboBox->currentText());
     // FIXME: 29/4/2014 UI is not insync with this feature
+    // FIXME : 2014 년 29/4 분기 UI가이 기능과 비동기 적이 아닙니다.
+
+
     //mav->enableHilFlightGear(true,  options, ui->sensorHilCheckBox->isChecked(), this);
 }
 

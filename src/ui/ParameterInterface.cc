@@ -27,7 +27,12 @@ This file is part of the QGROUNDCONTROL project
  *   @author Lorenz Meier <mavteam@student.ethz.ch>
  *
  */
-
+/**
+ * @file
+ * 클래스의 정의 ParameterInterface
+ * @author Lorenz Meier <mavteam@student.ethz.ch>
+ *
+ */
 #include <QTreeWidget>
 
 #include "ParameterInterface.h"
@@ -46,14 +51,17 @@ ParameterInterface::ParameterInterface(QWidget *parent) :
     m_ui->setupUi(this);
 
     // Get current MAV list
+    // 현재 MAV 목록 가져 오기
     QList<UASInterface*> systems = UASManager::instance()->getUASList();
 
     // Add each of them
+    // 각각을 추가한다.
     foreach (UASInterface* sys, systems) {
         addUAS(sys);
     }
 
     // Setup MAV connections
+    // MAV 연결 설정
     connect(UASManager::instance(), SIGNAL(UASCreated(UASInterface*)), this, SLOT(addUAS(UASInterface*)));
     connect(UASManager::instance(), SIGNAL(activeUASSetListIndex(int)), this, SLOT(selectUAS(int)));
     this->setVisible(false);
@@ -75,6 +83,10 @@ void ParameterInterface::selectUAS(int index)
  *
  * @param uas System to add to list
  */
+/**
+ *
+ * @param uas리스트에 추가하는 시스템
+ */
 void ParameterInterface::addUAS(UASInterface* uas)
 {
     QGCParamWidget* param = new QGCParamWidget(uas, this);
@@ -86,8 +98,10 @@ void ParameterInterface::addUAS(UASInterface* uas)
     m_ui->sensorSettings->addWidget(sensor);
 
     // Set widgets as default
+    // 기본값으로 위젯 설정
     if (curr == -1) {
         // Clear
+        // 지우기
         m_ui->sensorSettings->setCurrentWidget(sensor);
         m_ui->stackedWidget->setCurrentWidget(param);
         curr = 0;
