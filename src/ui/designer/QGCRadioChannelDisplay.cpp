@@ -35,6 +35,8 @@ void QGCRadioChannelDisplay::paintEvent(QPaintEvent *event)
 
     //Values range from 0-3000.
     //1500 is the middle, static servo value.
+    // 값의 범위는 0-3000입니다.
+    // 1500은 중간의 정적 서보 값입니다.
     QPainter painter(this);
     QColor minMaxColor = QColor::fromRgb(200,0,0);
     QColor pwmColor = QColor::fromRgb(255,255,255);
@@ -64,11 +66,13 @@ void QGCRadioChannelDisplay::paintEvent(QPaintEvent *event)
         gradientBrush.setColorAt(0.0, BRIGHTEST_COLOR);
 
         //draw border
+        // 테두리를 그립니다.
         painter.drawRect(0,0,width()-1,(height()-1) - twiceFontHeight);
         painter.setPen(borderColor);
         painter.setBrush(Qt::SolidPattern);
 
         //draw the text value of the widget, and its label
+        // 위젯의 텍스트 값과 라벨을 그립니다.
         QString valStr = QString::number(m_value);
         painter.setPen(pwmColor);
         painter.drawText((width()/2.0) - (painter.fontMetrics().width(m_name)/2.0),((height()-3) - (fontHeight*1)),m_name);
@@ -79,17 +83,20 @@ void QGCRadioChannelDisplay::paintEvent(QPaintEvent *event)
 
         if (!m_showMinMax) {
             //draw just the value
+            // 값을 그립니다.
             int newval = (height()-2-twiceFontHeight) * ((float)(curVal - m_min) / ((m_max-m_min)+1));
             int yVal = (height()-2-twiceFontHeight) - newval;
             painter.drawRect(1,yVal,width()-3,((height()-2) - yVal - twiceFontHeight));
         }
         else {
             //draw the value
+            // 값을 그립니다.
             int newval = (height()-2-twiceFontHeight) * ((float)(curVal / 3001.0));
             int yVal = (height()-2-twiceFontHeight) - newval;
             painter.drawRect(1,yVal,width()-3,((height()-2) - yVal - twiceFontHeight));
 
             //draw min max indicator bars
+           // 최소 최대 지시선을 그 립니다.
             painter.setPen(minMaxColor);
             painter.setBrush(Qt::NoBrush);
 
@@ -98,6 +105,7 @@ void QGCRadioChannelDisplay::paintEvent(QPaintEvent *event)
             painter.drawRect(2,yMax,width()-3,yMin - yMax);
 
             //draw min and max labels
+            // 최소 및 최대 라벨을 그립니다.
             QString minstr = QString::number(m_min);
             painter.drawText((width() / 2.0) - (painter.fontMetrics().width("min")/2.0),yMin,"min");
             painter.drawText((width() / 2.0) - (painter.fontMetrics().width(minstr)/2.0),yMin + fontHeight,minstr);
@@ -108,7 +116,7 @@ void QGCRadioChannelDisplay::paintEvent(QPaintEvent *event)
 
         }
     }
-    else //horizontal orientation
+    else //horizontal orientation// 수평 방향
     {
         QLinearGradient hGradientBrush(0, 0, this->width(), this->height());
         hGradientBrush.setColorAt(0.0,DIMMEST_COLOR);
@@ -116,11 +124,13 @@ void QGCRadioChannelDisplay::paintEvent(QPaintEvent *event)
         hGradientBrush.setColorAt(1.0, BRIGHTEST_COLOR);
 
         //draw the value
+        // 값을 그립니다.
         painter.drawRect(0,0,width()-1,(height()-1) - twiceFontHeight);
         painter.setPen(borderColor);
         painter.setBrush(hGradientBrush);
 
         //draw the value string
+        // 값 문자열을 그립니다.
         painter.setPen(pwmColor);
         QString valstr = QString::number(m_value);
         painter.drawText((width()/2.0) - (painter.fontMetrics().width(m_name)/2.0),((height()-3) - (fontHeight*1)),m_name);
@@ -132,18 +142,22 @@ void QGCRadioChannelDisplay::paintEvent(QPaintEvent *event)
 
         if (!m_showMinMax) {
             //draw just the value
+            // 값을 그립니다.
             painter.drawRect(1,1,(width()-3) * ((float)(curVal-m_min) / (m_max-m_min)),(height()-3) - twiceFontHeight);
         }
         else {
             //draw the value
+            // 값을 그립니다.
             painter.drawRect(1,1,(width()-3) * ((float)curVal / 3000.0),(height()-3) - twiceFontHeight);
 
              //draw the min and max bars
+             // 최소 및 최대 막대를 그립니다.
             painter.setBrush(Qt::NoBrush);
             painter.setPen(minMaxColor);
             painter.drawRect(width() * ((float)m_min / 3000.0),2,((width()-1) * ((float)m_max / 3000.0)) - (width() * ((float)m_min / 3000.0)),(height()-5) - twiceFontHeight);
 
             //draw the min and max strings
+            // 최소 및 최대 문자열을 그립니다.
             QString minstr = QString::number(m_min);
             painter.drawText((width() * ((float)m_min / 3000.0)) - (painter.fontMetrics().width("min")/2.0),((height()-3) - (painter.fontMetrics().height()*1)),"min");
             painter.drawText((width() * ((float)m_min / 3000.0)) - (painter.fontMetrics().width(minstr)/2.0),((height()-3) - (painter.fontMetrics().height() * 0)),minstr);
