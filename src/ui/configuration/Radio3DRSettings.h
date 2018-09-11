@@ -237,11 +237,8 @@ public:
      *        methods to allow the receiver an approbiate coloring of the
      *        output
      */
-<<<<<<< HEAD
+
     /**
-=======
-    /* *
->>>>>>> 11250ce8b331de5d9a12696c1c695231cff4f5ae
      * stateColor 열거 형은 업데이트 상태에 의해 방출됩니다.
      *받는 사람에게 적절한 색칠을 허용하는 방법
      * 출력
@@ -257,11 +254,8 @@ public:
      * @param color - Color enum wich shall be converted
      * @return - the sting representation of the color
      */
-<<<<<<< HEAD
+
     /**
-=======
-    /* *
->>>>>>> 11250ce8b331de5d9a12696c1c695231cff4f5ae
      * @brief stateColorToString - stateColor 열거 형을 문자열로 변환합니다.
      * @param color - 변환 될 색상 열거 형
      * @return - 색의 스팅 표현
@@ -341,12 +335,9 @@ private:
 
     // Helper Variables
     // 도우미 변수
-<<<<<<< HEAD
+
     int m_freqStepSize; // 100 for 433Mhz, 1000 for 915/868Mhz & 1 for RFD900,
                         // 433Mhz의 경우 100, 915 / 868Mhz의 경우 1000, RFD900의 경우 1,
-=======
-    int m_freqStepSize; // 100 for 433Mhz, 1000 for 915/868Mhz & 1 for RFD900,// 433Mhz의 경우 100, 915 / 868Mhz의 경우 1000, RFD900의 경우 1,
->>>>>>> 11250ce8b331de5d9a12696c1c695231cff4f5ae
 
     QScopedPointer<QSerialPort> m_serialPort;
     int m_retryCount;
