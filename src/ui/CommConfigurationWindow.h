@@ -28,6 +28,13 @@ This file is part of the QGROUNDCONTROL project
  *   @author Lorenz Meier <mavteam@student.ethz.ch>
  *
  */
+/**
+ * @file
+ * CommConfigurationWindow 클래스의 정의
+ *
+ * @author Lorenz Meier <mavteam@student.ethz.ch>
+ *
+ */
 
 #ifndef _COMMCONFIGURATIONWINDOW_H_
 #define _COMMCONFIGURATIONWINDOW_H_
@@ -67,6 +74,9 @@ enum qgc_protocol_t {
 /**
  * @brief Configuration window for communication links
  */
+/**
+ * @brief 통신 링크 구성 창
+ */
 class CommConfigurationWindow : public QDialog
 {
     Q_OBJECT
@@ -80,11 +90,13 @@ public:
     void connectButtonStatus(int linkid);
 public slots:
     /** @brief Set the protocol for this link */
+    /** @brief이 링크의 프로토콜을 설정합니다. */
     void setProtocol(int protocol);
     void setConnection();
     void connectionState(bool connect);
     void setLinkName(QString name);
     /** @brief Disconnects the associated link, removes it from all menus and closes the window. */
+    /** @brief 연결된 링크를 끊고 모든 메뉴에서 제거하고 창을 닫습니다. */
     void remove();
     void linkUpdate(int linkid);
 private:

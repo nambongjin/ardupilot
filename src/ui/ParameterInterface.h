@@ -28,6 +28,13 @@ This file is part of the QGROUNDCONTROL project
  *   @author Lorenz Meier <mavteam@student.ethz.ch>
  *
  */
+/**
+ * @file
+ * 클래스의 정의 ParameterInterface
+ *
+ * @author Lorenz Meier <mavteam@student.ethz.ch>
+ *
+ */
 
 #ifndef PARAMETERINTERFACE_H
 #define PARAMETERINTERFACE_H
@@ -48,6 +55,12 @@ class ParameterInterface;
  *
  * @see QGCParamWidget
  */
+/**
+ * @brief 온보드 매개 변수 위젯을위한 컨테이너 클래스
+ *
+ * @ QGCParamWidget보기
+ */
+
 class ParameterInterface : public QWidget
 {
     Q_OBJECT

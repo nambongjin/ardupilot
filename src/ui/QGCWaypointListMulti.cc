@@ -44,6 +44,8 @@ void QGCWaypointListMulti::systemCreated(UASInterface* uas)
     lists.insert(uas->getUASID(), list);
     ui->stackedWidget->addWidget(list);
     // Ensure widget is deleted when system is deleted
+    // 시스템 삭제시 위젯이 삭제되는지 확인
+
     connect(uas, SIGNAL(destroyed(QObject*)), this, SLOT(systemDeleted(QObject*)));
 }
 

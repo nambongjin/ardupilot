@@ -29,11 +29,21 @@ This file is part of the QGROUNDCONTROL project
  *   @author Bill Bonney <billbonney@communistech.com>
  */
 
+/**
+ * @file
+ * @brief 한 웨이 포인트를 표시합니다.
+ *
+ * @author Lorenz Meier <mavteam@student.ethz.ch>
+ * @author Benjamin Knecht <mavteam@student.ethz.ch>
+ * @author Petri Tanskanen <mavteam@student.ethz.ch>
+ * @author Bill Bonney <billbonney@communistech.com>
+ */
 #include "logging.h"
 #include "WaypointEditableView.h"
 #include "ui_WaypointEditableView.h"
 
 // NAV Commands
+// NAV 명령
 #include "mission/QGCMissionNavWaypoint.h"
 #include "mission/QGCMissionNavLoiterUnlim.h"
 #include "mission/QGCMissionNavLoiterTurns.h"
@@ -45,10 +55,12 @@ This file is part of the QGROUNDCONTROL project
 #include "mission/QGCMissionNavContinueChangeAlt.h"
 #include "mission/QGCMissionNavLoiterToAlt.h"
 // Condition Commands
+// 조건 명령
 #include "mission/QGCMissionConditionDelay.h"
 #include "mission/QGCMissionConditionYaw.h"
 #include "mission/QGCMissionConditionDistance.h"
 // DO commands
+// DO 명령
 #include "mission/QGCMissionDoJump.h"
 #include "mission/QGCMissionDoSetServo.h"
 #include "mission/QGCMissionDoRepeatServo.h"
@@ -64,6 +76,7 @@ This file is part of the QGROUNDCONTROL project
 #include "mission/QGCMissionDoFinishSearch.h"
 #include "mission/QGCMissionDoSetReverse.h"
 // Other
+// 기타
 #include "mission/QGCMissionOther.h"
 
 #include "QGCMouseWheelEventFilter.h"
@@ -84,6 +97,7 @@ WaypointEditableView::WaypointEditableView(Waypoint* wp, QWidget* parent) :
     connect(wp, SIGNAL(destroyed(QObject*)), this, SLOT(deleted(QObject*)));
 
     // CUSTOM COMMAND WIDGET
+    // 커스텀 명령 위젯
     QHBoxLayout *layout = new QHBoxLayout;
     layout->setSpacing(2);
     layout->setContentsMargins(4, 0 ,4 ,0);
@@ -92,13 +106,16 @@ WaypointEditableView::WaypointEditableView(Waypoint* wp, QWidget* parent) :
     m_ui->comboBox_action->setMinimumSize(140,0);
 
     // add actions
+    // 액션 추가
     if(wp->getId() == 0){
         // For APM WP0 is the home location
+        // APM의 경우 WP0은 집 위치입니다.
         m_ui->comboBox_action->addItem(tr("HOME"),MAV_CMD_NAV_WAYPOINT);
         this->setEnabled(false);
 
     } else {
         // NAV Commands
+        // NAV 명령
 //        m_ui->comboBox_action->addItem(tr("NAV commands"));
         m_ui->comboBox_action->addItem(tr("Waypoint"),MAV_CMD_NAV_WAYPOINT);
         m_ui->comboBox_action->addItem(tr("Spline Waypoint"),MAV_CMD_NAV_SPLINE_WAYPOINT);
@@ -113,6 +130,7 @@ WaypointEditableView::WaypointEditableView(Waypoint* wp, QWidget* parent) :
         //m_ui->comboBox_action->addItem(tr("NAV: Target"),MAV_CMD_NAV_TARGET);
 
         // IF Commands
+        // IF 명령
         m_ui->comboBox_action->insertSeparator(9999);
 //        m_ui->comboBox_action->addItem(tr("Condition Commands"));
         m_ui->comboBox_action->addItem(tr("Condition Delay"),MAV_CMD_CONDITION_DELAY);
@@ -120,6 +138,7 @@ WaypointEditableView::WaypointEditableView(Waypoint* wp, QWidget* parent) :
         m_ui->comboBox_action->addItem(tr("Condition Distance"),MAV_CMD_CONDITION_DISTANCE);
 
         // DO Commands
+        // DO 명령
         m_ui->comboBox_action->insertSeparator(9999);
 //        m_ui->comboBox_action->addItem(tr("DO commands"));
         m_ui->comboBox_action->addItem(tr("Jump to Index"),MAV_CMD_DO_JUMP);
@@ -144,23 +163,29 @@ WaypointEditableView::WaypointEditableView(Waypoint* wp, QWidget* parent) :
     }
 
     // add frames
+    // 프레임 추가
     m_ui->comboBox_frame->addItem("Abs.Alt",MAV_FRAME_GLOBAL);
     m_ui->comboBox_frame->addItem("Rel.Alt", MAV_FRAME_GLOBAL_RELATIVE_ALT);
     m_ui->comboBox_frame->addItem("Ter.Alt", MAV_FRAME_GLOBAL_TERRAIN_ALT); // A relative alt above terrain.
+                                                                            // 지형 위의 상대 alt.
 //    m_ui->comboBox_frame->addItem("Local(NED)",MAV_FRAME_LOCAL_NED); // [TODO] Not supported on APM
-    m_ui->comboBox_frame->addItem("Mission",MAV_FRAME_MISSION);
+    m_ui->comboBox_frame->addItem("Mission",MAV_FRAME_MISSION);        // [TODO] APM에서 지원되지 않습니다.
 
     // Initialize view correctly
+    // 뷰를 올바르게 초기화합니다.
     m_currentAction = wp->getAction();
     m_missionWidget = createActionWidget(m_currentAction);
     m_ui->customActionWidget->layout()->addWidget(m_missionWidget);
     updateValues();
 
-    // Check for mission frame
+    // Check for mission frame   
+    // 임무 틀을 확인하십시오.
     if (wp->getFrame() == MAV_FRAME_MISSION)
     {
         // [ToDo] APM does not set the MAV_FRAME_MISSION, so should check a dictionary
         // of mission commands and mark them up in the GCS.
+        // [ToDo] APM은 MAV_FRAME_MISSION을 설정하지 않으므로 사전을 확인해야합니다.
+        // 미션 커맨드를 GCS에 표시합니다.
         m_ui->comboBox_action->setCurrentIndex(m_ui->comboBox_action->count()-1);
     }
 
@@ -215,9 +240,13 @@ void WaypointEditableView::changedAutoContinue(int state)
 /**
  * @param index The index of the combo box of the action entry, NOT the action ID
  */
+/**
+ * @param index 액션 항목이 아닌 액션 항목의 콤보 상자의 인덱스입니다.
+ */
 void WaypointEditableView::changedAction(int index)
 {
     // set waypoint action
+    // 웨이 포인트 동작 설정
     int actionID = m_ui->comboBox_action->itemData(index).toUInt();
     if (actionID == QVariant::Invalid || actionID == MAV_CMD_ENUM_END)
     {
@@ -230,6 +259,7 @@ void WaypointEditableView::changedAction(int index)
         wp->setAction(action);
     }
     // change the view
+    // 보기를 변경하십시오.
     updateActionView(actionID);
     updateValues();
 }
@@ -363,6 +393,8 @@ QWidget* WaypointEditableView::createActionWidget(int action)
     }
     // Make sure the mouse or trackpad scrolling doesn't
     // change a value when you hover over it
+    // 마우스 또는 트랙 패드 스크롤이
+    // 위에 마우스를 올리면 값이 변경됩니다.
     disableMouseScrollWheel(this);
     return missionWidget;
 }
@@ -375,6 +407,7 @@ void WaypointEditableView::deleted(QObject* waypoint)
 void WaypointEditableView::changedFrame(int index)
 {
     // set waypoint action
+    // 웨이 포인트 동작 설정
     MAV_FRAME frame = (MAV_FRAME)m_ui->comboBox_frame->itemData(index).toUInt();
     wp->setFrame(frame);
     updateValues();
@@ -385,7 +418,7 @@ void WaypointEditableView::changedCurrent(int state)
     if (state == 0)
     {
         if (wp->getCurrent() == true) //User clicked on the waypoint, that is already current
-        {
+        {                             // 사용자가 이미 웨이 포인트를 클릭했습니다.
             m_ui->selectedBox->setChecked(true);
             m_ui->selectedBox->setCheckState(Qt::Checked);
         }
@@ -399,6 +432,8 @@ void WaypointEditableView::changedCurrent(int state)
     {
         wp->setCurrent(true);
         emit changeCurrentWaypoint(wp->getId());   //the slot changeCurrentWaypoint() in WaypointList sets all other current flags to false
+// WaypointList의 changeCurrentWaypoint () 슬롯은 다른 모든 현재 플래그를 false로 설정합니다.
+
     }
 }
 
@@ -410,6 +445,7 @@ void WaypointEditableView::blockAllSpinBoxSignals(const bool shallBlock)
     for (int j = 0; j  < allChildrenToBlock.size(); ++j)
     {
         // Store only QGCToolWidgetItems
+        // QGCToolWidgetItems 만 저장
         QDoubleSpinBox* spin = dynamic_cast<QDoubleSpinBox*>(allChildrenToBlock.at(j));
         if (spin)
         {
@@ -419,6 +455,7 @@ void WaypointEditableView::blockAllSpinBoxSignals(const bool shallBlock)
         else
         {
             // Store only QGCToolWidgetItems
+            // QGCToolWidgetItems 만 저장
             QWidget* item = dynamic_cast<QWidget*>(allChildrenToBlock.at(j));
             if (item)
             {
@@ -426,6 +463,7 @@ void WaypointEditableView::blockAllSpinBoxSignals(const bool shallBlock)
                 for (int k = 0; k  < item->children().size(); ++k)
                 {
                     // Store only QGCToolWidgetItems
+                    // QGCToolWidgetItems 만 저장
                     QDoubleSpinBox* spin = dynamic_cast<QDoubleSpinBox*>(item->children().at(k));
                     if (spin)
                     {
@@ -442,6 +480,8 @@ void WaypointEditableView::updateValues()
 {
     // Check if we just lost the wp, delete the widget
     // accordingly
+    // 방금 wp를 잃어 버렸는지 확인하고, 위젯을 삭제합니다.
+    // 이에 따라
     if (!wp) {
         deleteLater();
         return;
@@ -449,9 +489,12 @@ void WaypointEditableView::updateValues()
 
     // Deactivate all QDoubleSpinBox signals due to
     // unwanted rounding effects
+    // 모든 QDoubleSpinBox 신호를 비활성화합니다.
+    // 원치 않는 반올림 효과
     blockAllSpinBoxSignals(true);
 
     // update frame
+    // 프레임 업데이트
     MAV_FRAME frame = wp->getFrame();
     int frame_index = m_ui->comboBox_frame->findData(frame);
     if (m_ui->comboBox_frame->currentIndex() != frame_index) {
@@ -459,6 +502,7 @@ void WaypointEditableView::updateValues()
     }
 
     // Update action
+    // 액션 업데이트
     MAV_CMD action = wp->getAction();
     int action_index = m_ui->comboBox_action->findData(action);
     if (m_ui->comboBox_action->currentIndex() != action_index)
@@ -466,6 +510,7 @@ void WaypointEditableView::updateValues()
         if (viewMode != QGC_WAYPOINTEDITABLEVIEW_MODE_DIRECT_EDITING)
         {
             // Set to "Other" action if it was -1
+            // -1이면 "기타"액션으로 설정합니다.
             if (action_index == -1)
             {
                 action_index = m_ui->comboBox_action->findData(MAV_CMD_ENUM_END);
@@ -515,6 +560,7 @@ void WaypointEditableView::updateValues()
         // QLOG_DEBUG() << "COLOR:" << backGroundColor.name();
 
         // Update color based on id
+        // id에 따라 색상을 업데이트합니다.
         QString groupBoxStyle = QString("QGroupBox {padding: 0px; margin: 0px; border: 0px; background-color: %1; }").arg(backGroundColor.name());
         QString labelStyle = QString("QWidget {background-color: %1; color: #DDDDDF; border-color: #EEEEEE; }").arg(backGroundColor.name());
         QString checkBoxStyle = QString("QCheckBox {background-color: %1; color: #454545; border-color: #EEEEEE; }"
@@ -530,7 +576,8 @@ void WaypointEditableView::updateValues()
                                             "background-color: #AAAAAA;}"
                                         "QCheckBox::indicator:unchecked:pressed {"
                                         "background-color: #00FF00;}").arg(backGroundColor.name());
-        QString widgetSlotStyle = QString("QWidget {background-color: %1; color: #DDDDDF; border-color: #EEEEEE; } QSpinBox {background-color: #252528 } QDoubleSpinBox {background-color: #252528 } QComboBox {background-color: #252528 }").arg(backGroundColor.name()); //FIXME There should be a way to declare background color for widgetSlot without letting the children inherit this color. Here, background color for every widget-type (QSpinBox, etc.) has to be declared separately to overrule the coloring of QWidget.
+        QString widgetSlotStyle = QString("QWidget {background-color: %1; color: #DDDDDF; border-color: #EEEEEE; } QSpinBox {background-color: #252528 } QDoubleSpinBox {background-color: #252528 } QComboBox {background-color: #252528 }").arg(backGroundColor.name()); //FIXME There should be a way to declare background color for widgetSlot without letting the children inherit this color. Here, background color for every widget-type (QSpinBox, etc.) has to be declared separately to overrule the coloring of QWidget.  
+// FIXME 자식들이이 색을 상속하지 않고 widgetSlot의 배경색을 선언하는 방법이 있어야합니다. 여기에서는 모든 위젯 유형 (QSpinBox 등)에 대한 배경색을 별도로 선언해야 QWidget의 색상을 덮어 쓸 수 있습니다.
 
         m_ui->autoContinue->setStyleSheet(checkBoxStyle);
         m_ui->selectedBox->setStyleSheet(checkBoxStyle);
@@ -543,6 +590,8 @@ void WaypointEditableView::updateValues()
 
     // Activate all QDoubleSpinBox signals due to
     // unwanted rounding effects
+    // 로 인해 모든 QDoubleSpinBox 신호를 활성화하십시오.
+    // 원치 않는 반올림 효과
     blockAllSpinBoxSignals(false);
 }
 

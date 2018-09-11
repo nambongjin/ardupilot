@@ -27,6 +27,7 @@ void WaypointViewOnlyView::changedAutoContinue(int state)
 
 void WaypointViewOnlyView::changedCurrent(int state)
 //This is a slot receiving signals from QCheckBox m_ui->current. The state given here is whatever the user has clicked and not the true "current" value onboard.
+// QCheckBox m_ui-> current로부터 신호를받는 슬롯입니다. 여기에 주어진 상태는 사용자가 클릭 한 것이지 실제 온보드 값이 아닙니다.
 {
     Q_UNUSED(state);
     //QLOG_DEBUG() << "Trof: WaypointViewOnlyView::changedCurrent(" << state << ") ID:" << wp->getId();
@@ -35,12 +36,12 @@ void WaypointViewOnlyView::changedCurrent(int state)
     if (m_ui->current->isChecked() == false)
     {
         if (wp->getCurrent() == true) //User clicked on the waypoint, that is already current. Box stays checked
-        {
+        {                             // 사용자가 이미 현재 진행중인 웨이 포인트를 클릭했습니다. 상자는 체크 된 채로있다.
             m_ui->current->setCheckState(Qt::Checked);
             //QLOG_DEBUG() << "Trof: WaypointViewOnlyView::changedCurrent. Rechecked true. stay true " << m_ui->current->isChecked();
         }
         else // Strange case, unchecking the box which was not checked to start with
-        {
+        {    // 이상한 경우로 시작하도록 선택하지 않은 상자의 선택을 취소합니다.
             m_ui->current->setCheckState(Qt::Unchecked);
             //QLOG_DEBUG() << "Trof: WaypointViewOnlyView::changedCurrent. Unchecked false. set false " << m_ui->current->isChecked();
         }
@@ -50,7 +51,8 @@ void WaypointViewOnlyView::changedCurrent(int state)
         hightlightDesiredCurrent(true);
         m_ui->current->setCheckState(Qt::Unchecked);
         //QLOG_DEBUG() << "Trof: WaypointViewOnlyView::changedCurrent. Checked new. Sending set_current request to Manager " << m_ui->current->isChecked();
-        emit changeCurrentWaypoint(wp->getId());   //the slot changeCurrentWaypoint() in WaypointList sets all other current flags to false
+        emit changeCurrentWaypoint(wp->getId());   //the slot changeCurrentWaypoint() in WaypointList sets all other current flags to false                         // WaypointList의 changeCurrentWaypoint () 슬롯은 다른 모든 현재 플래그를 false로 설정합니다.
+
 
     }
     m_ui->current->blockSignals(false);
@@ -58,7 +60,7 @@ void WaypointViewOnlyView::changedCurrent(int state)
 
 void WaypointViewOnlyView::setCurrent(bool state)
 //This is a slot receiving signals from UASWaypointManager. The state given here is the true representation of what the "current" waypoint on UAV is.
-{
+{ // UASWaypointManager로부터 신호를받는 슬롯입니다. 여기에 주어진 상태는 UAV의 "현재"웨이 포인트가 무엇인지를 나타내는 것입니다.
     m_ui->current->blockSignals(true);
     if (state == true)
     {
@@ -80,6 +82,8 @@ void WaypointViewOnlyView::updateValues()
     QLOG_TRACE() << "WaypointViewOnlyView::updateValues() ID:" << wp->getId();
     // Check if we just lost the wp, delete the widget
     // accordingly
+    // 방금 wp를 잃어 버렸는지 확인하고, 위젯을 삭제합니다.
+    // 이에 따라
     if (!wp)
     {
         deleteLater();
@@ -87,6 +91,7 @@ void WaypointViewOnlyView::updateValues()
     }
 
     // Update style
+    // 스타일 업데이트
 
     QColor backGroundColor = QGC::colorBackground;
 
@@ -107,6 +112,7 @@ void WaypointViewOnlyView::updateValues()
         }
 
         // Update color based on id
+        // id에 따라 색상을 업데이트합니다.
         QString groupBoxStyle = QString("QGroupBox {padding: 0px; margin: 0px; border: 0px; background-color: %1; min-height: 12px; }").arg(backGroundColor.name());
         QString labelStyle = QString("QWidget {background-color: %1; color: #DDDDDF; border-color: #EEEEEE; }").arg(backGroundColor.name());
         QString displayBarStyle = QString("QWidget {background-color: %1; color: #DDDDDF; border: none; }").arg(backGroundColor.name());
@@ -121,6 +127,7 @@ void WaypointViewOnlyView::updateValues()
     }
 
     // update frame
+    // 프레임 업데이트
 
     m_ui->idLabel->setText(QString("%1").arg(wp->getId()));
     switch (wp->getFrame())
@@ -190,6 +197,7 @@ void WaypointViewOnlyView::updateValues()
         case MAV_FRAME_GLOBAL:
         {
             if (wp->getId() == 0) // Home Waypoint
+                                  // 홈 웨이 포인트
             {
                 m_ui->displayBar->setText(QString("HOME <b>(</b>lat <b>%1<sup>o</sup></b>, lon <b>%2<sup>o</sup></b>, alt <b>%3)</b> yaw: %4;").arg(wp->getX(),0, 'f', 7).arg(wp->getY(),0, 'f', 7).arg(wp->getZ(),0, 'f', 2).arg(wp->getYaw()));
             }
@@ -217,6 +225,7 @@ void WaypointViewOnlyView::updateValues()
             break;
         }
         } //end Frame switch
+           // end 프레임 스위치
         break;
     }
     case MAV_CMD_NAV_SPLINE_WAYPOINT:
@@ -228,7 +237,7 @@ void WaypointViewOnlyView::updateValues()
         case MAV_FRAME_GLOBAL:
         {
             if (wp->getId() == 0) // Home Waypoint
-            {
+            {                     // 홈 웨이 포인트
             }
             else if (wp->getParam1()>0)
             {
@@ -254,6 +263,7 @@ void WaypointViewOnlyView::updateValues()
             break;
         }
         } //end Frame switch
+           // end 프레임 스위치
         break;
     }
     case MAV_CMD_NAV_LOITER_UNLIM:
@@ -288,6 +298,7 @@ void WaypointViewOnlyView::updateValues()
             break;
         }
         } //end Frame switch
+          // end 프레임 스위치
         break;
     }
     case MAV_CMD_NAV_LOITER_TURNS:
@@ -321,6 +332,7 @@ void WaypointViewOnlyView::updateValues()
             break;
         }
         } //end Frame switch
+          // end 프레임 스위치
         break;
     }
     case MAV_CMD_NAV_LOITER_TIME:
@@ -355,6 +367,7 @@ void WaypointViewOnlyView::updateValues()
             break;
         }
         } //end Frame switch
+          // end 프레임 스위치
         break;
     }
     case MAV_CMD_NAV_LOITER_TO_ALT:
@@ -389,6 +402,7 @@ void WaypointViewOnlyView::updateValues()
             break;
         }
         } //end Frame switch
+          // end 프레임 스위치
         break;
     }
     case MAV_CMD_NAV_RETURN_TO_LAUNCH:
@@ -414,6 +428,7 @@ void WaypointViewOnlyView::updateValues()
             break;
         }
         } //end Frame switch
+          // end 프레임 스위치
         break;
     }
     case MAV_CMD_NAV_TAKEOFF:
@@ -434,6 +449,7 @@ void WaypointViewOnlyView::updateValues()
             break;
         }
         } //end Frame switch
+          // end 프레임 스위치
         break;
         break;
     }
@@ -455,6 +471,7 @@ void WaypointViewOnlyView::updateValues()
             break;
         }
         } //end Frame switch
+          // end 프레임 스위치
         break;
         break;
     }
@@ -508,13 +525,13 @@ void WaypointViewOnlyView::updateValues()
         QString lockStateString = "...";
         int lockState = static_cast<int>(wp->getParam5());
         switch (lockState) {
-            case 0: // Re-lock
+            case 0: // Re-lock   //다시 잠그기
                 lockStateString = "Re-lock";
             break;
-            case 1: // Ignore
+            case 1: // Ignore    //무시
                 lockStateString = "Ignore";
             break;
-            case 2: // Lock
+            case 2: // Lock      // 잠금
                 lockStateString = "Lock";
             break;
             default:
@@ -564,6 +581,7 @@ void WaypointViewOnlyView::updateValues()
             break;
         }
         } //end Frame switch
+          // end 프레임 스위치
         break;
     }
 #endif

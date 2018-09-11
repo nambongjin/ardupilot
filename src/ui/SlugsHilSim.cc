@@ -27,6 +27,12 @@ This file is part of the QGROUNDCONTROL project
  *   @author Mariano Lizarraga <malife@gmail.com>
  *   @author Alejandro Molina <am.alex09@gmail.com>
  */
+/**
+ * @file
+ * 슬러그의 HIL 시뮬레이터 용 * @ brief 구성 창
+ * @author Mariano Lizarraga <malife@gmail.com>
+ * @author Alejandro Molina <am.alex09@gmail.com>
+ */
 
 
 #include "SlugsHilSim.h"
@@ -192,6 +198,7 @@ void SlugsHilSim::processHilDatagram(const QByteArray* datagram)
     tmpAirData.temperature= getUint16FromDatagram(datagram, &i);
 
     // TODO Salto en el Datagrama
+
     i=i+8;
 
     tmpRawImuData.xgyro = getUint16FromDatagram(datagram, &i);
@@ -223,6 +230,7 @@ void SlugsHilSim::processHilDatagram(const QByteArray* datagram)
     tmpLocalPositionData.vz = getFloatFromDatagram(datagram, &i);
 
     // TODO: this is legacy of old HIL datagram. Need to remove from Simulink model
+    // TODO : 이것은 오래된 HIL 데이터 그램의 유산이다. Simulink 모델에서 제거 필요
     i++;
 
     ui->ed_1->setText(QString::number(tmpRawImuData.xacc));
@@ -265,6 +273,7 @@ void SlugsHilSim::linkSelected(int cbIndex)
 {
 #ifdef MAVLINK_ENABLED_SLUGS
     // HIL code to go here...
+    // 여기에 갈 HIL 코드 ...
     //hilLink = linksAvailable
     // FIXME Mariano
 
