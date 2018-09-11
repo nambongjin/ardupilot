@@ -25,6 +25,12 @@ This file is part of the APM_PLANNER project
  * @date 21 sept 2016
  * @brief File providing implementation for the AP2DataPlotStatus
  */
+/* *
+ * @file AP2DataPlotStatus.cpp
+ * @author Arne Wischmann <wischmann-a@gmx.de>
+ * @ 날짜 2016 년 9 월 21 일
+ * @brief AP2DataPlotStatus에 대한 구현을 제공하는 파일
+ */
 
 #include "AP2DataPlotStatus.h"
 #include <QTextStream>
@@ -41,6 +47,9 @@ void AP2DataPlotStatus::corruptDataRead(const int index, const QString &errorMes
     // When here we just know that we have an error but not if it is at the end
     // or in the middle of the logfile. So we set truncation error. Data error will
     // be set as soon as valid data is read again.
+    // 여기에 우리는 오류가 있음을 알지만 끝이 아니라면 오류가 있음을 알 수 있습니다.
+    // 또는 로그 파일의 중간에. 그래서 우리는 truncation error를 설정합니다. 데이터 오류가 발생합니다.
+    // 유효한 데이터를 다시 읽 자마자 설정됩니다.
     m_globalState = m_globalState == OK ? TruncationError : m_globalState;
     m_lastParsingState = DataError;
     errorEntry entry(m_lastParsingState, index, errorMessage);
@@ -131,7 +140,7 @@ QString AP2DataPlotStatus::getDetailedErrorText() const
 
     foreach (const errorEntry &entry, m_errors)
     {
-        if (entry.m_state != OK)    // Only if a error
+        if (entry.m_state != OK)    // Only if a error// 오류가있는 경우에만
         {
             outStream << "Logline " << entry.m_index << ": " << entry.m_errortext << endl;
             errorCount++;
