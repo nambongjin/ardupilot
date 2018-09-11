@@ -132,10 +132,16 @@ bool Radio3DREeprom::setVersion(const QString &versionString)
                                        // but this doesn't work for 1.10 and greater
                                        // Need to fix the above RegExp code to match
                                        // xx.nn (it should but doesn't
+				       // [TODO] retrun xn을 지금 버전으로 사용
+                                       // 하지만 1.10 이상에서는 작동하지 않습니다.
+                                       // 일치하도록 위의 RegExp 코드를 수정해야합니다.
+                                       // xx.nn (해야하지만하지 않습니다.
         m_version = majorMinorVersion.toFloat();
 
         // The number of params should be worked out from the returned ATI5 message
         // Or by using a lookup table of version to num of params.
+        // 반환 된 ATI5 메시지에서 매개 변수 수를 계산해야합니다.
+        // 또는 number of params에 대한 버전의 조회 테이블을 사용합니다.
         if (m_version < SIK_LOWLATENCY_MIN_VERSION){
             m_numberOfParams = 14;
             m_endParam = "S14";
@@ -309,6 +315,44 @@ Radio3DRSettings::Radio3DRSettings(QObject *parent) :
     //                S13: MANCHESTER=0
     //                S14: RTSCTS=0
     //                S15: MAX_WINDOW=131 // or 33 for SiK 1.8 and greater
+    //   3DR SiK 라디오에 대한 명령 세트
+    //
+    //         +++ - 명령 모드로 탈출 (작동하기 전에 1s 침묵 필요)
+    //         ATI - 라디오 버전 표시
+    //         ATI2 - 보드 유형 표시
+    //         ATI3 - 보드 주파수 표시
+    //         ATI4 - 보드 버전 표시
+    //         ATI5 - 사용자가 설정할 수있는 모든 EEPROM 매개 변수 표시
+    //         ATI6 - TDM 타이밍 보고서를 표시합니다.
+    //         ATI7 - RSSI 신호 보고서 표시
+    //         ATO - AT 명령 모드를 종료합니다.
+    //         ATSn? - 라디오 매개 변수 번호 'n'표시
+    //         ATSn = X - 라디오 매개 변수 번호 'n'을 'X'로 설정합니다.
+    //         ATZ - 라디오를 재부팅합니다.
+    //         AT & W - 현재 매개 변수를 EEPROM에 씁니다.
+    //         AT & F - 모든 매개 변수를 공장 기본값으로 재설정합니다.
+    //         AT & T = RSSI - RSSI 디버그보고 활성화
+    //         AT & T = TDM - TDM 디버그보고 활성화
+    //         AT & T - 디버그보고 사용 안함
+    //
+    //         예 : HM-TRP에서 ATI0 Version = SiK 1.5
+    //                 ATI5
+    //                 S0 : FORMAT = 25
+    //                 S1 : SERIAL_SPEED = 57
+    //                 S2 : AIR_SPEED = 64
+    //                 S3 : NETID = 41
+    //                 S4 : TXPOWER = 20
+    //                 S5 : ECC = 1
+    //                 S6 : MAVLINK = 1
+    //                 S7 : OPPRESEND = 1
+    //                 S8 : MIN_FREQ = 915000
+    //                 S9 : MAX_FREQ = 928000
+    //                 S10 : NUM_CHANNELS = 50
+    //                 S11 : DUTY_CYCLE = 100
+    //                 S12 : LBT_RSSI = 0
+    //                 S13 : 맨체스터 = 0
+    //                 S14 : RTSCTS = 0
+    //                 S15 : SiK 1.8 이상에서는 MAX_WINDOW = 131 // 또는 33
     m_timer.setSingleShot(true);
     m_timerReadWrite.setSingleShot(true);
 }
@@ -335,6 +379,8 @@ bool Radio3DRSettings::openSerialPort(SerialSettings settings)
 #if defined(Q_OS_MACX) && ((QT_VERSION == 0x050402)||(QT_VERSION == 0x0500401))
     // temp fix Qt5.4.1 issue on OSX
     // http://code.qt.io/cgit/qt/qtserialport.git/commit/?id=687dfa9312c1ef4894c32a1966b8ac968110b71e
+    // temp는 OSX에서 Qt5.4.1 문제를 해결합니다.
+    // http://code.qt.io/cgit/qt/qtserialport.git/commit/?id=687dfa9312c1ef4894c32a1966b8ac968110b71e
     m_serialPort->setPortName("/dev/cu." + settings.name);
 #else
     m_serialPort->setPortName(settings.name);
@@ -342,8 +388,10 @@ bool Radio3DRSettings::openSerialPort(SerialSettings settings)
 
     if(m_serialPort->open(QIODevice::ReadWrite)){
         // Start Reading the settings
+        // 설정 읽기 시작
         QLOG_DEBUG() << "Radio3DRSettings Serial Port Open SUCCESS" << settings.name;
         // Serial Port Connections
+        // 직렬 포트 연결
 
         QLOG_DEBUG() << "Port" << settings.name << settings.baudRate << settings.dataBits
                      << "FC" << settings.flowControl << "P" << settings.parity
@@ -369,6 +417,7 @@ bool Radio3DRSettings::openSerialPort(SerialSettings settings)
         }
     } else {
         // Abort
+        // 중단
         QLOG_DEBUG() << "Radio3DRSettings Serial Port Open FAILURE! " << m_serialPort->errorString();
         emit serialPortOpenFailure(m_serialPort->error(), m_serialPort->errorString());
         emit updateLocalStatus(tr("FAILED to open serial port"), red);
@@ -381,39 +430,42 @@ void Radio3DRSettings::closeSerialPort()
 {
     if (m_serialPort && m_serialPort->isOpen()){
         QLOG_DEBUG() << "Close Serial Port:" << m_serialPort->portName() << m_serialPort.data();
-        m_serialPort->write("ATO\r\n"); // leave command mode - just to be sure
+        m_serialPort->write("ATO\r\n"); // leave command mode - just to be sure// 명령 모드를 종료하십시오.
         m_serialPort->flush();
         m_serialPort->close();
     }
-    m_retryCount = 0;   // when we close the port the retry must be reset
+    m_retryCount = 0;   // when we close the port the retry must be reset// 포트를 닫을 때 재시도를 재설정해야합니다.
 }
 
 void Radio3DRSettings::readData()
 {
     // Sanity check
+    // 온전한 검사
     if(!m_serialPort){
         return;
     }
     // read raw data
+    // 원시 데이터를 읽습니다.
     QByteArray data;
     if(m_serialPort->canReadLine()){
-        data = m_serialPort->readLine();  // normally we can wait for a \n
+        data = m_serialPort->readLine();  // normally we can wait for a \n// 일반적으로 우리는 \ n 기다릴 수 있습니다. \ n
     }
     else if((m_state == rebootLocal) && (m_serialPort->bytesAvailable() >= 3)){
-        data = m_serialPort->readAll();     // in case of a reset ATZ has not always a \n
+        data = m_serialPort->readAll();     // in case of a reset ATZ has not always a \n// 재설정의 경우 ATZ가 항상 \ n이 아님
     }
     else {
         return; // no data
     }
 
     // filter all unwanted ascii characters
+    // 원하지 않는 모든 ASCII 문자를 필터링합니다.
     QString currentLine;
     foreach(const char &character, data)
     {
-        if((static_cast<quint8>(character) < 128) &&        // above 128 there are only graphics
-                ((static_cast<quint8>(character) > 31) ||   // below 31 only control chars
-                 (static_cast<quint8>(character) == 10) ||  // but we need linefeed
-                 (static_cast<quint8>(character) == 13)))   // and carriage return
+        if((static_cast<quint8>(character) < 128) &&        // above 128 there are only graphics// 128 이상이면 그래픽 만 있습니다.
+                ((static_cast<quint8>(character) > 31) ||   // below 31 only control chars// 31 이하의 문자 만 제어
+                 (static_cast<quint8>(character) == 10) ||  // but we need linefeed// 하지만 줄 바꿈이 필요합니다.
+                 (static_cast<quint8>(character) == 13)))   // and carriage return// 캐리지 리턴
         {
             currentLine.append(character);
         }
@@ -423,8 +475,10 @@ void Radio3DRSettings::readData()
 
     if(currentLine.contains("+++")){
         // We are already in command mode and it just reflecrted the escape sequence
+        // 이미 명령 모드에 있으며 이스케이프 시퀀스를 리플렉션했습니다.
         QLOG_WARN() << "3DR Radio already in command mode";
         // Reset Radios to known state and start again
+        // 라디오를 알려진 상태로 재설정하고 다시 시작합니다.
         m_serialPort->flush();
 //        m_serialPort->write("\r\n");
 //        m_serialPort->flush();
@@ -436,12 +490,14 @@ void Radio3DRSettings::readData()
 
     if(currentLine.contains("RTZ")){
         // Rebooted remote
+        // 재부팅 된 원격
         QLOG_DEBUG() << "Resetted remote radio";
         return;
     }
 
     if(currentLine.contains("ATZ")){
         // Rebooted local -> read all data again
+        // 재부팅 된 로컬 -> 모든 데이터를 다시 읽습니다.
         QLOG_DEBUG() << "Resetted local radio - Refresh all data.";
         m_state = enterCommandMode;
         m_retryCount = 0;
@@ -451,12 +507,14 @@ void Radio3DRSettings::readData()
 
     if(currentLine.startsWith("AT")||currentLine.startsWith("RT")){
         //throw away the command echo
+       // 명령을 버린다 echo
         if(m_serialPort->canReadLine()){
            currentLine = m_serialPort->readLine();
            QLOG_DEBUG() << "Radio readData nextline:" << currentLine;
 
         } else {
             // no data to read so wait for more
+            // 읽을 데이터가 없으므로 더 기다려야합니다.
             currentLine = "";
             return;
         }
@@ -494,6 +552,7 @@ void Radio3DRSettings::readData()
             QLOG_ERROR() << "FAILED Writing Local Param:"
                          << m_newLocalRadio.formattedParameter(Radio3DREeprom::local, m_paramIndexSend);
             // [ToDo] Can retry at this point
+            // [할 일]이 시점에서 재 시도 할 수 있습니다.
         }
     } break;
 
@@ -505,6 +564,7 @@ void Radio3DRSettings::readData()
             if (m_paramIndexSend > m_newRemoteRadio.numberOfParams()){
                 emit updateRemoteStatus(tr("param write complete"), green);
                 // Now write to eeprom and reset
+                // 이제 eeprom에 기록하고 재설정합니다.
                 m_state = writeRemoteEepromValues;
                 m_serialPort->write("RT&W\r\n");
                 return;
@@ -519,13 +579,14 @@ void Radio3DRSettings::readData()
             QLOG_ERROR() << "FAILED Writing Remote Param:"
                          << m_newRemoteRadio.formattedParameter(Radio3DREeprom::remote,m_paramIndexSend);
             // [ToDo] Can retry at this point
+            // [할 일]이 시점에서 재 시도 할 수 있습니다.
         }
     } break;
 
     case writeRemoteFactorySettings: {
         if (currentLine.contains("OK")){
             emit updateRemoteStatus(tr("Reset to factory Settings"), black);
-            m_serialPort->write("RT&F\r\n"); // Write eeprom settings
+            m_serialPort->write("RT&F\r\n"); // Write eeprom settings// eeprom 설정을 씁니다.
             m_state = writeRemoteEepromValues;
         } else {
             emit updateRemoteStatus(tr("Failed to reset to factory settings"), red);
@@ -547,7 +608,7 @@ void Radio3DRSettings::readData()
     case writeLocalFactorySettings: {
         if (currentLine.contains("OK")){
             emit updateLocalStatus(tr("Reset to factory Settings"), black);
-            m_serialPort->write("AT&F\r\n"); // Write eeprom settings
+            m_serialPort->write("AT&F\r\n"); // Write eeprom settings// eeprom 설정을 씁니다.
             m_state = writeLocalEepromValues;
         } else {
             emit updateLocalStatus(tr("Failed to reset to factory settings"), red);
@@ -600,6 +661,7 @@ void Radio3DRSettings::readData()
 
     case readLocalParams:{
         //[TODO] add more error checking by checking return value of setParam
+        // [TODO] setParam의 리턴 값을 검사하여 더 많은 에러 검사를 추가한다.
         m_localRadio.setParameter(currentLine);
         while(m_serialPort->canReadLine()){
             currentLine = m_serialPort->readLine();
@@ -607,10 +669,11 @@ void Radio3DRSettings::readData()
         };
         if (currentLine.contains(m_localRadio.endParam())) {
             // All data received
+            // 받은 모든 데이터
             emit updateLocalStatus(tr("SUCCESS"), green);
             emit localReadComplete(m_localRadio, true);
             readLocalRssi();
-        }; // else wait for more
+        }; // else wait for more// 다른 경우는 더 기다린다.
     } break;
 
     case readRemoteVersion:{
@@ -650,6 +713,7 @@ void Radio3DRSettings::readData()
 
     case readRemoteParams:{
         //[TODO] add more error checking by checking return value of setParam
+        // [TODO] setParam의 리턴 값을 검사하여 더 많은 에러 검사를 추가한다.
         m_remoteRadio.setParameter(currentLine);
         while(m_serialPort->canReadLine()){
             currentLine = m_serialPort->readLine();
@@ -681,6 +745,7 @@ void Radio3DRSettings::readData()
     case rebootLocal:
     case rebootRemote:
         // May need to consume echo'd bytes here[?]
+        // 여기 에코 바이트를 소비해야 할 수도 있습니다 [?]
         break;
     case error:
         QLOG_DEBUG() << "Error: " << m_serialPort->errorString();
@@ -712,7 +777,7 @@ void Radio3DRSettings::writeEscapeSeqeunce()
             m_timer.start(1100);
         } else {
             closeSerialPort();
-            m_state = error; // Quit any more retries
+            m_state = error; // Quit any more retries// 더 이상 다시 시도하지 않습니다.
             emit updateLocalStatus(tr("FAILED"), red);
             emit updateRemoteStatus(tr("FAILED"), red);
         }
@@ -740,7 +805,7 @@ void Radio3DRSettings::readLocalVersionString()
     QLOG_DEBUG() << "Radio3DRSettings::readLocalVersionString()";
     emit updateLocalStatus(tr("Read local radio version"), black);
     if (m_serialPort && m_serialPort->isOpen()){
-        // start state machine
+        // start state machine// 상태 시스템을 시작합니다.
         m_serialPort->write("ATI0\r\n");
         m_serialPort->flush();
         m_state = readLocalVersion;
@@ -755,7 +820,7 @@ void Radio3DRSettings::readRemoteVersionString()
     QLOG_DEBUG() << "Radio3DRSettings::readRemoteVersionString()";
     emit updateRemoteStatus(tr("Reading remote version"), black);
     if (m_serialPort && m_serialPort->isOpen()){
-        // start state machine
+        // start state machine// 상태 시스템을 시작합니다.
         m_serialPort->write("RTI0\r\n");
         m_serialPort->flush();
         m_state = readRemoteVersion;
@@ -770,6 +835,7 @@ void Radio3DRSettings::readRemoteVersionString()
 void Radio3DRSettings::readRemoteTimeout()
 {
     // No remote so read local radio.
+    // 리모컨이 없으므로 로컬 라디오를 읽지 않습니다.
     QLOG_DEBUG() << " Failed to Read Remote Version";
     disconnect(&m_timerReadWrite, SIGNAL(timeout()), this , SLOT(readRemoteTimeout()));
     emit updateRemoteStatus(tr("FAILED"), red);
@@ -781,6 +847,7 @@ void Radio3DRSettings::readLocalRadioFrequency()
     emit updateLocalStatus(tr("Read local radio frequency"), black);
     if (m_serialPort && m_serialPort->isOpen()){
         // start state machine
+        // 상태 시스템을 시작합니다.
         m_serialPort->write("ATI3\r\n");
         m_serialPort->flush();
         m_state = readLocalFrequency;
@@ -796,6 +863,7 @@ void Radio3DRSettings::readRemoteRadioFrequency()
     emit updateRemoteStatus(tr("Read remote radio frequency"), black);
     if (m_serialPort && m_serialPort->isOpen()){
         // start state machine
+        // 상태 시스템을 시작합니다.
         m_serialPort->write("RTI3\r\n");
         m_serialPort->flush();
         m_state = readRemoteFrequency;
@@ -810,7 +878,7 @@ void Radio3DRSettings::readLocalSettingsStrings()
     QLOG_DEBUG() << "Radio3DRSettings::readLocalSettingsStrings()";
     emit updateLocalStatus(tr("Read local radio eeprom values"), black);
     if (m_serialPort && m_serialPort->isOpen()){
-        m_serialPort->write("ATI5\r\n"); // Request all EEPROM params
+        m_serialPort->write("ATI5\r\n"); // Request all EEPROM params// 모든 EEPROM 매개 변수 요청
         m_serialPort->flush();
         m_state = readLocalParams;
     } else {
@@ -824,7 +892,7 @@ void Radio3DRSettings::readRemoteSettingsStrings()
     QLOG_DEBUG() << "Radio3DRSettings::readRemoteSettingsStrings()";
     emit updateRemoteStatus(tr("Read remote radio eeprom values"), black);
     if (m_serialPort && m_serialPort->isOpen()){
-        m_serialPort->write("RTI5\r\n"); // Request all EEPROM params
+        m_serialPort->write("RTI5\r\n"); // Request all EEPROM params// 모든 EEPROM 매개 변수 요청
         m_serialPort->flush();
         m_state = readRemoteParams;
     } else {
@@ -842,7 +910,7 @@ void Radio3DRSettings::writeLocalSettings(Radio3DREeprom eepromSettings)
         return;
     }
     m_newLocalRadio = eepromSettings;
-    m_paramIndexSend = 1; // start of the first parameter
+    m_paramIndexSend = 1; // start of the first parameter// 첫 번째 매개 변수의 시작
     QLOG_DEBUG() << " Sending" << m_newLocalRadio.formattedParameter(Radio3DREeprom::local, m_paramIndexSend).toLatin1();
     m_serialPort->write(m_newLocalRadio.formattedParameter(Radio3DREeprom::local, m_paramIndexSend).toLatin1());
     m_state = writeLocalParams;
@@ -857,7 +925,7 @@ void Radio3DRSettings::writeRemoteSettings(Radio3DREeprom eepromSettings)
         return;
     }
     m_newRemoteRadio = eepromSettings;
-    m_paramIndexSend = 1; // start of the first parameter
+    m_paramIndexSend = 1; // start of the first parameter// 첫 번째 매개 변수의 시작
     QLOG_DEBUG() << " Sending" << m_newRemoteRadio.formattedParameter(Radio3DREeprom::remote, m_paramIndexSend).toLatin1();
     m_serialPort->write(m_newRemoteRadio.formattedParameter(Radio3DREeprom::remote, m_paramIndexSend).toLatin1());
     m_state = writeRemoteParams;
@@ -885,6 +953,7 @@ void Radio3DRSettings::handleError(QSerialPort::SerialPortError error)
 {
     if (error == QSerialPort::ResourceError) {
         // disconnect signals immediately to avoid that accidentally sent data triggers call of this method again
+        // 실수로 보낸 데이터가이 메서드를 다시 호출하는 것을 방지하기 위해 즉시 신호 연결을 끊습니다.
         disconnect(&m_timer, SIGNAL(timeout()), this, SLOT(writeEscapeSeqeunceNow()));
         disconnect(m_serialPort.data(), SIGNAL(error(QSerialPort::SerialPortError)), this, SLOT(handleError(QSerialPort::SerialPortError)));
         disconnect(m_serialPort.data(), SIGNAL(readyRead()), this, SLOT(readData()));
