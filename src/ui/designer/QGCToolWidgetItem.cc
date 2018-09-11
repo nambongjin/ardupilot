@@ -28,6 +28,7 @@ QGCToolWidgetItem::QGCToolWidgetItem(const QString& name, QWidget *parent) :
     connect(UASManager::instance(), SIGNAL(activeUASSet(UASInterface*)),
             this, SLOT(setActiveUAS(UASInterface*)));
     // Set first UAS if it exists
+    // 존재하는 경우 첫 번째 UAS를 설정합니다.
     setActiveUAS(UASManager::instance()->getActiveUAS());
 }
 

@@ -39,7 +39,7 @@ protected:
     bool isInEditMode;
     QString qgcToolWidgetItemName;
     UASInterface* uas;
-    int _component;          ///< The MAV component (the process or device ID)
+    int _component;          ///< The MAV component (the process or device ID)// / <MAV 구성 요소 (프로세스 또는 장치 ID)
 
     void contextMenuEvent (QContextMenuEvent* event);
 
