@@ -69,7 +69,7 @@ private:
 
     UASInterface* m_uasInterface;
     UASWaypointManager* m_uasWaypointMgr;
-    QMap<int, Waypoint*> m_waypointList; // Ordered Map of waypoint IDs to waypoints.
+    QMap<int, Waypoint*> m_waypointList; // Ordered Map of waypoint IDs to waypoints.// 웨이 포인트 ID와 웨이 포인트의 정렬 된 맵.
     int m_totalDistance;
 
     GoogleElevationData* m_elevationData;

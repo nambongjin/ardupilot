@@ -56,17 +56,18 @@ MissionElevationDisplay::MissionElevationDisplay(QWidget *parent) :
     ui->sampleSpinBox->setEnabled(false);
 
     QCustomPlot* customPlot = ui->customPlot;
-    customPlot->addGraph(); // Mission Elevation Graph (ElevationGraphMissionId)
-    customPlot->graph(ElevationGraphMissionId)->setPen(QPen(Qt::blue)); // line color blue for mission data
-    customPlot->graph(ElevationGraphMissionId)->setBrush(QBrush(QColor(0, 0, 255, 20))); // first graph will be filled with translucent blue
+    customPlot->addGraph(); // Mission Elevation Graph (ElevationGraphMissionId)// 임무 고도 그래프 (ElevationGraphMissionId)
+    customPlot->graph(ElevationGraphMissionId)->setPen(QPen(Qt::blue)); // line color blue for mission data// 임무 데이터를위한 선 색상 파랑
+    customPlot->graph(ElevationGraphMissionId)->setBrush(QBrush(QColor(0, 0, 255, 20))); // first graph will be filled with translucent blue// 첫 번째 그래프는 반투명의 파란색으로 채워집니다.
 
-    customPlot->addGraph(); // Google Elevation Graph (ElevationGraphElevationId)
-    customPlot->graph(ElevationGraphElevationId)->setPen(QPen(Qt::red)); // line color red for elevation data
+    customPlot->addGraph(); // Google Elevation Graph (ElevationGraphElevationId)// 입면 데이터의 빨간색 선 색상
+    customPlot->graph(ElevationGraphElevationId)->setPen(QPen(Qt::red)); // line color red for elevation data// 첫 번째 그래프는 반투명의 파란색으로 채워집니다.
     customPlot->graph(ElevationGraphElevationId)->setBrush(QBrush(QColor(255, 0, 0, 20))); // first graph will be filled with translucent blue
     customPlot->graph(ElevationGraphElevationId)->setScatterStyle(QCPScatterStyle(QCPScatterStyle::ssDiamond, 10));
     customPlot->xAxis->setLabel("distance (m)");
     customPlot->yAxis->setLabel("altitude (m)");
     // set default ranges for Alt and distance
+    // Alt 및 거리에 대한 기본 범위 설정
     customPlot->xAxis->setRange(0,ElevationDefaultDistanceMax); //m
     customPlot->yAxis->setRange(ElevationDefaultAltMin,ElevationDefaultAltMax); //m
 
@@ -75,6 +76,7 @@ MissionElevationDisplay::MissionElevationDisplay(QWidget *parent) :
     customPlot->legend->setFont(legendFont);
 
     // set a more compact font size for bottom and left axis tick labels:
+    // 아래쪽 및 왼쪽 축 눈금 레이블에 대해보다 컴팩트 한 글꼴 크기를 설정합니다.
     customPlot->xAxis->setTickLabelFont(QFont(QFont().family(), 9));
     customPlot->xAxis->setLabelFont(QFont(QFont().family(), 9));
     customPlot->yAxis->setTickLabelFont(QFont(QFont().family(), 9));
@@ -143,6 +145,7 @@ void MissionElevationDisplay::updateWaypoint(int uasId, Waypoint *waypoint)
         if (m_elevationShown && ((oldWp->getLatitude() != waypoint->getLatitude())
            || (oldWp->getLongitude() != waypoint->getLongitude()))){
             // Waypoint Moved, so need to refresh elevation.
+            // 웨이 포인트가 이동 했으므로 고도를 새로 고침해야합니다.
             ui->refreshButton->setText("Refresh Elevation");
             ui->refreshButton->setEnabled(true);
         }
@@ -172,6 +175,7 @@ void MissionElevationDisplay::updateDisplay()
     m_waypointList.clear();
     foreach (Waypoint* wp, list) {
         // Create a copy
+        // 사본을 만듭니다.
         m_waypointList.insert(wp->getId(), new Waypoint(*wp));
     }
 
@@ -218,11 +222,13 @@ int MissionElevationDisplay::plotElevationGraph(QList<Waypoint *> waypointList, 
 
         if (wp->getId() == 0){
             // Plot Waypoint at 0 (HOME) and store for next calculation
+            // 0 (HOME)에 Waypoint를 플롯하고 다음 계산을 위해 저장합니다.
             homeAlt = wp->getAltitude();
             graph->addData( totalDistance, homeAlt + homeAltOffset);
 
         } else {
             // calculate the distance and plot against alt
+            // 거리를 계산하고 alt와 대조하여 플롯합니다.
             double distance = distanceBetweenLatLng(previousWp->getLatitude(), previousWp->getLongitude(),
                                                     wp->getLatitude(), wp->getLongitude());
             totalDistance += distance;
@@ -284,7 +290,7 @@ void MissionElevationDisplay::updateElevationData()
         m_elevationShown = true;
     }
     int samples = m_waypointList.count()*ui->sampleSpinBox->value();
-    m_elevationData->requestElevationData(m_waypointList.values(), m_totalDistance, samples); // 5 samples between waypoints
+    m_elevationData->requestElevationData(m_waypointList.values(), m_totalDistance, samples); // 5 samples between waypoints// 웨이 포인트 사이에 5 개의 샘플
     if (m_elevationShown == true) {
         ui->refreshButton->setEnabled(false);
         ui->refreshButton->setText("Updated");
@@ -293,6 +299,7 @@ void MissionElevationDisplay::updateElevationData()
 }
 
 // When we move to QT5 the below should use QGeoLocation.
+// QT5로 이동하면 아래의 QGeoLocation을 사용해야합니다.
 double MissionElevationDisplay::distanceBetweenLatLng(double lat1, double lon1, double lat2, double lon2)
 {
      double R = 6371000; // m
