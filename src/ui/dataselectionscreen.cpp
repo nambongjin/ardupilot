@@ -26,6 +26,7 @@ void DataSelectionScreen::clearSelectionButtonClicked()
             {
                 items[i]->setCheckState(0,Qt::Unchecked);
                 // ^^ this will trigger the disabling of the graph automatically
+                // ^^ 그러면 그래프가 자동으로 비활성화됩니다.
             }
         }
     }
@@ -75,6 +76,7 @@ void DataSelectionScreen::disableItem(QString name)
     for (int i=0;i<items.size();i++)
     {
         //If the item has no parent, it's a top level item and we ignore it anyway.
+        // 항목에 부모가 없으면 최상위 항목이므로 무시합니다.
         if (items[i]->parent())
         {
             if (items[i]->parent()->text(0) == first)
@@ -93,8 +95,10 @@ void DataSelectionScreen::disableItem(QString name)
 QList<QString> DataSelectionScreen::disableAllItems()
 {
     // Store enabled List for returning
+    // 반환을 위해 저장된 목록 저장
     QList<QString> tempList(m_enabledList);
     // Clear all selected items - its like perssing the clear button
+    // 선택한 모든 항목을 지우십시오.
     clearSelectionButtonClicked();
     return tempList;
 }
@@ -118,6 +122,7 @@ void DataSelectionScreen::addItem(QString name)
     if (name.contains("."))
     {
         //Splitting name a every '.'
+        // 이름을 '모든.'로 나눕니다.
         QStringList parts = name.split('.');
         QString groupname;
         QString shortname;
@@ -125,12 +130,14 @@ void DataSelectionScreen::addItem(QString name)
         if(parts.size() == 2)
         {
             // name format is like "ATTITUDE.Pitch" -> groupname = ATTITUDE, shortname = Pitch
+            // 이름 형식은 "ATTITUDE.Pitch"와 같습니다 -> groupname = ATTITUDE, shortname = Pitch
             groupname = parts[0];
             shortname = parts[1];
         }
         else if(parts.size() == 3)
         {
             // name format is like "BATTERY_STATUS.voltages.0" -> groupname = BATTERY_STATUS, shortname = voltages.0
+            // 이름 형식은 "BATTERY_STATUS.voltages.0"과 같습니다. -> groupname = BATTERY_STATUS, shortname = voltages.0
             groupname = parts[0];
             shortname = parts[1] + "." + parts[2];
         }
