@@ -62,22 +62,41 @@ public slots:
      * @param yHat hat vector in left-right direction, -1 left, 0 center, +1 right
      * @param buttons bitmask of pressed buttons
      */
+    /* *
+     * @brief 원시 조이스틱 값 받기
+     *
+     * @param 롤 포워드 / 피치 / x 축, 앞 : 32'767, 중심 : 0, 뒤 : -32'768
+     * @param 피치 left / roll / y 축, 왼쪽 : -32'768, 중간 : 0, 오른쪽 : 32'767
+     * @param yaw 회전축, 좌회전 : -32'768, 중심 맞춤 : 0, 우회전 : 32'767
+     * @param 추력 추력, 0 % : 0, 100 % : 65535
+     * @param x 전방 - 후방 방향의 모자 모자 벡터, 전진 +1, 중심 0, 역 -1
+     * @param y 왼쪽 - 오른쪽 방향으로 모자이크 벡터, 왼쪽 -1, 중심 0, 오른쪽 +1
+     * @param buttons 눌려진 버튼의 비트 마스크
+     */
     void updateJoystick(double roll, double pitch, double yaw, double thrust, int xHat, int yHat, int buttons);
     /** @brief Throttle lever */
+    /* * @ brief 스로틀 레버 */
     void setThrottle(double thrust);
     /** @brief Back/forth movement */
+    /* * brief 앞뒤 운동 */
     void setX(double x);
     /** @brief Left/right movement */
+    /* * brief 왼쪽 / 오른쪽 이동 */
     void setY(double y);
     /** @brief Wrist rotation */
+    /* * brief 손목 회전 */
     void setZ(double z);
     /** @brief Hat switch position */
+    /* * brief 모자 스위치 위치 */
     void setHat(int x, int y);
     /** @brief Clear keys */
+    /* * 간단한 키 지우기 */
     void clearKeys();
     /** @brief Joystick keys, as labeled on the joystick */
+    /* * brief 조이스틱 키, 조이스틱에 표시된대로 */
     void buttonStateChanged(const int key, const bool pressed);
     /** @brief Update status string */
+    /* * 업데이트 상태 문자열 */
     void updateStatus(const QString& status);
 
 protected slots:
@@ -94,11 +113,12 @@ private slots:
 
 protected:
     /** @brief UI change event */
+    /* * 간단한 UI 변경 이벤트 */
     virtual void changeEvent(QEvent *e);
 
 private:
     Ui::JoystickWidget *m_ui;
-    JoystickInput* joystick;  ///< Reference to the joystick
+    JoystickInput* joystick;  ///< Reference to the joystick// / <조이스틱에 대한 참조
 
     int m_buttonStates[64];
 
