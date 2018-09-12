@@ -111,6 +111,7 @@ void QGCMAVLinkLogPlayer::positionSliderReleased()
 void QGCMAVLinkLogPlayer::positionSliderPressed()
 {
     //Deactivate signals here
+    // 여기에서 신호를 비활성화하십시오.
     m_sliderDown = true;
 
 }
@@ -132,6 +133,7 @@ QGCMAVLinkLogPlayer::~QGCMAVLinkLogPlayer()
 void QGCMAVLinkLogPlayer::storeSettings()
 {
     // Nothing to store
+    // 저장할 내용이 없습니다.
 }
 
 
@@ -142,6 +144,7 @@ void QGCMAVLinkLogPlayer::loadLogButtonClicked()
         if (m_logLink)
         {
             //Stop the mavlink, schedule for deletion
+            // mavlink를 중지하고, 삭제 일정을 잡습니다.
             if (m_logLink->isRunning())
             {
                 m_logLink->stop();
@@ -181,6 +184,7 @@ void QGCMAVLinkLogPlayer::loadLogDialogAccepted()
     if (dialog->selectedFiles().size() == 0)
     {
         //No file selected/cancel clicked
+        // 파일이 선택되지 않았거나 클릭이 취소되었습니다.
         return;
     }
     QString fileName = dialog->selectedFiles().at(0);
@@ -246,6 +250,7 @@ void QGCMAVLinkLogPlayer::logLinkTerminated()
     if (m_logLink->toBeDeleted())
     {
         //Log loop has terminated with the intention of unloading the sim link
+        // 시뮬레이션 링크를 언로드하려는 목적으로 로그 루프가 종료되었습니다.
         m_logLink->deleteLater();
         m_logLink = 0;
         m_logLoaded = false;
