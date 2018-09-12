@@ -15,16 +15,19 @@ void UASActionsWidget::setupApmPlaneModes()
     ApmUiHelpers::addPlaneModes(ui.modeComboBox);
 
     // Hide arming buttons unless we the the ARM_REQUIRE parameter
+    // ARM_REQUIRE 매개 변수가 아니라면 활성화 버튼을 숨 깁니다.
     ui.armDisarmButton->setVisible(false);
     ui.armedStatuslabel->setVisible(false);
 
     // Setup configurable shortcut action
+    // 설정 가능한 바로 가기 동작 설정
     ui.opt1ModeButton->setText("FBW A");
     ui.opt2ModeButton->setText("FBW B");
     ui.opt3ModeButton->setText("Circle");
     ui.opt4ModeButton->setText("Manual");
 
     // Setup Action Combo Box
+    // Action 콤보 상자 설정
     ui.actionComboBox->clear();
     ui.actionComboBox->addItem("Loiter Unlimited", MAV_CMD_NAV_LOITER_UNLIM);
     ui.actionComboBox->addItem("Return To Launch", MAV_CMD_NAV_RETURN_TO_LAUNCH);
@@ -44,6 +47,7 @@ void UASActionsWidget::setupApmCopterModes()
     ui.armedStatuslabel->setVisible(true);
 
     // Setup configurable shortcut action
+    // 설정 가능한 바로 가기 동작 설정
     ui.opt1ModeButton->setText("Pos Hold");
     ui.opt2ModeButton->setText("Acro");
     ui.opt3ModeButton->setText("Alt Hold");
@@ -51,6 +55,7 @@ void UASActionsWidget::setupApmCopterModes()
     configureModeButtonEnableDisable();
 
     // Setup Action Combo Box
+    // Action 콤보 상자 설정
     ui.actionComboBox->clear();
     ui.actionComboBox->addItem("Loiter Unlimited", MAV_CMD_NAV_LOITER_UNLIM);
     ui.actionComboBox->addItem("Return To Launch", MAV_CMD_NAV_RETURN_TO_LAUNCH);
@@ -69,6 +74,7 @@ void UASActionsWidget::setupApmRoverModes()
     ui.armedStatuslabel->setVisible(false);
 
     // Setup configurable shortcut action
+    // 설정 가능한 바로 가기 동작 설정
     ui.opt1ModeButton->setText("Learn");
     ui.opt2ModeButton->setText("Steer");
     ui.opt3ModeButton->setText("Hold");
@@ -76,6 +82,7 @@ void UASActionsWidget::setupApmRoverModes()
     configureModeButtonEnableDisable();
 
     // Setup Action Combo Box
+    // Action 콤보 상자 설정
     ui.actionComboBox->clear();
     ui.actionComboBox->addItem("Loiter Unlimited", MAV_CMD_NAV_LOITER_UNLIM);
     ui.actionComboBox->addItem("Return To Launch", MAV_CMD_NAV_RETURN_TO_LAUNCH);
@@ -110,6 +117,7 @@ UASActionsWidget::UASActionsWidget(QWidget *parent) : QWidget(parent)
             this, SLOT(setAction()));
 
     // Mode Shortcut Buttons
+    // 모드 바로 가기 버튼
     connect(ui.autoModeButton, SIGNAL(clicked()),
             this, SLOT(setShortcutMode()));
     connect(ui.stabilizeModeButton, SIGNAL(clicked()),
@@ -139,6 +147,7 @@ void UASActionsWidget::activeUASSet(UASInterface *uas)
 
     if (m_uas) {
         // disconnect previous connections
+        // 이전 연결을 끊습니다.
         disconnect(m_uas->getWaypointManager(),SIGNAL(waypointEditableListChanged()),
                 this,SLOT(updateWaypointList()));
         disconnect(m_uas->getWaypointManager(),SIGNAL(currentWaypointChanged(quint16)),
@@ -155,13 +164,14 @@ void UASActionsWidget::activeUASSet(UASInterface *uas)
     }
 
     // enable the controls
+    // 컨트롤을 활성화합니다.
     ui.actionsGroupBox->setDisabled(false);
     ui.missionGroupBox->setDisabled(false);
     ui.altitudeTypeComboBox->addItem(tr("Relative (AGL)"), MAV_FRAME_GLOBAL_RELATIVE_ALT);
     ui.altitudeTypeComboBox->addItem(tr("Absolute (ASL)"), MAV_FRAME_GLOBAL);
     ui.altitudeTypeComboBox->addItem(tr("Terrain (AGL)"), MAV_FRAME_GLOBAL_TERRAIN_ALT);
     ui.shortcutGroupBox->setDisabled(false);
-    ui.altitudeDoubleSpinBox->setValue(50.0f); // set a default altitude
+    ui.altitudeDoubleSpinBox->setValue(50.0f); // set a default altitude// 기본 고도를 설정합니다.
 
     m_uas = static_cast<UAS*>(uas);
 
@@ -196,18 +206,20 @@ void UASActionsWidget::activeUASSet(UASInterface *uas)
             } else {
                 QLOG_WARN() << "UASActionWidget: Unsupported System Type" << uas->getSystemType();
             }
-            // Setup Final Connections
+            // Setup Final Connections            // 최종 연결 설정
             connect(ui.setModeButton, SIGNAL(clicked()),this, SLOT(setMode()));
 
         } break;
         case MAV_AUTOPILOT_PX4:
         {
             // [TODO] PX4 flight controller go here
+            // [TODO] PX4 비행 컨트롤러가 여기에 있습니다.
         }
         case MAV_AUTOPILOT_GENERIC:
         default:
         {
             // [TODO] Generic, and other flight controllers
+            // [TODO] 일반 및 기타 비행 컨트롤러
         }
 
         loadApmSettings();
@@ -257,6 +269,8 @@ void UASActionsWidget::armingChanged(bool state)
 
     //TODO:
     //Figure out why arm/disarm is in UAS.h and not part of the interface, and fix.
+    // TODO :
+    // arm / disarm이 UAS.h에 있고 인터페이스의 일부가 아닌 이유를 파악하고 수정합니다.
     if (state)
     {
         ui.armDisarmButton->setText("DISARM");
@@ -439,11 +453,13 @@ void UASActionsWidget::setAction()
 
         case MAV_AUTOPILOT_PX4: {
             // [TODO] PX4 flight controller go here
+            // [TODO] PX4 비행 컨트롤러가 여기에 있습니다.
         }
 
         case MAV_AUTOPILOT_GENERIC:
         default: {
             // [TODO] Generic, and other flight controllers here (or own sections as above)
+            // [TODO] 일반 및 기타 비행 컨트롤러 (또는 위와 같은 자체 섹션)
         }
     }
 }
@@ -464,7 +480,7 @@ int UASActionsWidget::modeChangeWarningBox(const QString& modeString)
     warnList << "Auto";
 
     if (!warnList.contains(modeString)){
-        return QMessageBox::Ok; // Only warn for modes in the list
+        return QMessageBox::Ok; // Only warn for modes in the list// 목록의 모드에 대해서만 경고합니다.
     }
 
     return QMessageBox::critical(this,tr("Warning"),tr("Please confirm you want to enter\n %1 mode").arg(modeString),
@@ -477,17 +493,18 @@ void UASActionsWidget::sendApmPlaneCommand(MAV_CMD command)
 
     case MAV_CMD_NAV_LOITER_UNLIM: {
         // Loiter around this MISSION an unlimited amount of time
+        // 이 MISSION 주변에는 시간 제한이 없습니다.
         Q_ASSERT(command == MAV_CMD_NAV_LOITER_UNLIM);
         QLOG_INFO() << "MAV_CMD_NAV_LOITER_UNLIM";
 
-        int confirm = 1;    // [TODO] Verify This is what ArduPlane Does.
+        int confirm = 1;    // [TODO] Verify This is what ArduPlane Does.// [TODO] 확인 ArduPlane이하는 일입니다.
         float param1 = 0.0; // Empty
         float param2 = 0.0; // Empty
-        float param3 = 0.0; // [NOT USED] Radius around MISSION, in meters. If positive loiter clockwise, else counter-clockwise
-        float param4 = 0.0; // Desired yaw angle.|
-        float param5 = 0.0; // Latitude
-        float param6 = 0.0; // Longitude
-        float param7 = 0.0; // Altitude
+        float param3 = 0.0; // [NOT USED] Radius around MISSION, in meters. If positive loiter clockwise, else counter-clockwise// [NOT USED] MISSION 주변의 반지름 (미터). 시계 방향으로 긍정적 인 경우, 그렇지 않으면 시계 반대 방향으로
+        float param4 = 0.0; // Desired yaw angle.|// 원하는 요 우각.
+        float param5 = 0.0; // Latitude// 위도
+        float param6 = 0.0; // Longitude// 경도
+        float param7 = 0.0; // Altitude// 고도
         int component = MAV_COMP_ID_PRIMARY;
         m_uas->executeCommand(command,
                               confirm, param1, param2, param3,
@@ -499,14 +516,14 @@ void UASActionsWidget::sendApmPlaneCommand(MAV_CMD command)
         Q_ASSERT(command == MAV_CMD_NAV_RETURN_TO_LAUNCH);
         QLOG_INFO() << "MAV_CMD_NAV_RETURN_TO_LAUNCH";
 
-        int confirm = 1;    // [TODO] Verify This is what ArduPlane Does.
+        int confirm = 1;    // [TODO] Verify This is what ArduPlane Does.// [TODO] 확인 ArduPlane이하는 일입니다.
         float param1 = 0.0; // Empty
         float param2 = 0.0; // Empty
-        float param3 = 0.0; // [NOT USED] Radius around MISSION, in meters. If positive loiter clockwise, else counter-clockwise
-        float param4 = 0.0; // Desired yaw angle.|
-        float param5 = 0.0; // Latitude
-        float param6 = 0.0; // Longitude
-        float param7 = 0.0; // Altitude
+        float param3 = 0.0; // [NOT USED] Radius around MISSION, in meters. If positive loiter clockwise, else counter-clockwise// [NOT USED] MISSION 주변의 반지름 (미터). 시계 방향으로 긍정적 인 경우, 그렇지 않으면 시계 반대 방향으로
+        float param4 = 0.0; // Desired yaw angle.|// 원하는 요 우각.
+        float param5 = 0.0; // Latitude// 위도
+        float param6 = 0.0; // Longitude// 경도
+        float param7 = 0.0; // Altitude// 고도
         int component = MAV_COMP_ID_PRIMARY;
         m_uas->executeCommand(command,
                               confirm, param1, param2, param3,
@@ -516,11 +533,13 @@ void UASActionsWidget::sendApmPlaneCommand(MAV_CMD command)
 
     case MAV_CMD_PREFLIGHT_CALIBRATION: {
         // Trigger calibration. This command will be only accepted if in pre-flight mode.
+        // 트리거를 조정합니다. 이 명령은 비행 전 모드에서만 사용 가능합니다.
         showPreflightCalibrationDialog();
     } break;
 
     case MAV_CMD_MISSION_START: {
         // start running a mission last_item:
+        // 임무를 시작하십시오 last_item :
         Q_ASSERT(command == MAV_CMD_MISSION_START);
         QLOG_INFO() << "MAV_CMD_MISSION_START";
 
@@ -528,8 +547,8 @@ void UASActionsWidget::sendApmPlaneCommand(MAV_CMD command)
             return;
 
         int confirm = 1;
-        float param1 = 1.0; // first_item: the first mission item to run
-        float param2 = 0.0; // the last mission item to run (after this item is run, the mission ends)|
+        float param1 = 1.0; // first_item: the first mission item to run// first_item : 실행할 첫 번째 작업 항목
+        float param2 = 0.0; // the last mission item to run (after this item is run, the mission ends)|// 실행할 마지막 임무 항목 (이 항목을 실행 한 후 임무가 종료 됨) |
         float param3 = 0.0; // | Empty|
         float param4 = 0.0; // | Empty|
         float param5 = 0.0; // | Empty|
@@ -544,6 +563,7 @@ void UASActionsWidget::sendApmPlaneCommand(MAV_CMD command)
 
     case MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN: {
         // Request the reboot or shutdown of system components.
+        // 시스템 구성 요소의 재부팅 또는 시스템 종료를 요청합니다.
         Q_ASSERT(command == MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN);
         QLOG_INFO() << "MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN";
 
@@ -551,8 +571,8 @@ void UASActionsWidget::sendApmPlaneCommand(MAV_CMD command)
             return;
 
         int confirm = 1;
-        float param1 = 1.0; // | 0: Do nothing for autopilot 1: Reboot autopilot, 2: Shutdown autopilot.
-        float param2 = 1.0; // | 0: Do nothing for onboard computer, 1: Reboot onboard computer, 2: Shutdown onboard computer.
+        float param1 = 1.0; // | 0: Do nothing for autopilot 1: Reboot autopilot, 2: Shutdown autopilot.// | 0 : 자동 조종 장치 1 : Reboot autopilot, 2 : Shutdown 자동 조종 장치에는 아무 것도하지 않습니다.
+        float param2 = 1.0; // | 0: Do nothing for onboard computer, 1: Reboot onboard computer, 2: Shutdown onboard computer.// | 0 : 온보드 컴퓨터에는 아무 작업도 수행하지 않습니다. 1 : 온보드 컴퓨터를 재부팅합니다. 2 : 온보드 컴퓨터를 종료합니다.
         float param3 = 0.0; // | Reserved|
         float param4 = 0.0; // | Reserved|
         float param5 = 0.0; // | Empty|
@@ -567,16 +587,17 @@ void UASActionsWidget::sendApmPlaneCommand(MAV_CMD command)
 
     case MAV_CMD_DO_DIGICAM_CONTROL: {
         // Take a photo
+        // 사진 찍기
         Q_ASSERT(command == MAV_CMD_DO_DIGICAM_CONTROL);
         QLOG_INFO() << "MAV_CMD_DO_DIGICAM_CONTROL";
 
         int confirm = 1;
-        float param1 = 0.0; // | Session control e.g. show/hide lens
-        float param2 = 0.0; // | Zoom's absolute position
-        float param3 = 0.0; // | Zooming step value to offset zoom from the current position
-        float param4 = 0.0; // | Focus Locking, Unlocking or Re-locking
-        float param5 = 1.0; // | Shooting Command
-        float param6 = 0.0; // | Command Identity
+        float param1 = 0.0; // | Session control e.g. show/hide lens// | 세션 제어 (예 : 렌즈 표시 / 숨기기)
+        float param2 = 0.0; // | Zoom's absolute position// | 줌의 절대 위치
+        float param3 = 0.0; // | Zooming step value to offset zoom from the current position// | 현재 위치에서 줌을 오프셋하는 단계 값 확대 / 축소
+        float param4 = 0.0; // | Focus Locking, Unlocking or Re-locking// | 초점 잠금, 잠금 해제 또는 잠금 해제
+        float param5 = 1.0; // | Shooting Command// | 사격 명령
+        float param6 = 0.0; // | Command Identity// | 명령 ID
         float param7 = 0.0; // | Empty|
         int component = MAV_COMP_ID_PRIMARY;
         m_uas->executeCommand(command,
@@ -596,17 +617,18 @@ void UASActionsWidget::sendApmCopterCommand(MAV_CMD command)
 
     case MAV_CMD_NAV_LOITER_UNLIM: {
         // Loiter around this MISSION an unlimited amount of time
+        // 이 MISSION 주변에는 시간 제한이 없습니다.
         Q_ASSERT(command == MAV_CMD_NAV_LOITER_UNLIM);
         QLOG_INFO() << "MAV_CMD_NAV_LOITER_UNLIM";
 
-        int confirm = 1;    // [TODO] Verify This is what ArduCopter Does.
+        int confirm = 1;    // [TODO] Verify This is what ArduCopter Does.// [TODO] ArduCopter가하는 일입니다.
         float param1 = 0.0; // Empty
         float param2 = 0.0; // Empty
-        float param3 = 0.0; // [NOT USED] Radius around MISSION, in meters. If positive loiter clockwise, else counter-clockwise
-        float param4 = 0.0; // Desired yaw angle.|
-        float param5 = 0.0; // Latitude
-        float param6 = 0.0; // Longitude
-        float param7 = 0.0; // Altitude
+        float param3 = 0.0; // [NOT USED] Radius around MISSION, in meters. If positive loiter clockwise, else counter-clockwise// [NOT USED] MISSION 주변의 반지름 (미터). 시계 방향으로 긍정적 인 경우, 그렇지 않으면 시계 반대 방향으로
+        float param4 = 0.0; // Desired yaw angle.|// 원하는 요 우각.
+        float param5 = 0.0; // Latitude// 위도
+        float param6 = 0.0; // Longitude// 경도
+        float param7 = 0.0; // Altitude// 고도
         int component = MAV_COMP_ID_PRIMARY;
         m_uas->executeCommand(command,
                               confirm, param1, param2, param3,
@@ -618,14 +640,14 @@ void UASActionsWidget::sendApmCopterCommand(MAV_CMD command)
         Q_ASSERT(command == MAV_CMD_NAV_RETURN_TO_LAUNCH);
         QLOG_INFO() << "MAV_CMD_NAV_RETURN_TO_LAUNCH";
 
-        int confirm = 1;    // [TODO] Verify This is what ArduCopter Does.
+        int confirm = 1;    // [TODO] Verify This is what ArduCopter Does.// [TODO] ArduCopter가하는 일입니다.
         float param1 = 0.0; // Empty
         float param2 = 0.0; // Empty
-        float param3 = 0.0; // [NOT USED] Radius around MISSION, in meters. If positive loiter clockwise, else counter-clockwise
-        float param4 = 0.0; // Desired yaw angle.|
-        float param5 = 0.0; // Latitude
-        float param6 = 0.0; // Longitude
-        float param7 = 0.0; // Altitude
+        float param3 = 0.0; // [NOT USED] Radius around MISSION, in meters. If positive loiter clockwise, else counter-clockwise// [NOT USED] MISSION 주변의 반지름 (미터). 시계 방향으로 긍정적 인 경우, 그렇지 않으면 시계 반대 방향으로
+        float param4 = 0.0; // Desired yaw angle.|// 원하는 요 우각.
+        float param5 = 0.0; // Latitude// 위도
+        float param6 = 0.0; // Longitude// 경도
+        float param7 = 0.0; // Altitude// 고도
         int component = MAV_COMP_ID_PRIMARY;
         m_uas->executeCommand(command,
                               confirm, param1, param2, param3,
@@ -635,11 +657,13 @@ void UASActionsWidget::sendApmCopterCommand(MAV_CMD command)
 
     case MAV_CMD_PREFLIGHT_CALIBRATION: {
         // Trigger calibration. This command will be only accepted if in pre-flight mode.
+        // 트리거를 조정합니다. 이 명령은 비행 전 모드에서만 사용 가능합니다.
         showPreflightCalibrationDialog();
     } break;
 
     case MAV_CMD_MISSION_START: {
         // start running a mission last_item:
+        // 임무를 시작하십시오 last_item :
         Q_ASSERT(command == MAV_CMD_MISSION_START);
         QLOG_INFO() << "MAV_CMD_MISSION_START";
 
@@ -647,8 +671,8 @@ void UASActionsWidget::sendApmCopterCommand(MAV_CMD command)
             return;
 
         int confirm = 1;
-        float param1 = 1.0; // first_item: the first mission item to run
-        float param2 = 0.0; // the last mission item to run (after this item is run, the mission ends)|
+        float param1 = 1.0; // first_item: the first mission item to run// first_item : 실행할 첫 번째 작업 항목
+        float param2 = 0.0; // the last mission item to run (after this item is run, the mission ends)|// 실행할 마지막 임무 항목 (이 항목을 실행 한 후 임무가 종료 됨) |
         float param3 = 0.0; // | Empty|
         float param4 = 0.0; // | Empty|
         float param5 = 0.0; // | Empty|
@@ -662,7 +686,7 @@ void UASActionsWidget::sendApmCopterCommand(MAV_CMD command)
     } break;
 
     case MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN: {
-        // Request the reboot or shutdown of system components.
+        // Request the reboot or shutdown of system components.        // 시스템 구성 요소의 재부팅 또는 시스템 종료를 요청합니다.
         Q_ASSERT(command == MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN);
         QLOG_INFO() << "MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN";
 
@@ -670,8 +694,8 @@ void UASActionsWidget::sendApmCopterCommand(MAV_CMD command)
             return;
 
         int confirm = 1;
-        float param1 = 1.0; // | 0: Do nothing for autopilot 1: Reboot autopilot, 2: Shutdown autopilot.
-        float param2 = 1.0; // | 0: Do nothing for onboard computer, 1: Reboot onboard computer, 2: Shutdown onboard computer.
+        float param1 = 1.0; // | 0: Do nothing for autopilot 1: Reboot autopilot, 2: Shutdown autopilot.// | 0 : 자동 조종 장치 1 : Reboot autopilot, 2 : Shutdown 자동 조종 장치에는 아무 것도하지 않습니다.
+        float param2 = 1.0; // | 0: Do nothing for onboard computer, 1: Reboot onboard computer, 2: Shutdown onboard computer.// | 0 : 온보드 컴퓨터에는 아무 작업도 수행하지 않습니다. 1 : 온보드 컴퓨터를 재부팅합니다. 2 : 온보드 컴퓨터를 종료합니다.
         float param3 = 0.0; // | Reserved|
         float param4 = 0.0; // | Reserved|
         float param5 = 0.0; // | Empty|
@@ -686,16 +710,17 @@ void UASActionsWidget::sendApmCopterCommand(MAV_CMD command)
 
     case MAV_CMD_DO_DIGICAM_CONTROL: {
         // Take a photo
+        // 사진 찍기
         Q_ASSERT(command == MAV_CMD_DO_DIGICAM_CONTROL);
         QLOG_INFO() << "MAV_CMD_DO_DIGICAM_CONTROL";
 
         int confirm = 1;
-        float param1 = 0.0; // | Session control e.g. show/hide lens
-        float param2 = 0.0; // | Zoom's absolute position
-        float param3 = 0.0; // | Zooming step value to offset zoom from the current position
-        float param4 = 0.0; // | Focus Locking, Unlocking or Re-locking
-        float param5 = 1.0; // | Shooting Command
-        float param6 = 0.0; // | Command Identity
+        float param1 = 0.0; // | Session control e.g. show/hide lens // | 세션 제어 (예 : 렌즈 표시 / 숨기기)
+        float param2 = 0.0; // | Zoom's absolute position// | 줌의 절대 위치
+        float param3 = 0.0; // | Zooming step value to offset zoom from the current position// | 현재 위치에서 줌을 오프셋하는 단계 값 확대 / 축소
+        float param4 = 0.0; // | Focus Locking, Unlocking or Re-locking// | 초점 잠금, 잠금 해제 또는 잠금 해제
+        float param5 = 1.0; // | Shooting Command// | 사격 명령
+        float param6 = 0.0; // | Command Identity// | 명령 ID
         float param7 = 0.0; // | Empty|
         int component = MAV_COMP_ID_PRIMARY;
         m_uas->executeCommand(command,
@@ -719,14 +744,14 @@ void UASActionsWidget::sendApmRoverCommand(MAV_CMD command)
         Q_ASSERT(command == MAV_CMD_NAV_RETURN_TO_LAUNCH);
         QLOG_INFO() << "MAV_CMD_NAV_RETURN_TO_LAUNCH";
 
-        int confirm = 1;    // [TODO] Verify This is what ArduRover Does.
+        int confirm = 1;    // [TODO] Verify This is what ArduRover Does.// [TODO] 확인 ArduRover가하는 일입니다.
         float param1 = 0.0; // Empty
         float param2 = 0.0; // Empty
-        float param3 = 0.0; // [NOT USED] Radius around MISSION, in meters. If positive loiter clockwise, else counter-clockwise
-        float param4 = 0.0; // Desired yaw angle.|
-        float param5 = 0.0; // Latitude
-        float param6 = 0.0; // Longitude
-        float param7 = 0.0; // Altitude
+        float param3 = 0.0; // [NOT USED] Radius around MISSION, in meters. If positive loiter clockwise, else counter-clockwise// [NOT USED] MISSION 주변의 반지름 (미터). 시계 방향으로 긍정적 인 경우, 그렇지 않으면 시계 반대 방향으로
+        float param4 = 0.0; // Desired yaw angle.|// 원하는 요 우각.
+        float param5 = 0.0; // Latitude// 위도
+        float param6 = 0.0; // Longitude// 경도
+        float param7 = 0.0; // Altitude// 고도
         int component = MAV_COMP_ID_PRIMARY;
         m_uas->executeCommand(command,
                               confirm, param1, param2, param3,
@@ -736,11 +761,13 @@ void UASActionsWidget::sendApmRoverCommand(MAV_CMD command)
 
     case MAV_CMD_PREFLIGHT_CALIBRATION: {
         // Trigger calibration. This command will be only accepted if in pre-flight mode.
+        // 트리거를 조정합니다. 이 명령은 비행 전 모드에서만 사용 가능합니다.
         showPreflightCalibrationDialog();
     } break;
 
     case MAV_CMD_MISSION_START: {
         // start running a mission last_item:
+        // 임무를 시작하십시오 last_item :
         Q_ASSERT(command == MAV_CMD_MISSION_START);
         QLOG_INFO() << "MAV_CMD_MISSION_START";
 
@@ -748,8 +775,8 @@ void UASActionsWidget::sendApmRoverCommand(MAV_CMD command)
             return;
 
         int confirm = 1;
-        float param1 = 1.0; // first_item: the first mission item to run
-        float param2 = 0.0; // the last mission item to run (after this item is run, the mission ends)|
+        float param1 = 1.0; // first_item: the first mission item to run// first_item : 실행할 첫 번째 작업 항목
+        float param2 = 0.0; // the last mission item to run (after this item is run, the mission ends)|// 실행할 마지막 임무 항목 (이 항목을 실행 한 후 임무가 종료 됨) |
         float param3 = 0.0; // | Empty|
         float param4 = 0.0; // | Empty|
         float param5 = 0.0; // | Empty|
@@ -764,6 +791,7 @@ void UASActionsWidget::sendApmRoverCommand(MAV_CMD command)
 
     case MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN: {
         // Request the reboot or shutdown of system components.
+        // 시스템 구성 요소의 재부팅 또는 시스템 종료를 요청합니다.
         Q_ASSERT(command == MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN);
         QLOG_INFO() << "MAV_CMD_PREFLIGHT_REBOOT_SHUTDOWN";
 
@@ -771,8 +799,8 @@ void UASActionsWidget::sendApmRoverCommand(MAV_CMD command)
             return;
 
         int confirm = 1;
-        float param1 = 1.0; // | 0: Do nothing for autopilot 1: Reboot autopilot, 2: Shutdown autopilot.
-        float param2 = 1.0; // | 0: Do nothing for onboard computer, 1: Reboot onboard computer, 2: Shutdown onboard computer.
+        float param1 = 1.0; // | 0: Do nothing for autopilot 1: Reboot autopilot, 2: Shutdown autopilot.// | 0 : 자동 조종 장치 1 : Reboot autopilot, 2 : Shutdown 자동 조종 장치에는 아무 것도하지 않습니다.
+        float param2 = 1.0; // | 0: Do nothing for onboard computer, 1: Reboot onboard computer, 2: Shutdown onboard computer.// | 0 : 자동 조종 장치 1 : Reboot autopilot, 2 : Shutdown 자동 조종 장치에는 아무 것도하지 않습니다.
         float param3 = 0.0; // | Reserved|
         float param4 = 0.0; // | Reserved|
         float param5 = 0.0; // | Empty|
@@ -787,16 +815,17 @@ void UASActionsWidget::sendApmRoverCommand(MAV_CMD command)
 
     case MAV_CMD_DO_DIGICAM_CONTROL: {
         // Take a photo
+        // 사진 찍기
         Q_ASSERT(command == MAV_CMD_DO_DIGICAM_CONTROL);
         QLOG_INFO() << "MAV_CMD_DO_DIGICAM_CONTROL";
 
         int confirm = 1;
-        float param1 = 0.0; // | Session control e.g. show/hide lens
-        float param2 = 0.0; // | Zoom's absolute position
-        float param3 = 0.0; // | Zooming step value to offset zoom from the current position
-        float param4 = 0.0; // | Focus Locking, Unlocking or Re-locking
-        float param5 = 1.0; // | Shooting Command
-        float param6 = 0.0; // | Command Identity
+        float param1 = 0.0; // | Session control e.g. show/hide lens// | 세션 제어 (예 : 렌즈 표시 / 숨기기)
+        float param2 = 0.0; // | Zoom's absolute position// | 줌의 절대 위치
+        float param3 = 0.0; // | Zooming step value to offset zoom from the current position// | 현재 위치에서 줌을 오프셋하는 단계 값 확대 / 축소
+        float param4 = 0.0; // | Focus Locking, Unlocking or Re-locking// | 초점 잠금, 잠금 해제 또는 잠금 해제
+        float param5 = 1.0; // | Shooting Command// | 사격 명령
+        float param6 = 0.0; // | Command Identity// | 명령 ID
         float param7 = 0.0; // | Empty|
         int component = MAV_COMP_ID_PRIMARY;
         m_uas->executeCommand(command,
@@ -828,11 +857,13 @@ void UASActionsWidget::setRTLMode()
 
         case MAV_AUTOPILOT_PX4: {
             // [TODO] PX4 flight controller go here
+            // [TODO] PX4 비행 컨트롤러가 여기에 있습니다.
         }
 
         case MAV_AUTOPILOT_GENERIC:
         default: {
             // [TODO] Generic, and other flight controllers here (or own sections as above)
+            // [TODO] 일반 및 기타 비행 컨트롤러 (또는 위와 같은 자체 섹션)
         }
     }
 }
@@ -862,6 +893,7 @@ void UASActionsWidget::parameterChanged(int uas, int component, int parameterCou
 
     } else if (parameterName.contains("ARMING_REQUIRE")){
         // Hides Display ARM button based setting
+        // Hide ARM 버튼 기반 설정 표시
         int arming_required = value.toBool();
 
         ui.armDisarmButton->setVisible(static_cast<bool>(arming_required));
