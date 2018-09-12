@@ -78,7 +78,7 @@ private:
 private:
     Ui::serialSettings ui;
     int m_linkId;
-    bool userConfigured; ///< Switch to detect if current values are user-selected and shouldn't be overriden
+    bool userConfigured; ///< Switch to detect if current values are user-selected and shouldn't be overriden// / <현재 값이 사용자 선택이고 재정의되어서는 안되는 경우 검색합니다.
     QAction* action;
     QTimer* portCheckTimer;
 
