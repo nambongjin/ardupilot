@@ -90,6 +90,7 @@ bool AutoUpdateDialog::startDownload(const QString& url, const QString& filename
         }
     }
     // Always must remove file before proceeding
+    // 계속하기 전에 항상 파일을 제거해야합니다.
     QFile::remove(targetDir + filename);
 
     m_targetFile = new QFile(targetDir + "/" + filename);
@@ -208,6 +209,7 @@ void AutoUpdateDialog::httpFinished()
 void AutoUpdateDialog::executeDownloadedFile()
 {
 // [TODO] need to check the extension for .dmg or .pkg
+// [TODO] .dmg 또는 .pkg의 확장자를 확인해야합니다.
 #ifdef Q_OS_MACX
     QString filelocation = m_targetFile->fileName();
     QProcess *process = new QProcess();
@@ -251,6 +253,10 @@ void AutoUpdateDialog::httpReadyRead()
     // We read all of its new data and write it into the file.
     // That way we use less RAM than when reading it at the finished()
     // signal of the QNetworkReply
+    // 이 슬롯은 QNetworkReply에 새로운 데이터가있을 때마다 호출됩니다.
+    // 모든 새로운 데이터를 읽고 파일에 씁니다.
+    // 완성 된 ()에서 그것을 읽을 때보 다 적은 RAM을 사용하는 방식으로
+    // QNetworkReply의 신호
     if (m_targetFile){
         m_targetFile->write(m_networkReply->readAll());
     }
