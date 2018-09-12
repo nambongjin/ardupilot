@@ -20,6 +20,7 @@ QGCSettingsWidget::QGCSettingsWidget(QWidget *parent, Qt::WindowFlags flags) :
     ui->setupUi(this);
 
     // Add all protocols
+    // 모든 프로토콜 추가
     /*QList<ProtocolInterface*> protocols = LinkManager::instance()->getProtocols();
     foreach (ProtocolInterface* protocol, protocols) {
         MAVLinkProtocol* mavlink = dynamic_cast<MAVLinkProtocol*>(protocol);
@@ -42,24 +43,29 @@ void QGCSettingsWidget::showEvent(QShowEvent *evt)
     {
         m_init = true;
         // Audio preferences
+        // 오디오 환경 설정
         ui->audioMuteCheckBox->setChecked(GAudioOutput::instance()->isMuted());
         connect(ui->audioMuteCheckBox, SIGNAL(toggled(bool)), GAudioOutput::instance(), SLOT(mute(bool)));
         connect(GAudioOutput::instance(), SIGNAL(mutedChanged(bool)), ui->audioMuteCheckBox, SLOT(setChecked(bool)));
 
         // Reconnect
+        // 다시 연결
         ui->reconnectCheckBox->setChecked(MainWindow::instance()->autoReconnectEnabled());
         connect(ui->reconnectCheckBox, SIGNAL(clicked(bool)), MainWindow::instance(), SLOT(enableAutoReconnect(bool)));
 
         // Low power mode
+        // 저전력 모드
         ui->lowPowerCheckBox->setChecked(MainWindow::instance()->lowPowerModeEnabled());
         connect(ui->lowPowerCheckBox, SIGNAL(clicked(bool)), MainWindow::instance(), SLOT(enableLowPowerMode(bool)));
 
         // Automatic use of system Proxies
+        // 시스템 프록시의 자동 사용
         ui->autoProxyCheckBox->setChecked(MainWindow::instance()->autoProxyModeEnabled());
         connect(ui->autoProxyCheckBox, SIGNAL(clicked(bool)), MainWindow::instance(), SLOT(enableAutoProxyMode(bool)));
         connect(MainWindow::instance(), SIGNAL(autoProxyChanged(bool)), ui->autoProxyCheckBox, SLOT(setChecked(bool)));
 
         //Dock widget title bars
+        // 위젯 제목 막대 고정
         ui->titleBarCheckBox->setChecked(MainWindow::instance()->dockWidgetTitleBarsEnabled());
         connect(ui->titleBarCheckBox,SIGNAL(clicked(bool)),MainWindow::instance(),SLOT(enableDockWidgetTitleBars(bool)));
 
@@ -83,6 +89,7 @@ void QGCSettingsWidget::showEvent(QShowEvent *evt)
         connect(ui->missionsSetButton, SIGNAL(clicked()), this, SLOT(setMissionsDir()));
 
         // Style
+        // 스타일
         MainWindow::QGC_MAINWINDOW_STYLE style = (MainWindow::QGC_MAINWINDOW_STYLE)MainWindow::instance()->getStyle();
         switch (style) {
         case MainWindow::QGC_MAINWINDOW_STYLE_NATIVE:
