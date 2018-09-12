@@ -63,22 +63,29 @@ WaypointList::WaypointList(QWidget *parent, UASInterface* uas) :
 
     // ADD WAYPOINT
     // Connect add action, set right button icon and connect action to this class
+    // ADD WAYPOINT
+    // 추가 작업 연결, 오른쪽 버튼 아이콘 설정 및이 클래스에 작업 연결
     connect(m_ui->addButton, SIGNAL(clicked()), m_ui->actionAddWaypoint, SIGNAL(triggered()));
     connect(m_ui->actionAddWaypoint, SIGNAL(triggered()), this, SLOT(addEditable()));
 
     // ADD WAYPOINT AT CURRENT POSITION
+    // 현재 위치에 구간 추가
     connect(m_ui->positionAddButton, SIGNAL(clicked()), this, SLOT(addCurrentPositionWaypoint()));
 
     // SEND WAYPOINTS
+    // 통과 지점 보내기
     connect(m_ui->transmitButton, SIGNAL(clicked()), this, SLOT(transmit()));
 
     // DELETE ALL WAYPOINTS
+    // 모든 길 삭제
     connect(m_ui->clearWPListButton, SIGNAL(clicked()), this, SLOT(clearWPWidget()));
 
     // REQUEST WAYPOINTS
+    // 길 요청
     connect(m_ui->readButton, SIGNAL(clicked()), this, SLOT(read()));
 
     // SAVE/LOAD WAYPOINTS
+    // SAVE / LOAD WAYPOINTS
     connect(m_ui->saveButton, SIGNAL(clicked()), this, SLOT(saveWaypoints()));
     connect(m_ui->loadButton, SIGNAL(clicked()), this, SLOT(loadWaypoints()));
 
@@ -98,6 +105,7 @@ WaypointList::WaypointList(QWidget *parent, UASInterface* uas) :
 
 
     // SET UAS AFTER ALL SIGNALS/SLOTS ARE CONNECTED
+        // 모든 신호 / 슬롯이 연결되면 UAS가 설정됩니다.
     if (uas)
     {
         WPM = uas->getWaypointManager();
@@ -106,13 +114,15 @@ WaypointList::WaypointList(QWidget *parent, UASInterface* uas) :
     else
     {
         // Hide buttons, which don't make sense without valid UAS
+            // 유효한 UAS 없이는 이해할 수없는 버튼 숨기기
         m_ui->positionAddButton->hide();
         m_ui->transmitButton->hide();
         m_ui->readButton->hide();
         m_ui->refreshButton->hide();
-        //FIXME: The whole "Onboard Waypoints"-tab should be hidden, instead of "refresh" button       
+        //FIXME: The whole "Onboard Waypoints"-tab should be hidden, instead of "refresh" button
+           // FIXME : '새로 고침'대신 '온보드 Waypoints'탭 전체가 숨겨져 있어야합니다.       
         UnconnectedUASInfoWidget* inf = new UnconnectedUASInfoWidget(this);
-        viewOnlyListLayout->insertWidget(0, inf); //insert a "NO UAV" info into the Onboard Tab
+        viewOnlyListLayout->insertWidget(0, inf); //insert a "NO UAV" info into the Onboard Tab// "NO UAV"정보를 온보드 탭에 삽입하십시오.
         showOfflineWarning = true;
         WPM = new UASWaypointManager(NULL);
     }
@@ -242,6 +252,7 @@ void WaypointList::addEditable()
         if (waypoints.size() > 0)
         {
             // Create waypoint with last frame
+            // 마지막 프레임으로 웨이 포인트를 만듭니다.
             Waypoint *last = waypoints.at(waypoints.size()-1);
             wp = new Waypoint(0, last->getX(), last->getY(), last->getZ(), last->getParam1(), last->getParam2(), last->getParam3(), last->getParam4(),
                               last->getAutoContinue(), false, last->getFrame(), last->getAction());
@@ -302,6 +313,7 @@ void WaypointList::addCurrentPositionWaypoint()
                 yawGlobal = last->getYaw();
             }
             // Create global frame waypoint per default
+              // MAV가 연결되었지만 알 수없는 위치에 기본 웨이 포인트 추가
             wp = new Waypoint(0, uas->getLatitude(), uas->getLongitude(), uas->getAltitude(), 0, acceptanceRadiusGlobal, holdTime, yawGlobal, true, false, MAV_FRAME_GLOBAL_RELATIVE_ALT, MAV_CMD_NAV_WAYPOINT);
             WPM->addWaypointEditable(wp);
             updateStatusLabel(tr("Added GLOBAL, ALTITUDE OVER GROUND waypoint"));
@@ -316,6 +328,7 @@ void WaypointList::addCurrentPositionWaypoint()
                 holdTime = last->getHoldTime();
             }
             // Create local frame waypoint as second option
+            // 사용할 수있는 UAV가 없으므로 첫 번째 기본 웨이 포인트를 만듭니다.
             wp = new Waypoint(0, uas->getLocalX(), uas->getLocalY(), uas->getLocalZ(), uas->getYaw(), acceptanceRadiusLocal, holdTime, 0.0, true, false, MAV_FRAME_LOCAL_NED, MAV_CMD_NAV_WAYPOINT);
             WPM->addWaypointEditable(wp);
             updateStatusLabel(tr("Added LOCAL (NED) waypoint"));
@@ -331,12 +344,15 @@ void WaypointList::addCurrentPositionWaypoint()
 void WaypointList::updateStatusLabel(const QString &string)
 {
     // Status label in write widget
+    // 쓰기 위젯의 상태 라벨
     m_ui->statusLabel->setText(string);
     // Status label in read only widget
+    // 읽기 전용 위젯의 상태 라벨
     m_ui->viewStatusLabel->setText(string);
 }
 
 // Request UASWaypointManager to send the SET_CURRENT message to UAV
+// UAV에 SET_CURRENT 메시지를 보내도록 UASWaypointManager에 요청합니다.
 void WaypointList::changeCurrentWaypoint(quint16 seq)
 {
     if (uas)
@@ -346,6 +362,7 @@ void WaypointList::changeCurrentWaypoint(quint16 seq)
 }
 
 // Request UASWaypointManager to set the new "current" and make sure all other waypoints are not "current"
+// UASWaypointManager에 새로운 "현재"를 설정하고 다른 모든 웨이 포인트가 "현재"가 아닌지 확인하도록 요청하십시오.
 void WaypointList::currentWaypointEditableChanged(quint16 seq)
 {
         WPM->setCurrentEditable(seq);
@@ -370,6 +387,7 @@ void WaypointList::currentWaypointEditableChanged(quint16 seq)
 }
 
 // Update waypointViews to correctly indicate the new current waypoint
+// 새 현재 웨이 포인트를 올바르게 나타내도록 웨이 포인트 뷰 업데이트
 void WaypointList::currentWaypointViewOnlyChanged(quint16 seq)
 {
     const QVector<Waypoint *> &waypoints = WPM->getWaypointViewOnlyList();
@@ -409,6 +427,7 @@ void WaypointList::updateWaypointViewOnly(int uas, Waypoint* wp)
 void WaypointList::waypointViewOnlyListChanged()
 {
     // Prevent updates to prevent visual flicker
+    // 시각적 깜박 거림을 막기 위해 업데이트를 방지합니다.
     this->setUpdatesEnabled(false);
     const QVector<Waypoint *> &waypoints = WPM->getWaypointViewOnlyList();
 
@@ -434,6 +453,7 @@ void WaypointList::waypointViewOnlyListChanged()
     }
 
     // then add/update the views for each waypoint in the list
+    // 목록의 각 웨이 포인트에 대한 뷰를 추가 / 업데이트합니다.
     for(int i = 0; i < waypoints.size(); i++) {
         Waypoint *wp = waypoints[i];
         if (!wpViewOnlyViews.contains(wp)) {
@@ -445,12 +465,13 @@ void WaypointList::waypointViewOnlyListChanged()
         WaypointViewOnlyView *wpv = wpViewOnlyViews.value(wp);
 
         //check if ordering has changed
+        // 주문이 변경되었는지 확인
         if(viewOnlyListLayout->itemAt(i)->widget() != wpv) {
             viewOnlyListLayout->removeWidget(wpv);
             viewOnlyListLayout->insertWidget(i, wpv);
         }
 
-        wpv->updateValues();    // update the values of the ui elements in the view
+        wpv->updateValues();    // update the values of the ui elements in the view// 뷰의 ui 요소 값을 업데이트합니다.
     }
     this->setUpdatesEnabled(true);
     loadFileGlobalWP = false;
@@ -461,6 +482,7 @@ void WaypointList::waypointViewOnlyListChanged()
 void WaypointList::waypointEditableListChanged()
 {
     // Prevent updates to prevent visual flicker
+    // 시각적 깜박 거림을 막기 위해 업데이트를 방지합니다.
     this->setUpdatesEnabled(false);
     const QVector<Waypoint *> &waypoints = WPM->getWaypointEditableList();
 
@@ -486,6 +508,7 @@ void WaypointList::waypointEditableListChanged()
     }
 
     // then add/update the views for each waypoint in the list
+    // 목록의 각 웨이 포인트에 대한 뷰를 추가 / 업데이트합니다.
     for(int i = 0; i < waypoints.size(); i++) {
         Waypoint *wp = waypoints[i];
         if (!wpEditableViews.contains(wp)) {
@@ -501,12 +524,13 @@ void WaypointList::waypointEditableListChanged()
         WaypointEditableView *wpv = wpEditableViews.value(wp);
 
         //check if ordering has changed
+        // 주문이 변경되었는지 확인
         if(editableListLayout->itemAt(i)->widget() != wpv) {
             editableListLayout->removeWidget(wpv);
             editableListLayout->insertWidget(i, wpv);
         }
 
-        wpv->updateValues();    // update the values of the ui elements in the view
+        wpv->updateValues();    // update the values of the ui elements in the view// 뷰의 ui 요소 값을 업데이트합니다.
     }
     this->setUpdatesEnabled(true);
     loadFileGlobalWP = false;
@@ -519,6 +543,7 @@ void WaypointList::moveUp(Waypoint* wp)
     const QVector<Waypoint *> &waypoints = WPM->getWaypointEditableList();
 
     //get the current position of wp in the local storage
+    // 로컬 저장소에서 wp의 현재 위치를 가져옵니다.
     int i;
     for (i = 0; i < waypoints.size(); i++) {
         if (waypoints[i] == wp)
@@ -526,6 +551,7 @@ void WaypointList::moveUp(Waypoint* wp)
     }
 
     // if wp was found and its not the first entry, move it
+    // wp가 발견되었고 첫 번째 항목이 아니라면 그것을 이동하십시오.
     if (i < waypoints.size() && i > 0) {
         WPM->moveWaypoint(i, i-1);
     }
@@ -536,6 +562,7 @@ void WaypointList::moveDown(Waypoint* wp)
     const QVector<Waypoint *> &waypoints = WPM->getWaypointEditableList();
 
     //get the current position of wp in the local storage
+    // 로컬 저장소에서 wp의 현재 위치를 가져옵니다.
     int i;
     for (i = 0; i < waypoints.size(); i++) {
         if (waypoints[i] == wp)
@@ -543,6 +570,7 @@ void WaypointList::moveDown(Waypoint* wp)
     }
 
     // if wp was found and its not the last entry, move it
+    // wp가 발견되었고 마지막 항목이 아니라면 그것을 이동하십시오.
     if (i < waypoints.size()-1) {
         WPM->moveWaypoint(i, i+1);
     }

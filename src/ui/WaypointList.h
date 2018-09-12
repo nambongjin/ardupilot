@@ -67,41 +67,58 @@ public slots:
 
     //Waypoint list operations
     /** @brief Save the local waypoint list to a file */
+    /* * @brief 로컬 웨이 포인트리스트를 파일에 저장합니다. */
     void saveWaypoints();
     void saveWaypointsDialogAccepted();
     /** @brief Load a waypoint list from a file */
+    /* * @brief 파일에서 웨이 포인트 목록로드 */
     void loadWaypoints();
     void loadWaypointsDialogAccepted();
     /** @brief Transmit the local waypoint list to the UAS */
+    /* * @ brief UAS에 로컬 웨이 포인트 목록 전송 */
     void transmit();
     /** @brief Read the remote waypoint list to both tabs */
+    /* * brief 원격 웨이 포인트 목록을 양쪽 탭 */
     void read();
     /** @brief Read the remote waypoint list to "view"-tab only*/
+    /* * @brief 원격 웨이 포인트 목록을 "보기"로 읽기 -tab 만 */
     void refresh();
     /** @brief Add a waypoint to "edit"-tab */
+    /* * brief "편집"에 웨이 포인트 추가 -tab */
     void addEditable();
     /** @brief Add a waypoint to "edit"-tab on current MAV position or on generic position (home) */
+    /* * brief 현재 MAV 위치 또는 일반 위치 (집)에 "편집"- 탭에 웨이 포인트 추가 */
     void addEditable(bool onCurrentPosition);
     /** @brief Add a waypoint at the current MAV position */
+    /* * brief 현재 MAV 위치에 웨이 포인트 추가 */
     void addCurrentPositionWaypoint();
     /** @brief Add a waypoint by mouse click over the map */
+    /* * @ brief지도 위에서 마우스로 클릭하여 웨이 포인트 추가 */
 
     //Update events
     /** @brief sets statusLabel string */
+    /* * @ brief는 statusLabel 문자열을 설정합니다. */
     void updateStatusLabel(const QString &string);
     /** @brief The user wants to change the current waypoint */
+    /* * brief 사용자가 현재 웨이 포인트를 변경하려고합니다 */
     void changeCurrentWaypoint(quint16 seq);
     /** @brief Current waypoint in edit-tab was changed, so the list must be updated (to contain only one waypoint checked as "current")  */
+    /* * @brief 편집 탭의 현재 웨이 포인트가 변경되어 목록을 업데이트해야합니다 ( "현재"로 표시된 웨이 포인트 하나만 포함)   */
     void currentWaypointEditableChanged(quint16 seq);
     /** @brief Current waypoint on UAV was changed, update view-tab  */
+    /* * brief UAV의 현재 웨이 포인트가 변경되어 뷰 탭 업데이트   */
     void currentWaypointViewOnlyChanged(quint16 seq);
     /** @brief The waypoint manager informs that one editable waypoint was changed */
+    /* * / brief 웨이 포인트 매니저는 하나의 편집 가능한 웨이 포인트가 변경되었음을 알려줍니다 */
     void updateWaypointEditable(int uas, Waypoint* wp);
     /** @brief The waypoint manager informs that one viewonly waypoint was changed */
+    /* * brief 웨이 포인트 매니저는 하나의 뷰 전용 웨이 포인트가 변경되었음을 알립니다. */
     void updateWaypointViewOnly(int uas, Waypoint* wp);
     /** @brief The waypoint manager informs that the editable waypoint list was changed */
+    /* * / brief 웨이 포인트 매니저는 편집 가능한 웨이 포인트리스트가 변경되었음을 알립니다. */
     void waypointEditableListChanged(void);
     /** @brief The waypoint manager informs that the waypoint list on the MAV was changed */
+    /* * brief 웨이 포인트 매니저는 MAV의 웨이 포인트리스트가 변경되었음을 알립니다. */
     void waypointViewOnlyListChanged(void);
 
 //    /** @brief The MapWidget informs that a waypoint global was changed on the map */
