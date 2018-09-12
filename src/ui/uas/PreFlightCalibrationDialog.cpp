@@ -43,26 +43,32 @@ void PreFlightCalibrationDialog::activeUASSet(UASInterface *uasInterface)
     if (m_uasInterface)
     {
         // Disconnect any signals to current uas
+        // 모든 신호를 현재의 uas에 연결 해제합니다.
     }
 
     m_uasInterface = uasInterface;
 
     if (m_uasInterface){
         // Connect any signals to new active uas
+        // 모든 활성 신호를 새로운 활성 장치에 연결합니다.
 
         // Set dialog to display options based on connect uas
+        // 연결 uas를 기반으로 옵션을 표시하도록 대화 상자를 설정합니다.
         switch(uasInterface->getAutopilotType()){
         case MAV_AUTOPILOT_ARDUPILOTMEGA:{
             QStringList paramList;
 
             if (m_uasInterface->isMultirotor()){
-                paramList << "Gyro" // param 1 // Gyro calibration: 0: no, 1: yes
-                         << "unused" // param 2 // Magnetometer calibration: 0: no, 1: yes
-                         << "Barometer" // param 3 // Ground pressure: 0: no, 1: yes
-                         << "Radio Trim"; // param 4 // Radio calibration: 0: no, 1: yes
+                paramList << "Gyro" // param 1 // Gyro calibration: 0: no, 1: yes// PARAM 1 // 자이로 보정 : 0 : 없음, 1 : ○
+                         << "unused" // param 2 // Magnetometer calibration: 0: no, 1: yes// param 2 // 자력계 교정 : 0 : 아니오, 1 : 예
+                         << "Barometer" // param 3 // Ground pressure: 0: no, 1: yes// param 3 //지면 압력 : 0 : 아니오, 1 : 예
+                         << "Radio Trim"; // param 4 // Radio calibration: 0: no, 1: yes// param 4 // 라디오 교정 : 0 : 아니오, 1 : 예
     //                     << "3D Accel Calibration"; // param 5 // Accelerometer calibration: 0: no, 1: yes
     //                     << "" // param 6 // | Empty|
     //                     << ""; // param 7 // | Empty|
+    //                      << "3D Accel Calibration"; // 매개 변수 5 // 가속도계 캘리브레이션 : 0 : 아니오, 1 : 예
+    //                      << ""// param 6 // | 비어있는 |
+    //                      << "" "; // param 7 // | 비어있는 |
                 addParamCheckBoxes("APM:Copter", paramList, true);
 
             } else if (m_uasInterface->isFixedWing()
@@ -74,6 +80,9 @@ void PreFlightCalibrationDialog::activeUASSet(UASInterface *uasInterface)
     //                     << "3D Accel Calibration"; // param 5 // not supported here. use Intial Config View
     //                     << "" // param 6 // | Empty|
     //                     << ""; // param 7 // | Empty|
+    //                      << "3D Accel Calibration"; // param 5 // 여기서는 지원되지 않습니다. 초기 구성보기 사용
+    //                      << ""// param 6 // | 비어있는 |
+    //                      << "" "; // param 7 // | 비어있는 |
                 addParamCheckBoxes("APM:Plane", paramList, true);
 
             } else {
@@ -153,6 +162,7 @@ QWidget* PreFlightCalibrationDialog::createParamWidget(const QString& paramName,
 void PreFlightCalibrationDialog::addArdupilotMegaOptions()
 {
     // [TODO] for now add the generic option for APM
+    // [TODO]는 APM에 대한 일반 옵션을 추가합니다.
     addParamSpinBoxes();
 }
 
@@ -180,13 +190,13 @@ void PreFlightCalibrationDialog::sendPreflightCalibrationMessage()
     }
 
     m_uasInterface->executeCommand(MAV_CMD_PREFLIGHT_CALIBRATION, 1 /*confirm*/,
-                                       getCheckValue(m_widgets[0]), // param 1 // Gyro calibration: 0: no, 1: yes
-                                       getCheckValue(m_widgets[1]), // param 2 // Magnetometer calibration: 0: no, 1: yes
-                                       getCheckValue(m_widgets[2]), // param 3 // Ground pressure: 0: no, 1: yes
-                                       getCheckValue(m_widgets[3]), // param 4 // Radio calibration: 0: no, 1: yes
-                                       getCheckValue(m_widgets[4]), // param 5 // Accelerometer calibration: 0: no, 1: yes
-                                       getCheckValue(m_widgets[5]), // param 6 // | Empty|
-                                       getCheckValue(m_widgets[6]), // param 7 // | Empty|
+                                       getCheckValue(m_widgets[0]), // param 1 // Gyro calibration: 0: no, 1: yes// param 1 // 자이로 교정 : 0 : 아니오, 1 : 예
+                                       getCheckValue(m_widgets[1]), // param 2 // Magnetometer calibration: 0: no, 1: yes// param 2 // 자력계 교정 : 0 : 아니오, 1 : 예
+                                       getCheckValue(m_widgets[2]), // param 3 // Ground pressure: 0: no, 1: yes// param 3 //지면 압력 : 0 : 아니오, 1 : 예
+                                       getCheckValue(m_widgets[3]), // param 4 // Radio calibration: 0: no, 1: yes// param 4 // 라디오 교정 : 0 : 아니오, 1 : 예
+                                       getCheckValue(m_widgets[4]), // param 5 // Accelerometer calibration: 0: no, 1: yes// param 5 // 가속도계 캘리브레이션 : 0 : 아니오, 1 : 예
+                                       getCheckValue(m_widgets[5]), // param 6 // | Empty|// param 6 // | 비어있는 |
+                                       getCheckValue(m_widgets[6]), // param 7 // | Empty|// param 7 // | 비어있는 |
                                        MAV_COMP_ID_PRIMARY);
 }
 
