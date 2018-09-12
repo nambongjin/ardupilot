@@ -43,6 +43,7 @@ APMToolBar::APMToolBar(QWindow *parent):
     QQuickView(parent), m_uas(NULL), m_disableOverride(false), m_currentLinkId(0)
 {
     // Configure our QML object
+    // QML 객체를 설정한다.
     QLOG_DEBUG() << "qmlBaseDir" << QGC::shareDirectory();
     QUrl url = QUrl::fromLocalFile(QGC::shareDirectory() + "/qml/ApmToolBar.qml");
     QLOG_DEBUG() << url;
@@ -54,6 +55,7 @@ APMToolBar::APMToolBar(QWindow *parent):
     engine()->addImportPath("qml/"); //For local or win32 builds
     engine()->addImportPath(QGC::shareDirectory() +"/qml"); //For installed linux builds
     // access to ini file from QML
+    // QML에서 ini 파일에 액세스합니다.
     rootContext()->setContextProperty("Settings", &m_settings);
 
     setSource(url);
@@ -72,6 +74,7 @@ APMToolBar::APMToolBar(QWindow *parent):
     this->rootContext()->setContextProperty("globalObj", this);
 
      // set the size of the device box and row spacing for icons
+     // 아이콘에 대한 장치 상자 및 행 간격의 크기를 설정
 #ifdef Q_OS_MAC
     rootObject()->setProperty("rowSpacerSize", QVariant(3));
     rootObject()->setProperty("linkDeviceSize", QVariant(105));
@@ -136,6 +139,7 @@ void APMToolBar::activeUasSet(UASInterface *uas)
     QLOG_DEBUG() << "APMToolBar::ActiveUASSet " << uas;
 
     // [TODO} Add active MAV to diplay here
+    // [TODO} 여기에 표시 할 활성 MAV 추가
     m_uas = uas;
 
     connect(m_uas,SIGNAL(armingChanged(bool)),
@@ -160,6 +164,8 @@ void APMToolBar::activeUasSet(UASInterface *uas)
 
     // Connect the signals from active links
     // disconnect signals from the active serial links
+    // 활성 링크에서 신호 연결
+    // 활성 직렬 링크에서 신호 연결 해제
     QList<int> linkidlist = uas->getLinkIdList();
     bool currentlinkfound = false;
     for (int i=0;i<linkidlist.size();i++)
@@ -173,11 +179,14 @@ void APMToolBar::activeUasSet(UASInterface *uas)
     {
         //We did not find the current link in the list of connected links.
         //Change the current link to match the first connected link in this UAS
+        // 연결된 링크 목록에서 현재 링크를 찾지 못했습니다.
+        // 이 UAS의 첫 번째 연결된 링크와 일치하도록 현재 링크를 변경합니다.
         for (int i=0;i<linkidlist.size();i++)
         {
             if (LinkManager::instance()->getLinkConnected(linkidlist.at(i)))
             {
                 // Show only the first actve link for a UAS
+                // UAS의 첫 번째 액트 링크 만 표시합니다.
                 m_currentLinkId = linkidlist.at(i);
                 updateLinkDisplay(m_currentLinkId);
                 break;
@@ -296,6 +305,7 @@ void APMToolBar::setConnection(bool connection)
 {
     QLOG_DEBUG() << "APMToolBar setConnection:" << connection;
     // Change the image to represent the state
+    // 상태를 나타내는 이미지를 변경합니다.
     QObject *object = rootObject();
     object->setProperty("connected", connection);
 
@@ -316,6 +326,7 @@ APMToolBar::~APMToolBar()
 void APMToolBar::showConnectionDialog()
 {
     // Displays a UI where the user can select a MAV Link.
+    // 사용자가 MAV 링크를 선택할 수있는 UI를 표시합니다.
     QLOG_DEBUG() << "APMToolBar: showConnectionDialog for current serial link " << m_currentLinkId;
     MainWindow::instance()->configLink(m_currentLinkId);
 }
@@ -324,6 +335,7 @@ void APMToolBar::updateLinkDisplay(int linkid)
     if (m_currentLinkId != linkid)
     {
         //We only care about our current link
+        // 현재 링크 만 신경 쓰고 있습니다.
         QLOG_TRACE() << "APMToolBar::updateLinkDisplay called with non current link. Current:" << m_currentLinkId << "called:" << linkid;
         return;
     }
@@ -351,6 +363,7 @@ void APMToolBar::newLinkCreated(int linkid)
     if (LinkManager::instance()->getLinkType(linkid) == LinkInterface::SERIAL_LINK)
     {
         //We want to use this one.
+        // 우리는 이것을 사용하고 싶다.
         QLOG_DEBUG() << "APMToolBar: new Serial Link Created" << linkid;
         m_currentLinkId = linkid;
         updateLinkDisplay(m_currentLinkId);
@@ -364,6 +377,7 @@ void APMToolBar::setModeText(const QString &text)
     object->setProperty("modeText", text.toUpper());
 
     // [ToDo] ptentially factor the code below into the APMToolBar
+    // [ToDo] 아래 코드를 APMToolBar에 인수 분해합니다.
     int customMode = m_uas->getCustomMode();
     bool inRTL;
 
@@ -410,13 +424,15 @@ void APMToolBar::heartbeat(UASInterface* uas)
     QLOG_TRACE() << "APMToolBar::Heartbeat " << uas;
 
     if (uas != m_uas)
-        return; // Only deal with the Active UAS
+        return; // Only deal with the Active UAS// 활성 UAS 만 처리합니다.
 
     QObject *object = rootObject();
     object->setProperty("heartbeat",QVariant(true));
 
     // Start a timer to turn the heartbeat animation off
     // if the timer is started again, the call is not made
+    // 하트 비트 애니메이션을 끄기 위해 타이머를 시작합니다.
+    // 타이머가 다시 시작되면 호출이 수행되지 않습니다.
     m_heartbeatTimer.setSingleShot(true);
     m_heartbeatTimer.start(1500);
 }
@@ -461,6 +477,7 @@ void APMToolBar::parameterChanged(int uas, int component, int parameterCount,
 
     if (parameterName.contains("ARMING_REQUIRE")){
         // Shows Display of ARM status, if enabled
+        // 활성화 된 경우 ARM 상태를 표시합니다.
         int arming_required = value.toBool();
         rootObject()->setProperty("armed", QVariant(m_uas->isArmed()));
         rootObject()->setProperty("enableStatusDisplay",
