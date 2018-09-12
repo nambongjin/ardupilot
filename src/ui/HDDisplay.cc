@@ -61,6 +61,7 @@ HDDisplay::HDDisplay(QStringList* plotList, QString title, QWidget *parent) :
     setAutoFillBackground(true);
 
     // Add all items in accept list to gauge
+    // 수락 목록에있는 모든 항목을 게이지에 추가합니다.
     if (plotList) {
         for(int i = 0; i < plotList->length(); ++i) {
             addGauge(plotList->at(i));
@@ -69,6 +70,7 @@ HDDisplay::HDDisplay(QStringList* plotList, QString title, QWidget *parent) :
 
     restoreState();
     // Set preferred size
+    // 기본 크기 설정
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
 
     createActions();
@@ -110,12 +112,14 @@ HDDisplay::HDDisplay(QStringList* plotList, QString title, QWidget *parent) :
 
 
     // Set minimum size
+    // 최소 크기 설정
     this->setMinimumHeight(125);
     this->setMinimumWidth(100);
 
     scalingFactor = this->width()/vwidth;
 
     // Refresh timer
+    // 타이머 새로 고침
     refreshTimer->setInterval(180); //
     connect(refreshTimer, SIGNAL(timeout()), this, SLOT(triggerUpdate()));
     //connect(refreshTimer, SIGNAL(timeout()), this, SLOT(paintGL()));
@@ -133,6 +137,7 @@ HDDisplay::HDDisplay(QStringList* plotList, QString title, QWidget *parent) :
         QLOG_DEBUG() << "ERROR! Font not loaded: " << fontFamilyName;
     }
     // Connect with UAS
+    // UAS와 연결
     connect(UASManager::instance(), SIGNAL(activeUASSet(UASInterface*)), this, SLOT(setActiveUAS(UASInterface*)), Qt::UniqueConnection);
     setActiveUAS(UASManager::instance()->getActiveUAS());
 }
@@ -171,6 +176,7 @@ void HDDisplay::enableGLRendering(bool enable)
 void HDDisplay::triggerUpdate()
 {
     // Only repaint the regions necessary
+    // 필요한 영역 만 다시 칠한다.
     update(this->geometry());
 }
 
@@ -232,6 +238,7 @@ void HDDisplay::saveState()
 
     QString instruments;
     // Restore instrument settings
+    // 기기 설정 복원
     for (int i = 0; i < acceptList->count(); i++) {
         QString key = acceptList->at(i);
         instruments += "|" + QString::number(minValues.value(key, -1.0))+","+key+","+acceptUnitList->at(i)+","+QString::number(maxValues.value(key, +1.0))+","+customNames.value(key, "")+","+((symmetric.value(key, false)) ? "s" : "");
@@ -325,14 +332,17 @@ void HDDisplay::addGauge(const QString& gauge)
 
             if (!acceptList->contains(key)) {
                 // Convert min to double number
+                // min을 double number로 변환합니다.
                 val = parts.first().toDouble(&ok);
                 success &= ok;
                 if (ok) minValues.insert(key, val);
                 // Convert max to double number
+                // max를 double number로 변환합니다.
                 val = parts.at(3).toDouble(&ok);
                 success &= ok;
                 if (ok) maxValues.insert(key, val);
                 // Convert name
+                // 이름 변환
                 if (parts.length() >= 5)
                 {
                     if (parts.at(4).length() > 0)
@@ -341,6 +351,7 @@ void HDDisplay::addGauge(const QString& gauge)
                     }
                 }
                 // Convert symmetric flag
+                // 대칭 플래그 변환
                 if (parts.length() >= 6)
                 {
                     if (parts.at(5).contains("s"))
@@ -350,6 +361,7 @@ void HDDisplay::addGauge(const QString& gauge)
                 }
                 if (success) {
                     // Add value to acceptlist
+                    // acceptlist에 값 추가
                     acceptList->append(key);
                     acceptUnitList->append(unit);
                 }
@@ -399,9 +411,11 @@ void HDDisplay::setColumns(int cols)
 void HDDisplay::adjustGaugeAspectRatio()
 {
     // Adjust vheight dynamically according to the number of rows
+    // 행 수에 따라 동적으로 vheight를 조정합니다.
     float vColWidth = vwidth / columns;
     int vRows = ceil(acceptList->length()/(float)columns);
     // Assuming square instruments, vheight is column width*row count
+    // 정사각형으로 가정하면, vheight는 열 너비 * 행 수입니다.
     vheight = vColWidth * vRows;
 }
 
@@ -437,6 +451,10 @@ void HDDisplay::renderOverlay()
     // TESTING THIS SHOULD BE MOVED INTO A QGRAPHICSVIEW
     // Update scaling factor
     // adjust scaling to fit both horizontally and vertically
+    // 악기를 그립니다.
+    // 테스트는 QGRAPHICSVIEW로 이동해야합니다.
+    // 배율 인수 업데이트
+    // 가로 및 세로에 맞게 크기 조절 조정
     scalingFactor = this->width()/vwidth;
 
     double scalingFactorH = this->height()/vheight;
@@ -479,16 +497,22 @@ void HDDisplay::renderOverlay()
  *
  * @param uas the UAS/MAV to monitor/display with the HUD
  */
+/* *
+ *
+ * @param UAS / MAV를 사용하여 HUD를 모니터링 / 표시합니다.
+ */
 void HDDisplay::setActiveUAS(UASInterface* uas)
 {
     if (!uas)
         return;
     // Disconnect any previously connected active UAS
+    // 이전에 연결된 모든 활성 UAS 연결을 끊습니다.
     if (this->uas != NULL) {
         removeSource(this->uas);
     }
 
     // Now connect the new UAS
+    // 이제 새 UAS를 연결합니다.
 	addSource(uas);
     this->uas = uas;
 }
@@ -501,12 +525,25 @@ void HDDisplay::setActiveUAS(UASInterface* uas)
  * @param angle rotation angle, in radians
  * @return p Polygon p rotated by angle around the origin point
  */
+/* *
+ * 점 주위의 다각형 회전
+ *
+ * @param p 폴리곤이 회전합니다.
+ 파라미터 : origin - 회전 중심
+ * @param 각도 회전 각 (라디안 단위)
+ * @return p 원점을 중심으로 각도로 회전 한 다각형 p
+ */
 void HDDisplay::rotatePolygonClockWiseRad(QPolygonF& p, float angle, QPointF origin)
 {
     // Standard 2x2 rotation matrix, counter-clockwise
     //
     //   |  cos(phi)   sin(phi) |
     //   | -sin(phi)   cos(phi) |
+    //
+    // 표준 2x2 회전 행렬, 반 시계 방향
+    //
+    //    | cos (φ) sin (φ) |
+    //    | - 신 (φ) cos (φ) |
     //
     for (int i = 0; i < p.size(); i++) {
         QPointF curr = p.at(i);
@@ -523,6 +560,7 @@ void HDDisplay::rotatePolygonClockWiseRad(QPolygonF& p, float angle, QPointF ori
 void HDDisplay::drawPolygon(QPolygonF refPolygon, QPainter* painter)
 {
     // Scale coordinates
+    // 축척 좌표
     QPolygonF draw(refPolygon.size());
     for (int i = 0; i < refPolygon.size(); i++) {
         QPointF curr;
@@ -545,6 +583,7 @@ void HDDisplay::drawChangeRateStrip(float xRef, float yRef, float height, float 
     float scaledValue = value;
 
     // Saturate value
+    // 포화 값
     if (value > maxRate) scaledValue = maxRate;
     if (value < minRate) scaledValue = minRate;
 
@@ -558,18 +597,33 @@ void HDDisplay::drawChangeRateStrip(float xRef, float yRef, float height, float 
     //   -0.005 >|
     //           |
     //           -
+    //            x (원점 : xRef, yRef)
+    //            -
+    //            |
+    //            |
+    //            |
+    //            =
+    //            |
+    //    -0.005> |
+    //            |
+    //            -
 
     const float width = height / 8.0f;
     const float lineWidth = 0.5f;
 
     // Indicator lines
     // Top horizontal line
+    // 지시선
+    // 위쪽 수평선
     drawLine(xRef, yRef, xRef+width, yRef, lineWidth, defaultColor, painter);
     // Vertical main line
+    // 수직선
     drawLine(xRef+width/2.0f, yRef, xRef+width/2.0f, yRef+height, lineWidth, defaultColor, painter);
     // Zero mark
+    // 제로 마크
     drawLine(xRef, yRef+height/2.0f, xRef+width, yRef+height/2.0f, lineWidth, defaultColor, painter);
     // Horizontal bottom line
+    // 수평 하단 라인
     drawLine(xRef, yRef+height, xRef+width, yRef+height, lineWidth, defaultColor, painter);
 
     // Text
@@ -581,9 +635,11 @@ void HDDisplay::drawChangeRateStrip(float xRef, float yRef, float height, float 
 void HDDisplay::drawGauge(float xRef, float yRef, float radius, float min, float max, QString name, float value, const QColor& color, QPainter* painter, bool symmetric, QPair<float, float> goodRange, QPair<float, float> criticalRange, bool solid)
 {
     // Draw the circle
+    // 원 그리기
     QPen circlePen(Qt::SolidLine);
 
     // Rotate the whole gauge with this angle (in radians) for the zero position
+    // 0 위치에 대해이 각도 (라디안)로 전체 게이지를 회전합니다.
     float zeroRotation;
     if (symmetric) {
         zeroRotation = 1.35f;
@@ -593,6 +649,8 @@ void HDDisplay::drawGauge(float xRef, float yRef, float radius, float min, float
 
     // Scale the rotation so that the gauge does one revolution
     // per max. change
+    // 계측기가 한 회전을하도록 회전 비율을 조정합니다.
+    // 최대 변화
     float rangeScale;
     if (symmetric) {
         rangeScale = ((2.0f * M_PI) / (max - min)) * 0.57f;
@@ -606,6 +664,7 @@ void HDDisplay::drawGauge(float xRef, float yRef, float radius, float min, float
     paintText(name.toUpper(), color, nameHeight*0.7f, xRef-radius, yRef-radius, painter);
 
     // Ensure some space
+    // 약간의 공간 확보
     nameHeight *= 1.2f;
 
     if (!solid) {
@@ -625,6 +684,7 @@ void HDDisplay::drawGauge(float xRef, float yRef, float radius, float min, float
     QString label;
 
     // Show integer values without decimal places
+    // 정수 값을 소수점없이 표시
     if (intValues.contains(name)) {
         label.sprintf("% 05d", (int)value);
     } else {
@@ -634,11 +694,14 @@ void HDDisplay::drawGauge(float xRef, float yRef, float radius, float min, float
 
     // Text
     // height
+    // 텍스트
+    // 높이
     const float textHeight = radius/2.1f;
     const float textX = xRef-radius/3.0f;
     const float textY = yRef+radius/2.0f;
 
     // Draw background rectangle
+    // 배경 사각형 그리기
     QBrush brush(QGC::colorBackground, Qt::SolidPattern);
     painter->setBrush(brush);
     painter->setPen(Qt::NoPen);
@@ -650,6 +713,7 @@ void HDDisplay::drawGauge(float xRef, float yRef, float radius, float min, float
     }
 
     // Draw good value and crit. value markers
+    // 좋은 값과 crit를 그립니다. 가치 마커
     if (goodRange.first != goodRange.second) {
         QRectF rectangle(refToScreenX(xRef-radius/2.0f), refToScreenY(yRef+nameHeight-radius/2.0f), refToScreenX(radius*2.0f), refToScreenX(radius*2.0f));
         painter->setPen(Qt::green);
@@ -672,6 +736,7 @@ void HDDisplay::drawGauge(float xRef, float yRef, float radius, float min, float
     //paintText(label, color, ((radius - radius/3.0f)*1.1f), xRef-radius/2.5f, yRef+radius/3.0f, painter);
 
     // Draw the needle
+    // 바늘을 그립니다.
 
     const float maxWidth = radius / 6.0f;
     const float minWidth = maxWidth * 0.3f;
@@ -706,6 +771,11 @@ void HDDisplay::drawSystemIndicator(float xRef, float yRef, int maxNum, float ma
         //   x speed: 2.54
 
         // One column per value
+        //    | | | | | |
+        //    | | | | | |
+        //    x 속도 : 2.54
+
+        // 값 당 하나의 열
         QMapIterator<QString, double> value(values);
 
         float x = xRef;
@@ -734,22 +804,28 @@ void HDDisplay::drawSystemIndicator(float xRef, float yRef, int maxNum, float ma
             painter->setPen(Qt::NoPen);
 
             // Draw current value colormap
+            // 현재 값의 색상 표를 그립니다.
             painter->drawRect(refToScreenX(x), refToScreenY(y), refToScreenX(width), refToScreenY(height));
 
             // Draw change rate colormap
+            // 변경 비율 색상 표 그리기
             painter->drawRect(refToScreenX(x), refToScreenY(y+height+hspacing), refToScreenX(width), refToScreenY(height));
 
             // Draw mean value colormap
+            // 평균값 색상 표 그리기
             painter->drawRect(refToScreenX(x), refToScreenY(y+2.0f*(height+hspacing)), refToScreenX(width), refToScreenY(height));
 
             // Add spacing
+            // 간격 추가
             x += width+vspacing;
 
             // Iterate
+            // 반복
             i++;
         }
 
         // Draw detail label
+        // 세부 레이블 그리기
         QString detail = "NO DATA AVAILABLE";
 
         if (values.contains(selectedKey)) {
@@ -764,6 +840,7 @@ void HDDisplay::drawSystemIndicator(float xRef, float yRef, int maxNum, float ma
 void HDDisplay::drawChangeIndicatorGauge(float xRef, float yRef, float radius, float expectedMaxChange, float value, const QColor& color, QPainter* painter, bool solid)
 {
     // Draw the circle
+    // 원 그리기
     QPen circlePen(Qt::SolidLine);
     if (!solid) circlePen.setStyle(Qt::DotLine);
     circlePen.setWidth(refLineWidthToPen(0.5f));
@@ -777,11 +854,15 @@ void HDDisplay::drawChangeIndicatorGauge(float xRef, float yRef, float radius, f
     label.sprintf("%05.1f", value);
 
     // Draw the value
+    // 값을 그립니다.
     paintText(label, color, 4.5f, xRef-7.5f, yRef-2.0f, painter);
 
     // Draw the needle
     // Scale the rotation so that the gauge does one revolution
     // per max. change
+    // 바늘을 그립니다.
+    // 계측기가 한 회전을하도록 회전 비율을 조정합니다.
+    // 최대 변화
     const float rangeScale = (2.0f * M_PI) / expectedMaxChange;
     const float maxWidth = radius / 10.0f;
     const float minWidth = maxWidth * 0.3f;
@@ -815,6 +896,15 @@ void HDDisplay::drawChangeIndicatorGauge(float xRef, float yRef, float radius, f
  * @param refX position in reference units (mm of the real instrument). This is relative to the measurement unit position, NOT in pixels.
  * @param refY position in reference units (mm of the real instrument). This is relative to the measurement unit position, NOT in pixels.
  */
+/* *
+ * 이미지 위에 텍스트 칠하기 및 OpenGL 그리기
+ *
+ * 기입하는 @param 텍스트의 char
+ * @param 칼라 텍스트의 색
+ * @param fontSize 텍스트 크기 (mm)
+reference 단위 (real instrument의 mm) 로의 @param refX 위치 이것은 픽셀 단위가 아닌 측정 단위 위치에 상대적입니다.
+* @param refY 위치를 기준 단위로 (실제 악기의 mm). 이것은 픽셀 단위가 아닌 측정 단위 위치에 상대적입니다.
+ */
 void HDDisplay::paintText(QString text, QColor color, float fontSize, float refX, float refY, QPainter* painter)
 {
     QPen prevPen = painter->pen();
@@ -823,6 +913,7 @@ void HDDisplay::paintText(QString text, QColor color, float fontSize, float refX
 
     QFont font("Bitstream Vera Sans");
     // Enforce minimum font size of 5 pixels
+    // 5 픽셀의 최소 글꼴 크기 적용
     int fSize = qMax(5, (int)(fontSize*scalingFactor*1.26f));
     font.setPixelSize(fSize);
 
@@ -845,6 +936,7 @@ float HDDisplay::refLineWidthToPen(float line)
 }
 
 // Connect a generic source
+// 일반 소스 연결
 void HDDisplay::addSource(QObject* obj)
 {
     //genericSources.append(obj);
@@ -864,6 +956,7 @@ void HDDisplay::addSource(QObject* obj)
 }
 
 // Disconnect a generic source
+// 일반 소스 연결 끊기
 void HDDisplay::removeSource(QObject* obj)
 {
     //genericSources.append(obj);
@@ -935,6 +1028,7 @@ void HDDisplay::updateValue(const int uasId, const QString& name, const QString&
     Q_UNUSED(uasId);
     Q_UNUSED(unit);
     // Update mean
+    // 평균값 업데이트
     const float oldMean = valuesMean.value(name, 0.0f);
     const int meanCount = valuesCount.value(name, 0);
     valuesMean.insert(name, (oldMean * meanCount +  value) / (meanCount + 1));
@@ -950,6 +1044,10 @@ void HDDisplay::updateValue(const int uasId, const QString& name, const QString&
  * @param y coordinate in pixels to be converted to reference mm units
  * @return the screen coordinate relative to the QGLWindow origin
  */
+/* *
+ y 단위의 좌표 (픽셀 단위)를 기준으로 mm 단위로 변환합니다.
+ * @return QGLWindow 원점에 상대적인 화면 좌표
+ */
 float HDDisplay::refToScreenX(float x)
 {
     return (scalingFactor * x);
@@ -958,6 +1056,10 @@ float HDDisplay::refToScreenX(float x)
 /**
  * @param x coordinate in pixels to be converted to reference mm units
  * @return the screen coordinate relative to the QGLWindow origin
+ */
+/* *
+ * @param 픽셀 단위로 나타낸 x 좌표 (기준 mm 단위로 변환된다)
+ * @return QGLWindow 원점에 상대적인 화면 좌표
  */
 float HDDisplay::refToScreenY(float y)
 {
@@ -1014,6 +1116,8 @@ void HDDisplay::showEvent(QShowEvent* event)
 {
     // React only to internal (pre-display)
     // events
+    // 내부 (사전 표시)
+    // 이벤트
     Q_UNUSED(event);
     refreshTimer->start(updateInterval);
 }
@@ -1022,6 +1126,8 @@ void HDDisplay::hideEvent(QHideEvent* event)
 {
     // React only to internal (pre-display)
     // events
+    // 내부 (사전 표시)
+    // 이벤트
     Q_UNUSED(event);
     refreshTimer->stop();
     saveState();
