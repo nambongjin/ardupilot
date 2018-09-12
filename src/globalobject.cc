@@ -13,6 +13,7 @@ GlobalObject* GlobalObject::sharedInstance()
         return _globalInstance;
     }
     // Create the global object
+    // 전역 개체 만들기
     _globalInstance = new GlobalObject();
     return _globalInstance;
 }
@@ -72,6 +73,9 @@ bool GlobalObject::makeDirectory(const QString& dir)
 //
 // App Data Directory
 //
+//
+// 앱 데이터 디렉토리
+//
 
 QString GlobalObject::defaultAppDataDirectory()
 {
@@ -94,6 +98,9 @@ void GlobalObject::setAppDataDirectory(const QString &dir)
 
 //
 // Log Data Directory
+//
+//
+// 로그 데이터 디렉토리
 //
 
 QString GlobalObject::defaultLogDirectory()
@@ -118,6 +125,9 @@ void GlobalObject::setLogDirectory(const QString &dir)
 //
 // MAVLink Log Data Directory
 //
+//
+// MAVLink 로그 데이터 디렉토리
+//
 
 QString GlobalObject::defaultMAVLinkLogDirectory()
 {
@@ -140,6 +150,9 @@ void GlobalObject::setMAVLinkLogDirectory(const QString &dir)
 
 //
 // Parameter Data Directory
+//
+//
+// 매개 변수 데이터 디렉토리
 //
 
 QString GlobalObject::defaultParameterDirectory()
@@ -164,6 +177,9 @@ void GlobalObject::setParameterDirectory(const QString &dir)
 //
 // Parameter Data Directory
 //
+//
+// 매개 변수 데이터 디렉토리
+//
 
 QString GlobalObject::defaultMissionDirectory()
 {
@@ -187,6 +203,9 @@ void GlobalObject::setMissionDirectory(const QString &dir)
 //
 // Share Directory
 //
+//
+// 디렉토리 공유
+//
 
 QString GlobalObject::shareDirectory()
 {
@@ -200,6 +219,10 @@ QString GlobalObject::shareDirectory()
     // Will not remove it cause I do not want to create a regression.
     // On Linux (Ubuntu 16.04) it just uses "return QCoreApplication::applicationDirPath();"
     // like on Mac Os.
+    // 애플리케이션 경로를 결정할 때이 코드가 실제로 필요한지 확실하지 않습니다.
+    // 회귀 함수를 만들지 않으므로 제거하지 않을 것입니다.
+    // Linux (Ubuntu 16.04)에서 "return QCoreApplication :: applicationDirPath ();"를 사용합니다.
+    // Mac OS 에서처럼.
     QDir settingsDir = QDir(QDir::currentPath());
     if(settingsDir.exists("data") && settingsDir.exists("qml"))
     {

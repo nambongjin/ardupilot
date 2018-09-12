@@ -33,6 +33,7 @@ quint64 groundTimeUsecs()
     QDateTime time = QDateTime::currentDateTime();
     time = time.toUTC();
     /* Return seconds and milliseconds, in milliseconds unit */
+    /* 밀리 초 단위의 초 및 밀리 초 반환 */
     quint64 microseconds = time.toTime_t() * static_cast<quint64>(1000000);
     return static_cast<quint64>(microseconds + (time.time().msec()*1000));
 }
@@ -42,6 +43,7 @@ quint64 groundTimeMilliseconds()
     QDateTime time = QDateTime::currentDateTime();
     time = time.toUTC();
     /* Return seconds and milliseconds, in milliseconds unit */
+    /* 밀리 초 단위의 초 및 밀리 초 반환 */
     quint64 seconds = time.toTime_t() * static_cast<quint64>(1000);
     return static_cast<quint64>(seconds + (time.time().msec()));
 }
@@ -51,6 +53,7 @@ qreal groundTimeSeconds()
     QDateTime time = QDateTime::currentDateTime();
     time = time.toUTC();
     /* Return time in seconds unit */
+    /* 초 단위의 복귀 시간 */
     quint64 seconds = time.toTime_t();
     return static_cast<qreal>(seconds + (time.time().msec() / 1000.0));
 }
@@ -72,6 +75,7 @@ float limitAngleToPMPIf(float angle)
     else
     {
         // Approximate
+        // 근사치
         angle = fmodf(angle, (float)M_PI);
     }
 
@@ -100,6 +104,7 @@ double limitAngleToPMPId(double angle)
     else
     {
         // Approximate
+        // 근사치
         angle = fmod(angle, M_PI);
     }
 
