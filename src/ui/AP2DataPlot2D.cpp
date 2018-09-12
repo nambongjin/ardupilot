@@ -47,7 +47,7 @@ This file is part of the APM_PLANNER project
 #include "Loghandling/LogExporter.h"
 #include "Loghandling/LogAnalysis.h"
 
-#define ROW_HEIGHT_PADDING 3 //Number of additional pixels over font height for each row for the table/excel view.
+#define ROW_HEIGHT_PADDING 3 //Number of additional pixels over font height for each row for the table/excel view.// 테이블 / 엑셀보기의 각 행에 대한 글꼴 높이 이상의 추가 픽셀 수입니다.
 
 AP2DataPlot2D::AP2DataPlot2D(QWidget *parent) : QWidget(parent),
     m_updateTimer(NULL),
@@ -87,11 +87,12 @@ AP2DataPlot2D::AP2DataPlot2D(QWidget *parent) : QWidget(parent),
     m_wideAxisRect->removeAxis(m_wideAxisRect->axis(QCPAxis::atLeft,0));
 
     // set time format of x-axis
+  // x 축의 시간 포맷을 설정한다.
     QSharedPointer<QCPAxisTickerDateTime> dateTicker(new QCPAxisTickerDateTime);
     dateTicker->setDateTimeFormat("hh:mm:ss");
     dateTicker->setDateTimeSpec(Qt::UTC);
     m_wideAxisRect->axis(QCPAxis::atBottom, 0)->setTicker(dateTicker);
-    m_wideAxisRect->axis(QCPAxis::atBottom, 0)->setRange(0,100); //Default range of 0-100 milliseconds?
+    m_wideAxisRect->axis(QCPAxis::atBottom, 0)->setRange(0,100); //Default range of 0-100 milliseconds?// 기본 범위는 0-100 밀리 초입니까?
 
     m_plot->plotLayout()->addElement(0, 0, m_wideAxisRect);
 
@@ -242,8 +243,8 @@ void AP2DataPlot2D::xAxisChanged(QCPRange range)
     disconnect(ui.horizontalScrollBar, SIGNAL(valueChanged(int)), this, SLOT(horizontalScrollMoved(int)));
     disconnect(ui.verticalScrollBar, SIGNAL(valueChanged(int)), this, SLOT(verticalScrollMoved(int)));
 
-    ui.horizontalScrollBar->setValue(qRound(range.center())); // adjust position of scroll bar slider
-    ui.horizontalScrollBar->setPageStep(qRound(range.size())); // adjust size of scroll bar slider
+    ui.horizontalScrollBar->setValue(qRound(range.center())); // adjust position of scroll bar slider/ 스크롤 막대 슬라이더의 위치 조정
+    ui.horizontalScrollBar->setPageStep(qRound(range.size())); // adjust size of scroll bar slider// 스크롤 막대 슬라이더의 크기 조정
     double totalrange = m_scrollEndIndex - m_scrollStartIndex;
     double currentrange = range.upper - range.lower;
     ui.verticalScrollBar->setValue(100.0 * (currentrange / totalrange));
@@ -325,6 +326,7 @@ void AP2DataPlot2D::plotMouseMove(QMouseEvent *evt)
                     if ((messagemapiterator.key() < key) && ((messagemapiterator+1).key() > key))
                     {
                         //This only gets hit if we're not at the end, and we have the proper value
+                        // 이것은 우리가 마지막에 있지 않은 경우에만 치고, 적절한 값을 가진다.
                         QStringList splitValue = messagemapiterator.value().split("\n");    // to remove the "by Radio" info
                         newresult.append(m_graphClassMap.keys()[i] + ": " + splitValue[0] + ((i == m_graphClassMap.keys().size()-1) ? "" : "\n"));
                         break;
@@ -484,6 +486,7 @@ void AP2DataPlot2D::navModeChanged(int uasid, int mode, const QString& text)
     if(!m_graphClassMap.contains(ModeMessage::TypeName))
     {
         // create a graph with an invisible y-axis for the text arrows (mavlink has only mode)
+        // 텍스트 화살표에 대해 보이지 않는 y 축을 가진 그래프를 만든다 (mavlink는 오직 모드를 가짐)
         Graph arrowGraph;
         arrowGraph.axis = m_wideAxisRect->addAxis(QCPAxis::atLeft);
         arrowGraph.axis->setVisible(false);
@@ -513,6 +516,7 @@ void AP2DataPlot2D::updateValue(const int uasId, const QString& name, const QStr
     if(parts.size() == 2)
     {
         // name looks like M1:ATTITUDE.Pitch or M1:BATTERY_STATUS.voltages.0
+        // 이름은 M1 : ATTITUDE.Pitch 또는 M1 : BATTERY_STATUS.voltages.0처럼 보입니다.
         propername  = parts[1];
     }
 
@@ -688,7 +692,7 @@ void AP2DataPlot2D::itemEnabled(QString name)
         axis->setLabel(name);
         QColor color = QColor::fromRgb(rand()%255,rand()%255,rand()%255);
         axis->setLabelColor(color);
-        axis->setTickLabelColor(color); // add an extra axis on the left and color its numbers
+        axis->setTickLabelColor(color); // add an extra axis on the left and color its numbers// 왼쪽에 여분의 축을 추가하고 숫자에 색상을 지정합니다.
         QCPGraph *mainGraph1 = m_plot->addGraph(m_wideAxisRect->axis(QCPAxis::atBottom), m_wideAxisRect->axis(QCPAxis::atLeft,m_graphCount++));
         m_graphNameList.append(name);
         mainGraph1->setData(xlist, ylist);
@@ -721,7 +725,7 @@ void AP2DataPlot2D::itemEnabled(QString name)
 
 void AP2DataPlot2D::itemDisabled(QString name)
 {
-    if (m_graphClassMap.contains(name)) // only enabled items can be disabled
+    if (m_graphClassMap.contains(name)) // only enabled items can be disabled// 활성화 된 항목 만 비활성화 할 수 있습니다.
     {
         for (int i=0;i<m_graphClassMap.value(name).itemList.size();i++)
         {
@@ -735,9 +739,12 @@ void AP2DataPlot2D::itemDisabled(QString name)
         m_graphCount--;
         // first graph is the one for the text arrows, so the second
         // is the first 'line graph'
+        // 첫 번째 그래프는 텍스트 화살표의 그래프이므로 두 번째 그래프는
+        // 첫 번째 '선 그래프'입니다.
         if (m_graphCount == 2)
         {
             // Show grid if only one graph left
+            // 그래프가 하나만 남았을 때 격자 표시
             QString lastGraph = m_graphNameList.back();
             if (m_graphClassMap.contains(lastGraph))
             {
@@ -754,6 +761,7 @@ void AP2DataPlot2D::itemDisabled(QString name)
 void AP2DataPlot2D::clearGraph()
 {
     //Clear the graph
+    // 그래프 지우기
     for (int i=0;i<m_graphNameList.size();i++)
     {
         m_wideAxisRect->removeAxis(m_graphClassMap.value(m_graphNameList[i]).axis);
@@ -883,7 +891,7 @@ void AP2DataPlot2D::childGraphDestroyed(QObject *obj)
 void AP2DataPlot2D::logToKmlClicked()
 {
     QString filename = QFileDialog::getOpenFileName(this, "Open Log File", QGC::logDirectory(), tr("Log Files (*.log)"));
-    QApplication::processEvents(); // Helps clear dialog from screen
+    QApplication::processEvents(); // Helps clear dialog from screen// 화면에서 대화 상자를 지울 수 있도록 도와줍니다.
 
     if(filename.length() > 0) {
         QFile file(filename);
