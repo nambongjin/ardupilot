@@ -42,6 +42,9 @@ class WatchdogProcessView;
 /**
  * @brief Represents one process monitored by the linux onboard watchdog
  */
+/* *
+ * @brief 리눅스 온보드 워치 독에 의해 감시되는 하나의 프로세스를 나타냅니다.
+ */
 class WatchdogProcessView : public QWidget
 {
     Q_OBJECT
