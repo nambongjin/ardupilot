@@ -21,16 +21,20 @@ static const float LARGE_TEXT_SIZE = MEDIUM_TEXT_SIZE*1.2f;
 static const bool SHOW_ZERO_ON_SCALES = true;
 
 // all in units of display height
+// 디스플레이 높이 단위로 모두
 static const float ROLL_SCALE_RADIUS = 0.42f;
 static const float ROLL_SCALE_TICKMARKLENGTH = 0.04f;
 static const float ROLL_SCALE_MARKERWIDTH = 0.06f;
 static const float ROLL_SCALE_MARKERHEIGHT = 0.04f;
 // scale max. degrees
+// 최대 배율 도
 static const int ROLL_SCALE_RANGE = 60;
 
 // fraction of height to translate for each degree of pitch.
+// 각 피치별로 번역 할 높이의 분수.
 static const float PITCHTRANSLATION = 65;
 // 5 degrees for each line
+// 각 행당 5도
 static const int PITCH_SCALE_RESOLUTION = 5;
 static const float PITCH_SCALE_MAJORWIDTH = 0.1f;
 static const float PITCH_SCALE_MINORWIDTH = 0.066;
@@ -38,6 +42,9 @@ static const float PITCH_SCALE_MINORWIDTH = 0.066;
 // Beginning from PITCH_SCALE_WIDTHREDUCTION_FROM degrees of +/- pitch, the
 // width of the lines is reduced, down to PITCH_SCALE_WIDTHREDUCTION times
 // the normal width. This helps keep orientation in extreme attitudes.
+// PITCH_SCALE_WIDTHREDUCTION_FROM도 +/- 피치에서 시작하여
+// 줄의 너비는 PITCH_SCALE_WIDTHREDUCTION 번까지 줄입니다.
+// 정상적인 너비. 이것은 극단적 인 태도로 방향을 유지하는 데 도움이됩니다.
 static const int PITCH_SCALE_WIDTHREDUCTION_FROM = 30;
 static const float PITCH_SCALE_WIDTHREDUCTION = 0.3f;
 
@@ -46,6 +53,9 @@ static const int PITCH_SCALE_HALFRANGE = 15;
 // The number of degrees to either side of the heading to draw the compass disk.
 // 180 is valid, this will draw a complete disk. If the disk is partly clipped
 // away, less will do.
+// 나침반 디스크를 그리기 위해 표제의 어느 한쪽까지의 각도.
+// 180이 유효하면 전체 디스크를 그립니다. 디스크가 부분적으로 클리핑 된 경우
+// 멀리, 덜 할 것입니다.
 
 static const int  COMPASS_DISK_MAJORTICK = 10;
 static const int  COMPASS_DISK_ARROWTICK = 45;
@@ -63,10 +73,13 @@ static const float TAPE_GAUGES_TICKWIDTH_MAJOR = 0.25;
 static const float TAPE_GAUGES_TICKWIDTH_MINOR = 0.15;
 
 // The altitude difference between top and bottom of scale
+// 눈금의 상단과 하단의 고도 차이
 static const int ALTIMETER_LINEAR_SPAN = 50;
 // every 5 meters there is a tick mark
+// 5m마다 눈금이 있습니다.
 static const int ALTIMETER_LINEAR_RESOLUTION = 5;
 // every 10 meters there is a number
+// 매 10 미터마다 숫자가 있습니다.
 static const int ALTIMETER_LINEAR_MAJOR_RESOLUTION = 10;
 
 // Projected: An experiment. Make tape appear projected from a cylinder, like a French "drum" style gauge.
@@ -79,6 +92,7 @@ static const int ALTIMETER_LINEAR_MAJOR_RESOLUTION = 10;
 // min. and max. vertical velocity
 
 // min. and max. vertical velocity
+// min. 및 최대. 수직 속도
 static const int ALTIMETER_VVI_SPAN = 5;
 static const float ALTIMETER_VVI_WIDTH = 0.2f;
 
@@ -96,6 +110,12 @@ static const int UNKNOWN_SPEED = -1;
  * global fixed pens (and painters too?)
  * repaint on demand multiple canvases
  * multi implementation with shared model class
+ */
+/*
+ *@할 것:
+ * 글로벌 고정 펜 (그리고 화가들도?)
+ 요청에 따라 여러 캔버스 다시 그리기
+ 공유 모델 클래스를 사용한 다중 구현
  */
 double PrimaryFlightDisplay_round(double value, int digits=0)
 {
@@ -202,6 +222,8 @@ void PrimaryFlightDisplay::showEvent(QShowEvent* event)
 {
     // React only to internal (pre-display)
     // events
+    // 내부 (사전 표시)
+    // 이벤트
     QWidget::showEvent(event);
     refreshTimer->start(updateInterval);
     emit visibilityChanged(true);
@@ -211,6 +233,8 @@ void PrimaryFlightDisplay::hideEvent(QHideEvent* event)
 {
     // React only to internal (pre-display)
     // events
+    // 내부 (사전 표시)
+    // 이벤트
     refreshTimer->stop();
     QWidget::hideEvent(event);
     emit visibilityChanged(false);
