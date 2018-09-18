@@ -20,6 +20,7 @@ http://www.fsf.org/licensing/licenses
 #include "interpolation.h"
 
 // disable some irrelevant warnings
+// 관련없는 경고를 해제합니다.
 #if (AE_COMPILER==AE_MSVC)
 #pragma warning(disable:4100)
 #pragma warning(disable:4127)
@@ -33,6 +34,10 @@ using namespace std;
 // THIS SECTION CONTAINS IMPLEMENTATION OF C++ INTERFACE
 //
 /////////////////////////////////////////////////////////////////////////
+//
+//이 섹션은 C ++ 인터페이스의 구현을 포함한다.
+//
+/////////////////////////////////////////////////////////////////////////
 namespace alglib
 {
 
@@ -40,6 +45,9 @@ namespace alglib
 /*************************************************************************
 IDW interpolant.
 *************************************************************************/
+/************************************************** **********************
+IDW 보간법.
+*************************************************** ***********************/
 _idwinterpolant_owner::_idwinterpolant_owner()
 {
     p_struct = (alglib_impl::idwinterpolant*)alglib_impl::ae_malloc(sizeof(alglib_impl::idwinterpolant), NULL);
@@ -117,6 +125,20 @@ Result:
   -- ALGLIB --
      Copyright 02.03.2010 by Bochkanov Sergey
 *************************************************************************/
+/***************************************************************************
+IDW 보간법
+
+입력 매개 변수 :
+    모델 건물 중 하나와 함께 지어진 Z - IDW 보간
+            서브 루틴.
+    X- 배열 [0..NX-1], 보간 점
+
+결과:
+    IDW 보간 기 Z (X)
+
+  - ALGLIB -
+     저작권 02.03.2010 Bochkanov Sergey
+**************************************************************************/
 double idwcalc(const idwinterpolant &z, const real_1d_array &x)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -188,6 +210,61 @@ NOTES:
   -- ALGLIB PROJECT --
      Copyright 02.03.2010 by Bochkanov Sergey
 *************************************************************************/
+/***************************************************************************
+균일 한 점에 대해 수정 된 셰퍼드 (Shepard) 방법을 사용한 IDW 보간
+배포판.
+
+입력 매개 변수 :
+    XY - X 및 Y 값, array [0..N-1,0..NX].
+            첫 번째 NX 열은 X 값을 포함하고 마지막 열은 X 값을 포함합니다.
+            Y 값.
+    N - 노드 수, N> 0.
+    NX - 공간 차원, NX> = 1.
+    D 조 - 노드 기능 유형 중 하나 :
+            * 0 상수 모델. 데모 용으로 만, 최악의 경우에
+                    모델.
+            * 1 선형 모델, 최소 제곱 피팅. Simpe 모델 용
+                    2 차 모델에 비해 너무 작은 데이터 세트
+            * 2 2 차 모델, 최소 제곱 피팅. 최고의 모델
+                    사용할 수 있습니다 (데이터 세트가 충분히 큰 경우).
+            * -1 "빠른"선형 모델,주의해서 사용하십시오 !!! 그것은
+                    선형 / 2 차 이상보다 훨씬 빠른 속도
+                    상수 모델보다. 그러나 덜 강력합니다 (특히
+                    노이즈가있는 경우).
+    NQ - 노드 기능을 계산하는 데 사용 된 점의 수 (무시 됨)
+            상수 모델의 경우). NQ는 다음보다 크다.
+            선형 모델의 경우 max * (1.5 * (1 + NX), 2 ^ NX + 1)
+            * 2 차 모델의 경우 max (3 / 4 * (NX + 2) * (NX + 1), 2 ^ NX + 1)
+            이 임계 값보다 작은 값은 자동으로 증가합니다.
+    NW - 가중치를 계산하고 보간하는 데 사용되는 점의 수입니다.
+            필수 :> = 2 ^ NX + 1,이 임계 값보다 작은 값은
+            조용히 증가했다.
+            권장 값 : 약 2 * NQ
+
+출력 매개 변수 :
+    Z - IDW 보간.
+
+노트:
+  * 최상의 결과는 2 차 모델로 얻습니다. 최악 - ​​상수
+    모델
+  * N이 클 때 NQ와 NW는 N보다 훨씬 작아야합니다.
+    최적의 성능을 얻고 최적의 정확도를 얻을 수 있습니다. 2 또는
+    3 차원 작업 NQ = 15 및 NW = 25는 좋은 값입니다.
+  * NQ와 NW는 N보다 클 수 있습니다.
+    자동으로 감소했습니다.
+  *이 서브 루틴은 항상 성공합니다 (올바른 매개 변수가
+    통과).
+  * '분산 된 데이터 세트의 다 변수 보간'을 참조하십시오.
+    이 알고리즘에 대한 자세한 정보는 Robert J. Renka.
+  *이 서브 루틴은 점 분포가 작은 점
+    저울. 그렇지 않은 경우 - 예를 들어 점수가 집중되어있는 경우
+    "선들"이지만, "선들"분포는 더 큰 축척에서 균일하다.
+    IDWBuildModifiedShepardR ()을 사용해야합니다.
+
+
+  - ALGLIB 프로젝트 -
+     저작권 02.03.2010 Bochkanov Sergey
+**************************************************************************/
 void idwbuildmodifiedshepard(const real_2d_array &xy, const ae_int_t n, const ae_int_t nx, const ae_int_t d, const ae_int_t nq, const ae_int_t nw, idwinterpolant &z)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -231,6 +308,33 @@ NOTES:
   -- ALGLIB PROJECT --
      Copyright 11.04.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************** *************************
+비 균일 데이터 세트에 대해 수정 된 셰퍼드 방법을 사용하는 IDW 보간.
+
+이 유형의 모델은 상수 노드 기능을 사용하고 다음을 사용하여 보간합니다.
+사용자가 지정한 반지름 R보다 가까운 모든 노드
+소규모에서는 점 분포가 균일하지 않지만
+R만큼 큰 거리.
+
+입력 매개 변수 :
+    XY - X 및 Y 값, array [0..N-1,0..NX].
+            첫 번째 NX 열은 X 값을 포함하고 마지막 열은 X 값을 포함합니다.
+            Y 값.
+    N - 노드 수, N> 0.
+    NX - 공간 차원, NX> = 1.
+    R - 반경, R> 0
+
+출력 매개 변수 :
+    Z - IDW 보간.
+
+노트:
+* R-ball 내에서 IDWKMin 포인트보다 작 으면 알고리즘은
+  IDWK 가장 가까운 것, 그래서 보간의 연속성 속성은
+  심지어 지점에서 멀리 보존.
+
+  - ALGLIB 프로젝트 -
+     Copyright 11.04.2010 Bochkanov Sergey
+*************************************************** ***********************/
 void idwbuildmodifiedshepardr(const real_2d_array &xy, const ae_int_t n, const ae_int_t nx, const double r, idwinterpolant &z)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -310,6 +414,69 @@ NOTES:
   -- ALGLIB PROJECT --
      Copyright 02.03.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+시끄러운 데이터를위한 IDW 모델.
+
+이 서브 루틴은 잡음이 많은 데이터, 즉 잡음이있는 데이터를 처리하는 데 사용될 수 있습니다.
+출력 값. IDWBuildModifiedShepard ()와 다음과 다릅니다.
+상들:
+* 노드 함수는 노드를 통과하도록 제한되지 않습니다. Qi (xi) <> yi,
+  즉 우리는 보간 대신 피팅을합니다.
+* 최소 제곱 피팅 단계에서 사용되는 가중치는 모두 동일합니다.
+  ~ 1.0 (거리에 관계없이)
+* "빠른"선형 또는 상수 노드 기능은 지원되지 않습니다 (
+  충분히 견고하거나 너무 단단함)
+
+이 문제는 보간 문제보다 훨씬 복잡한 튜닝을 필요로합니다.
+아래에서이 문제와 관련된 몇 가지 권장 사항을 찾을 수 있습니다.
+* NQ 튜닝에 중점을 둡니다. 그것은 소음 감소를 제어합니다. NW와 마찬가지로
+  2 * NQ와 동일하게 만드십시오.
+* 교차 유효성 검사를 사용하여 최적의 NQ를 결정할 수 있습니다.
+* 최적의 NQ는 노이즈 레벨 (
+  잡음 =보다 큰 NQ 요구) 및 기본 함수 복잡성 (주어진 NQ
+  고정 N, 더 큰 NQ는 데이터에서 compex 기능의 평활화를 의미합니다). 에 대한
+  예를 들어, NQ = N은 가능한 한 최소 수준으로 노이즈를 줄이지 만,
+  (D에 따라) 상수 / 선형 / 2 차 함수로 끝날 것입니다.
+  전체 데이터 세트에 대한 사각형 모델.
+
+입력 매개 변수 :
+    XY - X 및 Y 값, array [0..N-1,0..NX].
+            첫 번째 NX 열은 X 값을 포함하고 마지막 열은 X 값을 포함합니다.
+            Y 값.
+    N - 노드 수, N> 0.
+    NX - 공간 차원, NX> = 1.
+    D 조 - 노드 기능 학위 중 하나 :
+            * 1 선형 모델, 최소 제곱 피팅. Simpe 모델 용
+                    2 차 모델의 경우 너무 작은 데이터 세트 (또는
+                    시끄러운 문제).
+            * 2 2 차 모델, 최소 제곱 피팅. 최고의 모델
+                    사용할 수 있습니다 (데이터 세트가 충분히 큰 경우).
+    NQ - 노드 기능을 계산하는 데 사용 된 점의 수입니다. NQ는해야한다.
+            의 1.5 배보다 훨씬 클 수있다.
+            잡음의 영향을 극복하기위한 노드 함수의 계수 :
+            * 선형 모델의 경우 1.5 * (1 + NX)보다 크고,
+            * 2 차 모델의 경우 3/4 * (NX + 2) * (NX + 1)보다 큽니다.
+            이 임계 값보다 작은 값은 자동으로 증가합니다.
+    NW - 가중치를 계산하고 보간하는 데 사용되는 점의 수입니다.
+            필수 :> = 2 ^ NX + 1,이 임계 값보다 작은 값은
+            조용히 증가했다.
+            권장 값 : 약 2 * NQ 이상
+
+출력 매개 변수 :
+    Z - IDW 보간.
+
+노트:
+  * 최상의 결과는 2 차 모델로 얻어지며, 선형 모델은 그렇지 않습니다.
+    그것이 당신이 원하는 것이라고 확신하지 않는 한 사용을 권장합니다.
+  *이 서브 루틴은 항상 성공합니다 (올바른 매개 변수가
+    통과).
+  * '분산 된 데이터 세트의 다 변수 보간'을 참조하십시오.
+    이 알고리즘에 대한 자세한 정보는 Robert J. Renka.
+
+
+  - ALGLIB 프로젝트 -
+     저작권 02.03.2010 Bochkanov Sergey
+**************************************************************************/
 void idwbuildnoisy(const real_2d_array &xy, const ae_int_t n, const ae_int_t nx, const ae_int_t d, const ae_int_t nq, const ae_int_t nw, idwinterpolant &z)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -329,6 +496,9 @@ void idwbuildnoisy(const real_2d_array &xy, const ae_int_t n, const ae_int_t nx,
 /*************************************************************************
 Barycentric interpolant.
 *************************************************************************/
+/*************************************************************************
+중성분 보간법.
+**************************************************************************/
 _barycentricinterpolant_owner::_barycentricinterpolant_owner()
 {
     p_struct = (alglib_impl::barycentricinterpolant*)alglib_impl::ae_malloc(sizeof(alglib_impl::barycentricinterpolant), NULL);
@@ -408,6 +578,23 @@ Result:
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+
+/***************************************************************************
+중성 수식을 사용한 합리적인 보간법
+
+/ SUM (i = 0, n-1, w [i] / (tx [i])], F (t) = SUM (i = 0, n-1, w [i] [나는]))
+
+입력 매개 변수 :
+    B - 모델 건물 중 하나를 사용하여 빌드 된 중거리 보간법
+            서브 루틴.
+    T - 보간 점
+
+결과:
+    중력 보간법 F (t)
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+**************************************************************************/
 double barycentriccalc(const barycentricinterpolant &b, const double t)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -446,6 +633,28 @@ NOTE
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************** *************************
+barycentric interpolant의 차등화 : 1 차 미분.
+
+이 서브 루틴에 사용 된 알고리즘은 매우 강력하며 실패 할 때까지 실패하지 않아야합니다.
+MaxRealNumber에 너무 가까운 값을 제공합니다 (일반적으로 MaxRealNumber / N
+이상이 오버 플로우됩니다).
+
+입력 매개 변수 :
+    B - 모델 건물 중 하나를 사용하여 빌드 된 중거리 보간법
+            서브 루틴.
+    T - 보간 점
+
+출력 매개 변수 :
+    F - T에서의 중성 삽입
+    DF - 1 차 미분
+
+노트
+
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+*************************************************** ***********************/
 void barycentricdiff1(const barycentricinterpolant &b, const double t, double &f, double &df)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -483,6 +692,27 @@ BarycentricDiff1() subroutine in such cases.
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/***************************************************************************
+barycentric interpolant의 차별화 : 1 차 / 2 차 파생 요소.
+
+입력 매개 변수 :
+    B - 모델 건물 중 하나를 사용하여 빌드 된 중거리 보간법
+            서브 루틴.
+    T - 보간 점
+
+출력 매개 변수 :
+    F - T에서의 중성 삽입
+    DF - 1 차 미분
+    D2F - 2 차 미분
+
+참고 :이 알고리즘은 데이터에 사용되는 경우 오버플로 / 언더 플로로 인해 실패 할 수 있습니다.
+값은 MaxRealNumber 또는 MinRealNumber에 가깝습니다. 보다 견고한 사용
+그런 경우 BarycentricDiff1 () 서브 루틴.
+
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+**************************************************************************/
 void barycentricdiff2(const barycentricinterpolant &b, const double t, double &f, double &df, double &d2f)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -512,6 +742,20 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 19.08.2009 by Bochkanov Sergey
 *************************************************************************/
+
+/************************************************** *************************
+이 서브 루틴은 인수의 선형 변환을 수행합니다.
+
+입력 매개 변수 :
+    B - 중성자 형태의 합리적인 보간법
+    CA, CB - 변환 계수 : x = CA * t + CB
+
+출력 매개 변수 :
+    B - X로 대체 된 보간법을 T로 바꾼다.
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 19.08.2009
+**************************************************************************/
 void barycentriclintransx(const barycentricinterpolant &b, const double ca, const double cb)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -542,6 +786,20 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 19.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/***************************************************************************
+이 서브 루틴은 barycentric의 선형 변환을 수행합니다.
+보간법.
+
+입력 매개 변수 :
+    B - 중성자 형태의 합리적인 보간법
+    CA, CB - 변환 계수 : B2 (x) = CA * B (x) + CB
+
+출력 매개 변수 :
+    B - 변형 된 보간법
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 19.08.2009
+**************************************************************************/
 void barycentriclintransy(const barycentricinterpolant &b, const double ca, const double cb)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -573,6 +831,21 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/***************************************************************************
+합리적인 보간에서 X / Y / W 배열 추출
+
+입력 매개 변수 :
+    B - 중력 보간법
+
+출력 매개 변수 :
+    N - 노드 수, N> 0
+    X - 보간 노드, array [0..N-1]
+    F - 함수 값, array [0..N-1]
+    W - 중력 가중치, 배열 [0..N-1]
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+**************************************************************************/
 void barycentricunpack(const barycentricinterpolant &b, ae_int_t &n, real_1d_array &x, real_1d_array &y, real_1d_array &w)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -606,6 +879,23 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/***************************************************************************
+X / Y / W 배열의 Rational interpolant
+
+/ SUM (i = 0, n-1, w [i] / (tx [i])], F (t) = SUM (i = 0, n-1, w [i] [나는]))
+
+입력 매개 변수 :
+    X - 보간 노드, array [0..N-1]
+    F - 함수 값, array [0..N-1]
+    W - 중력 가중치, 배열 [0..N-1]
+    N - 노드 수, N> 0
+
+출력 매개 변수 :
+    B - (X, Y, W)에서 빌드 된 중거리 보간법
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+**************************************************************************/
 void barycentricbuildxyw(const real_1d_array &x, const real_1d_array &y, const real_1d_array &w, const ae_int_t n, barycentricinterpolant &b)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -649,6 +939,33 @@ Note:
   -- ALGLIB PROJECT --
      Copyright 17.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+극이없는 합리적인 보간법
+
+서브 루틴은 실제없이 합리적인 보간 함수를 만듭니다.
+극점 (극점이없는 고저 평행 보간법 참조)
+근사 율 ', Michael S. Floater. 카이 호르만 (Kai Hormann)
+이 주제에 대한 정보).
+
+입력 매개 변수 :
+    X - 보간 노드, array [0..N-1].
+    Y - 함수 값, array [0..N-1].
+    N - 노드 수, N> 0.
+    D - 보간 체계의 차수, 0 <= D <= N-1.
+            D <0이면 오류가 발생합니다.
+            D> = N이면 D = N-1로 바뀝니다.
+            선택할 D를 모른다면 3-5 정도의 작은 값을 사용하십시오.
+
+출력 매개 변수 :
+    B - barycentric interpolant.
+
+노트 :
+    이 알고리즘은 항상 성공하고 닫음으로 가중치를 계산합니다.
+    기계 정밀도.
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 17.06.2007
+**************************************************************************/
 void barycentricbuildfloaterhormann(const real_1d_array &x, const real_1d_array &y, const ae_int_t n, const ae_int_t d, barycentricinterpolant &b)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -689,6 +1006,30 @@ NOTES:
   -- ALGLIB --
      Copyright 30.09.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+barycentric representation에서 Chebyshev basis로 변환.
+이 함수는 O (N ^ 2) 복잡도를가집니다.
+
+입력 매개 변수 :
+    P - 다항식 형태의 다항식
+    A, B - Chebyshev 다항식의 기본 간격 (아래 참조)
+            A <> B
+
+출력 매개 변수
+    T - Chebyshev 표현의 계수;
+            P (x) = sum {T [i] * Ti (2 * (xA) / (BA) -1), i = 0..N-
+            여기서 Ti - I - th Chebyshev 다항식.
+
+노트:
+    P로 전달 된 중성분 보간은 다항식이 될 수 있습니다.
+    다항식 보간 / 피팅 또는 합리적인 함수로부터
+    다항식이 아닙니다. 이 두 가지 경우를 구분할 수 없으며
+    알고리즘은 P가 다항식이라고 가정하여 작업을 시도합니다. 그렇지 않은 경우,
+    알고리즘은 결과를 반환하지만 아무런 의미가 없습니다.
+
+  - ALGLIB -
+     저작권 30.09.2010 Bochkanov Sergey
+**************************************************************************/
 void polynomialbar2cheb(const barycentricinterpolant &p, const double a, const double b, real_1d_array &t)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -725,6 +1066,26 @@ OUTPUT PARAMETERS
   -- ALGLIB --
      Copyright 30.09.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************** **********************
+Chebyshev 기초에서 중성 표상으로의 전환.
+이 함수는 O (N ^ 2) 복잡도를가집니다.
+
+입력 매개 변수 :
+    T - Chebyshev 표현의 계수;
+            P (x) = sum {T [i] * Ti (2 * (xA) / (BA) -1), i = 0..N}
+            여기서 Ti - I - th Chebyshev 다항식.
+    N - 계수의 수 :
+            * 주어진 경우 T의 선행 N 요소 만 사용됩니다.
+            * 주어지지 않은 경우, T의 크기로부터 자동으로 결정됩니다.
+    A, B - Chebyshev 다항식의 기본 간격 (위 참조)
+            A <B
+
+출력 매개 변수
+    P - 다항식 형태의 다항식
+
+  - ALGLIB -
+     저작권 30.09.2010 Bochkanov Sergey
+**************************************************************************/
 void polynomialcheb2bar(const real_1d_array &t, const ae_int_t n, const double a, const double b, barycentricinterpolant &p)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -761,6 +1122,26 @@ OUTPUT PARAMETERS
   -- ALGLIB --
      Copyright 30.09.2010 by Bochkanov Sergey
 *************************************************************************/
+/***************************************************************************
+Chebyshev 기초에서 중성 표상으로의 전환.
+이 함수는 O (N ^ 2) 복잡도를가집니다.
+
+입력 매개 변수 :
+    T - Chebyshev 표현의 계수;
+            P (x) = sum {T [i] * Ti (2 * (xA) / (BA) -1), i = 0..N}
+            여기서 Ti - I - th Chebyshev 다항식.
+    N - 계수의 수 :
+            * 주어진 경우 T의 선행 N 요소 만 사용됩니다.
+            * 주어지지 않은 경우, T의 크기로부터 자동으로 결정됩니다.
+    A, B - Chebyshev 다항식의 기본 간격 (위 참조)
+            A <B
+
+출력 매개 변수
+    P - 다항식 형태의 다항식
+
+  - ALGLIB -
+     저작권 30.09.2010 Bochkanov Sergey
+**************************************************************************/
 void polynomialcheb2bar(const real_1d_array &t, const double a, const double b, barycentricinterpolant &p)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -821,6 +1202,46 @@ NOTES:
   -- ALGLIB --
      Copyright 30.09.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+barycentric representation에서 power basis 로의 변환.
+이 함수는 O (N ^ 2) 복잡도를가집니다.
+
+입력 매개 변수 :
+    P - 다항식 형태의 다항식
+    C - 오프셋 (아래 참조). 0.0이 기본값으로 사용됩니다.
+    S - 규모 (아래 참조); 1.0이 기본값으로 사용됩니다. S ≠ 0.
+
+출력 매개 변수
+    A-coefficient, P (x) = sum {A [i] * ((XC) / S) ^ i, i = 0..N-1}
+    N - 계수의 수 (다항식 차수 + 1)
+
+노트:
+1.이 기능은 오프셋 및 스케일을 허용하며,이를 개선하도록 설정할 수 있습니다
+    다항식의 수치 적 속성. 예를 들어, P가
+    [-1, + 1]에 대한 보간 결과, C = 0과 S = 1을 설정할 수 있고
+    P를 1, x, x ^ 2, x ^ 3 등의 합으로 나타냅니다. 대부분의 경우
+    정확히 당신이 필요로하는 것입니다.
+
+    그러나 보간 모델이 [999,1001]에 빌드 된 경우
+    {1, x, x ^ 2, x ^ 3}을 사용할 때 수치 오류가 크게 증가하는 것을보십시오.
+    기초로서. P를 1, (x-1000), (x-1000) ^ 2, (x-1000) ^ 3
+    더 나은 옵션이 될 것입니다. 이러한 표현은 다음을 사용하여 얻을 수 있습니다.
+    오프셋 C로 1000.0, 스케일 S로 1.0
+
+2. 힘 기초는 아픈 조건이 있고 전술 한 트릭은 풀 수 없다.
+    이 문제는 완전히. 이 함수는
+    어떤 경우이든, N> 8 일 때 그들은 신뢰할 수 없게 될 것이다. 그러나, N 's
+    5 개 미만은 꽤 안전합니다.
+
+3. P로 전달 된 중성분 보간은 다항식이 될 수 있습니다.
+    다항식 보간 / 피팅 또는 합리적인 함수로부터
+    다항식이 아닙니다. 이 두 가지 경우를 구분할 수 없으며
+    알고리즘은 P가 다항식이라고 가정하여 작업을 시도합니다. 그렇지 않은 경우,
+    알고리즘은 결과를 반환하지만 아무런 의미가 없습니다.
+
+  - ALGLIB -
+     저작권 30.09.2010 Bochkanov Sergey
+**************************************************************************/
 void polynomialbar2pow(const barycentricinterpolant &p, const double c, const double s, real_1d_array &a)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -877,6 +1298,46 @@ NOTES:
   -- ALGLIB --
      Copyright 30.09.2010 by Bochkanov Sergey
 *************************************************************************/
+/***************************************************************************
+barycentric representation에서 power basis 로의 변환.
+이 함수는 O (N ^ 2) 복잡도를가집니다.
+
+입력 매개 변수 :
+    P - 다항식 형태의 다항식
+    C - 오프셋 (아래 참조). 0.0이 기본값으로 사용됩니다.
+    S - 규모 (아래 참조); 1.0이 기본값으로 사용됩니다. S ≠ 0.
+
+출력 매개 변수
+    A-coefficient, P (x) = sum {A [i] * ((XC) / S) ^ i, i = 0..N-1}
+    N - 계수의 수 (다항식 차수 + 1)
+
+노트:
+1.이 기능은 오프셋 및 스케일을 허용하며,이를 개선하도록 설정할 수 있습니다
+    다항식의 수치 적 속성. 예를 들어, P가
+    [-1, + 1]에 대한 보간 결과, C = 0과 S = 1을 설정할 수 있고
+    P를 1, x, x ^ 2, x ^ 3 등의 합으로 나타냅니다. 대부분의 경우
+    정확히 당신이 필요로하는 것입니다.
+
+    그러나 보간 모델이 [999,1001]에 빌드 된 경우
+    {1, x, x ^ 2, x ^ 3}을 사용할 때 수치 오류가 크게 증가하는 것을보십시오.
+    기초로서. P를 1, (x-1000), (x-1000) ^ 2, (x-1000) ^ 3
+    더 나은 옵션이 될 것입니다. 이러한 표현은 다음을 사용하여 얻을 수 있습니다.
+    오프셋 C로 1000.0, 스케일 S로 1.0
+
+2. 힘 기초는 아픈 조건이 있고 전술 한 트릭은 풀 수 없다.
+    이 문제는 완전히. 이 함수는
+    어떤 경우이든, N> 8 일 때 그들은 신뢰할 수 없게 될 것이다. 그러나, N 's
+    5 개 미만은 꽤 안전합니다.
+
+3. P로 전달 된 중성분 보간은 다항식이 될 수 있습니다.
+    다항식 보간 / 피팅 또는 합리적인 함수로부터
+    다항식이 아닙니다. 이 두 가지 경우를 구분할 수 없으며
+    알고리즘은 P가 다항식이라고 가정하여 작업을 시도합니다. 그렇지 않은 경우,
+    알고리즘은 결과를 반환하지만 아무런 의미가 없습니다.
+
+  - ALGLIB -
+     저작권 30.09.2010 Bochkanov Sergey
+**************************************************************************/
 void polynomialbar2pow(const barycentricinterpolant &p, real_1d_array &a)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -935,6 +1396,42 @@ NOTES:
   -- ALGLIB --
      Copyright 30.09.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+힘 기반에서 중성 표상으로의 전환.
+이 함수는 O (N ^ 2) 복잡도를가집니다.
+
+입력 매개 변수 :
+    A-coefficient, P (x) = sum {A [i] * ((XC) / S) ^ i, i = 0..N-1}
+    N - 계수의 수 (다항식 차수 + 1)
+            * 주어진 경우 A의 선행 N 요소 만 사용됩니다.
+            * 주어지지 않은 경우 A의 크기로부터 자동으로 결정됩니다.
+    C - 오프셋 (아래 참조). 0.0이 기본값으로 사용됩니다.
+    S - 규모 (아래 참조); 1.0이 기본값으로 사용됩니다. S ≠ 0.
+
+출력 매개 변수
+    P - 다항식 형태의 다항식
+
+
+노트:
+1.이 기능은 오프셋 및 스케일을 허용하며,이를 개선하도록 설정할 수 있습니다
+    다항식의 수치 적 속성. 예를 들어,
+    [-1, + 1]로 설정하면 C = 0 및 S = 1을 설정하고 1, x, x ^ 2,
+    x ^ 3 등등. 대부분의 경우 그것은 정확히 당신이 필요로하는 것입니다.
+
+    그러나 보간 모델이 [999,1001]에 빌드 된 경우
+    {1, x, x ^ 2, x ^ 3}을 사용할 때 수치 오류가 크게 증가하는 것을보십시오.
+    입력 기준. 1, (x-1000), (x-1000) ^ 2,
+    (x-1000) ^ 3이 더 좋은 옵션이 될 것입니다 (오프셋으로 1000.0을 지정해야합니다.
+    C 및 1.0은 눈금 S로 표시).
+
+2. 힘 기초는 아픈 조건이 있고 전술 한 트릭은 풀 수 없다.
+    이 문제는 완전히. 이 함수는 barycentric 모델을 반환합니다.
+    어떤 경우에도, 그러나 N> 8 정확도는 잘 떨어집니다. 그러나 N은
+    5는 꽤 안전합니다.
+
+  - ALGLIB -
+     저작권 30.09.2010 Bochkanov Sergey
+**************************************************************************/
 void polynomialpow2bar(const real_1d_array &a, const ae_int_t n, const double c, const double s, barycentricinterpolant &p)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -987,6 +1484,42 @@ NOTES:
   -- ALGLIB --
      Copyright 30.09.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+힘 기반에서 중성 표상으로의 전환.
+이 함수는 O (N ^ 2) 복잡도를가집니다.
+
+입력 매개 변수 :
+    A-coefficient, P (x) = sum {A [i] * ((XC) / S) ^ i, i = 0..N-1}
+    N - 계수의 수 (다항식 차수 + 1)
+            * 주어진 경우 A의 선행 N 요소 만 사용됩니다.
+            * 주어지지 않은 경우 A의 크기로부터 자동으로 결정됩니다.
+    C - 오프셋 (아래 참조). 0.0이 기본값으로 사용됩니다.
+    S - 규모 (아래 참조); 1.0이 기본값으로 사용됩니다. S ≠ 0.
+
+출력 매개 변수
+    P - 다항식 형태의 다항식
+
+
+노트:
+1.이 기능은 오프셋 및 스케일을 허용하며,이를 개선하도록 설정할 수 있습니다
+    다항식의 수치 적 속성. 예를 들어,
+    [-1, + 1]로 설정하면 C = 0 및 S = 1을 설정하고 1, x, x ^ 2,
+    x ^ 3 등등. 대부분의 경우 그것은 정확히 당신이 필요로하는 것입니다.
+
+    그러나 보간 모델이 [999,1001]에 빌드 된 경우
+    {1, x, x ^ 2, x ^ 3}을 사용할 때 수치 오류가 크게 증가하는 것을보십시오.
+    입력 기준. 1, (x-1000), (x-1000) ^ 2,
+    (x-1000) ^ 3이 더 좋은 옵션이 될 것입니다 (오프셋으로 1000.0을 지정해야합니다.
+    C 및 1.0은 눈금 S로 표시).
+
+2. 힘 기초는 아픈 조건이 있고 전술 한 트릭은 풀 수 없다.
+    이 문제는 완전히. 이 함수는 barycentric 모델을 반환합니다.
+    어떤 경우에도, 그러나 N> 8 정확도는 잘 떨어집니다. 그러나 N은
+    5는 꽤 안전합니다.
+
+  - ALGLIB -
+     저작권 30.09.2010 Bochkanov Sergey
+**************************************************************************/
 void polynomialpow2bar(const real_1d_array &a, barycentricinterpolant &p)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -1028,6 +1561,23 @@ OUTPUT PARAMETERS
   -- ALGLIB --
      Copyright 02.12.2009 by Bochkanov Sergey
 *************************************************************************/
+/***************************************************************************
+Lagrange intepolant : 일반 그리드에서 모델 생성.
+이 함수는 O (N ^ 2) 복잡도를가집니다.
+
+입력 매개 변수 :
+    X - 가로 좌표, array [0..N-1]
+    Y - 함수 값, 배열 [0..N-1]
+    N - 포인트 수, N> = 1
+
+출력 매개 변수
+    P - 라그랑주 보간을 나타내는 바이 트 센 트릭 모델
+            (ratint 단위 정보 및 BarycentricCalc () 설명을 참조하십시오.
+            자세한 정보).
+
+  - ALGLIB -
+     저작권 02.12.2009 Bochkanov Sergey
+**************************************************************************/
 void polynomialbuild(const real_1d_array &x, const real_1d_array &y, const ae_int_t n, barycentricinterpolant &p)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -1061,6 +1611,23 @@ OUTPUT PARAMETERS
   -- ALGLIB --
      Copyright 02.12.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+Lagrange intepolant : 일반 그리드에서 모델 생성.
+이 함수는 O (N ^ 2) 복잡도를가집니다.
+
+입력 매개 변수 :
+    X - 가로 좌표, array [0..N-1]
+    Y - 함수 값, 배열 [0..N-1]
+    N - 포인트 수, N> = 1
+
+출력 매개 변수
+    P - 라그랑주 보간을 나타내는 바이 트 센 트릭 모델
+            (ratint 단위 정보 및 BarycentricCalc () 설명을 참조하십시오.
+            자세한 정보).
+
+  - ALGLIB -
+     저작권 02.12.2009 Bochkanov Sergey
+**************************************************************************/
 void polynomialbuild(const real_1d_array &x, const real_1d_array &y, barycentricinterpolant &p)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -1101,6 +1668,25 @@ OUTPUT PARAMETERS
   -- ALGLIB --
      Copyright 03.12.2009 by Bochkanov Sergey
 *************************************************************************/
+/***************************************************************************
+Lagrange intepolant : 등거리 그리드에서 모델 생성.
+이 함수는 O (N) 복잡도를가집니다.
+
+입력 매개 변수 :
+    A - [A, B]의 왼쪽 경계
+    B - [A, B]의 오른쪽 경계
+    노드에서 Y - 함수 값, array [0..N-1]
+    N - 포인트 수, N> = 1
+            N = 1 인 경우 상수 모델이 구성됩니다.
+
+출력 매개 변수
+    P - 라그랑주 보간을 나타내는 바이 트 센 트릭 모델
+            (ratint 단위 정보 및 BarycentricCalc () 설명을 참조하십시오.
+            자세한 정보).
+
+  - ALGLIB -
+     Copyright 03.12.2009 Bochkanov Sergey
+**************************************************************************/
 void polynomialbuildeqdist(const double a, const double b, const real_1d_array &y, const ae_int_t n, barycentricinterpolant &p)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -1136,6 +1722,25 @@ OUTPUT PARAMETERS
   -- ALGLIB --
      Copyright 03.12.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************** **********************
+Lagrange intepolant : 등거리 그리드에서 모델 생성.
+이 함수는 O (N) 복잡도를가집니다.
+
+입력 매개 변수 :
+    A - [A, B]의 왼쪽 경계
+    B - [A, B]의 오른쪽 경계
+    노드에서 Y - 함수 값, array [0..N-1]
+    N - 포인트 수, N> = 1
+            N = 1 인 경우 상수 모델이 구성됩니다.
+
+출력 매개 변수
+    P - 라그랑주 보간을 나타내는 바이 트 센 트릭 모델
+            (ratint 단위 정보 및 BarycentricCalc () 설명을 참조하십시오.
+            자세한 정보).
+
+  - ALGLIB -
+     Copyright 03.12.2009 Bochkanov Sergey
+**************************************************************************/
 void polynomialbuildeqdist(const double a, const double b, const real_1d_array &y, barycentricinterpolant &p)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -1176,6 +1781,26 @@ OUTPUT PARAMETERS
   -- ALGLIB --
      Copyright 03.12.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+Chebyshev 격자 (첫 번째 종류)에 Lagrange intepolant.
+이 함수는 O (N) 복잡도를가집니다.
+
+입력 매개 변수 :
+    A - [A, B]의 왼쪽 경계
+    B - [A, B]의 오른쪽 경계
+    노드에서 Y - 함수 값, array [0..N-1],
+            (PI * (2 * i + 1) / (2 * n)))에 의해 결정된다 .Y [I] = Y (0.5 * (B + A)
+    N - 포인트 수, N> = 1
+            N = 1 인 경우 상수 모델이 구성됩니다.
+
+출력 매개 변수
+    P - 라그랑주 보간을 나타내는 바이 트 센 트릭 모델
+            (ratint 단위 정보 및 BarycentricCalc () 설명을 참조하십시오.
+            자세한 정보).
+
+  - ALGLIB -
+     Copyright 03.12.2009 Bochkanov Sergey
+**************************************************************************/
 void polynomialbuildcheb1(const double a, const double b, const real_1d_array &y, const ae_int_t n, barycentricinterpolant &p)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -1212,6 +1837,26 @@ OUTPUT PARAMETERS
   -- ALGLIB --
      Copyright 03.12.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+Chebyshev 격자 (첫 번째 종류)에 Lagrange intepolant.
+이 함수는 O (N) 복잡도를가집니다.
+
+입력 매개 변수 :
+    A - [A, B]의 왼쪽 경계
+    B - [A, B]의 오른쪽 경계
+    노드에서 Y - 함수 값, array [0..N-1],
+            (PI * (2 * i + 1) / (2 * n)))에 의해 결정된다 .Y [I] = Y (0.5 * (B + A)
+    N - 포인트 수, N> = 1
+            N = 1 인 경우 상수 모델이 구성됩니다.
+
+출력 매개 변수
+    P - 라그랑주 보간을 나타내는 바이 트 센 트릭 모델
+            (ratint 단위 정보 및 BarycentricCalc () 설명을 참조하십시오.
+            자세한 정보).
+
+  - ALGLIB -
+     Copyright 03.12.2009 Bochkanov Sergey
+**************************************************************************/
 void polynomialbuildcheb1(const double a, const double b, const real_1d_array &y, barycentricinterpolant &p)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -1252,6 +1897,26 @@ OUTPUT PARAMETERS
   -- ALGLIB --
      Copyright 03.12.2009 by Bochkanov Sergey
 *************************************************************************/
+/***************************************************************************
+Chebyshev 그리드 (두 번째 종류)에 Lagrange intepolant.
+이 함수는 O (N) 복잡도를가집니다.
+
+입력 매개 변수 :
+    A - [A, B]의 왼쪽 경계
+    B - [A, B]의 오른쪽 경계
+    노드에서 Y - 함수 값, array [0..N-1],
+            (PI * i / (n-1))) Y [I] = Y (0.5 * (B + A) + 0.5 * (BA)
+    N - 포인트 수, N> = 1
+            N = 1 인 경우 상수 모델이 구성됩니다.
+
+출력 매개 변수
+    P - 라그랑주 보간을 나타내는 바이 트 센 트릭 모델
+            (ratint 단위 정보 및 BarycentricCalc () 설명을 참조하십시오.
+            자세한 정보).
+
+  - ALGLIB -
+     Copyright 03.12.2009 Bochkanov Sergey
+**************************************************************************/
 void polynomialbuildcheb2(const double a, const double b, const real_1d_array &y, const ae_int_t n, barycentricinterpolant &p)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -1288,6 +1953,26 @@ OUTPUT PARAMETERS
   -- ALGLIB --
      Copyright 03.12.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+Chebyshev 그리드 (두 번째 종류)에 Lagrange intepolant.
+이 함수는 O (N) 복잡도를가집니다.
+
+입력 매개 변수 :
+    A - [A, B]의 왼쪽 경계
+    B - [A, B]의 오른쪽 경계
+    노드에서 Y - 함수 값, array [0..N-1],
+            (PI * i / (n-1))) Y [I] = Y (0.5 * (B + A) + 0.5 * (BA)
+    N - 포인트 수, N> = 1
+            N = 1 인 경우 상수 모델이 구성됩니다.
+
+출력 매개 변수
+    P - 라그랑주 보간을 나타내는 바이 트 센 트릭 모델
+            (ratint 단위 정보 및 BarycentricCalc () 설명을 참조하십시오.
+            자세한 정보).
+
+  - ALGLIB -
+     Copyright 03.12.2009 Bochkanov Sergey
+**************************************************************************/
 void polynomialbuildcheb2(const double a, const double b, const real_1d_array &y, barycentricinterpolant &p)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -1332,6 +2017,30 @@ IMPORTANT
   -- ALGLIB --
      Copyright 02.12.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+O (N) 복잡도를 갖는 고속 등거리 다항식 보간 함수
+
+입력 매개 변수 :
+    A - [A, B]의 왼쪽 경계
+    B - [A, B]의 오른쪽 경계
+    F - 함수 값, array [0..N-1]
+    N - 등거리 그리드상의 점의 수, N> = 1
+            N = 1 인 경우 상수 모델이 구성됩니다.
+    T - P (x)를 계산하는 위치
+
+결과
+    T에서의 Lagrange 보간 값
+
+중대한
+    이 함수는 오버 플로우 방지가 아닌 빠른 인터페이스를 제공합니다.
+    매우 정확하지도 않습니다.
+    가장 좋은 방법은 PolynomialBuildEqDist () / BarycentricCalc ()를 사용하는 것입니다.
+    당신의 데이터가 결과가 나오지 않는다고 확신하지 않는 한 서브 루틴
+    오버플로에서.
+
+  - ALGLIB -
+     저작권 02.12.2009 Bochkanov Sergey
+**************************************************************************/
 double polynomialcalceqdist(const double a, const double b, const real_1d_array &f, const ae_int_t n, const double t)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -1372,6 +2081,30 @@ IMPORTANT
   -- ALGLIB --
      Copyright 02.12.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+O (N) 복잡도를 갖는 고속 등거리 다항식 보간 함수
+
+입력 매개 변수 :
+    A - [A, B]의 왼쪽 경계
+    B - [A, B]의 오른쪽 경계
+    F - 함수 값, array [0..N-1]
+    N - 등거리 그리드상의 점의 수, N> = 1
+            N = 1 인 경우 상수 모델이 구성됩니다.
+    T - P (x)를 계산하는 위치
+
+결과
+    T에서의 Lagrange 보간 값
+
+중대한
+    이 함수는 오버 플로우 방지가 아닌 빠른 인터페이스를 제공합니다.
+    매우 정확하지도 않습니다.
+    가장 좋은 방법은 PolynomialBuildEqDist () / BarycentricCalc ()를 사용하는 것입니다.
+    당신의 데이터가 결과가 나오지 않는다고 확신하지 않는 한 서브 루틴
+    오버플로에서.
+
+  - ALGLIB -
+     저작권 02.12.2009 Bochkanov Sergey
+**************************************************************************/
 double polynomialcalceqdist(const double a, const double b, const real_1d_array &f, const double t)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -1418,6 +2151,32 @@ IMPORTANT
   -- ALGLIB --
      Copyright 02.12.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+Chebyshev 포인트에서의 빠른 다항식 보간 함수 (첫 번째 종류)
+O (N) 복잡도.
+
+입력 매개 변수 :
+    A - [A, B]의 왼쪽 경계
+    B - [A, B]의 오른쪽 경계
+    F - 함수 값, array [0..N-1]
+    N - Chebyshev 그리드 (첫 번째 종류)의 점수,
+            X * [i] = 0.5 * (B + A) + 0.5 * (BA) * Cos (PI * (2 * i + 1) / (2 * n)
+            N = 1 인 경우 상수 모델이 구성됩니다.
+    T - P (x)를 계산하는 위치
+
+결과
+    T에서의 Lagrange 보간 값
+
+중대한
+    이 함수는 오버 플로우 방지가 아닌 빠른 인터페이스를 제공합니다.
+    매우 정확하지도 않습니다.
+    가장 좋은 방법은 PolIntBuildCheb1 () / BarycentricCalc ()를 사용하는 것입니다.
+    당신의 데이터가 결과가 나오지 않는다고 확신하지 않는 한 서브 루틴
+    오버플로에서.
+
+  - ALGLIB -
+     저작권 02.12.2009 Bochkanov Sergey
+**************************************************************************/
 double polynomialcalccheb1(const double a, const double b, const real_1d_array &f, const ae_int_t n, const double t)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -1460,6 +2219,32 @@ IMPORTANT
   -- ALGLIB --
      Copyright 02.12.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+Chebyshev 포인트에서의 빠른 다항식 보간 함수 (첫 번째 종류)
+O (N) 복잡도.
+
+입력 매개 변수 :
+    A - [A, B]의 왼쪽 경계
+    B - [A, B]의 오른쪽 경계
+    F - 함수 값, array [0..N-1]
+    N - Chebyshev 그리드 (첫 번째 종류)의 점수,
+            X * [i] = 0.5 * (B + A) + 0.5 * (BA) * Cos (PI * (2 * i + 1) / (2 * n)
+            N = 1 인 경우 상수 모델이 구성됩니다.
+    T - P (x)를 계산하는 위치
+
+결과
+    T에서의 Lagrange 보간 값
+
+중대한
+    이 함수는 오버 플로우 방지가 아닌 빠른 인터페이스를 제공합니다.
+    매우 정확하지도 않습니다.
+    가장 좋은 방법은 PolIntBuildCheb1 () / BarycentricCalc ()를 사용하는 것입니다.
+    당신의 데이터가 결과가 나오지 않는다고 확신하지 않는 한 서브 루틴
+    오버플로에서.
+
+  - ALGLIB -
+     저작권 02.12.2009 Bochkanov Sergey
+**************************************************************************/
 double polynomialcalccheb1(const double a, const double b, const real_1d_array &f, const double t)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -1506,6 +2291,32 @@ IMPORTANT
   -- ALGLIB --
      Copyright 02.12.2009 by Bochkanov Sergey
 *************************************************************************/
+/***************************************************************************
+Chebyshev 포인트에서의 빠른 다항식 보간 기능 (두 번째 종류)
+O (N) 복잡도.
+
+입력 매개 변수 :
+    A - [A, B]의 왼쪽 경계
+    B - [A, B]의 오른쪽 경계
+    F - 함수 값, array [0..N-1]
+    N - Chebyshev 격자 (두 번째 종류)의 점 수,
+            X (i) = 0.5 * (B + A) + 0.5 * (BA) * Cos (PI * i / (n-1))
+            N = 1 인 경우 상수 모델이 구성됩니다.
+    T - P (x)를 계산하는 위치
+
+결과
+    T에서의 Lagrange 보간 값
+
+중대한
+    이 함수는 오버 플로우 방지가 아닌 빠른 인터페이스를 제공합니다.
+    매우 정확하지도 않습니다.
+    가장 좋은 방법은 PolIntBuildCheb2 () / BarycentricCalc ()를 사용하는 것입니다.
+    당신의 데이터가 결과가 나오지 않는다고 확신하지 않는 한 서브 루틴
+    오버플로에서.
+
+  - ALGLIB -
+     저작권 02.12.2009 Bochkanov Sergey
+**************************************************************************/
 double polynomialcalccheb2(const double a, const double b, const real_1d_array &f, const ae_int_t n, const double t)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -1548,6 +2359,32 @@ IMPORTANT
   -- ALGLIB --
      Copyright 02.12.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+Chebyshev 포인트에서의 빠른 다항식 보간 기능 (두 번째 종류)
+O (N) 복잡도.
+
+입력 매개 변수 :
+    A - [A, B]의 왼쪽 경계
+    B - [A, B]의 오른쪽 경계
+    F - 함수 값, array [0..N-1]
+    N - Chebyshev 격자 (두 번째 종류)의 점 수,
+            X (i) = 0.5 * (B + A) + 0.5 * (BA) * Cos (PI * i / (n-1))
+            N = 1 인 경우 상수 모델이 구성됩니다.
+    T - P (x)를 계산하는 위치
+
+결과
+    T에서의 Lagrange 보간 값
+
+중대한
+    이 함수는 오버 플로우 방지가 아닌 빠른 인터페이스를 제공합니다.
+    매우 정확하지도 않습니다.
+    가장 좋은 방법은 PolIntBuildCheb2 () / BarycentricCalc ()를 사용하는 것입니다.
+    당신의 데이터가 결과가 나오지 않는다고 확신하지 않는 한 서브 루틴
+    오버플로에서.
+
+  - ALGLIB -
+     저작권 02.12.2009 Bochkanov Sergey
+**************************************************************************/
 double polynomialcalccheb2(const double a, const double b, const real_1d_array &f, const double t)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -1571,6 +2408,9 @@ double polynomialcalccheb2(const double a, const double b, const real_1d_array &
 /*************************************************************************
 1-dimensional spline interpolant
 *************************************************************************/
+/************************************************** ***********************
+1 차원 스플라인 보간법
+*************************************************** ***********************/
 _spline1dinterpolant_owner::_spline1dinterpolant_owner()
 {
     p_struct = (alglib_impl::spline1dinterpolant*)alglib_impl::ae_malloc(sizeof(alglib_impl::spline1dinterpolant), NULL);
@@ -1657,6 +2497,29 @@ Subroutine automatically sorts points, so caller may pass unsorted array.
   -- ALGLIB PROJECT --
      Copyright 24.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 서브 루틴은 선형 스플라인 보간을 작성합니다.
+
+입력 매개 변수 :
+    X - 스플라인 노드, 배열 [0..N-1]
+    Y - 함수 값, 배열 [0..N-1]
+    N - 포인트 카운트 (옵션) :
+            * N> = 2
+            * 주어진 경우 첫 번째 N 점만이 스플라인을 작성하는 데 사용됩니다.
+            * 지정하지 않으면 X / Y 크기에서 자동 감지
+              (len (X)는 len (Y)와 같아야 함)
+
+출력 매개 변수 :
+    C - 스플라인 보간
+
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 24.06.2007
+**************************************************************************/
 void spline1dbuildlinear(const real_1d_array &x, const real_1d_array &y, const ae_int_t n, spline1dinterpolant &c)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -1696,6 +2559,29 @@ Subroutine automatically sorts points, so caller may pass unsorted array.
   -- ALGLIB PROJECT --
      Copyright 24.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 서브 루틴은 선형 스플라인 보간을 작성합니다.
+
+입력 매개 변수 :
+    X - 스플라인 노드, 배열 [0..N-1]
+    Y - 함수 값, 배열 [0..N-1]
+    N - 포인트 카운트 (옵션) :
+            * N> = 2
+            * 주어진 경우 첫 번째 N 점만이 스플라인을 작성하는 데 사용됩니다.
+            * 지정하지 않으면 X / Y 크기에서 자동 감지
+              (len (X)는 len (Y)와 같아야 함)
+
+출력 매개 변수 :
+    C - 스플라인 보간
+
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 24.06.2007
+**************************************************************************/
 void spline1dbuildlinear(const real_1d_array &x, const real_1d_array &y, spline1dinterpolant &c)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -1770,6 +2656,59 @@ i.e. to make Y[first_point]=Y[last_point].
   -- ALGLIB PROJECT --
      Copyright 23.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 서브 루틴은 3 차 스플라인 보간을 만듭니다.
+
+입력 매개 변수 :
+    X - 스플라인 노드, 배열 [0..N-1].
+    Y - 함수 값, array [0..N-1].
+
+선택 가능한 매개 변수 :
+    N - 점 수 :
+                    * N> = 2
+                    * 주어진 경우 첫 번째 N 점만이 스플라인을 작성하는 데 사용됩니다.
+                    * 지정하지 않으면 X / Y 크기에서 자동 감지됩니다.
+                      (len (X)는 len (Y)와 같아야 함)
+    BoundLType - 왼쪽 경계의 경계 조건 유형
+    BoundL - 왼쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundLType에 따라 다름)
+    BoundRType - 오른쪽 경계의 경계 조건 타입
+    BoundR - 오른쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundRType에 따라 다름)
+
+출력 매개 변수 :
+    C - 스플라인 보간
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+
+경계 값 설정 :
+
+BoundLType / BoundRType 매개 변수의 값은 다음과 같습니다.
+    * -1은주기적인 (주기적) 경계 조건에 해당합니다.
+          이 경우 :
+          BoundLType와 BoundRType는 모두 -1과 같아야합니다.
+          * BoundL / BoundR은 무시됩니다.
+          * Y [last]는 무시됩니다 (Y [first]와 같음).
+    * 0은 파라볼 릭 종료 스플라인에 해당합니다.
+          BoundL 및 / 또는 BoundR은 무시됩니다.
+    * 1, 1 차 미분 경계 조건에 해당
+    * 2, 이차 미분 경계 조건에 해당
+    * 기본적으로 BoundType = 0이 사용됩니다.
+
+정기적 인 경계 조건과 관련된 문제 :
+
+주기적인 경계 조건의 문제는 Y [first_point] = Y [last_point]입니다.
+그러나이 서브 루틴에서는 다음과 같은 값을 지정할 필요가 없습니다.
+첫번째와 마지막 점 - 자동으로 그것들을 동일하게 만든다.
+Y [first_point] (가장 왼쪽, 최소 X []에 해당)를
+Y [last_point]. 그러나 Y []의 일관된 값을 전달하는 것이 좋습니다.
+즉 Y [first_point] = Y [last_point]를 만들 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     저작권 23.06.2007 Bochkanov Sergey
+**************************************************************************/
 void spline1dbuildcubic(const real_1d_array &x, const real_1d_array &y, const ae_int_t n, const ae_int_t boundltype, const double boundl, const ae_int_t boundrtype, const double boundr, spline1dinterpolant &c)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -1839,6 +2778,59 @@ i.e. to make Y[first_point]=Y[last_point].
   -- ALGLIB PROJECT --
      Copyright 23.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/***************************************************************************
+이 서브 루틴은 3 차 스플라인 보간을 만듭니다.
+
+입력 매개 변수 :
+    X - 스플라인 노드, 배열 [0..N-1].
+    Y - 함수 값, array [0..N-1].
+
+선택 가능한 매개 변수 :
+    N - 점 수 :
+                    * N> = 2
+                    * 주어진 경우 첫 번째 N 점만이 스플라인을 작성하는 데 사용됩니다.
+                    * 지정하지 않으면 X / Y 크기에서 자동 감지
+                      (len (X)는 len (Y)와 같아야 함)
+    BoundLType - 왼쪽 경계의 경계 조건 유형
+    BoundL - 왼쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundLType에 따라 다름)
+    BoundRType - 오른쪽 경계의 경계 조건 타입
+    BoundR - 오른쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundRType에 따라 다름)
+
+출력 매개 변수 :
+    C - 스플라인 보간
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+
+경계 값 설정 :
+
+BoundLType / BoundRType 매개 변수의 값은 다음과 같습니다.
+    * -1은주기적인 (주기적) 경계 조건에 해당합니다.
+          이 경우 :
+          BoundLType와 BoundRType는 모두 -1과 같아야합니다.
+          * BoundL / BoundR은 무시됩니다.
+          * Y [last]는 무시됩니다 (Y [first]와 같음).
+    * 0은 파라볼 릭 종료 스플라인에 해당합니다.
+          BoundL 및 / 또는 BoundR은 무시됩니다.
+    * 1, 1 차 미분 경계 조건에 해당
+    * 2, 이차 미분 경계 조건에 해당
+    * 기본적으로 BoundType = 0이 사용됩니다.
+
+정기적 인 경계 조건과 관련된 문제 :
+
+주기적인 경계 조건의 문제는 Y [first_point] = Y [last_point]입니다.
+그러나이 서브 루틴에서는 다음과 같은 값을 지정할 필요가 없습니다.
+첫번째와 마지막 점 - 자동으로 그것들을 동일하게 만든다.
+Y [first_point] (가장 왼쪽, 최소 X []에 해당)를
+Y [last_point]. 그러나 Y []의 일관된 값을 전달하는 것이 좋습니다.
+즉 Y [first_point] = Y [last_point]를 만들 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     저작권 23.06.2007 Bochkanov Sergey
+**************************************************************************/
 void spline1dbuildcubic(const real_1d_array &x, const real_1d_array &y, spline1dinterpolant &c)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -1929,6 +2921,67 @@ i.e. to make Y[first_point]=Y[last_point].
   -- ALGLIB PROJECT --
      Copyright 03.09.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 함수는 다음과 같은 문제를 해결합니다 : 주어진 테이블 y [] 함수 값
+노드 x []에서 함수 파생 ​​테이블 d []를 계산하여 반환합니다.
+(동일한 노드 x []에서 계산 됨).
+
+이 함수는 Spline1DBuildCubic () 호출과 동일한 결과를 산출 한 다음
+Spline1DDiff () 호출의 시퀀스를
+순서가있는 X []와 X2 []를 호출했습니다.
+
+입력 매개 변수 :
+    X - 스플라인 노드
+    Y - 함수 값
+
+선택 가능한 매개 변수 :
+    N - 점 수 :
+                    * N> = 2
+                    * 주어진 경우 첫 번째 N 점만 사용됩니다.
+                    * 지정하지 않으면 X / Y 크기에서 자동 감지
+                      (len (X)는 len (Y)와 같아야 함)
+    BoundLType - 왼쪽 경계의 경계 조건 유형
+    BoundL - 왼쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundLType에 따라 다름)
+    BoundRType - 오른쪽 경계의 경계 조건 타입
+    BoundR - 오른쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundRType에 따라 다름)
+
+출력 매개 변수 :
+    D - X []에서 미분 값
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+미분 값은 반환시 올바르게 재정렬되므로 D [I]는 항상
+점 순서와 관계없이 S '(X [I])와 같습니다.
+
+경계 값 설정 :
+
+BoundLType / BoundRType 매개 변수의 값은 다음과 같습니다.
+    * -1은주기적인 (주기적) 경계 조건에 해당합니다.
+          이 경우 :
+          BoundLType와 BoundRType는 모두 -1과 같아야합니다.
+          * BoundL / BoundR은 무시됩니다.
+          * Y [last]는 무시됩니다 (Y [first]와 같음).
+    * 0은 파라볼 릭 종료 스플라인에 해당합니다.
+          BoundL 및 / 또는 BoundR은 무시됩니다.
+    * 1, 1 차 미분 경계 조건에 해당
+    * 2, 이차 미분 경계 조건에 해당
+    * 기본적으로 BoundType = 0이 사용됩니다.
+
+정기적 인 경계 조건과 관련된 문제 :
+
+주기적인 경계 조건의 문제는 Y [first_point] = Y [last_point]입니다.
+그러나이 서브 루틴에서는 다음과 같은 값을 지정할 필요가 없습니다.
+첫번째와 마지막 점 - 자동으로 그것들을 동일하게 만든다.
+Y [first_point] (가장 왼쪽, 최소 X []에 해당)를
+Y [last_point]. 그러나 Y []의 일관된 값을 전달하는 것이 좋습니다.
+즉 Y [first_point] = Y [last_point]를 만들 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     저작권 03.09.2010 Bochkanov Sergey
+**************************************************************************/
 void spline1dgriddiffcubic(const real_1d_array &x, const real_1d_array &y, const ae_int_t n, const ae_int_t boundltype, const double boundl, const ae_int_t boundrtype, const double boundr, real_1d_array &d)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -2006,6 +3059,67 @@ i.e. to make Y[first_point]=Y[last_point].
   -- ALGLIB PROJECT --
      Copyright 03.09.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 함수는 다음과 같은 문제를 해결합니다 : 주어진 테이블 y [] 함수 값
+노드 x []에서 함수 파생 ​​테이블 d []를 계산하여 반환합니다.
+(동일한 노드 x []에서 계산 됨).
+
+이 함수는 Spline1DBuildCubic () 호출과 동일한 결과를 산출 한 다음
+Spline1DDiff () 호출의 시퀀스를
+순서가있는 X []와 X2 []를 호출했습니다.
+
+입력 매개 변수 :
+    X - 스플라인 노드
+    Y - 함수 값
+
+선택 가능한 매개 변수 :
+    N - 점 수 :
+                    * N> = 2
+                    * 주어진 경우 첫 번째 N 점만 사용됩니다.
+                    * 지정하지 않으면 X / Y 크기에서 자동 감지
+                      (len (X)는 len (Y)와 같아야 함)
+    BoundLType - 왼쪽 경계의 경계 조건 유형
+    BoundL - 왼쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundLType에 따라 다름)
+    BoundRType - 오른쪽 경계의 경계 조건 타입
+    BoundR - 오른쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundRType에 따라 다름)
+
+출력 매개 변수 :
+    D - X []에서 미분 값
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+미분 값은 반환시 올바르게 재정렬되므로 D [I]는 항상
+점 순서와 관계없이 S '(X [I])와 같습니다.
+
+경계 값 설정 :
+
+BoundLType / BoundRType 매개 변수의 값은 다음과 같습니다.
+    * -1은주기적인 (주기적) 경계 조건에 해당합니다.
+          이 경우 :
+          BoundLType와 BoundRType는 모두 -1과 같아야합니다.
+          * BoundL / BoundR은 무시됩니다.
+          * Y [last]는 무시됩니다 (Y [first]와 같음).
+    * 0은 파라볼 릭 종료 스플라인에 해당합니다.
+          BoundL 및 / 또는 BoundR은 무시됩니다.
+    * 1, 1 차 미분 경계 조건에 해당
+    * 2, 이차 미분 경계 조건에 해당
+    * 기본적으로 BoundType = 0이 사용됩니다.
+
+정기적 인 경계 조건과 관련된 문제 :
+
+주기적인 경계 조건의 문제는 Y [first_point] = Y [last_point]입니다.
+그러나이 서브 루틴에서는 다음과 같은 값을 지정할 필요가 없습니다.
+첫번째와 마지막 점 - 자동으로 그것들을 동일하게 만든다.
+Y [first_point] (가장 왼쪽, 최소 X []에 해당)를
+Y [last_point]. 그러나 Y []의 일관된 값을 전달하는 것이 좋습니다.
+즉 Y [first_point] = Y [last_point]를 만들 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     저작권 03.09.2010 Bochkanov Sergey
+**************************************************************************/
 void spline1dgriddiffcubic(const real_1d_array &x, const real_1d_array &y, real_1d_array &d)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -2097,6 +3211,68 @@ i.e. to make Y[first_point]=Y[last_point].
   -- ALGLIB PROJECT --
      Copyright 03.09.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 함수는 다음과 같은 문제를 해결합니다 : 주어진 테이블 y [] 함수 값
+노드 x []에서 첫 번째 및 두 번째 테이블을 계산하여 반환합니다.
+함수 파생 ​​d1 []과 d2 [] (같은 노드 x []에서 계산).
+
+이 함수는 Spline1DBuildCubic () 호출과 동일한 결과를 산출 한 다음
+Spline1DDiff () 호출의 시퀀스를
+순서가있는 X []와 X2 []를 호출했습니다.
+
+입력 매개 변수 :
+    X - 스플라인 노드
+    Y - 함수 값
+
+선택 가능한 매개 변수 :
+    N - 점 수 :
+                    * N> = 2
+                    * 주어진 경우 첫 번째 N 점만 사용됩니다.
+                    * 지정하지 않으면 X / Y 크기에서 자동 감지
+                      (len (X)는 len (Y)와 같아야 함)
+    BoundLType - 왼쪽 경계의 경계 조건 유형
+    BoundL - 왼쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundLType에 따라 다름)
+    BoundRType - 오른쪽 경계의 경계 조건 타입
+    BoundR - 오른쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundRType에 따라 다름)
+
+출력 매개 변수 :
+    X []에서 D1 - S '값
+    X []에서 D2 - S "값
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+미분 값은 반환시 올바르게 재정렬되므로 D [I]는 항상
+점 순서와 관계없이 S '(X [I])와 같습니다.
+
+경계 값 설정 :
+
+BoundLType / BoundRType 매개 변수의 값은 다음과 같습니다.
+    * -1은주기적인 (주기적) 경계 조건에 해당합니다.
+          이 경우 :
+          BoundLType와 BoundRType는 모두 -1과 같아야합니다.
+          * BoundL / BoundR은 무시됩니다.
+          * Y [last]는 무시됩니다 (Y [first]와 같음).
+    * 0은 파라볼 릭 종료 스플라인에 해당합니다.
+          BoundL 및 / 또는 BoundR은 무시됩니다.
+    * 1, 1 차 미분 경계 조건에 해당
+    * 2, 이차 미분 경계 조건에 해당
+    * 기본적으로 BoundType = 0이 사용됩니다.
+
+정기적 인 경계 조건과 관련된 문제 :
+
+주기적인 경계 조건의 문제는 Y [first_point] = Y [last_point]입니다.
+그러나이 서브 루틴에서는 다음과 같은 값을 지정할 필요가 없습니다.
+첫번째와 마지막 점 - 자동으로 그것들을 동일하게 만든다.
+Y [first_point] (가장 왼쪽, 최소 X []에 해당)를
+Y [last_point]. 그러나 Y []의 일관된 값을 전달하는 것이 좋습니다.
+즉 Y [first_point] = Y [last_point]를 만들 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     저작권 03.09.2010 Bochkanov Sergey
+**************************************************************************/
 void spline1dgriddiff2cubic(const real_1d_array &x, const real_1d_array &y, const ae_int_t n, const ae_int_t boundltype, const double boundl, const ae_int_t boundrtype, const double boundr, real_1d_array &d1, real_1d_array &d2)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -2175,6 +3351,68 @@ i.e. to make Y[first_point]=Y[last_point].
   -- ALGLIB PROJECT --
      Copyright 03.09.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************** **********************
+이 함수는 다음과 같은 문제를 해결합니다 : 주어진 테이블 y [] 함수 값
+노드 x []에서 첫 번째 및 두 번째 테이블을 계산하여 반환합니다.
+함수 파생 ​​d1 []과 d2 [] (같은 노드 x []에서 계산).
+
+이 함수는 Spline1DBuildCubic () 호출과 동일한 결과를 산출 한 다음
+Spline1DDiff () 호출의 시퀀스를
+순서가있는 X []와 X2 []를 호출했습니다.
+
+입력 매개 변수 :
+    X - 스플라인 노드
+    Y - 함수 값
+
+선택 가능한 매개 변수 :
+    N - 점 수 :
+                    * N> = 2
+                    * 주어진 경우 첫 번째 N 점만 사용됩니다.
+                    * 지정하지 않으면 X / Y 크기에서 자동 감지
+                      (len (X)는 len (Y)와 같아야 함)
+    BoundLType - 왼쪽 경계의 경계 조건 유형
+    BoundL - 왼쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundLType에 따라 다름)
+    BoundRType - 오른쪽 경계의 경계 조건 타입
+    BoundR - 오른쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundRType에 따라 다름)
+
+출력 매개 변수 :
+    X []에서 D1 - S '값
+    X []에서 D2 - S "값
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+미분 값은 반환시 올바르게 재정렬되므로 D [I]는 항상
+점 순서와 관계없이 S '(X [I])와 같습니다.
+
+경계 값 설정 :
+
+BoundLType / BoundRType 매개 변수의 값은 다음과 같습니다.
+    * -1은주기적인 (주기적) 경계 조건에 해당합니다.
+          이 경우 :
+          BoundLType와 BoundRType는 모두 -1과 같아야합니다.
+          * BoundL / BoundR은 무시됩니다.
+          * Y [last]는 무시됩니다 (Y [first]와 같음).
+    * 0은 파라볼 릭 종료 스플라인에 해당합니다.
+          BoundL 및 / 또는 BoundR은 무시됩니다.
+    * 1, 1 차 미분 경계 조건에 해당
+    * 2, 이차 미분 경계 조건에 해당
+    * 기본적으로 BoundType = 0이 사용됩니다.
+
+정기적 인 경계 조건과 관련된 문제 :
+
+주기적인 경계 조건의 문제는 Y [first_point] = Y [last_point]입니다.
+그러나이 서브 루틴에서는 다음과 같은 값을 지정할 필요가 없습니다.
+첫번째와 마지막 점 - 자동으로 그것들을 동일하게 만든다.
+Y [first_point] (가장 왼쪽, 최소 X []에 해당)를
+Y [last_point]. 그러나 Y []의 일관된 값을 전달하는 것이 좋습니다.
+즉 Y [first_point] = Y [last_point]를 만들 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     저작권 03.09.2010 Bochkanov Sergey
+**************************************************************************/
 void spline1dgriddiff2cubic(const real_1d_array &x, const real_1d_array &y, real_1d_array &d1, real_1d_array &d2)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -2270,6 +3508,72 @@ i.e. to make Y[first_point]=Y[last_point].
   -- ALGLIB PROJECT --
      Copyright 03.09.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 함수는 다음과 같은 문제를 해결합니다 : 주어진 테이블 y [] 함수 값
+이전 노드 x []와 새로운 노드 x2 []에서,
+함수 값 y2 [] (x2 []에서 계산).
+
+이 함수는 Spline1DBuildCubic () 호출과 동일한 결과를 산출 한 다음
+Spline1DDiff () 호출의 시퀀스를
+순서가있는 X []와 X2 []를 호출했습니다.
+
+입력 매개 변수 :
+    X - 오래된 스플라인 노드
+    Y - 함수 값
+    X2 - 새로운 스플라인 노드
+
+선택 가능한 매개 변수 :
+    N - 점 수 :
+                    * N> = 2
+                    * 주어지면 X / Y에서 처음 N 포인트 만 사용됩니다.
+                    * 지정하지 않으면 X / Y 크기에서 자동 감지
+                      (len (X)는 len (Y)와 같아야 함)
+    BoundLType - 왼쪽 경계의 경계 조건 유형
+    BoundL - 왼쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundLType에 따라 다름)
+    BoundRType - 오른쪽 경계의 경계 조건 타입
+    BoundR - 오른쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundRType에 따라 다름)
+    N2 - 새로운 점수 계산 :
+                    * N2> = 2
+                    * 주어진 경우 X2에서 첫 번째 N2 점만 사용됩니다.
+                    * 지정하지 않으면 X2 크기에서 자동으로 감지됩니다.
+
+출력 매개 변수 :
+    F2 - X2 [에서 함수 값
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+함수 값은 반환시 올바르게 재정렬되므로 F2 [I]는 항상
+점 순서와 관계없이 S (X2 [I])와 같습니다.
+
+경계 값 설정 :
+
+BoundLType / BoundRType 매개 변수의 값은 다음과 같습니다.
+    * -1은주기적인 (주기적) 경계 조건에 해당합니다.
+          이 경우 :
+          BoundLType와 BoundRType는 모두 -1과 같아야합니다.
+          * BoundL / BoundR은 무시됩니다.
+          * Y [last]는 무시됩니다 (Y [first]와 같음).
+    * 0은 파라볼 릭 종료 스플라인에 해당합니다.
+          BoundL 및 / 또는 BoundR은 무시됩니다.
+    * 1, 1 차 미분 경계 조건에 해당
+    * 2, 이차 미분 경계 조건에 해당
+    * 기본적으로 BoundType = 0이 사용됩니다.
+
+정기적 인 경계 조건과 관련된 문제 :
+
+주기적인 경계 조건의 문제는 Y [first_point] = Y [last_point]입니다.
+그러나이 서브 루틴에서는 다음과 같은 값을 지정할 필요가 없습니다.
+첫번째와 마지막 점 - 자동으로 그것들을 동일하게 만든다.
+Y [first_point] (가장 왼쪽, 최소 X []에 해당)를
+Y [last_point]. 그러나 Y []의 일관된 값을 전달하는 것이 좋습니다.
+즉 Y [first_point] = Y [last_point]를 만들 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     저작권 03.09.2010 Bochkanov Sergey
+**************************************************************************/
 void spline1dconvcubic(const real_1d_array &x, const real_1d_array &y, const ae_int_t n, const ae_int_t boundltype, const double boundl, const ae_int_t boundrtype, const double boundr, const real_1d_array &x2, const ae_int_t n2, real_1d_array &y2)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -2352,6 +3656,72 @@ i.e. to make Y[first_point]=Y[last_point].
   -- ALGLIB PROJECT --
      Copyright 03.09.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 함수는 다음과 같은 문제를 해결합니다 : 주어진 테이블 y [] 함수 값
+이전 노드 x []와 새로운 노드 x2 []에서,
+함수 값 y2 [] (x2 []에서 계산).
+
+이 함수는 Spline1DBuildCubic () 호출과 동일한 결과를 산출 한 다음
+Spline1DDiff () 호출의 시퀀스를
+순서가있는 X []와 X2 []를 호출했습니다.
+
+입력 매개 변수 :
+    X - 오래된 스플라인 노드
+    Y - 함수 값
+    X2 - 새로운 스플라인 노드
+
+선택 가능한 매개 변수 :
+    N - 점 수 :
+                    * N> = 2
+                    * 주어지면 X / Y에서 처음 N 포인트 만 사용됩니다.
+                    * 지정하지 않으면 X / Y 크기에서 자동 감지
+                      (len (X)는 len (Y)와 같아야 함)
+    BoundLType - 왼쪽 경계의 경계 조건 유형
+    BoundL - 왼쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundLType에 따라 다름)
+    BoundRType - 오른쪽 경계의 경계 조건 타입
+    BoundR - 오른쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundRType에 따라 다름)
+    N2 - 새로운 점수 계산 :
+                    * N2> = 2
+                    * 주어진 경우 X2에서 첫 번째 N2 점만 사용됩니다.
+                    * 지정하지 않으면 X2 크기에서 자동으로 감지됩니다.
+
+출력 매개 변수 :
+    F2 - X2 [에서 함수 값
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+함수 값은 반환시 올바르게 재정렬되므로 F2 [I]는 항상
+점 순서와 관계없이 S (X2 [I])와 같습니다.
+
+경계 값 설정 :
+
+BoundLType / BoundRType 매개 변수의 값은 다음과 같습니다.
+    * -1은주기적인 (주기적) 경계 조건에 해당합니다.
+          이 경우 :
+          BoundLType와 BoundRType는 모두 -1과 같아야합니다.
+          * BoundL / BoundR은 무시됩니다.
+          * Y [last]는 무시됩니다 (Y [first]와 같음).
+    * 0은 파라볼 릭 종료 스플라인에 해당합니다.
+          BoundL 및 / 또는 BoundR은 무시됩니다.
+    * 1, 1 차 미분 경계 조건에 해당
+    * 2, 이차 미분 경계 조건에 해당
+    * 기본적으로 BoundType = 0이 사용됩니다.
+
+정기적 인 경계 조건과 관련된 문제 :
+
+주기적인 경계 조건의 문제는 Y [first_point] = Y [last_point]입니다.
+그러나이 서브 루틴에서는 다음과 같은 값을 지정할 필요가 없습니다.
+첫번째와 마지막 점 - 자동으로 그것들을 동일하게 만든다.
+Y [first_point] (가장 왼쪽, 최소 X []에 해당)를
+Y [last_point]. 그러나 Y []의 일관된 값을 전달하는 것이 좋습니다.
+즉 Y [first_point] = Y [last_point]를 만들 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     저작권 03.09.2010 Bochkanov Sergey
+**************************************************************************/
 void spline1dconvcubic(const real_1d_array &x, const real_1d_array &y, const real_1d_array &x2, real_1d_array &y2)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -2450,6 +3820,73 @@ i.e. to make Y[first_point]=Y[last_point].
   -- ALGLIB PROJECT --
      Copyright 03.09.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************** **********************
+이 함수는 다음과 같은 문제를 해결합니다 : 주어진 테이블 y [] 함수 값
+이전 노드 x []와 새로운 노드 x2 []에서,
+함수 값 y2 []와 미분 d2 [] (x2 []에서 계산)입니다.
+
+이 함수는 Spline1DBuildCubic () 호출과 동일한 결과를 산출 한 다음
+Spline1DDiff () 호출의 시퀀스를
+순서가있는 X []와 X2 []를 호출했습니다.
+
+입력 매개 변수 :
+    X - 오래된 스플라인 노드
+    Y - 함수 값
+    X2 - 새로운 스플라인 노드
+
+선택 가능한 매개 변수 :
+    N - 점 수 :
+                    * N> = 2
+                    * 주어지면 X / Y에서 처음 N 포인트 만 사용됩니다.
+                    * 지정하지 않으면 X / Y 크기에서 자동 감지
+                      (len (X)는 len (Y)와 같아야 함)
+    BoundLType - 왼쪽 경계의 경계 조건 유형
+    BoundL - 왼쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundLType에 따라 다름)
+    BoundRType - 오른쪽 경계의 경계 조건 타입
+    BoundR - 오른쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundRType에 따라 다름)
+    N2 - 새로운 점수 계산 :
+                    * N2> = 2
+                    * 주어진 경우 X2에서 첫 번째 N2 점만 사용됩니다.
+                    * 지정하지 않으면 X2 크기에서 자동으로 감지됩니다.
+
+출력 매개 변수 :
+    F2 - X2 [에서 함수 값
+    D2 - X2에서의 1 차 미분 []
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+함수 값은 반환시 올바르게 재정렬되므로 F2 [I]는 항상
+점 순서와 관계없이 S (X2 [I])와 같습니다.
+
+경계 값 설정 :
+
+BoundLType / BoundRType 매개 변수의 값은 다음과 같습니다.
+    * -1은주기적인 (주기적) 경계 조건에 해당합니다.
+          이 경우 :
+          BoundLType와 BoundRType는 모두 -1과 같아야합니다.
+          * BoundL / BoundR은 무시됩니다.
+          * Y [last]는 무시됩니다 (Y [first]와 같음).
+    * 0은 파라볼 릭 종료 스플라인에 해당합니다.
+          BoundL 및 / 또는 BoundR은 무시됩니다.
+    * 1, 1 차 미분 경계 조건에 해당
+    * 2, 이차 미분 경계 조건에 해당
+    * 기본적으로 BoundType = 0이 사용됩니다.
+
+정기적 인 경계 조건과 관련된 문제 :
+
+주기적인 경계 조건의 문제는 Y [first_point] = Y [last_point]입니다.
+그러나이 서브 루틴에서는 다음과 같은 값을 지정할 필요가 없습니다.
+첫번째와 마지막 점 - 자동으로 그것들을 동일하게 만든다.
+Y [first_point] (가장 왼쪽, 최소 X []에 해당)를
+Y [last_point]. 그러나 Y []의 일관된 값을 전달하는 것이 좋습니다.
+즉 Y [first_point] = Y [last_point]를 만들 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     저작권 03.09.2010 Bochkanov Sergey
+**************************************************************************/
 void spline1dconvdiffcubic(const real_1d_array &x, const real_1d_array &y, const ae_int_t n, const ae_int_t boundltype, const double boundl, const ae_int_t boundrtype, const double boundr, const real_1d_array &x2, const ae_int_t n2, real_1d_array &y2, real_1d_array &d2)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -2533,6 +3970,73 @@ i.e. to make Y[first_point]=Y[last_point].
   -- ALGLIB PROJECT --
      Copyright 03.09.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************** **********************
+이 함수는 다음과 같은 문제를 해결합니다 : 주어진 테이블 y [] 함수 값
+이전 노드 x []와 새로운 노드 x2 []에서,
+함수 값 y2 []와 미분 d2 [] (x2 []에서 계산)입니다.
+
+이 함수는 Spline1DBuildCubic () 호출과 동일한 결과를 산출 한 다음
+Spline1DDiff () 호출의 시퀀스를
+순서가있는 X []와 X2 []를 호출했습니다.
+
+입력 매개 변수 :
+    X - 오래된 스플라인 노드
+    Y - 함수 값
+    X2 - 새로운 스플라인 노드
+
+선택 가능한 매개 변수 :
+    N - 점 수 :
+                    * N> = 2
+                    * 주어지면 X / Y에서 처음 N 포인트 만 사용됩니다.
+                    * 지정하지 않으면 X / Y 크기에서 자동 감지
+                      (len (X)는 len (Y)와 같아야 함)
+    BoundLType - 왼쪽 경계의 경계 조건 유형
+    BoundL - 왼쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundLType에 따라 다름)
+    BoundRType - 오른쪽 경계의 경계 조건 타입
+    BoundR - 오른쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundRType에 따라 다름)
+    N2 - 새로운 점수 계산 :
+                    * N2> = 2
+                    * 주어진 경우 X2에서 첫 번째 N2 점만 사용됩니다.
+                    * 지정하지 않으면 X2 크기에서 자동으로 감지됩니다.
+
+출력 매개 변수 :
+    F2 - X2 [에서 함수 값
+    D2 - X2에서의 1 차 미분 []
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+함수 값은 반환시 올바르게 재정렬되므로 F2 [I]는 항상
+점 순서와 관계없이 S (X2 [I])와 같습니다.
+
+경계 값 설정 :
+
+BoundLType / BoundRType 매개 변수의 값은 다음과 같습니다.
+    * -1은주기적인 (주기적) 경계 조건에 해당합니다.
+          이 경우 :
+          BoundLType와 BoundRType는 모두 -1과 같아야합니다.
+          * BoundL / BoundR은 무시됩니다.
+          * Y [last]는 무시됩니다 (Y [first]와 같음).
+    * 0은 파라볼 릭 종료 스플라인에 해당합니다.
+          BoundL 및 / 또는 BoundR은 무시됩니다.
+    * 1, 1 차 미분 경계 조건에 해당
+    * 2, 이차 미분 경계 조건에 해당
+    * 기본적으로 BoundType = 0이 사용됩니다.
+
+정기적 인 경계 조건과 관련된 문제 :
+
+주기적인 경계 조건의 문제는 Y [first_point] = Y [last_point]입니다.
+그러나이 서브 루틴에서는 다음과 같은 값을 지정할 필요가 없습니다.
+첫번째와 마지막 점 - 자동으로 그것들을 동일하게 만든다.
+Y [first_point] (가장 왼쪽, 최소 X []에 해당)를
+Y [last_point]. 그러나 Y []의 일관된 값을 전달하는 것이 좋습니다.
+즉 Y [first_point] = Y [last_point]를 만들 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     저작권 03.09.2010 Bochkanov Sergey
+**************************************************************************/
 void spline1dconvdiffcubic(const real_1d_array &x, const real_1d_array &y, const real_1d_array &x2, real_1d_array &y2, real_1d_array &d2)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -2633,6 +4137,75 @@ i.e. to make Y[first_point]=Y[last_point].
   -- ALGLIB PROJECT --
      Copyright 03.09.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 함수는 다음과 같은 문제를 해결합니다 : 주어진 테이블 y [] 함수 값
+이전 노드 x []와 새로운 노드 x2 []에서,
+함수 값 y2 [], 제 1 및 제 2 미분 d2 [] 및 dd2 []
+(x2 []에서 계산).
+
+이 함수는 Spline1DBuildCubic () 호출과 동일한 결과를 산출 한 다음
+Spline1DDiff () 호출의 시퀀스를
+순서가있는 X []와 X2 []를 호출했습니다.
+
+입력 매개 변수 :
+    X - 오래된 스플라인 노드
+    Y - 함수 값
+    X2 - 새로운 스플라인 노드
+
+선택 가능한 매개 변수 :
+    N - 점 수 :
+                    * N> = 2
+                    * 주어지면 X / Y에서 처음 N 포인트 만 사용됩니다.
+                    * 지정하지 않으면 X / Y 크기에서 자동 감지
+                      (len (X)는 len (Y)와 같아야 함)
+    BoundLType - 왼쪽 경계의 경계 조건 유형
+    BoundL - 왼쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundLType에 따라 다름)
+    BoundRType - 오른쪽 경계의 경계 조건 타입
+    BoundR - 오른쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundRType에 따라 다름)
+    N2 - 새로운 점수 계산 :
+                    * N2> = 2
+                    * 주어진 경우 X2에서 첫 번째 N2 점만 사용됩니다.
+                    * 지정하지 않으면 X2 크기에서 자동으로 감지됩니다.
+
+출력 매개 변수 :
+    F2 - X2 [에서 함수 값
+    D2 - X2에서의 1 차 미분 []
+    DD2 - X2에서의 2 차 미분 []
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+함수 값은 반환시 올바르게 재정렬되므로 F2 [I]는 항상
+점 순서와 관계없이 S (X2 [I])와 같습니다.
+
+경계 값 설정 :
+
+BoundLType / BoundRType 매개 변수의 값은 다음과 같습니다.
+    * -1은주기적인 (주기적) 경계 조건에 해당합니다.
+          이 경우 :
+          BoundLType와 BoundRType는 모두 -1과 같아야합니다.
+          * BoundL / BoundR은 무시됩니다.
+          * Y [last]는 무시됩니다 (Y [first]와 같음).
+    * 0은 파라볼 릭 종료 스플라인에 해당합니다.
+          BoundL 및 / 또는 BoundR은 무시됩니다.
+    * 1, 1 차 미분 경계 조건에 해당
+    * 2, 이차 미분 경계 조건에 해당
+    * 기본적으로 BoundType = 0이 사용됩니다.
+
+정기적 인 경계 조건과 관련된 문제 :
+
+주기적인 경계 조건의 문제는 Y [first_point] = Y [last_point]입니다.
+그러나이 서브 루틴에서는 다음과 같은 값을 지정할 필요가 없습니다.
+첫번째와 마지막 점 - 자동으로 그것들을 동일하게 만든다.
+Y [first_point] (가장 왼쪽, 최소 X []에 해당)를
+Y [last_point]. 그러나 Y []의 일관된 값을 전달하는 것이 좋습니다.
+즉 Y [first_point] = Y [last_point]를 만들 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     저작권 03.09.2010 Bochkanov Sergey
+**************************************************************************/
 void spline1dconvdiff2cubic(const real_1d_array &x, const real_1d_array &y, const ae_int_t n, const ae_int_t boundltype, const double boundl, const ae_int_t boundrtype, const double boundr, const real_1d_array &x2, const ae_int_t n2, real_1d_array &y2, real_1d_array &d2, real_1d_array &dd2)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -2718,6 +4291,75 @@ i.e. to make Y[first_point]=Y[last_point].
   -- ALGLIB PROJECT --
      Copyright 03.09.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 함수는 다음과 같은 문제를 해결합니다 : 주어진 테이블 y [] 함수 값
+이전 노드 x []와 새로운 노드 x2 []에서,
+함수 값 y2 [], 제 1 및 제 2 미분 d2 [] 및 dd2 []
+(x2 []에서 계산).
+
+이 함수는 Spline1DBuildCubic () 호출과 동일한 결과를 산출 한 다음
+Spline1DDiff () 호출의 시퀀스를
+순서가있는 X []와 X2 []를 호출했습니다.
+
+입력 매개 변수 :
+    X - 오래된 스플라인 노드
+    Y - 함수 값
+    X2 - 새로운 스플라인 노드
+
+선택 가능한 매개 변수 :
+    N - 점 수 :
+                    * N> = 2
+                    * 주어지면 X / Y에서 처음 N 포인트 만 사용됩니다.
+                    * 지정하지 않으면 X / Y 크기에서 자동 감지
+                      (len (X)는 len (Y)와 같아야 함)
+    BoundLType - 왼쪽 경계의 경계 조건 유형
+    BoundL - 왼쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundLType에 따라 다름)
+    BoundRType - 오른쪽 경계의 경계 조건 타입
+    BoundR - 오른쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundRType에 따라 다름)
+    N2 - 새로운 점수 계산 :
+                    * N2> = 2
+                    * 주어진 경우 X2에서 첫 번째 N2 점만 사용됩니다.
+                    * 지정하지 않으면 X2 크기에서 자동으로 감지됩니다.
+
+출력 매개 변수 :
+    F2 - X2 [에서 함수 값
+    D2 - X2에서의 1 차 미분 []
+    DD2 - X2에서의 2 차 미분 []
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+함수 값은 반환시 올바르게 재정렬되므로 F2 [I]는 항상
+점 순서와 관계없이 S (X2 [I])와 같습니다.
+
+경계 값 설정 :
+
+BoundLType / BoundRType 매개 변수의 값은 다음과 같습니다.
+    * -1은주기적인 (주기적) 경계 조건에 해당합니다.
+          이 경우 :
+          BoundLType와 BoundRType는 모두 -1과 같아야합니다.
+          * BoundL / BoundR은 무시됩니다.
+          * Y [last]는 무시됩니다 (Y [first]와 같음).
+    * 0은 파라볼 릭 종료 스플라인에 해당합니다.
+          BoundL 및 / 또는 BoundR은 무시됩니다.
+    * 1, 1 차 미분 경계 조건에 해당
+    * 2, 이차 미분 경계 조건에 해당
+    * 기본적으로 BoundType = 0이 사용됩니다.
+
+정기적 인 경계 조건과 관련된 문제 :
+
+주기적인 경계 조건의 문제는 Y [first_point] = Y [last_point]입니다.
+그러나이 서브 루틴에서는 다음과 같은 값을 지정할 필요가 없습니다.
+첫번째와 마지막 점 - 자동으로 그것들을 동일하게 만든다.
+Y [first_point] (가장 왼쪽, 최소 X []에 해당)를
+Y [last_point]. 그러나 Y []의 일관된 값을 전달하는 것이 좋습니다.
+즉 Y [first_point] = Y [last_point]를 만들 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     저작권 03.09.2010 Bochkanov Sergey
+**************************************************************************/
 void spline1dconvdiff2cubic(const real_1d_array &x, const real_1d_array &y, const real_1d_array &x2, real_1d_array &y2, real_1d_array &d2, real_1d_array &dd2)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -2789,6 +4431,46 @@ i.e. to make Y[first_point]=Y[last_point].
   -- ALGLIB PROJECT --
      Copyright 23.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 서브 루틴은 Catmull-Rom 스플라인 보간을 만듭니다.
+
+입력 매개 변수 :
+    X - 스플라인 노드, 배열 [0..N-1].
+    Y - 함수 값, array [0..N-1].
+
+선택 가능한 매개 변수 :
+    N - 점 수 :
+                    * N> = 2
+                    * 주어진 경우 첫 번째 N 점만이 스플라인을 작성하는 데 사용됩니다.
+                    * 지정하지 않으면 X / Y 크기에서 자동 감지
+                      (len (X)는 len (Y)와 같아야 함)
+    BoundType - 경계 조건 유형 :
+                    주기 경계 조건의 경우 -1
+                    * 0 파라볼 릭 종료 스플라인 (기본값)
+    장력 - 장력 매개 변수 :
+                    * tension = 0은 기존 Catmull-Rom 스플라인에 해당 (기본값)
+                    * 0 <장력 <1은보다 일반적인 형태에 해당 - 기본 스플라인
+
+출력 매개 변수 :
+    C - 스플라인 보간
+
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+
+정기적 인 경계 조건과 관련된 문제 :
+
+주기적인 경계 조건의 문제는 Y [first_point] = Y [last_point]입니다.
+그러나이 서브 루틴에서는 다음과 같은 값을 지정할 필요가 없습니다.
+첫번째와 마지막 점 - 자동으로 그것들을 동일하게 만든다.
+Y [first_point] (가장 왼쪽, 최소 X []에 해당)를
+Y [last_point]. 그러나 Y []의 일관된 값을 전달하는 것이 좋습니다.
+즉 Y [first_point] = Y [last_point]를 만들 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     저작권 23.06.2007 Bochkanov Sergey
+**************************************************************************/
 void spline1dbuildcatmullrom(const real_1d_array &x, const real_1d_array &y, const ae_int_t n, const ae_int_t boundtype, const double tension, spline1dinterpolant &c)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -2845,6 +4527,46 @@ i.e. to make Y[first_point]=Y[last_point].
   -- ALGLIB PROJECT --
      Copyright 23.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 서브 루틴은 Catmull-Rom 스플라인 보간을 만듭니다.
+
+입력 매개 변수 :
+    X - 스플라인 노드, 배열 [0..N-1].
+    Y - 함수 값, array [0..N-1].
+
+선택 가능한 매개 변수 :
+    N - 점 수 :
+                    * N> = 2
+                    * 주어진 경우 첫 번째 N 점만이 스플라인을 작성하는 데 사용됩니다.
+                    * 지정하지 않으면 X / Y 크기에서 자동 감지
+                      (len (X)는 len (Y)와 같아야 함)
+    BoundType - 경계 조건 유형 :
+                    주기 경계 조건의 경우 -1
+                    * 0 파라볼 릭 종료 스플라인 (기본값)
+    장력 - 장력 매개 변수 :
+                    * tension = 0은 기존 Catmull-Rom 스플라인에 해당 (기본값)
+                    * 0 <장력 <1은보다 일반적인 형태에 해당 - 기본 스플라인
+
+출력 매개 변수 :
+    C - 스플라인 보간
+
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+
+정기적 인 경계 조건과 관련된 문제 :
+
+주기적인 경계 조건의 문제는 Y [first_point] = Y [last_point]입니다.
+그러나이 서브 루틴에서는 다음과 같은 값을 지정할 필요가 없습니다.
+첫번째와 마지막 점 - 자동으로 그것들을 동일하게 만든다.
+Y [first_point] (가장 왼쪽, 최소 X []에 해당)를
+Y [last_point]. 그러나 Y []의 일관된 값을 전달하는 것이 좋습니다.
+즉 Y [first_point] = Y [last_point]를 만들 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     저작권 23.06.2007 Bochkanov Sergey
+**************************************************************************/
 void spline1dbuildcatmullrom(const real_1d_array &x, const real_1d_array &y, spline1dinterpolant &c)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -2894,6 +4616,30 @@ Subroutine automatically sorts points, so caller may pass unsorted array.
   -- ALGLIB PROJECT --
      Copyright 23.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 서브 루틴은 Hermite 스플라인 보간을 만듭니다.
+
+입력 매개 변수 :
+    X - 스플라인 노드, 배열 [0..N-1]
+    Y - 함수 값, 배열 [0..N-1]
+    D- 유도체, 배열 [0..N-1]
+    N - 포인트 카운트 (옵션) :
+                    * N> = 2
+                    * 주어진 경우 첫 번째 N 점만이 스플라인을 작성하는 데 사용됩니다.
+                    * 지정하지 않으면 X / Y 크기에서 자동 감지
+                      (len (X)는 len (Y)와 같아야 함)
+
+출력 매개 변수 :
+    C - 스플라인 보간.
+
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     저작권 23.06.2007 Bochkanov Sergey
+**************************************************************************/
 void spline1dbuildhermite(const real_1d_array &x, const real_1d_array &y, const real_1d_array &d, const ae_int_t n, spline1dinterpolant &c)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -2934,6 +4680,30 @@ Subroutine automatically sorts points, so caller may pass unsorted array.
   -- ALGLIB PROJECT --
      Copyright 23.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/***************************************************************************
+이 서브 루틴은 Hermite 스플라인 보간을 만듭니다.
+
+입력 매개 변수 :
+    X - 스플라인 노드, 배열 [0..N-1]
+    Y - 함수 값, 배열 [0..N-1]
+    D- 유도체, 배열 [0..N-1]
+    N - 포인트 카운트 (옵션) :
+                    * N> = 2
+                    * 주어진 경우 첫 번째 N 점만이 스플라인을 작성하는 데 사용됩니다.
+                    * 지정하지 않으면 X / Y 크기에서 자동 감지
+                      (len (X)는 len (Y)와 같아야 함)
+
+출력 매개 변수 :
+    C - 스플라인 보간.
+
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     저작권 23.06.2007 Bochkanov Sergey
+**************************************************************************/
 void spline1dbuildhermite(const real_1d_array &x, const real_1d_array &y, const real_1d_array &d, spline1dinterpolant &c)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -2978,6 +4748,29 @@ Subroutine automatically sorts points, so caller may pass unsorted array.
   -- ALGLIB PROJECT --
      Copyright 24.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 서브 루틴은 Akima 스플라인 보간을 만듭니다.
+
+입력 매개 변수 :
+    X - 스플라인 노드, 배열 [0..N-1]
+    Y - 함수 값, 배열 [0..N-1]
+    N - 포인트 카운트 (옵션) :
+                    * N> = 2
+                    * 주어진 경우 첫 번째 N 점만이 스플라인을 작성하는 데 사용됩니다.
+                    * 지정하지 않으면 X / Y 크기에서 자동 감지
+                      (len (X)는 len (Y)와 같아야 함)
+
+출력 매개 변수 :
+    C - 스플라인 보간
+
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 24.06.2007
+**************************************************************************/
 void spline1dbuildakima(const real_1d_array &x, const real_1d_array &y, const ae_int_t n, spline1dinterpolant &c)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -3017,6 +4810,29 @@ Subroutine automatically sorts points, so caller may pass unsorted array.
   -- ALGLIB PROJECT --
      Copyright 24.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 서브 루틴은 Akima 스플라인 보간을 만듭니다.
+
+입력 매개 변수 :
+    X - 스플라인 노드, 배열 [0..N-1]
+    Y - 함수 값, 배열 [0..N-1]
+    N - 포인트 카운트 (옵션) :
+                    * N> = 2
+                    * 주어진 경우 첫 번째 N 점만이 스플라인을 작성하는 데 사용됩니다.
+                    * 지정하지 않으면 X / Y 크기에서 자동 감지
+                      (len (X)는 len (Y)와 같아야 함)
+
+출력 매개 변수 :
+    C - 스플라인 보간
+
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 24.06.2007
+**************************************************************************/
 void spline1dbuildakima(const real_1d_array &x, const real_1d_array &y, spline1dinterpolant &c)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -3051,6 +4867,19 @@ Result:
   -- ALGLIB PROJECT --
      Copyright 23.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/**************************************************************************
+이 서브 루틴은 주어진 점 X에서 스플라인 값을 계산합니다.
+
+입력 매개 변수 :
+    C - 스플라인 보간
+    X- 포인트
+
+결과:
+    S (x)
+
+  - ALGLIB 프로젝트 -
+     저작권 23.06.2007 Bochkanov Sergey
+**************************************************************************/
 double spline1dcalc(const spline1dinterpolant &c, const double x)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -3082,6 +4911,21 @@ Result:
   -- ALGLIB PROJECT --
      Copyright 24.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 서브 루틴은 스플라인을 구분합니다.
+
+입력 매개 변수 :
+    C - 스플라인 보간.
+    X- 포인트
+
+결과:
+    S - S (x)
+    DS - S '(x)
+    D2S - S "(x)
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 24.06.2007
+**************************************************************************/
 void spline1ddiff(const spline1dinterpolant &c, const double x, double &s, double &ds, double &d2s)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -3126,6 +4970,34 @@ NOTE:
   -- ALGLIB PROJECT --
      Copyright 29.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 서브 루틴은 스플라인을 계수 테이블에 압축 해제합니다.
+
+입력 매개 변수 :
+    C - 스플라인 보간.
+    X- 포인트
+
+출력 매개 변수 :
+    Tbl - 계수 테이블, 언 패킹 된 포맷, 배열 [0..N-2, 0..5].
+            I = 0 ... N-2 :
+                Tbl [I, 0] = X [i]
+                Tbl [1, 1] = X [i + 1]
+                Tbl [1, 2] = C0
+                Tbl [1, 3] = C1
+                Tbl [1, 4] = C2
+                Tbl [1, 5] = C3
+            [x [i], x [i + 1]] 스플라인은 다음과 같습니다.
+                S (x) = C0 + C1 * t + C2 * t ^ 2 + C3 * t ^ 3
+                t = xx [i]
+
+노트:
+    Spline1DBuildHermite () 함수를 사용하여 스플라인을 다시 작성할 수 있습니다.
+    노드로 함수 값과 미분을 입력으로 받아들입니다.
+    계수가있을 때 쉽게 계산할 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 29.06.2007
+**************************************************************************/
 void spline1dunpack(const spline1dinterpolant &c, ae_int_t &n, real_2d_array &tbl)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -3154,6 +5026,18 @@ Result:
   -- ALGLIB PROJECT --
      Copyright 30.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 서브 루틴은 스플라인 인수의 선형 변환을 수행합니다.
+
+입력 매개 변수 :
+    C - 스플라인 보간.
+    A, B- 변환 계수 : x = A * t + B
+결과:
+    C - 변형 된 스플라인
+
+  - ALGLIB 프로젝트 -
+     저작권 30.06.2007 Bochkanov Sergey
+**************************************************************************/
 void spline1dlintransx(const spline1dinterpolant &c, const double a, const double b)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -3181,7 +5065,19 @@ Result:
 
   -- ALGLIB PROJECT --
      Copyright 30.06.2007 by Bochkanov Sergey
-*************************************************************************/
+*************************************************************************/ 
+/************************************************************************
+이 서브 루틴은 스플라인의 선형 변환을 수행합니다.
+
+입력 매개 변수 :
+    C - 스플라인 보간.
+    A, B- 변환 계수 : S2 (x) = A * S (x) + B
+결과:
+    C - 변형 된 스플라인
+
+  - ALGLIB 프로젝트 -
+     저작권 30.06.2007 Bochkanov Sergey
+**************************************************************************/
 void spline1dlintransy(const spline1dinterpolant &c, const double a, const double b)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -3211,6 +5107,19 @@ Result:
   -- ALGLIB PROJECT --
      Copyright 23.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 서브 루틴은 스플라인을 통합합니다.
+
+입력 매개 변수 :
+    C - 스플라인 보간.
+    X - 적분 구간 [a, x]의 오른쪽 경계
+            여기서 'a'는 min (x [])을 나타냅니다.
+결과:
+    적분 (S (t) dt, a, x)
+
+  - ALGLIB 프로젝트 -
+     저작권 23.06.2007 Bochkanov Sergey
+**************************************************************************/
 double spline1dintegrate(const spline1dinterpolant &c, const double x)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -3247,6 +5156,26 @@ OUTPUT PARAMETERS:
  -- ALGLIB PROJECT --
      Copyright 21.06.2012 by Bochkanov Sergey
 *************************************************************************/
+/***************************************************************************
+이 함수는 단조 3 차원 Hermite 보간을 만듭니다. 이 보간법
+[x (0), x (n-1)]에서 단조롭고이 구간의 바깥 쪽에서 일정하다.
+
+y []가 비 단조 식 시퀀스를 구성하는 경우, 보간은
+단조로운. x = (0,1,2,3,4) 및 y = (0,1,2,1,0) 보간 기가
+단조롭게 [0..2]에서 성장하고 [2..4]에서 단조 감소한다.
+
+입력 매개 변수 :
+    X - 스플라인 노드, 배열 [0..N-1]. 자동으로 서브 루틴
+                    점을 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+    Y - 함수 값, 배열 [0..N-1]
+    N - 점의 수 (N> = 2)
+
+출력 매개 변수 :
+    C - 스플라인 보간.
+
+ - ALGLIB 프로젝트 -
+     저작권 21.06.2012 Bochkanov Sergey
+**************************************************************************/
 void spline1dbuildmonotone(const real_1d_array &x, const real_1d_array &y, const ae_int_t n, spline1dinterpolant &c)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -3283,6 +5212,26 @@ OUTPUT PARAMETERS:
  -- ALGLIB PROJECT --
      Copyright 21.06.2012 by Bochkanov Sergey
 *************************************************************************/
+/***************************************************************************
+이 함수는 단조 3 차원 Hermite 보간을 만듭니다. 이 보간법
+[x (0), x (n-1)]에서 단조롭고이 구간의 바깥 쪽에서 일정하다.
+
+y []가 비 단조 식 시퀀스를 구성하는 경우, 보간은
+단조로운. x = (0,1,2,3,4) 및 y = (0,1,2,1,0) 보간 기가
+단조롭게 [0..2]에서 성장하고 [2..4]에서 단조 감소한다.
+
+입력 매개 변수 :
+    X - 스플라인 노드, 배열 [0..N-1]. 자동으로 서브 루틴
+                    점을 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+    Y - 함수 값, 배열 [0..N-1]
+    N - 점의 수 (N> = 2)
+
+출력 매개 변수 :
+    C - 스플라인 보간.
+
+ - ALGLIB 프로젝트 -
+     저작권 21.06.2012 Bochkanov Sergey
+**************************************************************************/
 void spline1dbuildmonotone(const real_1d_array &x, const real_1d_array &y, spline1dinterpolant &c)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -3312,6 +5261,14 @@ Polynomial fitting report:
     AvgRelError     average relative error (for non-zero Y[I])
     MaxError        maximum error
 *************************************************************************/
+/************************************************************************
+다항식 피팅 보고서 :
+    TaskRCond 작업 조건 번호의 역수입니다.
+    RMSError RMS 오류
+    평균 오류 평균 오류
+    AvgRelError 평균 상대 오차 (0이 아닌 Y [I]의 경우)
+    MaxError 최대 오류
+**************************************************************************/
 _polynomialfitreport_owner::_polynomialfitreport_owner()
 {
     p_struct = (alglib_impl::polynomialfitreport*)alglib_impl::ae_malloc(sizeof(alglib_impl::polynomialfitreport), NULL);
@@ -3384,6 +5341,14 @@ Barycentric fitting report:
     MaxError        maximum error
     TaskRCond       reciprocal of task's condition number
 *************************************************************************/
+/***************************************************************************
+중풍 피팅 보고서 :
+    RMSError RMS 오류
+    평균 오류 평균 오류
+    AvgRelError 평균 상대 오차 (0이 아닌 Y [I]의 경우)
+    MaxError 최대 오류
+    TaskRCond 작업 조건 번호의 역수입니다.
+**************************************************************************/
 _barycentricfitreport_owner::_barycentricfitreport_owner()
 {
     p_struct = (alglib_impl::barycentricfitreport*)alglib_impl::ae_malloc(sizeof(alglib_impl::barycentricfitreport), NULL);
@@ -3459,6 +5424,17 @@ Fields  below are  filled  by   obsolete    functions   (Spline1DFitCubic,
 Spline1DFitHermite). Modern fitting functions do NOT fill these fields:
     TaskRCond       reciprocal of task's condition number
 *************************************************************************/
+/************************************************************************
+스플라인 맞춤 보고서 :
+    RMSError RMS 오류
+    평균 오류 평균 오류
+    AvgRelError 평균 상대 오차 (0이 아닌 Y [I]의 경우)
+    MaxError 최대 오류
+
+아래 필드는 쓸모없는 함수로 채워집니다 (Spline1DFitCubic,
+스플라인 1DFitHermite). 현대 피팅 함수는 다음 필드를 채우지 않습니다.
+    TaskRCond 작업 조건 번호의 역수입니다.
+**************************************************************************/
 _spline1dfitreport_owner::_spline1dfitreport_owner()
 {
     p_struct = (alglib_impl::spline1dfitreport*)alglib_impl::ae_malloc(sizeof(alglib_impl::spline1dfitreport), NULL);
@@ -3555,6 +5531,38 @@ fields are initialized.
     R2              coefficient of determination (non-weighted, non-adjusted),
                     filled by some solvers.
 *************************************************************************/
+/************************************************************************
+최소 제곱합 보고서. 이 구조체는 정보 필드를 포함합니다.
+본 기기가 제공하는 피팅 기능으로 설정됩니다.
+
+다른 함수는 다른 필드 집합을 초기화하므로
+어떤 기능을 사용했는지에 대한 문서를 읽으십시오.
+필드가 초기화됩니다.
+
+    TaskRCond 작업 조건 번호의 역수입니다.
+    IterationsCount 내부 반복 횟수
+
+    사용자 제공 그래디언트에 오류가있는 경우 VarIdx
+                    비선형 채터에 의해 검출되면,이 필드는
+                    기울기의 첫 번째 구성 요소 색인입니다.
+                    벌레들에 의해 망쳐 놓은 것으로 의심된다.
+
+    RMSError RMS 오류
+    평균 오류 평균 오류
+    AvgRelError 평균 상대 오차 (0이 아닌 Y [I]의 경우)
+    MaxError 최대 오류
+
+    WRMSError 가중 된 RMS 오류
+
+    일부 해결사로 채워진 매개 변수에 대한 CovPar 공분산 행렬
+    ErrPar 매개 변수의 오류 벡터, 일부 해결자가 채움
+    ErrCurve 적합 오차 벡터 - 최적 적합성의 변동성
+                    곡선, 일부 해법에 의해 채워진.
+    로 채워지는 포인트 별 잡음 추정의 잡음 벡터
+                    일부 해결사.
+    R2 결정 계수 (비 가중치, 조정되지 않음),
+                    몇 가지 해결사가 가득 찼습니다.
+**************************************************************************/
 _lsfitreport_owner::_lsfitreport_owner()
 {
     p_struct = (alglib_impl::lsfitreport*)alglib_impl::ae_malloc(sizeof(alglib_impl::lsfitreport), NULL);
@@ -3625,6 +5633,12 @@ Nonlinear fitter.
 You should use ALGLIB functions to work with fitter.
 Never try to access its fields directly!
 *************************************************************************/
+/************************************************************************
+비선형 배관공.
+
+ALGLIB 함수를 사용하여 작업자와 작업해야합니다.
+필드에 직접 액세스하지 마세요.
+**************************************************************************/
 _lsfitstate_owner::_lsfitstate_owner()
 {
     p_struct = (alglib_impl::lsfitstate*)alglib_impl::ae_malloc(sizeof(alglib_impl::lsfitstate), NULL);
@@ -3729,6 +5743,47 @@ NOTES:
   -- ALGLIB PROJECT --
      Copyright 10.12.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+바이올린 중심의 다항식으로 피팅. 이 함수는 간단한
+무제한 unweighted fitting을위한 unterface. PolynomialFitWC ()를 참조하십시오.
+당신은 제한된 피팅이 필요합니다.
+
+작업은 선형이므로 선형 최소 자 솔버가 사용됩니다. 이 복잡성
+계산 방식은 O (N * M ^ 2)이며, 대부분 최소 자승법이 지배합니다
+
+관련 항목 :
+    PolynomialFitWC ()
+
+입력 매개 변수 :
+    X- 점, 배열 [0..N-1].
+    Y - 함수 값, array [0..N-1].
+    N - 포인트 수, N> 0
+            * 주어진 경우 X / Y의 선행 N 요소 만 사용됩니다.
+            * 지정하지 않으면 X / Y의 크기에서 자동으로 결정됩니다.
+    M - 기저 함수의 수 (= polynomial_degree + 1), M> = 1
+
+출력 매개 변수 :
+    LSFitLinearW () 서브 루틴에서와 같은 정보 포맷 :
+            * 정보> 0 작업이 해결되었습니다.
+            * 정보 <= 0 오류가 발생했습니다 :
+                        -4는 내부 SVD의 불일치를 의미합니다.
+    P - 중성자 형태의 보간법.
+    Rep -보고, LSFitLinearW () 서브 루틴과 동일한 형식.
+            다음 필드가 설정됩니다.
+            * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+            * (X, Y)에 대한 AvgError 평균 오류.
+            * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+            * MaxError 최대 오류
+                            중요하지 않은 오류가 계산됩니다.
+
+노트:
+    P를 중성 양식에서 힘 또는 체비 셰프로 변환 할 수 있습니다.
+    PolynomialBar2Pow () 또는 PolynomialBar2Cheb () 함수의 기준은
+    POLINT 하위 패키지.
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 10.12.2009
+**************************************************************************/
 void polynomialfit(const real_1d_array &x, const real_1d_array &y, const ae_int_t n, const ae_int_t m, ae_int_t &info, barycentricinterpolant &p, polynomialfitreport &rep)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -3786,6 +5841,47 @@ NOTES:
   -- ALGLIB PROJECT --
      Copyright 10.12.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+바이올린 중심의 다항식으로 피팅. 이 함수는 간단한
+무제한 unweighted fitting을위한 unterface. PolynomialFitWC ()를 참조하십시오.
+당신은 제한된 피팅이 필요합니다.
+
+작업은 선형이므로 선형 최소 자 솔버가 사용됩니다. 이 복잡성
+계산 방식은 O (N * M ^ 2)이며, 대부분 최소 자승법이 지배합니다
+
+관련 항목 :
+    PolynomialFitWC ()
+
+입력 매개 변수 :
+    X- 점, 배열 [0..N-1].
+    Y - 함수 값, array [0..N-1].
+    N - 포인트 수, N> 0
+            * 주어진 경우 X / Y의 선행 N 요소 만 사용됩니다.
+            * 지정하지 않으면 X / Y의 크기에서 자동으로 결정됩니다.
+    M - 기저 함수의 수 (= polynomial_degree + 1), M> = 1
+
+출력 매개 변수 :
+    LSFitLinearW () 서브 루틴에서와 같은 정보 포맷 :
+            * 정보> 0 작업이 해결되었습니다.
+            * 정보 <= 0 오류가 발생했습니다 :
+                        -4는 내부 SVD의 불일치를 의미합니다.
+    P - 중성자 형태의 보간법.
+    Rep -보고, LSFitLinearW () 서브 루틴과 동일한 형식.
+            다음 필드가 설정됩니다.
+            * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+            * (X, Y)에 대한 AvgError 평균 오류.
+            * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+            * MaxError 최대 오류
+                            중요하지 않은 오류가 계산됩니다.
+
+노트:
+    P를 중성 양식에서 힘 또는 체비 셰프로 변환 할 수 있습니다.
+    PolynomialBar2Pow () 또는 PolynomialBar2Cheb () 함수의 기준은
+    POLINT 하위 패키지.
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 10.12.2009
+**************************************************************************/
 void polynomialfit(const real_1d_array &x, const real_1d_array &y, const ae_int_t m, ae_int_t &info, barycentricinterpolant &p, polynomialfitreport &rep)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -3886,6 +5982,86 @@ above is not guaranteed and may result in inconsistency.
   -- ALGLIB PROJECT --
      Copyright 10.12.2009 by Bochkanov Sergey
 *************************************************************************/
+/***************************************************************************
+바이어 센 트릭 형태의 다항식에 의한 가중치 적용
+함수 값 또는 1 차 미분.
+
+작은 정규화 용어는 제한된 작업을 해결할 때 사용됩니다 (
+안정).
+
+작업은 선형이므로 선형 최소 자 솔버가 사용됩니다. 이 복잡성
+계산 방식은 O (N * M ^ 2)이며, 대부분 최소 자승법이 지배합니다
+
+관련 항목 :
+    PolynomialFit ()
+
+입력 매개 변수 :
+    X- 점, 배열 [0..N-1].
+    Y - 함수 값, array [0..N-1].
+    W - 가중치, 배열 [0..N-1]
+            근사 편차의 제곱합에있는 각 summand
+            주어진 값에 해당하는 제곱을 곱합니다.
+            무게. 가중치를 풀고 싶지 않은 경우 1로 채우기
+            태스크.
+    N - 포인트 수, N> 0.
+            * 주어진 경우 X / Y / W의 선행 N 요소 만 사용됩니다.
+            * 지정하지 않으면 X / Y / W 크기에서 자동으로 결정됩니다.
+    XC - 다항식 값 / 미분 값이 제한되는 지점,
+            배열 [0..K-1].
+    YC - 제약 조건 값, array [0..K-1]
+    DC - 배열 [0..K-1], 제약 유형 :
+            * DC [i] = 0은 P (XC [i]) = YC [i]
+            * DC [i] = 1은 P '(XC [i]) = YC [i]
+            제약 조건에 대한 중요한 정보는 아래를보십시오.
+    K - 제약 수, 0 <= K <M.
+            K = 0은 제약이 없음을 의미합니다 (XC / YC / DC는 이러한 경우 사용되지 않음)
+    M - 기저 함수의 수 (= polynomial_degree + 1), M> = 1
+
+출력 매개 변수 :
+    LSFitLinearW () 서브 루틴에서와 같은 정보 포맷 :
+            * 정보> 0 작업이 해결되었습니다.
+            * 정보 <= 0 오류가 발생했습니다 :
+                        -4는 내부 SVD의 불일치를 의미합니다.
+                        -3은 일관성없는 제약 조건을 의미합니다.
+    P - 중성자 형태의 보간법.
+    Rep -보고, LSFitLinearW () 서브 루틴과 동일한 형식.
+            다음 필드가 설정됩니다.
+            * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+            * (X, Y)에 대한 AvgError 평균 오류.
+            * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+            * MaxError 최대 오류
+                            중요하지 않은 오류가 계산됩니다.
+
+중대한:
+    이 서브 루틴은 K <> 0에 대한 작업의 조건 번호를 계산하지 않습니다.
+
+노트:
+    P를 중성 양식에서 힘 또는 체비 셰프로 변환 할 수 있습니다.
+    PolynomialBar2Pow () 또는 PolynomialBar2Cheb () 함수의 기준은
+    POLINT 하위 패키지.
+
+제약 조건 설정 - 위험 및 기회 :
+
+제약 조건 설정은 부적절한 결과처럼 바람직하지 않은 결과를 초래할 수 있습니다.
+행동 또는 불일치가 감지됩니다. 다른면에서 보면
+우리는 착용감을 향상시킬 수 있습니다. 여기에 우리는
+구속 회귀 스플라인 :
+* 단순한 제약조차도 일치하지 않을 수 있습니다. Wikipedia article on
+  이 주제 : http://en.wikipedia.org/wiki/Birkhoff_interpolation
+* M이 클수록 (고정 된 제약 조건이 주어짐), 더 많은 기회가 주어진다.
+  제약 조건은 일관성이있다.
+* 일반적으로 제약 조건의 일관성은 보장되지 않습니다.
+* 한 가지 특수한 경우에는 일관성을 보장 할 수 있습니다. 이
+  예 : M> 1이고 함수 값에 대한 제약 (NOT DERIVATIVES)
+
+우리의 최종 권고는 제약 조건을 언제 어디서나 사용하는 것입니다.
+그것들 없이는 당신의 과제를 해결할 수 없습니다. 주어진 특별한 경우를 넘어선 것
+상기 보증은 보장되지 않으며 불일치가 발생할 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 10.12.2009
+**************************************************************************/
+
 void polynomialfitwc(const real_1d_array &x, const real_1d_array &y, const real_1d_array &w, const ae_int_t n, const real_1d_array &xc, const real_1d_array &yc, const integer_1d_array &dc, const ae_int_t k, const ae_int_t m, ae_int_t &info, barycentricinterpolant &p, polynomialfitreport &rep)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -3981,6 +6157,86 @@ above is not guaranteed and may result in inconsistency.
   -- ALGLIB PROJECT --
      Copyright 10.12.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+바이어 센 트릭 형태의 다항식에 의한 가중치 적용
+함수 값 또는 1 차 미분.
+
+작은 정규화 용어는 제한된 작업을 해결할 때 사용됩니다 (
+안정).
+
+작업은 선형이므로 선형 최소 자 솔버가 사용됩니다. 이 복잡성
+계산 방식은 O (N * M ^ 2)이며, 대부분 최소 자승법이 지배합니다
+
+관련 항목 :
+    PolynomialFit ()
+
+입력 매개 변수 :
+    X- 점, 배열 [0..N-1].
+    Y - 함수 값, array [0..N-1].
+    W - 가중치, 배열 [0..N-1]
+            근사 편차의 제곱합에있는 각 summand
+            주어진 값에 해당하는 제곱을 곱합니다.
+            무게. 가중치를 풀고 싶지 않은 경우 1로 채우기
+            태스크.
+    N - 포인트 수, N> 0.
+            * 주어진 경우 X / Y / W의 선행 N 요소 만 사용됩니다.
+            * 지정하지 않으면 X / Y / W 크기에서 자동으로 결정됩니다.
+    XC - 다항식 값 / 미분 값이 제한되는 지점,
+            배열 [0..K-1].
+    YC - 제약 조건 값, array [0..K-1]
+    DC - 배열 [0..K-1], 제약 유형 :
+            * DC [i] = 0은 P (XC [i]) = YC [i]
+            * DC [i] = 1은 P '(XC [i]) = YC [i]
+            제약 조건에 대한 중요한 정보는 아래를보십시오.
+    K - 제약 수, 0 <= K <M.
+            K = 0은 제약이 없음을 의미합니다 (XC / YC / DC는 이러한 경우 사용되지 않음)
+    M - 기저 함수의 수 (= polynomial_degree + 1), M> = 1
+
+출력 매개 변수 :
+    LSFitLinearW () 서브 루틴에서와 같은 정보 포맷 :
+            * 정보> 0 작업이 해결되었습니다.
+            * 정보 <= 0 오류가 발생했습니다 :
+                        -4는 내부 SVD의 불일치를 의미합니다.
+                        -3은 일관성없는 제약 조건을 의미합니다.
+    P - 중성자 형태의 보간법.
+    Rep -보고, LSFitLinearW () 서브 루틴과 동일한 형식.
+            다음 필드가 설정됩니다.
+            * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+            * (X, Y)에 대한 AvgError 평균 오류.
+            * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+            * MaxError 최대 오류
+                            중요하지 않은 오류가 계산됩니다.
+
+중대한:
+    이 서브 루틴은 K <> 0에 대한 작업의 조건 번호를 계산하지 않습니다.
+
+노트:
+    P를 중성 양식에서 힘 또는 체비 셰프로 변환 할 수 있습니다.
+    PolynomialBar2Pow () 또는 PolynomialBar2Cheb () 함수의 기준은
+    POLINT 하위 패키지.
+
+제약 조건 설정 - 위험 및 기회 :
+
+제약 조건 설정은 부적절한 결과처럼 바람직하지 않은 결과를 초래할 수 있습니다.
+행동 또는 불일치가 감지됩니다. 다른면에서 보면
+우리는 착용감을 향상시킬 수 있습니다. 여기에 우리는
+구속 회귀 스플라인 :
+* 단순한 제약조차도 일치하지 않을 수 있습니다. Wikipedia article on
+  이 주제 : http://en.wikipedia.org/wiki/Birkhoff_interpolation
+* M이 클수록 (고정 된 제약 조건이 주어짐), 더 많은 기회가 주어진다.
+  제약 조건은 일관성이있다.
+* 일반적으로 제약 조건의 일관성은 보장되지 않습니다.
+* 한 가지 특수한 경우에는 일관성을 보장 할 수 있습니다. 이
+  예 : M> 1이고 함수 값에 대한 제약 (NOT DERIVATIVES)
+
+우리의 최종 권고는 제약 조건을 언제 어디서나 사용하는 것입니다.
+그것들 없이는 당신의 과제를 해결할 수 없습니다. 주어진 특별한 경우를 넘어선 것
+상기 보증은 보장되지 않으며 불일치가 발생할 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 10.12.2009
+**************************************************************************/
+
 void polynomialfitwc(const real_1d_array &x, const real_1d_array &y, const real_1d_array &w, const real_1d_array &xc, const real_1d_array &yc, const integer_1d_array &dc, const ae_int_t m, ae_int_t &info, barycentricinterpolant &p, polynomialfitreport &rep)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -4090,6 +6346,90 @@ above is not guaranteed and may result in inconsistency.
   -- ALGLIB PROJECT --
      Copyright 18.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+Floater-Hormann 합리적인 방법을 사용하여 합리적인 최소 제곱합 피팅
+제약 조건과 함께 [0,9]에서 선택된 최적 D를 갖는 함수
+개인적인 무게.
+
+[min (x), max (x)]에 M 노드가있는 등전위 그리드는 기초를 만드는 데 사용됩니다
+기능. D의 다른 값들이 시도되고, 최적의 D (가장 적게 가중 된 루트
+평균 제곱 오차)가 선택된다. 작업은 선형이므로 선형 최소 자승
+솔버가 사용됩니다. 이 계산 방식의 복잡도는 O (N * M ^ 2)
+(대부분 최소 자승법에 의해 지배 됨).
+
+관련 항목
+* BarycentricFitFloaterHormann (), "경량"피팅없이 무조건 피팅
+  가중치 및 제약 조건.
+
+입력 매개 변수 :
+    X- 점, 배열 [0..N-1].
+    Y - 함수 값, array [0..N-1].
+    W - 가중치, 배열 [0..N-1]
+            근사 편차의 제곱합에있는 각 summand
+            주어진 값에 해당하는 제곱을 곱합니다.
+            무게. 가중치를 풀고 싶지 않은 경우 1로 채우기
+            태스크.
+    N - 포인트 수, N> 0.
+    XC - 함수 값 / 파생물이 제한되는 지점,
+            배열 [0..K-1].
+    YC - 제약 조건 값, array [0..K-1]
+    DC - 배열 [0..K-1], 제약 유형 :
+            * DC [i] = 0은 S (XC [i]) = YC [i]
+            * DC [i] = 1은 S '(XC [i]) = YC [i]
+            제약 조건에 대한 중요한 정보는 아래를보십시오.
+    K - 제약 수, 0 <= K <M.
+            K = 0은 제약이 없음을 의미합니다 (XC / YC / DC는 이러한 경우 사용되지 않음)
+    M - 기본 함수의 수 (= number_of_nodes), M> = 2.
+
+출력 매개 변수 :
+    LSFitLinearWC () 서브 루틴과 같은 정보입니다.
+            * 정보> 0 작업이 해결되었습니다.
+            * 정보 <= 0 오류가 발생했습니다 :
+                        -4는 내부 SVD의 불일치를 의미합니다.
+                        -3은 일관성없는 제약 조건을 의미합니다.
+                        -1은 전달 된 매개 변수의 다른 오류를 의미합니다.
+                           (예 : N <= 0)
+    B - barycentric interpolant.
+    Rep -보고, LSFitLinearWC () 서브 루틴과 동일한 형식.
+            다음 필드가 설정됩니다.
+            D 매개 변수의 DBest 최적 값
+            * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+            * (X, Y)에 대한 AvgError 평균 오류.
+            * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+            * MaxError 최대 오류
+                            중요하지 않은 오류가 계산됩니다.
+
+중대한:
+    이 서브 루틴은 K <> 0에 대한 작업 조건 번호를 계산하지 않습니다.
+
+제약 조건 설정 - 위험 및 기회 :
+
+제약 조건 설정은 부적절한 결과처럼 바람직하지 않은 결과를 초래할 수 있습니다.
+행동 또는 불일치가 감지됩니다. 다른면에서 보면
+우리는 착용감을 향상시킬 수 있습니다. 여기에 우리는
+구속 된 barycentric interpolants :
+* 과도한 제약 조건이 일치하지 않을 수 있습니다. 플로터 - 호르만 기초
+  함수는 스플라인만큼 유연하지 않습니다 (매우 부드럽지만).
+* 더 균등하게 제약 조건이 [min (x), max (x)]에 퍼지면 더 많은
+  그들이 일관성있게 일할 수있는 기회
+* M이 클수록 (고정 된 제약 조건이 주어짐), 더 많은 기회가 주어진다.
+  제약 조건은 일관성이있다.
+* 일반적으로 제약 조건의 일관성은 보장되지 않습니다.
+* 몇 가지 특수한 경우에는 일관성을 보장 할 수 있습니다.
+*이 경우 중 하나는 해당 간격의 함수 VALUES에 대한 제약입니다.
+  경계. 함수에 대한 제약 조건의 절박함
+  유도체는 보장되지 않습니다 (이러한 경우에는 3 차 스플라인을 사용할 수 있습니다
+  더 유연합니다).
+* 또 다른 특별한 경우는 함수 값에 대한 하나의 제약입니다 (OR, 그러나
+  AND, 파생물이 아님)
+
+우리의 최종 권고는 언제 어디서나 제약 조건을 사용하는 것입니다.
+그것들 없이는 당신의 과제를 해결할 수 없습니다. 주어진 특별한 경우를 넘어선 것
+상기 보증은 보장되지 않으며 불일치가 발생할 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 18.08.2009
+**************************************************************************/
 void barycentricfitfloaterhormannwc(const real_1d_array &x, const real_1d_array &y, const real_1d_array &w, const ae_int_t n, const real_1d_array &xc, const real_1d_array &yc, const integer_1d_array &dc, const ae_int_t k, const ae_int_t m, ae_int_t &info, barycentricinterpolant &b, barycentricfitreport &rep)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -4141,6 +6481,41 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 18.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************** **********************
+Floater-Hormann 합리적인 함수를 사용하는 합리적인 최소 제곱 피팅
+최적의 D는 [0,9]에서 선택된다.
+
+[min (x), max (x)]에 M 노드가있는 등전위 그리드는 기초를 만드는 데 사용됩니다
+기능. 다른 값의 D가 시도되고, 최적 D (최소 평균값
+제곱 오차)가 선택된다. 작업은 선형이므로 선형 최소 자 솔버
+사용. 이 계산 방식의 복잡도는 O (N * M ^ 2) (주로
+최소 자승법에 의해 지배 됨).
+
+입력 매개 변수 :
+    X- 점, 배열 [0..N-1].
+    Y - 함수 값, array [0..N-1].
+    N - 포인트 수, N> 0.
+    M - 기본 함수의 수 (= number_of_nodes), M> = 2.
+
+출력 매개 변수 :
+    LSFitLinearWC () 서브 루틴과 같은 정보입니다.
+            * 정보> 0 작업이 해결되었습니다.
+            * 정보 <= 0 오류가 발생했습니다 :
+                        -4는 내부 SVD의 불일치를 의미합니다.
+                        -3은 일관성없는 제약 조건을 의미합니다.
+    B - barycentric interpolant.
+    Rep -보고, LSFitLinearWC () 서브 루틴과 동일한 형식.
+            다음 필드가 설정됩니다.
+            D 매개 변수의 DBest 최적 값
+            * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+            * (X, Y)에 대한 AvgError 평균 오류.
+            * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+            * MaxError 최대 오류
+                            중요하지 않은 오류가 계산됩니다.
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 18.08.2009
+**************************************************************************/
 void barycentricfitfloaterhormann(const real_1d_array &x, const real_1d_array &y, const ae_int_t n, const ae_int_t m, ae_int_t &info, barycentricinterpolant &b, barycentricfitreport &rep)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -4192,6 +6567,41 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 18.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+Floater-Hormann 합리적인 함수를 사용하는 합리적인 최소 제곱 피팅
+최적의 D는 [0,9]에서 선택된다.
+
+[min (x), max (x)]에 M 노드가있는 등전위 그리드는 기초를 만드는 데 사용됩니다
+기능. 다른 값의 D가 시도되고, 최적 D (최소 평균값
+제곱 오차)가 선택된다. 작업은 선형이므로 선형 최소 자 솔버
+사용. 이 계산 방식의 복잡도는 O (N * M ^ 2) (주로
+최소 자승법에 의해 지배 됨).
+
+입력 매개 변수 :
+    X- 점, 배열 [0..N-1].
+    Y - 함수 값, array [0..N-1].
+    N - 포인트 수, N> 0.
+    M - 기본 함수의 수 (= number_of_nodes), M> = 2.
+
+출력 매개 변수 :
+    LSFitLinearWC () 서브 루틴과 같은 정보입니다.
+            * 정보> 0 작업이 해결되었습니다.
+            * 정보 <= 0 오류가 발생했습니다 :
+                        -4는 내부 SVD의 불일치를 의미합니다.
+                        -3은 일관성없는 제약 조건을 의미합니다.
+    B - barycentric interpolant.
+    Rep -보고, LSFitLinearWC () 서브 루틴과 동일한 형식.
+            다음 필드가 설정됩니다.
+            D 매개 변수의 DBest 최적 값
+            * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+            * (X, Y)에 대한 AvgError 평균 오류.
+            * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+            * MaxError 최대 오류
+                            중요하지 않은 오류가 계산됩니다.
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 18.08.2009
+**************************************************************************/
 void spline1dfitpenalized(const real_1d_array &x, const real_1d_array &y, const ae_int_t n, const ae_int_t m, const double rho, ae_int_t &info, spline1dinterpolant &s, spline1dfitreport &rep)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -4243,6 +6653,41 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 18.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+Floater-Hormann 합리적인 함수를 사용하는 합리적인 최소 제곱 피팅
+최적의 D는 [0,9]에서 선택된다.
+
+[min (x), max (x)]에 M 노드가있는 등전위 그리드는 기초를 만드는 데 사용됩니다
+기능. 다른 값의 D가 시도되고, 최적 D (최소 평균값
+제곱 오차)가 선택된다. 작업은 선형이므로 선형 최소 자 솔버
+사용. 이 계산 방식의 복잡도는 O (N * M ^ 2) (주로
+최소 자승법에 의해 지배 됨).
+
+입력 매개 변수 :
+    X- 점, 배열 [0..N-1].
+    Y - 함수 값, array [0..N-1].
+    N - 포인트 수, N> 0.
+    M - 기본 함수의 수 (= number_of_nodes), M> = 2.
+
+출력 매개 변수 :
+    LSFitLinearWC () 서브 루틴과 같은 정보입니다.
+            * 정보> 0 작업이 해결되었습니다.
+            * 정보 <= 0 오류가 발생했습니다 :
+                        -4는 내부 SVD의 불일치를 의미합니다.
+                        -3은 일관성없는 제약 조건을 의미합니다.
+    B - barycentric interpolant.
+    Rep -보고, LSFitLinearWC () 서브 루틴과 동일한 형식.
+            다음 필드가 설정됩니다.
+            D 매개 변수의 DBest 최적 값
+            * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+            * (X, Y)에 대한 AvgError 평균 오류.
+            * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+            * MaxError 최대 오류
+                            중요하지 않은 오류가 계산됩니다.
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 18.08.2009
+**************************************************************************/
 void spline1dfitpenalized(const real_1d_array &x, const real_1d_array &y, const ae_int_t m, const double rho, ae_int_t &info, spline1dinterpolant &s, spline1dfitreport &rep)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -4330,6 +6775,72 @@ array.
   -- ALGLIB PROJECT --
      Copyright 19.10.2010 by Bochkanov Sergey
 *************************************************************************/
+/***************************************************************************
+페널티 입방 스플라인에 의한 가중치 적용.
+
+[min (x, xc), max (x, xc)]에 M 노드가있는 등전위 그리드를 사용하여
+기초 기능. 기본 함수는 자연 경계를 갖는 3 차 스플라인입니다.
+정황. 문제는 비선형 성 패널티를 추가하여 정규화됩니다.
+평소 최소 제곱 페널티 기능 :
+
+    S (x) = arg min {LS + P}, 여기서,
+    LS = SUM {w [i] ^ 2 * (y [i] - S (x [i])) ^ 2} - 최소 자승 페널티
+    P = C * 10 ^ ρ * 적분 {S "(x) ^ 2 * dx} - 비선형 성 패널티
+    rho - 사용자가 지정한 튜너 블 상수
+    C - 자동으로 결정된 스케일 파라미터,
+           X, Y, W의 스케일링과 관련하여 페널티를 불변으로 만듭니다.
+
+입력 매개 변수 :
+    X- 점, 배열 [0..N-1].
+    Y - 함수 값, array [0..N-1].
+    W - 가중치, 배열 [0..N-1]
+            근사 편차의 제곱합에있는 각 summand
+            주어진 값에 해당하는 제곱을 곱합니다.
+            무게. 가중치를 풀고 싶지 않은 경우 1로 채우기
+            문제.
+    N - 점수 (선택 사항) :
+            * N> 0
+            * 주어진 경우 X / Y / W의 처음 N 개 요소 만 처리됩니다.
+            * 지정하지 않으면 X / Y / W 크기에서 자동 결정
+    M - 기본 함수의 수 (= number_of_nodes), M> = 4.
+    Rho - 사용자가 전달한 정규화 상수입니다. 벌칙이 부과된다.
+            회귀 스플라인의 비선형 성. 대수적으로
+            스케일 된, 즉 정규화 상수의 실제 값은이다.
+            10 ^ Rho로 계산됩니다. 다음과 같이 자동으로 조정됩니다.
+            * Rho = 2.0은 중간 정도의 비선형성에 해당합니다.
+            * 일반적으로 [-8.0, + 8.0]
+            비선형 적 처벌을 원하지 않는다면,
+            작은 Rho. -15만큼 낮은 값을 사용해야합니다.
+
+출력 매개 변수 :
+    LSFitLinearWC () 서브 루틴과 같은 정보입니다.
+            * 정보> 0 작업이 해결되었습니다.
+            * 정보 <= 0 오류가 발생했습니다 :
+                        -4는 내부 SVD의 불일치 또는
+                           콜레 스키 분해; 문제는
+                           너무 아프다 (매우 드문 경우)
+    S - 스플라인 보간.
+    담당자 - 다음 필드가 설정됩니다.
+            * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+            * (X, Y)에 대한 AvgError 평균 오류.
+            * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+            * MaxError 최대 오류
+                            중요하지 않은 오류가 계산됩니다.
+
+중대한:
+    이 서브 루틴은 K <> 0에 대한 작업의 조건 번호를 계산하지 않습니다.
+
+비고 1 : 피팅 외부의 스플라인에 추가 노드가 추가됩니다.
+x <min (x, xc) 또는 x> max (x, xc) 일 때 선형성을 강요하는 간격. 완료되었습니다.
+일관성을 위해 - 우리는 [min (x, xc), max (x, xc)]에서 비선형 성을 처벌한다.
+이 간격 밖에서 ​​선형성을 강요하는 것이 자연 스럽다.
+
+참고 2 : 함수는 점을 자동으로 정렬하므로 호출자는 정렬되지 않은
+정렬.
+
+  - ALGLIB 프로젝트 -
+     Copyright 19.10.2010 Bochkanov Sergey
+**************************************************************************/
 void spline1dfitpenalizedw(const real_1d_array &x, const real_1d_array &y, const real_1d_array &w, const ae_int_t n, const ae_int_t m, const double rho, ae_int_t &info, spline1dinterpolant &s, spline1dfitreport &rep)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -4412,6 +6923,72 @@ array.
   -- ALGLIB PROJECT --
      Copyright 19.10.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+페널티 입방 스플라인에 의한 가중치 적용.
+
+[min (x, xc), max (x, xc)]에 M 노드가있는 등전위 그리드를 사용하여
+기초 기능. 기본 함수는 자연 경계를 갖는 3 차 스플라인입니다.
+정황. 문제는 비선형 성 패널티를 추가하여 정규화됩니다.
+평소 최소 제곱 페널티 기능 :
+
+    S (x) = arg min {LS + P}, 여기서,
+    LS = SUM {w [i] ^ 2 * (y [i] - S (x [i])) ^ 2} - 최소 자승 페널티
+    P = C * 10 ^ ρ * 적분 {S "(x) ^ 2 * dx} - 비선형 성 패널티
+    rho - 사용자가 지정한 튜너 블 상수
+    C - 자동으로 결정된 스케일 파라미터,
+           X, Y, W의 스케일링과 관련하여 페널티를 불변으로 만듭니다.
+
+입력 매개 변수 :
+    X- 점, 배열 [0..N-1].
+    Y - 함수 값, array [0..N-1].
+    W - 가중치, 배열 [0..N-1]
+            근사 편차의 제곱합에있는 각 summand
+            주어진 값에 해당하는 제곱을 곱합니다.
+            무게. 가중치를 풀고 싶지 않은 경우 1로 채우기
+            문제.
+    N - 점수 (선택 사항) :
+            * N> 0
+            * 주어진 경우 X / Y / W의 처음 N 개 요소 만 처리됩니다.
+            * 지정하지 않으면 X / Y / W 크기에서 자동 결정
+    M - 기본 함수의 수 (= number_of_nodes), M> = 4.
+    Rho - 사용자가 전달한 정규화 상수입니다. 벌칙이 부과된다.
+            회귀 스플라인의 비선형 성. 대수적으로
+            스케일 된, 즉 정규화 상수의 실제 값은이다.
+            10 ^ Rho로 계산됩니다. 다음과 같이 자동으로 조정됩니다.
+            * Rho = 2.0은 중간 정도의 비선형성에 해당합니다.
+            * 일반적으로 [-8.0, + 8.0]
+            비선형 적 처벌을 원하지 않는다면,
+            작은 Rho. -15만큼 낮은 값을 사용해야합니다.
+
+출력 매개 변수 :
+    LSFitLinearWC () 서브 루틴과 같은 정보입니다.
+            * 정보> 0 작업이 해결되었습니다.
+            * 정보 <= 0 오류가 발생했습니다 :
+                        -4는 내부 SVD의 불일치 또는
+                           콜레 스키 분해; 문제는
+                           너무 아프다 (매우 드문 경우)
+    S - 스플라인 보간.
+    담당자 - 다음 필드가 설정됩니다.
+            * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+            * (X, Y)에 대한 AvgError 평균 오류.
+            * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+            * MaxError 최대 오류
+                            중요하지 않은 오류가 계산됩니다.
+
+중대한:
+    이 서브 루틴은 K <> 0에 대한 작업의 조건 번호를 계산하지 않습니다.
+
+비고 1 : 피팅 외부의 스플라인에 추가 노드가 추가됩니다.
+x <min (x, xc) 또는 x> max (x, xc) 일 때 선형성을 강요하는 간격. 완료되었습니다.
+일관성을 위해 - 우리는 [min (x, xc), max (x, xc)]에서 비선형 성을 처벌한다.
+이 간격 밖에서 ​​선형성을 강요하는 것이 자연 스럽다.
+
+참고 2 : 함수는 점을 자동으로 정렬하므로 호출자는 정렬되지 않은
+정렬.
+
+  - ALGLIB 프로젝트 -
+     Copyright 19.10.2010 Bochkanov Sergey
+**************************************************************************/
 void spline1dfitpenalizedw(const real_1d_array &x, const real_1d_array &y, const real_1d_array &w, const ae_int_t m, const double rho, ae_int_t &info, spline1dinterpolant &s, spline1dfitreport &rep)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -4532,6 +7109,105 @@ above is not guaranteed and may result in inconsistency.
   -- ALGLIB PROJECT --
      Copyright 18.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+함수 값에 대한 제약이있는 3 차 스플라인에 의한 가중치 피팅 또는
+파생 상품.
+
+[min (x, xc), max (x, xc)]에 M-2 노드가있는 등전위 그리드를 사용하여
+기초 기능. 기본 함수는 연속 2 초
+간격 끝에서 유래 물과 비 고정 일차 파생물. 작은
+정규화 용어는 제한된 작업을 해결할 때 사용됩니다 (
+안정).
+
+작업은 선형이므로 선형 최소 자 솔버가 사용됩니다. 이 복잡성
+계산 방식은 O (N * M ^ 2)이며, 대부분 최소 자승법이 지배합니다
+
+관련 항목
+    Spline1DFitHermiteWC () - Hermite 스플라인으로 피팅 (더 유연함,
+                                덜 부드러운)
+    Spline1DFitCubic () - 입방 스플라인에 의한 "경량"피팅,
+                                무의미한 가중치와 제약없이
+
+입력 매개 변수 :
+    X- 점, 배열 [0..N-1].
+    Y - 함수 값, array [0..N-1].
+    W - 가중치, 배열 [0..N-1]
+            근사 편차의 제곱합에있는 각 summand
+            주어진 값에 해당하는 제곱을 곱합니다.
+            무게. 가중치를 풀고 싶지 않은 경우 1로 채우기
+            태스크.
+    N - 점수 (선택 사항) :
+            * N> 0
+            * 주어진 경우 X / Y / W의 처음 N 개 요소 만 처리됩니다.
+            * 지정하지 않으면 X / Y / W 크기에서 자동 결정
+    XC - 스플라인 값 / 파생물이 제한되는 지점,
+            배열 [0..K-1].
+    YC - 제약 조건 값, array [0..K-1]
+    DC - 배열 [0..K-1], 제약 유형 :
+            * DC [i] = 0은 S (XC [i]) = YC [i]
+            * DC [i] = 1은 S '(XC [i]) = YC [i]
+            제약 조건에 대한 중요한 정보는 아래를보십시오.
+    K - 제약 조건 수 (선택 사항) :
+            * 0 <= K <M.
+            * K = 0은 제약이 없음을 의미합니다 (XC / YC / DC가 사용되지 않음)
+            * 주어진 경우 XC / YC / DC의 첫 번째 K 요소 만 사용됩니다.
+            * 지정하지 않으면 XC / YC / DC에서 자동으로 결정됩니다.
+    M - 기본 함수의 수 (= number_of_nodes + 2), M> = 4.
+
+출력 매개 변수 :
+    LSFitLinearWC () 서브 루틴과 같은 정보입니다.
+            * 정보> 0 작업이 해결되었습니다.
+            * 정보 <= 0 오류가 발생했습니다 :
+                        -4는 내부 SVD의 불일치를 의미합니다.
+                        -3은 일관성없는 제약 조건을 의미합니다.
+    S - 스플라인 보간.
+    Rep -보고, LSFitLinearWC () 서브 루틴과 동일한 형식.
+            다음 필드가 설정됩니다.
+            * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+            * (X, Y)에 대한 AvgError 평균 오류.
+            * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+            * MaxError 최대 오류
+                            중요하지 않은 오류가 계산됩니다.
+
+중대한:
+    이 서브 루틴은 K <> 0에 대한 작업의 조건 번호를 계산하지 않습니다.
+
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+
+제약 조건 설정 - 위험 및 기회 :
+
+제약 조건 설정은 부적절한 결과처럼 바람직하지 않은 결과를 초래할 수 있습니다.
+행동 또는 불일치가 감지됩니다. 다른면에서 보면
+우리는 착용감을 향상시킬 수 있습니다. 여기에 우리는
+구속 회귀 스플라인 :
+* 과도한 제약 조건이 일치하지 않을 수 있습니다. 스플라인은 조각 별 입방체입니다.
+  함수를 사용하고 예제를 만드는 것이 쉽습니다.
+  작은 영역에 제약이 집중되면 불일치가 발생합니다.
+  스플라인은 모든 것을 만족시킬만큼 유연하지 않기 때문입니다. 과
+  [최소 (x), 최대 (x)]에 걸쳐 동일한 제약 조건이 퍼지면 완벽하게됩니다.
+  일관된.
+* 더 균등하게 제약 조건이 [min (x), max (x)]에 퍼지면 더 많은
+  그들이 일관성있게 일할 수있는 기회
+* M이 클수록 (고정 된 제약 조건이 주어짐), 더 많은 기회가 주어진다.
+  제약 조건은 일관성이있다.
+* 일반적으로 제약 조건의 일관성은 보장되지 않습니다.
+* 몇 가지 특수한 경우에는 일관성을 보장 할 수 있습니다.
+*이 경우 중 하나는 함수 값에 대한 제약 및 / 또는
+  간격 경계에서 파생 상품.
+* 또 다른 특별한 경우는 함수 값에 대한 하나의 제약입니다 (OR, 그러나
+  AND, 파생물이 아님)
+
+우리의 최종 권고는 언제 어디서나 제약 조건을 사용하는 것입니다.
+그것들 없이는 당신의 과제를 해결할 수 없습니다. 주어진 특별한 경우를 넘어선 것
+상기 보증은 보장되지 않으며 불일치가 발생할 수 있습니다.
+
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 18.08.2009
+**************************************************************************/
 void spline1dfitcubicwc(const real_1d_array &x, const real_1d_array &y, const real_1d_array &w, const ae_int_t n, const real_1d_array &xc, const real_1d_array &yc, const integer_1d_array &dc, const ae_int_t k, const ae_int_t m, ae_int_t &info, spline1dinterpolant &s, spline1dfitreport &rep)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -4647,6 +7323,105 @@ above is not guaranteed and may result in inconsistency.
   -- ALGLIB PROJECT --
      Copyright 18.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+함수 값에 대한 제약이있는 3 차 스플라인에 의한 가중치 피팅 또는
+파생 상품.
+
+[min (x, xc), max (x, xc)]에 M-2 노드가있는 등전위 그리드를 사용하여
+기초 기능. 기본 함수는 연속 2 초
+간격 끝에서 유래 물과 비 고정 일차 파생물. 작은
+정규화 용어는 제한된 작업을 해결할 때 사용됩니다 (
+안정).
+
+작업은 선형이므로 선형 최소 자 솔버가 사용됩니다. 이 복잡성
+계산 방식은 O (N * M ^ 2)이며, 대부분 최소 자승법이 지배합니다
+
+관련 항목
+    Spline1DFitHermiteWC () - Hermite 스플라인으로 피팅 (더 유연함,
+                                덜 부드러운)
+    Spline1DFitCubic () - 입방 스플라인에 의한 "경량"피팅,
+                                무의미한 가중치와 제약없이
+
+입력 매개 변수 :
+    X- 점, 배열 [0..N-1].
+    Y - 함수 값, array [0..N-1].
+    W - 가중치, 배열 [0..N-1]
+            근사 편차의 제곱합에있는 각 summand
+            주어진 값에 해당하는 제곱을 곱합니다.
+            무게. 가중치를 풀고 싶지 않으면 1로 채우십시오.
+            태스크.
+    N - 점수 (선택 사항) :
+            * N> 0
+            * 주어진 경우 X / Y / W의 처음 N 개 요소 만 처리됩니다.
+            * 지정하지 않으면 X / Y / W 크기에서 자동 결정
+    XC - 스플라인 값 / 파생물이 제한되는 지점,
+            배열 [0..K-1].
+    YC - 제약 조건 값, array [0..K-1]
+    DC - 배열 [0..K-1], 제약 유형 :
+            * DC [i] = 0은 S (XC [i]) = YC [i]
+            * DC [i] = 1은 S '(XC [i]) = YC [i]
+            제약 조건에 대한 중요한 정보는 아래를보십시오.
+    K - 제약 조건 수 (선택 사항) :
+            * 0 <= K <M.
+            * K = 0은 제약이 없음을 의미합니다 (XC / YC / DC가 사용되지 않음)
+            * 주어진 경우 XC / YC / DC의 첫 번째 K 요소 만 사용됩니다.
+            * 지정하지 않으면 XC / YC / DC에서 자동으로 결정됩니다.
+    M - 기본 함수의 수 (= number_of_nodes + 2), M> = 4.
+
+출력 매개 변수 :
+    LSFitLinearWC () 서브 루틴과 같은 정보입니다.
+            * 정보> 0 작업이 해결되었습니다.
+            * 정보 <= 0 오류가 발생했습니다 :
+                        -4는 내부 SVD의 불일치를 의미합니다.
+                        -3은 일관성없는 제약 조건을 의미합니다.
+    S - 스플라인 보간.
+    Rep -보고, LSFitLinearWC () 서브 루틴과 동일한 형식.
+            다음 필드가 설정됩니다.
+            * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+            * (X, Y)에 대한 AvgError 평균 오류.
+            * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+            * MaxError 최대 오류
+                            중요하지 않은 오류가 계산됩니다.
+
+중대한:
+    이 서브 루틴은 K <> 0에 대한 작업의 조건 번호를 계산하지 않습니다.
+
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+
+제약 조건 설정 - 위험 및 기회 :
+
+제약 조건 설정은 부적절한 결과처럼 바람직하지 않은 결과를 초래할 수 있습니다.
+행동 또는 불일치가 감지됩니다. 다른면에서 보면
+우리는 착용감을 향상시킬 수 있습니다. 여기에 우리는
+구속 회귀 스플라인 :
+* 과도한 제약 조건이 일치하지 않을 수 있습니다. 스플라인은 조각 별 입방체입니다.
+  함수를 사용하고 예제를 만드는 것이 쉽습니다.
+  작은 영역에 제약이 집중되면 불일치가 발생합니다.
+  스플라인은 모든 것을 만족시킬만큼 유연하지 않기 때문입니다. 과
+  [최소 (x), 최대 (x)]에 걸쳐 동일한 제약 조건이 퍼지면 완벽하게됩니다.
+  일관된.
+* 더 균등하게 제약 조건이 [min (x), max (x)]에 퍼지면 더 많은
+  그들이 일관성있게 일할 수있는 기회
+* M이 클수록 (고정 된 제약 조건이 주어짐), 더 많은 기회가 주어진다.
+  제약 조건은 일관성이있다.
+* 일반적으로 제약 조건의 일관성은 보장되지 않습니다.
+* 몇 가지 특수한 경우에는 일관성을 보장 할 수 있습니다.
+*이 경우 중 하나는 함수 값에 대한 제약 및 / 또는
+  간격 경계에서 파생 상품.
+* 또 다른 특별한 경우는 함수 값에 대한 하나의 제약입니다 (OR, 그러나
+  AND, 파생물이 아님)
+
+우리의 최종 권고는 언제 어디서나 제약 조건을 사용하는 것입니다.
+그것들 없이는 당신의 과제를 해결할 수 없습니다. 주어진 특별한 경우를 넘어선 것
+상기 보증은 보장되지 않으며 불일치가 발생할 수 있습니다.
+
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 18.08.2009
+**************************************************************************/
 void spline1dfitcubicwc(const real_1d_array &x, const real_1d_array &y, const real_1d_array &w, const real_1d_array &xc, const real_1d_array &yc, const integer_1d_array &dc, const ae_int_t m, ae_int_t &info, spline1dinterpolant &s, spline1dfitreport &rep)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -4776,6 +7551,110 @@ above is not guaranteed and may result in inconsistency.
   -- ALGLIB PROJECT --
      Copyright 18.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+Hermite 스플라인에 의한 가중치 피팅, 함수 값에 대한 제약 조건 포함
+또는 일차 파생 상품.
+
+[min (x, xc), max (x, xc)]에 M 노드가있는 등전위 그리드를 사용하여
+기초 기능. 기본 함수는 Hermite 스플라인입니다. 작은 정규화
+용어는 제한된 작업을 해결할 때 (안정성 향상을 위해) 사용됩니다.
+
+작업은 선형이므로 선형 최소 자 솔버가 사용됩니다. 이 복잡성
+계산 방식은 O (N * M ^ 2)이며, 대부분 최소 자승법이 지배합니다
+
+관련 항목
+    Spline1DFitCubicWC () - 큐빅 스플라인으로 피팅 (덜 유연한,
+                                더 부드럽게)
+    Spline1DFitHermite () -없는 "경량"Hermite 피팅
+                                무의미한 가중치 및 제약
+
+입력 매개 변수 :
+    X- 점, 배열 [0..N-1].
+    Y - 함수 값, array [0..N-1].
+    W - 가중치, 배열 [0..N-1]
+            근사 편차의 제곱합에있는 각 summand
+            주어진 값에 해당하는 제곱을 곱합니다.
+            무게. 가중치를 풀고 싶지 않은 경우 1로 채우기
+            태스크.
+    N - 점수 (선택 사항) :
+            * N> 0
+            * 주어진 경우 X / Y / W의 처음 N 개 요소 만 처리됩니다.
+            * 지정하지 않으면 X / Y / W 크기에서 자동 결정
+    XC - 스플라인 값 / 파생물이 제한되는 지점,
+            배열 [0..K-1].
+    YC - 제약 조건 값, array [0..K-1]
+    DC - 배열 [0..K-1], 제약 유형 :
+            * DC [i] = 0은 S (XC [i]) = YC [i]
+            * DC [i] = 1은 S '(XC [i]) = YC [i]
+            제약 조건에 대한 중요한 정보는 아래를보십시오.
+    K - 제약 조건 수 (선택 사항) :
+            * 0 <= K <M.
+            * K = 0은 제약이 없음을 의미합니다 (XC / YC / DC가 사용되지 않음)
+            * 주어진 경우 XC / YC / DC의 첫 번째 K 요소 만 사용됩니다.
+            * 지정하지 않으면 XC / YC / DC에서 자동으로 결정됩니다.
+    M - 기본 함수의 수 (= 2 * 노드 수),
+            M> = 4,
+            나도 그래!
+
+출력 매개 변수 :
+    LSFitLinearW () 서브 루틴에서와 같은 정보 포맷 :
+            * 정보> 0 작업이 해결되었습니다.
+            * 정보 <= 0 오류가 발생했습니다 :
+                        -4는 내부 SVD의 불일치를 의미합니다.
+                        -3은 일관성없는 제약 조건을 의미합니다.
+                        -2는 홀수 M이 전달되었음을 의미합니다 (지원되지 않음).
+                        -1은 전달 된 매개 변수의 다른 오류를 의미합니다.
+                           (예 : N <= 0)
+    S - 스플라인 보간.
+    Rep -보고, LSFitLinearW () 서브 루틴과 동일한 형식.
+            다음 필드가 설정됩니다.
+            * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+            * (X, Y)에 대한 AvgError 평균 오류.
+            * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+            * MaxError 최대 오류
+                            중요하지 않은 오류가 계산됩니다.
+
+중대한:
+    이 서브 루틴은 K <> 0에 대한 작업의 조건 번호를 계산하지 않습니다.
+
+중대한:
+    이 서브 루틴은 M
+
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+
+제약 조건 설정 - 위험 및 기회 :
+
+제약 조건 설정은 부적절한 결과처럼 바람직하지 않은 결과를 초래할 수 있습니다.
+행동 또는 불일치가 감지됩니다. 다른면에서 보면
+우리는 착용감을 향상시킬 수 있습니다. 여기에 우리는
+구속 회귀 스플라인 :
+* 과도한 제약 조건이 일치하지 않을 수 있습니다. 스플라인은 조각 별 입방체입니다.
+  함수를 사용하고 예제를 만드는 것이 쉽습니다.
+  작은 영역에 제약이 집중되면 불일치가 발생합니다.
+  스플라인은 모든 것을 만족시킬만큼 유연하지 않기 때문입니다. 과
+  [최소 (x), 최대 (x)]에 걸쳐 동일한 제약 조건이 퍼지면 완벽하게됩니다.
+  일관된.
+* 더 균등하게 제약 조건이 [min (x), max (x)]에 퍼지면 더 많은
+  그들이 일관성있게 일할 수있는 기회
+* M이 클수록 (고정 된 제약 조건이 주어짐), 더 많은 기회가 주어진다.
+  제약 조건은 일관성이있다.
+* 일반적으로 제약 조건의 일관성은 보장되지 않습니다.
+* 몇몇 특별한 경우에는 일관성을 보장 할 수 있습니다.
+*이 경우 중 하나는 M> = 4이고 함수 값에 대한 제약
+  (AND / OR 그 파생물)을 간격 경계에서 찾는다.
+* 또 다른 특별한 경우는 M> = 4이고 함수 값에 대한 하나의 제약 조건입니다
+  [최소 (x), 최대 (x)]의 모든 위치에서 (OR, BUT NOT AND, 파생)
+
+우리의 최종 권고는 제약 조건을 언제 어디서나 사용하는 것입니다.
+그것들 없이는 당신의 과제를 해결할 수 없습니다. 주어진 특별한 경우를 넘어선 것
+상기 보증은 보장되지 않으며 불일치가 발생할 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 18.08.2009
+**************************************************************************/
 void spline1dfithermitewc(const real_1d_array &x, const real_1d_array &y, const real_1d_array &w, const ae_int_t n, const real_1d_array &xc, const real_1d_array &yc, const integer_1d_array &dc, const ae_int_t k, const ae_int_t m, ae_int_t &info, spline1dinterpolant &s, spline1dfitreport &rep)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -4896,6 +7775,110 @@ above is not guaranteed and may result in inconsistency.
   -- ALGLIB PROJECT --
      Copyright 18.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+Hermite 스플라인에 의한 가중치 피팅, 함수 값에 대한 제약 조건 포함
+또는 일차 파생 상품.
+
+[min (x, xc), max (x, xc)]에 M 노드가있는 등전위 그리드를 사용하여
+기초 기능. 기본 함수는 Hermite 스플라인입니다. 작은 정규화
+용어는 제한된 작업을 해결할 때 (안정성 향상을 위해) 사용됩니다.
+
+작업은 선형이므로 선형 최소 자 솔버가 사용됩니다. 이 복잡성
+계산 방식은 O (N * M ^ 2)이며, 대부분 최소 자승법이 지배합니다
+
+관련 항목
+    Spline1DFitCubicWC () - 큐빅 스플라인으로 피팅 (덜 유연한,
+                                더 부드럽게)
+    Spline1DFitHermite () -없는 "경량"Hermite 피팅
+                                무의미한 가중치 및 제약
+
+입력 매개 변수 :
+    X- 점, 배열 [0..N-1].
+    Y - 함수 값, array [0..N-1].
+    W - 가중치, 배열 [0..N-1]
+            근사 편차의 제곱합에있는 각 summand
+            주어진 값에 해당하는 제곱을 곱합니다.
+            무게. 가중치를 풀고 싶지 않은 경우 1로 채우기
+            태스크.
+    N - 점수 (선택 사항) :
+            * N> 0
+            * 주어진 경우 X / Y / W의 처음 N 개 요소 만 처리됩니다.
+            * 지정하지 않으면 X / Y / W 크기에서 자동 결정
+    XC - 스플라인 값 / 파생물이 제한되는 지점,
+            배열 [0..K-1].
+    YC - 제약 조건 값, array [0..K-1]
+    DC - 배열 [0..K-1], 제약 유형 :
+            * DC [i] = 0은 S (XC [i]) = YC [i]
+            * DC [i] = 1은 S '(XC [i]) = YC [i]
+            제약 조건에 대한 중요한 정보는 아래를보십시오.
+    K - 제약 조건 수 (선택 사항) :
+            * 0 <= K <M.
+            * K = 0은 제약이 없음을 의미합니다 (XC / YC / DC가 사용되지 않음)
+            * 주어진 경우 XC / YC / DC의 첫 번째 K 요소 만 사용됩니다.
+            * 지정하지 않으면 XC / YC / DC에서 자동으로 결정됩니다.
+    M - 기본 함수의 수 (= 2 * 노드 수),
+            M> = 4,
+            나도 그래!
+
+출력 매개 변수 :
+    LSFitLinearW () 서브 루틴에서와 같은 정보 포맷 :
+            * 정보> 0 작업이 해결되었습니다.
+            * 정보 <= 0 오류가 발생했습니다 :
+                        -4는 내부 SVD의 불일치를 의미합니다.
+                        -3은 일관성없는 제약 조건을 의미합니다.
+                        -2는 홀수 M이 전달되었음을 의미합니다 (지원되지 않음).
+                        -1은 전달 된 매개 변수의 다른 오류를 의미합니다.
+                           (예 : N <= 0)
+    S - 스플라인 보간.
+    Rep -보고, LSFitLinearW () 서브 루틴과 동일한 형식.
+            다음 필드가 설정됩니다.
+            * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+            * (X, Y)에 대한 AvgError 평균 오류.
+            * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+            * MaxError 최대 오류
+                            중요하지 않은 오류가 계산됩니다.
+
+중대한:
+    이 서브 루틴은 K <> 0에 대한 작업의 조건 번호를 계산하지 않습니다.
+
+중대한:
+    이 서브 루틴은 M
+
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+
+제약 조건 설정 - 위험 및 기회 :
+
+제약 조건 설정은 부적절한 결과처럼 바람직하지 않은 결과를 초래할 수 있습니다.
+행동 또는 불일치가 감지됩니다. 다른면에서 보면
+우리는 착용감을 향상시킬 수 있습니다. 여기에 우리는
+구속 회귀 스플라인 :
+* 과도한 제약 조건이 일치하지 않을 수 있습니다. 스플라인은 조각 별 입방체입니다.
+  함수를 사용하고 예제를 만드는 것이 쉽습니다.
+  작은 영역에 제약이 집중되면 불일치가 발생합니다.
+  스플라인은 모든 것을 만족시킬만큼 유연하지 않기 때문입니다. 과
+  [최소 (x), 최대 (x)]에 걸쳐 동일한 제약 조건이 퍼지면 완벽하게됩니다.
+  일관된.
+* 더 균등하게 제약 조건이 [min (x), max (x)]에 퍼지면 더 많은
+  그들이 일관성있게 일할 수있는 기회
+* M이 클수록 (고정 된 제약 조건이 주어짐), 더 많은 기회가 주어진다.
+  제약 조건은 일관성이있다.
+* 일반적으로 제약 조건의 일관성은 보장되지 않습니다.
+* 몇몇 특별한 경우에는 일관성을 보장 할 수 있습니다.
+*이 경우 중 하나는 M> = 4이고 함수 값에 대한 제약
+  (AND / OR 그 파생물)을 간격 경계에서 찾는다.
+* 또 다른 특별한 경우는 M> = 4이고 함수 값에 대한 하나의 제약 조건입니다
+  [최소 (x), 최대 (x)]의 모든 위치에서 (OR, BUT NOT AND, 파생)
+
+우리의 최종 권고는 제약 조건을 언제 어디서나 사용하는 것입니다.
+그것들 없이는 당신의 과제를 해결할 수 없습니다. 주어진 특별한 경우를 넘어선 것
+상기 보증은 보장되지 않으며 불일치가 발생할 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 18.08.2009
+**************************************************************************/
 void spline1dfithermitewc(const real_1d_array &x, const real_1d_array &y, const real_1d_array &w, const real_1d_array &xc, const real_1d_array &yc, const integer_1d_array &dc, const ae_int_t m, ae_int_t &info, spline1dinterpolant &s, spline1dfitreport &rep)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -4931,6 +7914,16 @@ about subroutine parameters (we don't duplicate it here because of length)
   -- ALGLIB PROJECT --
      Copyright 18.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+큐빅 스플라인으로 피팅 된 최소 제곱.
+
+이 서브 루틴은 좀 더 복잡하고 기능이 많은 "
+rich Spline1DFitCubicWC (). 자세한 내용은 Spline1DFitCubicWC ()를 참조하십시오.
+서브 루틴 매개 변수에 대해 (길이 때문에 여기에 중복되지 않습니다)
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 18.08.2009
+**************************************************************************/
 void spline1dfitcubic(const real_1d_array &x, const real_1d_array &y, const ae_int_t n, const ae_int_t m, ae_int_t &info, spline1dinterpolant &s, spline1dfitreport &rep)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -4957,6 +7950,16 @@ about subroutine parameters (we don't duplicate it here because of length)
   -- ALGLIB PROJECT --
      Copyright 18.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+큐빅 스플라인으로 피팅 된 최소 제곱.
+
+이 서브 루틴은 좀 더 복잡하고 기능이 많은 "
+rich Spline1DFitCubicWC (). 자세한 내용은 Spline1DFitCubicWC ()를 참조하십시오.
+서브 루틴 매개 변수에 대해 (길이 때문에 여기에 중복되지 않습니다)
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 18.08.2009
+**************************************************************************/
 void spline1dfitcubic(const real_1d_array &x, const real_1d_array &y, const ae_int_t m, ae_int_t &info, spline1dinterpolant &s, spline1dfitreport &rep)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -4989,6 +7992,17 @@ because of length).
   -- ALGLIB PROJECT --
      Copyright 18.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+Hermite 스플라인으로 피팅 된 최소 제곱.
+
+이 서브 루틴은 좀 더 복잡하고 기능이 많은 "
+rich Spline1DFitHermiteWC (). 자세한 내용은 Spline1DFitHermiteWC () 설명을 참조하십시오.
+서브 루틴 매개 변수에 대한 자세한 정보 (여기에 중복되지 않습니다.
+길이 때문에).
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 18.08.2009
+**************************************************************************/
 void spline1dfithermite(const real_1d_array &x, const real_1d_array &y, const ae_int_t n, const ae_int_t m, ae_int_t &info, spline1dinterpolant &s, spline1dfitreport &rep)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -5016,6 +8030,17 @@ because of length).
   -- ALGLIB PROJECT --
      Copyright 18.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/***************************************************************************
+Hermite 스플라인으로 피팅 된 최소 제곱.
+
+이 서브 루틴은 좀 더 복잡하고 기능이 많은 "
+rich Spline1DFitHermiteWC (). 자세한 내용은 Spline1DFitHermiteWC () 설명을 참조하십시오.
+서브 루틴 매개 변수에 대한 자세한 정보 (여기에 중복되지 않습니다.
+길이 때문에).
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 18.08.2009
+**************************************************************************/
 void spline1dfithermite(const real_1d_array &x, const real_1d_array &y, const ae_int_t m, ae_int_t &info, spline1dinterpolant &s, spline1dfitreport &rep)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -5117,6 +8142,86 @@ NOTE:       covariance matrix is estimated using  correction  for  degrees
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+가중치가 적용된 선형 최소 제곱 피팅.
+
+QR 분해는 작업을 MxM으로 줄이기 위해 사용 된 다음 삼각 솔버 또는
+SVD 기반 솔버는 시스템의 조건 번호에 따라 사용됩니다. 그것
+속도를 극대화하고 적절한 정확성을 유지할 수 있습니다.
+
+중요 : 다항식 피팅을 수행하려는 경우
+           PolynomialFit () 함수를 사용하면 편리합니다. 이 함수는
+           다항식 문제에 대한 최상의 결과 및 수치 해석
+           당신이 높은 학위에 맞을 때 발생하는 안정성 문제
+           다항식을 데이터에 적용합니다.
+
+입력 매개 변수 :
+    Y - 배열 [0..N-1] N 개의 함수 값.
+    W - 배열 [0..N-1] 함수 값에 해당하는 가중치.
+                각 summand 근사치 편차의 제곱합
+                주어진 값으로부터 제곱의
+                해당 무게.
+    FMatrix - 기본 함수 값의 테이블, array [0..N-1, 0..M-1].
+                FMatrix [I, J] - I 번째 점에서 J 번째 기초 함수의 값.
+    N - 사용 된 점의 수. N> = 1이다.
+    M - 기저 함수의 수, M> = 1.
+
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                * -4 내부 SVD 분해 서브 루틴 실패 (매우
+                        희귀 및 퇴화 시스템 전용)
+                * -1 잘못된 N / M이 지정되었습니다.
+                * 1 과제 해결
+    C - 분해 계수, 배열 [0..M-1]
+    신고서 제출. 다음 필드가 설정됩니다.
+                * Rep.TaskRCond 조건 수의 역수
+                * R2 비 조정 계수
+                                    (가중치 제외)
+                * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+                * (X, Y)에 대한 AvgError 평균 오류.
+                * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+                * MaxError 최대 오류
+                                    중요하지 않은 오류가 계산됩니다.
+
+매개 변수의 오류
+
+이 솔버는 또한 매개 변수에서 다양한 종류의 오류를 계산하고
+보고서의 해당 필드를 채 웁니다.
+* 매개 변수에 대한 Rep.CovPar 공분산 행렬, 배열 [K, K].
+매개 변수의 Rep.ErrPar 오류, 배열 [K],
+                    errpar = sqrt (diag (CovPar))
+* Rep.ErrCurve 적합 오차 벡터 - 경험적 표준 편차
+                    내장 된 "이상적인"최적 곡선의 최적 곡선
+                    무한 개수의 샘플, 배열 [N].
+                    errcurve = sqrt (diag (F * CovPar * F ')),
+                    여기서 F는 함수 행렬입니다.
+* Rep. 잡음 당 포인트 추정치의 잡음 벡터, 배열 [N]
+
+참고 : 데이터의 노이즈는 다음과 같이 추정됩니다.
+            * 사용자가 제공하는 무게없이 모든 피팅을 맞추기 위해
+              동일한 수준의 잡음을 갖는 것으로 가정하며,
+              자료
+            * 사용자가 제공 한 무게로 피팅하기 위해 우리는 소음
+              레벨은 Ith 가중치에 반비례합니다.
+              비례 계수는 데이터로부터 추정됩니다.
+
+참고 : 우리는 제곱을 반전 할 때 소량의 정규화를 적용합니다.
+            자 코비안 (Jacobian)을 선택하고 공분산 행렬을 계산합니다. 그것은
+            알고리즘은 반전시 0으로 나누지 않지만 비뚤어 짐
+            오류 추정 조금 (분수 오류 약 10 ^ -9)입니다.
+
+            그러나 우리는이 차이가
+            원하는 상황을 제외한 모든 실제적인 목적
+            ALGLIB 결과를 "참조"구현과 비교
+            마지막 유효 숫자로
+
+참고 : 공분산 행렬은도에 대한 보정을 사용하여 추정됩니다.
+            자유의 (공분산은 나누기 대신에 NM으로 나누어진다.
+            N에 의해).
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+**************************************************************************/
 void lsfitlinearw(const real_1d_array &y, const real_1d_array &w, const real_2d_array &fmatrix, const ae_int_t n, const ae_int_t m, ae_int_t &info, real_1d_array &c, lsfitreport &rep)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -5213,6 +8318,86 @@ NOTE:       covariance matrix is estimated using  correction  for  degrees
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+가중치가 적용된 선형 최소 제곱 피팅.
+
+QR 분해는 작업을 MxM으로 줄이기 위해 사용 된 다음 삼각 솔버 또는
+SVD 기반 솔버는 시스템의 조건 번호에 따라 사용됩니다. 그것
+속도를 극대화하고 적절한 정확성을 유지할 수 있습니다.
+
+중요 : 다항식 피팅을 수행하려는 경우
+           PolynomialFit () 함수를 사용하면 편리합니다. 이 함수는
+           다항식 문제에 대한 최상의 결과 및 수치 해석
+           당신이 높은 학위에 맞을 때 발생하는 안정성 문제
+           다항식을 데이터에 적용합니다.
+
+입력 매개 변수 :
+    Y - 배열 [0..N-1] N 개의 함수 값.
+    W - 배열 [0..N-1] 함수 값에 해당하는 가중치.
+                각 summand 근사치 편차의 제곱합
+                주어진 값으로부터 제곱의
+                해당 무게.
+    FMatrix - 기본 함수 값의 테이블, array [0..N-1, 0..M-1].
+                FMatrix [I, J] - I 번째 점에서 J 번째 기초 함수의 값.
+    N - 사용 된 점의 수. N> = 1이다.
+    M - 기저 함수의 수, M> = 1.
+
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                * -4 내부 SVD 분해 서브 루틴 실패 (매우
+                        희귀 및 퇴화 시스템 전용)
+                * -1 잘못된 N / M이 지정되었습니다.
+                * 1 과제 해결
+    C - 분해 계수, 배열 [0..M-1]
+    신고서 제출. 다음 필드가 설정됩니다.
+                * Rep.TaskRCond 조건 수의 역수
+                * R2 비 조정 계수
+                                    (가중치 제외)
+                * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+                * (X, Y)에 대한 AvgError 평균 오류.
+                * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+                * MaxError 최대 오류
+                                    중요하지 않은 오류가 계산됩니다.
+
+매개 변수의 오류
+
+이 솔버는 또한 매개 변수에서 다양한 종류의 오류를 계산하고
+보고서의 해당 필드를 채 웁니다.
+* 매개 변수에 대한 Rep.CovPar 공분산 행렬, 배열 [K, K].
+매개 변수의 Rep.ErrPar 오류, 배열 [K],
+                    errpar = sqrt (diag (CovPar))
+* Rep.ErrCurve 적합 오차 벡터 - 경험적 표준 편차
+                    내장 된 "이상적인"최적 곡선의 최적 곡선
+                    무한 개수의 샘플, 배열 [N].
+                    errcurve = sqrt (diag (F * CovPar * F ')),
+                    여기서 F는 함수 행렬입니다.
+* Rep. 잡음 당 포인트 추정치의 잡음 벡터, 배열 [N]
+
+참고 : 데이터의 노이즈는 다음과 같이 추정됩니다.
+            * 사용자가 제공하는 무게없이 모든 피팅을 맞추기 위해
+              동일한 수준의 잡음을 갖는 것으로 가정하며,
+              자료
+            * 사용자가 제공 한 무게로 피팅하기 위해 우리는 소음
+              레벨은 Ith 가중치에 반비례합니다.
+              비례 계수는 데이터로부터 추정됩니다.
+
+참고 : 우리는 제곱을 반전 할 때 소량의 정규화를 적용합니다.
+            자 코비안 (Jacobian)을 선택하고 공분산 행렬을 계산합니다. 그것은
+            알고리즘은 반전시 0으로 나누지 않지만 비뚤어 짐
+            오류 추정 조금 (분수 오류 약 10 ^ -9)입니다.
+
+            그러나 우리는이 차이가
+            원하는 상황을 제외한 모든 실제적인 목적
+            ALGLIB 결과를 "참조"구현과 비교
+            마지막 유효 숫자로
+
+참고 : 공분산 행렬은도에 대한 보정을 사용하여 추정됩니다.
+            자유의 (공분산은 나누기 대신에 NM으로 나누어진다.
+            N에 의해).
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+**************************************************************************/
 void lsfitlinearw(const real_1d_array &y, const real_1d_array &w, const real_2d_array &fmatrix, ae_int_t &info, real_1d_array &c, lsfitreport &rep)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -5332,6 +8517,102 @@ NOTE:       covariance matrix is estimated using  correction  for  degrees
   -- ALGLIB --
      Copyright 07.09.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+가중치 부여 된 선형 최소 자승 피팅.
+
+이것은 LSFitLinearW ()의 변형으로 min | A * x = b |를 검색합니다. 주어진
+그 K 추가 constaints C * x = bc가 만족된다. 원본을 줄입니다.
+수정 된 작업 : min | B * yd | 제약없이 LSFitLinearW ()
+호출됩니다.
+
+중요 : 다항식 피팅을 수행하려는 경우
+           PolynomialFit () 함수를 사용하면 편리합니다. 이 함수는
+           다항식 문제에 대한 최상의 결과 및 수치 해석
+           당신이 높은 학위에 맞을 때 발생하는 안정성 문제
+           다항식을 데이터에 적용합니다.
+
+입력 매개 변수 :
+    Y - 배열 [0..N-1] N 개의 함수 값.
+    W - 배열 [0..N-1] 함수 값에 해당하는 가중치.
+                각 summand 근사치 편차의 제곱합
+                주어진 값으로부터 제곱의
+                해당 무게.
+    FMatrix - 기본 함수 값의 테이블, array [0..N-1, 0..M-1].
+                FMatrix [I, J] - I 번째 점에서 J 번째 기초 함수의 값.
+    CMatrix - constaints 테이블, 배열 [0..K-1.0..M].
+                CMatrix의 I 번째 행은 I 번째 선형 제약에 해당합니다.
+                CMatrix [I, M] * C [M-1] = CMatrix [I, M]
+    N - 사용 된 점의 수. N> = 1이다.
+    M - 기저 함수의 수, M> = 1.
+    K - 제약 수, 0 <= K <M
+                K = 0은 제약 조건 없음에 해당합니다.
+
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                * -4 내부 SVD 분해 서브 루틴 실패 (매우
+                        희귀 및 퇴화 시스템 전용)
+                * -3 너무 많은 제약 조건 (M 이상),
+                        축퇴 제약 조건 (일부 제약 조건은
+                        반복 두 번) 또는 일관성없는 제약 조건
+                        지정된.
+                * 1 과제 해결
+    C - 분해 계수, 배열 [0..M-1]
+    신고서 제출. 다음 필드가 설정됩니다.
+                * R2 비 조정 계수
+                                    (가중치 제외)
+                * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+                * (X, Y)에 대한 AvgError 평균 오류.
+                * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+                * MaxError 최대 오류
+                                    중요하지 않은 오류가 계산됩니다.
+
+중대한:
+    이 서브 루틴은 K <> 0에 대한 작업의 조건 번호를 계산하지 않습니다.
+
+매개 변수의 오류
+
+이 솔버는 또한 매개 변수에서 다양한 종류의 오류를 계산하고
+보고서의 해당 필드를 채 웁니다.
+* 매개 변수에 대한 Rep.CovPar 공분산 행렬, 배열 [K, K].
+매개 변수의 Rep.ErrPar 오류, 배열 [K],
+                    errpar = sqrt (diag (CovPar))
+* Rep.ErrCurve 적합 오차 벡터 - 경험적 표준 편차
+                    내장 된 "이상적인"최적 곡선의 최적 곡선
+                    무한 개수의 샘플, 배열 [N].
+                    errcurve = sqrt (diag (F * CovPar * F ')),
+                    여기서 F는 함수 행렬입니다.
+* Rep. 잡음 당 포인트 추정치의 잡음 벡터, 배열 [N]
+
+중요 : 매개 변수의 오류는
+            계정 경계 / 선형 제약! 제약 조건의 존재
+            오류 배포를 변경하지만 쉬운 방법은 없습니다.
+            공분산 행렬을 계산할 때 제약 조건을 설명합니다.
+
+참고 : 데이터의 노이즈는 다음과 같이 추정됩니다.
+            * 사용자가 제공하는 무게없이 모든 피팅을 맞추기 위해
+              동일한 수준의 잡음을 갖는 것으로 가정하며,
+              자료
+            * 사용자가 제공 한 무게로 피팅하기 위해 우리는 소음
+              레벨은 Ith 가중치에 반비례합니다.
+              비례 계수는 데이터로부터 추정됩니다.
+
+참고 : 우리는 제곱을 반전 할 때 소량의 정규화를 적용합니다.
+            자 코비안 (Jacobian)을 선택하고 공분산 행렬을 계산합니다. 그것은
+            알고리즘은 반전시 0으로 나누지 않지만 비뚤어 짐
+            오류 추정 조금 (분수 오류 약 10 ^ -9)입니다.
+
+            그러나 우리는이 차이가
+            원하는 상황을 제외한 모든 실제적인 목적
+            ALGLIB 결과를 "참조"구현과 비교
+            마지막 유효 숫자로
+
+참고 : 공분산 행렬은도에 대한 보정을 사용하여 추정됩니다.
+            자유의 (공분산은 나누기 대신에 NM으로 나누어진다.
+            N에 의해).
+
+  - ALGLIB -
+     저작권 07.09.2009 Bochkanov Sergey
+**************************************************************************/
 void lsfitlinearwc(const real_1d_array &y, const real_1d_array &w, const real_2d_array &fmatrix, const real_2d_array &cmatrix, const ae_int_t n, const ae_int_t m, const ae_int_t k, ae_int_t &info, real_1d_array &c, lsfitreport &rep)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -5444,6 +8725,102 @@ NOTE:       covariance matrix is estimated using  correction  for  degrees
   -- ALGLIB --
      Copyright 07.09.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+가중치 부여 된 선형 최소 자승 피팅.
+
+이것은 LSFitLinearW ()의 변형으로 min | A * x = b |를 검색합니다. 주어진
+그 K 추가 constaints C * x = bc가 만족된다. 원본을 줄입니다.
+수정 된 작업 : min | B * yd | 제약없이 LSFitLinearW ()
+호출됩니다.
+
+중요 : 다항식 피팅을 수행하려는 경우
+           PolynomialFit () 함수를 사용하면 편리합니다. 이 함수는
+           다항식 문제에 대한 최상의 결과 및 수치 해석
+           당신이 높은 학위에 맞을 때 발생하는 안정성 문제
+           다항식을 데이터에 적용합니다.
+
+입력 매개 변수 :
+    Y - 배열 [0..N-1] N 개의 함수 값.
+    W - 배열 [0..N-1] 함수 값에 해당하는 가중치.
+                각 summand 근사치 편차의 제곱합
+                주어진 값으로부터 제곱의
+                해당 무게.
+    FMatrix - 기본 함수 값의 테이블, array [0..N-1, 0..M-1].
+                FMatrix [I, J] - I 번째 점에서 J 번째 기초 함수의 값.
+    CMatrix - constaints 테이블, 배열 [0..K-1.0..M].
+                CMatrix의 I 번째 행은 I 번째 선형 제약에 해당합니다.
+                CMatrix [I, M] * C [M-1] = CMatrix [I, M]
+    N - 사용 된 점의 수. N> = 1이다.
+    M - 기저 함수의 수, M> = 1.
+    K - 제약 수, 0 <= K <M
+                K = 0은 제약 조건 없음에 해당합니다.
+
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                * -4 내부 SVD 분해 서브 루틴 실패 (매우
+                        희귀 및 퇴화 시스템 전용)
+                * -3 너무 많은 제약 조건 (M 이상),
+                        축퇴 제약 조건 (일부 제약 조건은
+                        반복 두 번) 또는 일관성없는 제약 조건
+                        지정된.
+                * 1 과제 해결
+    C - 분해 계수, 배열 [0..M-1]
+    신고서 제출. 다음 필드가 설정됩니다.
+                * R2 비 조정 계수
+                                    (가중치 제외)
+                * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+                * (X, Y)에 대한 AvgError 평균 오류.
+                * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+                * MaxError 최대 오류
+                                    중요하지 않은 오류가 계산됩니다.
+
+중대한:
+    이 서브 루틴은 K <> 0에 대한 작업의 조건 번호를 계산하지 않습니다.
+
+매개 변수의 오류
+
+이 솔버는 또한 매개 변수에서 다양한 종류의 오류를 계산하고
+보고서의 해당 필드를 채 웁니다.
+* 매개 변수에 대한 Rep.CovPar 공분산 행렬, 배열 [K, K].
+매개 변수의 Rep.ErrPar 오류, 배열 [K],
+                    errpar = sqrt (diag (CovPar))
+* Rep.ErrCurve 적합 오차 벡터 - 경험적 표준 편차
+                    내장 된 "이상적인"최적 곡선의 최적 곡선
+                    무한 개수의 샘플, 배열 [N].
+                    errcurve = sqrt (diag (F * CovPar * F ')),
+                    여기서 F는 함수 행렬입니다.
+* Rep. 잡음 당 포인트 추정치의 잡음 벡터, 배열 [N]
+
+중요 : 매개 변수의 오류는
+            계정 경계 / 선형 제약! 제약 조건의 존재
+            오류 배포를 변경하지만 쉬운 방법은 없습니다.
+            공분산 행렬을 계산할 때 제약 조건을 설명합니다.
+
+참고 : 데이터의 노이즈는 다음과 같이 추정됩니다.
+            * 사용자가 제공하는 무게없이 모든 피팅을 맞추기 위해
+              동일한 수준의 잡음을 갖는 것으로 가정하며,
+              자료
+            * 사용자가 제공 한 무게로 피팅하기 위해 우리는 소음
+              레벨은 Ith 가중치에 반비례합니다.
+              비례 계수는 데이터로부터 추정됩니다.
+
+참고 : 우리는 제곱을 반전 할 때 소량의 정규화를 적용합니다.
+            자 코비안 (Jacobian)을 선택하고 공분산 행렬을 계산합니다. 그것은
+            알고리즘은 반전시 0으로 나누지 않지만 비뚤어 짐
+            오류 추정 조금 (분수 오류 약 10 ^ -9)입니다.
+
+            그러나 우리는이 차이가
+            원하는 상황을 제외한 모든 실제적인 목적
+            ALGLIB 결과를 "참조"구현과 비교
+            마지막 유효 숫자로
+
+참고 : 공분산 행렬은도에 대한 보정을 사용하여 추정됩니다.
+            자유의 (공분산은 나누기 대신에 NM으로 나누어진다.
+            N에 의해).
+
+  - ALGLIB -
+     저작권 07.09.2009 Bochkanov Sergey
+**************************************************************************/
 void lsfitlinearwc(const real_1d_array &y, const real_1d_array &w, const real_2d_array &fmatrix, const real_2d_array &cmatrix, ae_int_t &info, real_1d_array &c, lsfitreport &rep)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -5546,6 +8923,81 @@ NOTE:       covariance matrix is estimated using  correction  for  degrees
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+선형 최소 제곱합.
+
+QR 분해는 작업을 MxM으로 줄이기 위해 사용 된 다음 삼각 솔버 또는
+SVD 기반 솔버는 시스템의 조건 번호에 따라 사용됩니다. 그것
+속도를 극대화하고 적절한 정확성을 유지할 수 있습니다.
+
+중요 : 다항식 피팅을 수행하려는 경우
+           PolynomialFit () 함수를 사용하면 편리합니다. 이 함수는
+           다항식 문제에 대한 최상의 결과 및 수치 해석
+           당신이 높은 학위에 맞을 때 발생하는 안정성 문제
+           다항식을 데이터에 적용합니다.
+
+입력 매개 변수 :
+    Y - 배열 [0..N-1] N 개의 함수 값.
+    FMatrix - 기본 함수 값의 테이블, array [0..N-1, 0..M-1].
+                FMatrix [I, J] - I 번째 점에서 J 번째 기초 함수의 값.
+    N - 사용 된 점의 수. N> = 1이다.
+    M - 기저 함수의 수, M> = 1.
+
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                * -4 내부 SVD 분해 서브 루틴 실패 (매우
+                        희귀 및 퇴화 시스템 전용)
+                * 1 과제 해결
+    C - 분해 계수, 배열 [0..M-1]
+    신고서 제출. 다음 필드가 설정됩니다.
+                * Rep.TaskRCond 조건 수의 역수
+                * R2 비 조정 계수
+                                    (가중치 제외)
+                * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+                * (X, Y)에 대한 AvgError 평균 오류.
+                * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+                * MaxError 최대 오류
+                                    중요하지 않은 오류가 계산됩니다.
+
+매개 변수의 오류
+
+이 솔버는 또한 매개 변수에서 다양한 종류의 오류를 계산하고
+보고서의 해당 필드를 채 웁니다.
+* 매개 변수에 대한 Rep.CovPar 공분산 행렬, 배열 [K, K].
+매개 변수의 Rep.ErrPar 오류, 배열 [K],
+                    errpar = sqrt (diag (CovPar))
+* Rep.ErrCurve 적합 오차 벡터 - 경험적 표준 편차
+                    내장 된 "이상적인"최적 곡선의 최적 곡선
+                    무한 개수의 샘플, 배열 [N].
+                    errcurve = sqrt (diag (F * CovPar * F ')),
+                    여기서 F는 함수 행렬입니다.
+* Rep. 잡음 당 포인트 추정치의 잡음 벡터, 배열 [N]
+
+참고 : 데이터의 노이즈는 다음과 같이 추정됩니다.
+            * 사용자가 제공하는 무게없이 모든 피팅을 맞추기 위해
+              동일한 수준의 잡음을 갖는 것으로 가정하며,
+              자료
+            * 사용자가 제공 한 무게로 피팅하기 위해 우리는 소음
+              레벨은 Ith 가중치에 반비례합니다.
+              비례 계수는 데이터로부터 추정됩니다.
+
+참고 : 우리는 제곱을 반전 할 때 소량의 정규화를 적용합니다.
+            자 코비안 (Jacobian)을 선택하고 공분산 행렬을 계산합니다. 그것은
+            알고리즘은 반전시 0으로 나누지 않지만 비뚤어 짐
+            오류 추정 조금 (분수 오류 약 10 ^ -9)입니다.
+
+            그러나 우리는이 차이가
+            원하는 상황을 제외한 모든 실제적인 목적
+            ALGLIB 결과를 "참조"구현과 비교
+            마지막 유효 숫자로
+
+참고 : 공분산 행렬은도에 대한 보정을 사용하여 추정됩니다.
+            자유의 (공분산은 나누기 대신에 NM으로 나누어진다.
+            N에 의해).
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+**************************************************************************/
 void lsfitlinear(const real_1d_array &y, const real_2d_array &fmatrix, const ae_int_t n, const ae_int_t m, ae_int_t &info, real_1d_array &c, lsfitreport &rep)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -5637,6 +9089,81 @@ NOTE:       covariance matrix is estimated using  correction  for  degrees
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+선형 최소 제곱합.
+
+QR 분해는 작업을 MxM으로 줄이기 위해 사용 된 다음 삼각 솔버 또는
+SVD 기반 솔버는 시스템의 조건 번호에 따라 사용됩니다. 그것
+속도를 극대화하고 적절한 정확성을 유지할 수 있습니다.
+
+중요 : 다항식 피팅을 수행하려는 경우
+           PolynomialFit () 함수를 사용하면 편리합니다. 이 함수는
+           다항식 문제에 대한 최상의 결과 및 수치 해석
+           당신이 높은 학위에 맞을 때 발생하는 안정성 문제
+           다항식을 데이터에 적용합니다.
+
+입력 매개 변수 :
+    Y - 배열 [0..N-1] N 개의 함수 값.
+    FMatrix - 기본 함수 값의 테이블, array [0..N-1, 0..M-1].
+                FMatrix [I, J] - I 번째 점에서 J 번째 기초 함수의 값.
+    N - 사용 된 점의 수. N> = 1이다.
+    M - 기저 함수의 수, M> = 1.
+
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                * -4 내부 SVD 분해 서브 루틴 실패 (매우
+                        희귀 및 퇴화 시스템 전용)
+                * 1 과제 해결
+    C - 분해 계수, 배열 [0..M-1]
+    신고서 제출. 다음 필드가 설정됩니다.
+                * Rep.TaskRCond 조건 수의 역수
+                * R2 비 조정 계수
+                                    (가중치 제외)
+                * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+                * (X, Y)에 대한 AvgError 평균 오류.
+                * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+                * MaxError 최대 오류
+                                    중요하지 않은 오류가 계산됩니다.
+
+매개 변수의 오류
+
+이 솔버는 또한 매개 변수에서 다양한 종류의 오류를 계산하고
+보고서의 해당 필드를 채 웁니다.
+* 매개 변수에 대한 Rep.CovPar 공분산 행렬, 배열 [K, K].
+매개 변수의 Rep.ErrPar 오류, 배열 [K],
+                    errpar = sqrt (diag (CovPar))
+* Rep.ErrCurve 적합 오차 벡터 - 경험적 표준 편차
+                    내장 된 "이상적인"최적 곡선의 최적 곡선
+                    무한 개수의 샘플, 배열 [N].
+                    errcurve = sqrt (diag (F * CovPar * F ')),
+                    여기서 F는 함수 행렬입니다.
+* Rep. 잡음 당 포인트 추정치의 잡음 벡터, 배열 [N]
+
+참고 : 데이터의 노이즈는 다음과 같이 추정됩니다.
+            * 사용자가 제공하는 무게없이 모든 피팅을 맞추기 위해
+              동일한 수준의 잡음을 갖는 것으로 가정하며,
+              자료
+            * 사용자가 제공 한 무게로 피팅하기 위해 우리는 소음
+              레벨은 Ith 가중치에 반비례합니다.
+              비례 계수는 데이터로부터 추정됩니다.
+
+참고 : 우리는 제곱을 반전 할 때 소량의 정규화를 적용합니다.
+            자 코비안 (Jacobian)을 선택하고 공분산 행렬을 계산합니다. 그것은
+            알고리즘은 반전시 0으로 나누지 않지만 비뚤어 짐
+            오류 추정 조금 (분수 오류 약 10 ^ -9)입니다.
+
+            그러나 우리는이 차이가
+            원하는 상황을 제외한 모든 실제적인 목적
+            ALGLIB 결과를 "참조"구현과 비교
+            마지막 유효 숫자로
+
+참고 : 공분산 행렬은도에 대한 보정을 사용하여 추정됩니다.
+            자유의 (공분산은 나누기 대신에 NM으로 나누어진다.
+            N에 의해).
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+**************************************************************************/
 void lsfitlinear(const real_1d_array &y, const real_2d_array &fmatrix, ae_int_t &info, real_1d_array &c, lsfitreport &rep)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -5752,6 +9279,98 @@ NOTE:       covariance matrix is estimated using  correction  for  degrees
   -- ALGLIB --
      Copyright 07.09.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+Constained 선형 최소 제곱 피팅.
+
+이것은 min | A * x = b |를 검색하는 LSFitLinear ()의 변형입니다. 주어진
+그 K 추가 constaints C * x = bc가 만족된다. 원본을 줄입니다.
+수정 된 작업 : min | B * yd | 제약없이 LSFitLinear ()
+호출됩니다.
+
+중요 : 다항식 피팅을 수행하려는 경우
+           PolynomialFit () 함수를 사용하면 편리합니다. 이 함수는
+           다항식 문제에 대한 최상의 결과 및 수치 해석
+           당신이 높은 학위에 맞을 때 발생하는 안정성 문제
+           다항식을 데이터에 적용합니다.
+
+입력 매개 변수 :
+    Y - 배열 [0..N-1] N 개의 함수 값.
+    FMatrix - 기본 함수 값의 테이블, array [0..N-1, 0..M-1].
+                FMatrix [I, J] - I 번째 점에서 J 번째 기초 함수의 값.
+    CMatrix - constaints 테이블, 배열 [0..K-1.0..M].
+                CMatrix의 I 번째 행은 I 번째 선형 제약에 해당합니다.
+                CMatrix [I, M] * C [M-1] = CMatrix [I, M]
+    N - 사용 된 점의 수. N> = 1이다.
+    M - 기저 함수의 수, M> = 1.
+    K - 제약 수, 0 <= K <M
+                K = 0은 제약 조건 없음에 해당합니다.
+
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                * -4 내부 SVD 분해 서브 루틴 실패 (매우
+                        희귀 및 퇴화 시스템 전용)
+                * -3 너무 많은 제약 조건 (M 이상),
+                        축퇴 제약 조건 (일부 제약 조건은
+                        반복 두 번) 또는 일관성없는 제약 조건
+                        지정된.
+                * 1 과제 해결
+    C - 분해 계수, 배열 [0..M-1]
+    신고서 제출. 다음 필드가 설정됩니다.
+                * R2 비 조정 계수
+                                    (가중치 제외)
+                * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+                * (X, Y)에 대한 AvgError 평균 오류.
+                * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+                * MaxError 최대 오류
+                                    중요하지 않은 오류가 계산됩니다.
+
+중대한:
+    이 서브 루틴은 K <> 0에 대한 작업의 조건 번호를 계산하지 않습니다.
+
+매개 변수의 오류
+
+이 솔버는 또한 매개 변수에서 다양한 종류의 오류를 계산하고
+보고서의 해당 필드를 채 웁니다.
+* 매개 변수에 대한 Rep.CovPar 공분산 행렬, 배열 [K, K].
+매개 변수의 Rep.ErrPar 오류, 배열 [K],
+                    errpar = sqrt (diag (CovPar))
+* Rep.ErrCurve 적합 오차 벡터 - 경험적 표준 편차
+                    내장 된 "이상적인"최적 곡선의 최적 곡선
+                    무한 개수의 샘플, 배열 [N].
+                    errcurve = sqrt (diag (F * CovPar * F ')),
+                    여기서 F는 함수 행렬입니다.
+* Rep. 잡음 당 포인트 추정치의 잡음 벡터, 배열 [N]
+
+중요 : 매개 변수의 오류는
+            계정 경계 / 선형 제약! 제약 조건의 존재
+            오류 배포를 변경하지만 쉬운 방법은 없습니다.
+            공분산 행렬을 계산할 때 제약 조건을 설명합니다.
+
+참고 : 데이터의 노이즈는 다음과 같이 추정됩니다.
+            * 사용자가 제공하는 무게없이 모든 피팅을 맞추기 위해
+              동일한 수준의 잡음을 갖는 것으로 가정하며,
+              자료
+            * 사용자가 제공 한 무게로 피팅하기 위해 우리는 소음
+              레벨은 Ith 가중치에 반비례합니다.
+              비례 계수는 데이터로부터 추정됩니다.
+
+참고 : 우리는 제곱을 반전 할 때 소량의 정규화를 적용합니다.
+            자 코비안 (Jacobian)을 선택하고 공분산 행렬을 계산합니다. 그것은
+            알고리즘은 반전시 0으로 나누지 않지만 비뚤어 짐
+            오류 추정 조금 (분수 오류 약 10 ^ -9)입니다.
+
+            그러나 우리는이 차이가
+            원하는 상황을 제외한 모든 실제적인 목적
+            ALGLIB 결과를 "참조"구현과 비교
+            마지막 유효 숫자로
+
+참고 : 공분산 행렬은도에 대한 보정을 사용하여 추정됩니다.
+            자유의 (공분산은 나누기 대신에 NM으로 나누어진다.
+            N에 의해).
+
+  - ALGLIB -
+     저작권 07.09.2009 Bochkanov Sergey
+**************************************************************************/
 void lsfitlinearc(const real_1d_array &y, const real_2d_array &fmatrix, const real_2d_array &cmatrix, const ae_int_t n, const ae_int_t m, const ae_int_t k, ae_int_t &info, real_1d_array &c, lsfitreport &rep)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -5860,6 +9479,98 @@ NOTE:       covariance matrix is estimated using  correction  for  degrees
   -- ALGLIB --
      Copyright 07.09.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+Constained 선형 최소 제곱 피팅.
+
+이것은 min | A * x = b |를 검색하는 LSFitLinear ()의 변형입니다. 주어진
+그 K 추가 constaints C * x = bc가 만족된다. 원본을 줄입니다.
+수정 된 작업 : min | B * yd | 제약없이 LSFitLinear ()
+호출됩니다.
+
+중요 : 다항식 피팅을 수행하려는 경우
+           PolynomialFit () 함수를 사용하면 편리합니다. 이 함수는
+           다항식 문제에 대한 최상의 결과 및 수치 해석
+           당신이 높은 학위에 맞을 때 발생하는 안정성 문제
+           다항식을 데이터에 적용합니다.
+
+입력 매개 변수 :
+    Y - 배열 [0..N-1] N 개의 함수 값.
+    FMatrix - 기본 함수 값의 테이블, array [0..N-1, 0..M-1].
+                FMatrix [I, J] - I 번째 점에서 J 번째 기초 함수의 값.
+    CMatrix - constaints 테이블, 배열 [0..K-1.0..M].
+                CMatrix의 I 번째 행은 I 번째 선형 제약에 해당합니다.
+                CMatrix [I, M] * C [M-1] = CMatrix [I, M]
+    N - 사용 된 점의 수. N> = 1이다.
+    M - 기저 함수의 수, M> = 1.
+    K - 제약 수, 0 <= K <M
+                K = 0은 제약 조건 없음에 해당합니다.
+
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                * -4 내부 SVD 분해 서브 루틴 실패 (매우
+                        희귀 및 퇴화 시스템 전용)
+                * -3 너무 많은 제약 조건 (M 이상),
+                        축퇴 제약 조건 (일부 제약 조건은
+                        반복 두 번) 또는 일관성없는 제약 조건
+                        지정된.
+                * 1 과제 해결
+    C - 분해 계수, 배열 [0..M-1]
+    신고서 제출. 다음 필드가 설정됩니다.
+                * R2 비 조정 계수
+                                    (가중치 제외)
+                * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+                * (X, Y)에 대한 AvgError 평균 오류.
+                * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+                * MaxError 최대 오류
+                                    중요하지 않은 오류가 계산됩니다.
+
+중대한:
+    이 서브 루틴은 K <> 0에 대한 작업의 조건 번호를 계산하지 않습니다.
+
+매개 변수의 오류
+
+이 솔버는 또한 매개 변수에서 다양한 종류의 오류를 계산하고
+보고서의 해당 필드를 채 웁니다.
+* 매개 변수에 대한 Rep.CovPar 공분산 행렬, 배열 [K, K].
+매개 변수의 Rep.ErrPar 오류, 배열 [K],
+                    errpar = sqrt (diag (CovPar))
+* Rep.ErrCurve 적합 오차 벡터 - 경험적 표준 편차
+                    내장 된 "이상적인"최적 곡선의 최적 곡선
+                    무한 개수의 샘플, 배열 [N].
+                    errcurve = sqrt (diag (F * CovPar * F ')),
+                    여기서 F는 함수 행렬입니다.
+* Rep. 잡음 당 포인트 추정치의 잡음 벡터, 배열 [N]
+
+중요 : 매개 변수의 오류는
+            계정 경계 / 선형 제약! 제약 조건의 존재
+            오류 배포를 변경하지만 쉬운 방법은 없습니다.
+            공분산 행렬을 계산할 때 제약 조건을 설명합니다.
+
+참고 : 데이터의 노이즈는 다음과 같이 추정됩니다.
+            * 사용자가 제공하는 무게없이 모든 피팅을 맞추기 위해
+              동일한 수준의 잡음을 갖는 것으로 가정하며,
+              자료
+            * 사용자가 제공 한 무게로 피팅하기 위해 우리는 소음
+              레벨은 Ith 가중치에 반비례합니다.
+              비례 계수는 데이터로부터 추정됩니다.
+
+참고 : 우리는 제곱을 반전 할 때 소량의 정규화를 적용합니다.
+            자 코비안 (Jacobian)을 선택하고 공분산 행렬을 계산합니다. 그것은
+            알고리즘은 반전시 0으로 나누지 않지만 비뚤어 짐
+            오류 추정 조금 (분수 오류 약 10 ^ -9)입니다.
+
+            그러나 우리는이 차이가
+            원하는 상황을 제외한 모든 실제적인 목적
+            ALGLIB 결과를 "참조"구현과 비교
+            마지막 유효 숫자로
+
+참고 : 공분산 행렬은도에 대한 보정을 사용하여 추정됩니다.
+            자유의 (공분산은 나누기 대신에 NM으로 나누어진다.
+            N에 의해).
+
+  - ALGLIB -
+     저작권 07.09.2009 Bochkanov Sergey
+**************************************************************************/
 void lsfitlinearc(const real_1d_array &y, const real_2d_array &fmatrix, const real_2d_array &cmatrix, ae_int_t &info, real_1d_array &c, lsfitreport &rep)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -5925,6 +9636,44 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 18.10.2008 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+함수 값만 사용하여 가중치가있는 비선형 최소 제곱 피팅.
+
+숫자 차별화와 시컨트 업데이트의 조합은
+함수 Jacobian을 얻는다.
+
+비선형 작업 min (F (c))가 풀린다.
+
+    2 + ... + (w [n-1] * (f (c, x [0]) - n-1]) - y [n-1])) ^ 2,
+
+    * N은 포인트의 숫자입니다,
+    * M은 공간 점의 차원이며,
+    * K는 맞는 매개 변수 공간의 차원입니다.
+    * w는 가중 계수의 N 차원 벡터이며,
+    * x는 N 점의 집합이며, 각각은 M 차원 벡터이며,
+    * c는 맞는 매개 변수의 K 차원 벡터입니다.
+
+이 서브 루틴은 f (c, x [i]) 만 사용합니다.
+
+입력 매개 변수 :
+    X- 어레이 [0..N-1.0..M-1], 포인트 (1 행 = 1 포인트)
+    Y- 배열 [0..N-1], 함수 값.
+    W - 가중치, 배열 [0..N-1]
+    C - 배열 [0..K-1], 솔루션에 대한 초기 근사,
+    N - 점의 수, N> 1
+    M - 공간의 차원
+    K - 맞는 매개 변수의 수
+    DiffStep- 수치 차별화 단계;
+                아주 작거나 크지 않아야한다.
+                큰 = 정확성의 상실
+                작은 = 반올림 오류 증가
+
+출력 매개 변수 :
+    State - 알고리즘 상태를 저장하는 구조
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 18.10.2008
+**************************************************************************/
 void lsfitcreatewf(const real_2d_array &x, const real_1d_array &y, const real_1d_array &w, const real_1d_array &c, const ae_int_t n, const ae_int_t m, const ae_int_t k, const double diffstep, lsfitstate &state)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -5979,6 +9728,44 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 18.10.2008 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+함수 값만 사용하여 가중치가있는 비선형 최소 제곱 피팅.
+
+숫자 차별화와 시컨트 업데이트의 조합은
+함수 Jacobian을 얻는다.
+
+비선형 작업 min (F (c))가 풀린다.
+
+    2 + ... + (w [n-1] * (f (c, x [0]) - n-1]) - y [n-1])) ^ 2,
+
+    * N은 포인트의 숫자입니다,
+    * M은 공간 점의 차원이며,
+    * K는 맞는 매개 변수 공간의 차원입니다.
+    * w는 가중 계수의 N 차원 벡터이며,
+    * x는 N 점의 집합이며, 각각은 M 차원 벡터이며,
+    * c는 맞는 매개 변수의 K 차원 벡터입니다.
+
+이 서브 루틴은 f (c, x [i]) 만 사용합니다.
+
+입력 매개 변수 :
+    X- 어레이 [0..N-1.0..M-1], 포인트 (1 행 = 1 포인트)
+    Y- 배열 [0..N-1], 함수 값.
+    W - 가중치, 배열 [0..N-1]
+    C - 배열 [0..K-1], 솔루션에 대한 초기 근사,
+    N - 점의 수, N> 1
+    M - 공간의 차원
+    K - 맞는 매개 변수의 수
+    DiffStep- 수치 차별화 단계;
+                아주 작거나 크지 않아야한다.
+                큰 = 정확성의 상실
+                작은 = 반올림 오류 증가
+
+출력 매개 변수 :
+    State - 알고리즘 상태를 저장하는 구조
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 18.10.2008
+**************************************************************************/
 void lsfitcreatewf(const real_2d_array &x, const real_1d_array &y, const real_1d_array &w, const real_1d_array &c, const double diffstep, lsfitstate &state)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -6041,6 +9828,43 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 18.10.2008 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+함수 값만 사용하는 비선형 최소 자승 피팅.
+
+숫자 차별화와 시컨트 업데이트의 조합은
+함수 Jacobian을 얻는다.
+
+비선형 작업 min (F (c))가 풀린다.
+
+    2 + ... + (f (c, x [n-1]) - y [n-1]) ^ 2 (f (c) ,
+
+    * N은 포인트의 숫자입니다,
+    * M은 공간 점의 차원이며,
+    * K는 맞는 매개 변수 공간의 차원입니다.
+    * w는 가중 계수의 N 차원 벡터이며,
+    * x는 N 점의 집합이며, 각각은 M 차원 벡터이며,
+    * c는 맞는 매개 변수의 K 차원 벡터입니다.
+
+이 서브 루틴은 f (c, x [i]) 만 사용합니다.
+
+입력 매개 변수 :
+    X- 어레이 [0..N-1.0..M-1], 포인트 (1 행 = 1 포인트)
+    Y- 배열 [0..N-1], 함수 값.
+    C - 배열 [0..K-1], 솔루션에 대한 초기 근사,
+    N - 점의 수, N> 1
+    M - 공간의 차원
+    K - 맞는 매개 변수의 수
+    DiffStep- 수치 차별화 단계;
+                아주 작거나 크지 않아야한다.
+                큰 = 정확성의 상실
+                작은 = 반올림 오류 증가
+
+출력 매개 변수 :
+    State - 알고리즘 상태를 저장하는 구조
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 18.10.2008
+**************************************************************************/
 void lsfitcreatef(const real_2d_array &x, const real_1d_array &y, const real_1d_array &c, const ae_int_t n, const ae_int_t m, const ae_int_t k, const double diffstep, lsfitstate &state)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -6094,6 +9918,43 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 18.10.2008 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+함수 값만 사용하는 비선형 최소 자승 피팅.
+
+숫자 차별화와 시컨트 업데이트의 조합은
+함수 Jacobian을 얻는다.
+
+비선형 작업 min (F (c))가 풀린다.
+
+    2 + ... + (f (c, x [n-1]) - y [n-1]) ^ 2 (f (c) ,
+
+    * N은 포인트의 숫자입니다,
+    * M은 공간 점의 차원이며,
+    * K는 맞는 매개 변수 공간의 차원입니다.
+    * w는 가중 계수의 N 차원 벡터이며,
+    * x는 N 점의 집합이며, 각각은 M 차원 벡터이며,
+    * c는 맞는 매개 변수의 K 차원 벡터입니다.
+
+이 서브 루틴은 f (c, x [i]) 만 사용합니다.
+
+입력 매개 변수 :
+    X- 어레이 [0..N-1.0..M-1], 포인트 (1 행 = 1 포인트)
+    Y- 배열 [0..N-1], 함수 값.
+    C - 배열 [0..K-1], 솔루션에 대한 초기 근사,
+    N - 점의 수, N> 1
+    M - 공간의 차원
+    K - 맞는 매개 변수의 수
+    DiffStep- 수치 차별화 단계;
+                아주 작거나 크지 않아야한다.
+                큰 = 정확성의 상실
+                작은 = 반올림 오류 증가
+
+출력 매개 변수 :
+    State - 알고리즘 상태를 저장하는 구조
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 18.10.2008
+**************************************************************************/
 void lsfitcreatef(const real_2d_array &x, const real_1d_array &y, const real_1d_array &c, const double diffstep, lsfitstate &state)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -6164,6 +10025,51 @@ See also:
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+그라디언트 만 사용하는 가중치가있는 비선형 최소 제곱합입니다.
+
+비선형 작업 min (F (c))가 풀린다.
+
+    2 + ... + (w [n-1] * (f (c, x [0]) - n-1]) - y [n-1])) ^ 2,
+
+    * N은 포인트의 숫자입니다,
+    * M은 공간 점의 차원이며,
+    * K는 맞는 매개 변수 공간의 차원입니다.
+    * w는 가중 계수의 N 차원 벡터이며,
+    * x는 N 점의 집합이며, 각각은 M 차원 벡터이며,
+    * c는 맞는 매개 변수의 K 차원 벡터입니다.
+
+이 서브 루틴은 f (c, x [i])와 그 그라디언트 만 사용합니다.
+
+입력 매개 변수 :
+    X- 어레이 [0..N-1.0..M-1], 포인트 (1 행 = 1 포인트)
+    Y- 배열 [0..N-1], 함수 값.
+    W - 가중치, 배열 [0..N-1]
+    C - 배열 [0..K-1], 솔루션에 대한 초기 근사,
+    N - 점의 수, N> 1
+    M - 공간의 차원
+    K - 맞는 매개 변수의 수
+    CheapFG - 부울 값 플래그는 다음과 같습니다.
+                * 함수 및 그래디언트 계산의 복잡성이 둘 다 맞다면 참입니다.
+                        O (M ^ 2)보다 작다. 향상된 알고리즘으로
+                        에서 FGJ 체계에 해당하는 사용
+                        MINLM 장치.
+                * 그렇지 않으면 거짓.
+                        표준 Jaciberian-bases Levenberg-Marquardt algo
+                        (FJ 체계)가 사용될 것입니다.
+
+출력 매개 변수 :
+    State - 알고리즘 상태를 저장하는 구조
+
+참조 :
+    LSFitResults
+    LSFitCreateFG (가중치없이 피팅)
+    LSFitCreateWFGH (헤 시안을 사용하여 피팅)
+    LSFitCreateFGH (가중치없이 헤 시안을 사용하여 피팅)
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+**************************************************************************/
 void lsfitcreatewfg(const real_2d_array &x, const real_1d_array &y, const real_1d_array &w, const real_1d_array &c, const ae_int_t n, const ae_int_t m, const ae_int_t k, const bool cheapfg, lsfitstate &state)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -6225,6 +10131,51 @@ See also:
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+그라디언트 만 사용하는 가중치가있는 비선형 최소 제곱합입니다.
+
+비선형 작업 min (F (c))가 풀린다.
+
+    2 + ... + (w [n-1] * (f (c, x [0]) - n-1]) - y [n-1])) ^ 2,
+
+    * N은 포인트의 숫자입니다,
+    * M은 공간 점의 차원이며,
+    * K는 맞는 매개 변수 공간의 차원입니다.
+    * w는 가중 계수의 N 차원 벡터이며,
+    * x는 N 점의 집합이며, 각각은 M 차원 벡터이며,
+    * c는 맞는 매개 변수의 K 차원 벡터입니다.
+
+이 서브 루틴은 f (c, x [i])와 그 그라디언트 만 사용합니다.
+
+입력 매개 변수 :
+    X- 어레이 [0..N-1.0..M-1], 포인트 (1 행 = 1 포인트)
+    Y- 배열 [0..N-1], 함수 값.
+    W - 가중치, 배열 [0..N-1]
+    C - 배열 [0..K-1], 솔루션에 대한 초기 근사,
+    N - 점의 수, N> 1
+    M - 공간의 차원
+    K - 맞는 매개 변수의 수
+    CheapFG - 부울 값 플래그는 다음과 같습니다.
+                * 함수 및 그래디언트 계산의 복잡성이 둘 다 맞다면 참입니다.
+                        O (M ^ 2)보다 작다. 향상된 알고리즘으로
+                        에서 FGJ 체계에 해당하는 사용
+                        MINLM 장치.
+                * 그렇지 않으면 거짓.
+                        표준 Jaciberian-bases Levenberg-Marquardt algo
+                        (FJ 체계)가 사용될 것입니다.
+
+출력 매개 변수 :
+    State - 알고리즘 상태를 저장하는 구조
+
+참조 :
+    LSFitResults
+    LSFitCreateFG (가중치없이 피팅)
+    LSFitCreateWFGH (헤 시안을 사용하여 피팅)
+    LSFitCreateFGH (가중치없이 헤 시안을 사용하여 피팅)
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+**************************************************************************/
 void lsfitcreatewfg(const real_2d_array &x, const real_1d_array &y, const real_1d_array &w, const real_1d_array &c, const bool cheapfg, lsfitstate &state)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -6288,6 +10239,44 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+그라디언트 만 사용하는 비선형 최소 제곱 피팅, 개별 없음
+무게.
+
+비선형 작업 min (F (c))가 풀린다.
+
+    2 + ... + (f (c, x [n-1]) - y [n-1] )) ^ 2,
+
+    * N은 포인트의 숫자입니다,
+    * M은 공간 점의 차원이며,
+    * K는 맞는 매개 변수 공간의 차원입니다.
+    * x는 N 점의 집합이며, 각각은 M 차원 벡터이며,
+    * c는 맞는 매개 변수의 K 차원 벡터입니다.
+
+이 서브 루틴은 f (c, x [i])와 그 그라디언트 만 사용합니다.
+
+입력 매개 변수 :
+    X- 어레이 [0..N-1.0..M-1], 포인트 (1 행 = 1 포인트)
+    Y- 배열 [0..N-1], 함수 값.
+    C - 배열 [0..K-1], 솔루션에 대한 초기 근사,
+    N - 점의 수, N> 1
+    M - 공간의 차원
+    K - 맞는 매개 변수의 수
+    CheapFG - 부울 값 플래그는 다음과 같습니다.
+                * 함수 및 그래디언트 계산의 복잡성이 둘 다 맞다면 참입니다.
+                        O (M ^ 2)보다 작다. 향상된 알고리즘으로
+                        에서 FGJ 체계에 해당하는 사용
+                        MINLM 장치.
+                * 그렇지 않으면 거짓.
+                        표준 Jaciberian-bases Levenberg-Marquardt algo
+                        (FJ 체계)가 사용될 것입니다.
+
+출력 매개 변수 :
+    State - 알고리즘 상태를 저장하는 구조
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+*************************************************************************/
 void lsfitcreatefg(const real_2d_array &x, const real_1d_array &y, const real_1d_array &c, const ae_int_t n, const ae_int_t m, const ae_int_t k, const bool cheapfg, lsfitstate &state)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -6342,6 +10331,44 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+그라디언트 만 사용하는 비선형 최소 제곱 피팅, 개별 없음
+무게.
+
+비선형 작업 min (F (c))가 풀린다.
+
+    2 + ... + (f (c, x [n-1]) - y [n-1] )) ^ 2,
+
+    * N은 포인트의 숫자입니다,
+    * M은 공간 점의 차원이며,
+    * K는 맞는 매개 변수 공간의 차원입니다.
+    * x는 N 점의 집합이며, 각각은 M 차원 벡터이며,
+    * c는 맞는 매개 변수의 K 차원 벡터입니다.
+
+이 서브 루틴은 f (c, x [i])와 그 그라디언트 만 사용합니다.
+
+입력 매개 변수 :
+    X- 어레이 [0..N-1.0..M-1], 포인트 (1 행 = 1 포인트)
+    Y- 배열 [0..N-1], 함수 값.
+    C - 배열 [0..K-1], 솔루션에 대한 초기 근사,
+    N - 점의 수, N> 1
+    M - 공간의 차원
+    K - 맞는 매개 변수의 수
+    CheapFG - 부울 값 플래그는 다음과 같습니다.
+                * 함수 및 그래디언트 계산의 복잡성이 둘 다 맞다면 참입니다.
+                        O (M ^ 2)보다 작다. 향상된 알고리즘으로
+                        에서 FGJ 체계에 해당하는 사용
+                        MINLM 장치.
+                * 그렇지 않으면 거짓.
+                        표준 Jaciberian-bases Levenberg-Marquardt algo
+                        (FJ 체계)가 사용될 것입니다.
+
+출력 매개 변수 :
+    State - 알고리즘 상태를 저장하는 구조
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+**************************************************************************/
 void lsfitcreatefg(const real_2d_array &x, const real_1d_array &y, const real_1d_array &c, const bool cheapfg, lsfitstate &state)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -6398,6 +10425,37 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+그라디언트 / 헤 시안을 사용한 가중 비선형 최소 제곱 피팅.
+
+비선형 작업 min (F (c))가 풀린다.
+
+    2 + ... + (w [n-1] * (f (c, x [0]) - n-1]) - y [n-1])) ^ 2,
+
+    * N은 포인트의 숫자입니다,
+    * M은 공간 점의 차원이며,
+    * K는 맞는 매개 변수 공간의 차원입니다.
+    * w는 가중 계수의 N 차원 벡터이며,
+    * x는 N 점의 집합이며, 각각은 M 차원 벡터이며,
+    * c는 맞는 매개 변수의 K 차원 벡터입니다.
+
+이 서브 루틴은 f (c, x [i]), 그 그라데이션 및 헤 시안을 사용합니다.
+
+입력 매개 변수 :
+    X- 어레이 [0..N-1.0..M-1], 포인트 (1 행 = 1 포인트)
+    Y- 배열 [0..N-1], 함수 값.
+    W - 가중치, 배열 [0..N-1]
+    C - 배열 [0..K-1], 솔루션에 대한 초기 근사,
+    N - 점의 수, N> 1
+    M - 공간의 차원
+    K - 맞는 매개 변수의 수
+
+출력 매개 변수 :
+    State - 알고리즘 상태를 저장하는 구조
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+**************************************************************************/
 void lsfitcreatewfgh(const real_2d_array &x, const real_1d_array &y, const real_1d_array &w, const real_1d_array &c, const ae_int_t n, const ae_int_t m, const ae_int_t k, lsfitstate &state)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -6445,6 +10503,37 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/***************************************************************************
+그라디언트 / 헤 시안을 사용한 가중 비선형 최소 제곱 피팅.
+
+비선형 작업 min (F (c))가 풀린다.
+
+    2 + ... + (w [n-1] * (f (c, x [0]) - n-1]) - y [n-1])) ^ 2,
+
+    * N은 포인트의 숫자입니다,
+    * M은 공간 점의 차원이며,
+    * K는 맞는 매개 변수 공간의 차원입니다.
+    * w는 가중 계수의 N 차원 벡터이며,
+    * x는 N 점의 집합이며, 각각은 M 차원 벡터이며,
+    * c는 맞는 매개 변수의 K 차원 벡터입니다.
+
+이 서브 루틴은 f (c, x [i]), 그 그라데이션 및 헤 시안을 사용합니다.
+
+입력 매개 변수 :
+    X- 어레이 [0..N-1.0..M-1], 포인트 (1 행 = 1 포인트)
+    Y- 배열 [0..N-1], 함수 값.
+    W - 가중치, 배열 [0..N-1]
+    C - 배열 [0..K-1], 솔루션에 대한 초기 근사,
+    N - 점의 수, N> 1
+    M - 공간의 차원
+    K - 맞는 매개 변수의 수
+
+출력 매개 변수 :
+    State - 알고리즘 상태를 저장하는 구조
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+**************************************************************************/
 void lsfitcreatewfgh(const real_2d_array &x, const real_1d_array &y, const real_1d_array &w, const real_1d_array &c, lsfitstate &state)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -6501,6 +10590,37 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+그라디언트 / 헤 시안을 사용하는 비선형 최소 제곱 피팅
+무게.
+
+비선형 작업 min (F (c))가 풀린다.
+
+    2 + ... + (f (c, x [n-1]) - y [n-1] )) ^ 2,
+
+    * N은 포인트의 숫자입니다,
+    * M은 공간 점의 차원이며,
+    * K는 맞는 매개 변수 공간의 차원입니다.
+    * x는 N 점의 집합이며, 각각은 M 차원 벡터이며,
+    * c는 맞는 매개 변수의 K 차원 벡터입니다.
+
+이 서브 루틴은 f (c, x [i]), 그 그라데이션 및 헤 시안을 사용합니다.
+
+입력 매개 변수 :
+    X- 어레이 [0..N-1.0..M-1], 포인트 (1 행 = 1 포인트)
+    Y- 배열 [0..N-1], 함수 값.
+    C - 배열 [0..K-1], 솔루션에 대한 초기 근사,
+    N - 점의 수, N> 1
+    M - 공간의 차원
+    K - 맞는 매개 변수의 수
+
+출력 매개 변수 :
+    State - 알고리즘 상태를 저장하는 구조
+
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+**************************************************************************/
 void lsfitcreatefgh(const real_2d_array &x, const real_1d_array &y, const real_1d_array &c, const ae_int_t n, const ae_int_t m, const ae_int_t k, lsfitstate &state)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -6548,6 +10668,37 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+그라디언트 / 헤 시안을 사용하는 비선형 최소 제곱 피팅
+무게.
+
+비선형 작업 min (F (c))가 풀린다.
+
+    2 + ... + (f (c, x [n-1]) - y [n-1] )) ^ 2,
+
+    * N은 포인트의 숫자입니다,
+    * M은 공간 점의 차원이며,
+    * K는 맞는 매개 변수 공간의 차원입니다.
+    * x는 N 점의 집합이며, 각각은 M 차원 벡터이며,
+    * c는 맞는 매개 변수의 K 차원 벡터입니다.
+
+이 서브 루틴은 f (c, x [i]), 그 그라데이션 및 헤 시안을 사용합니다.
+
+입력 매개 변수 :
+    X- 어레이 [0..N-1.0..M-1], 포인트 (1 행 = 1 포인트)
+    Y- 배열 [0..N-1], 함수 값.
+    C - 배열 [0..K-1], 솔루션에 대한 초기 근사,
+    N - 점의 수, N> 1
+    M - 공간의 차원
+    K - 맞는 매개 변수의 수
+
+출력 매개 변수 :
+    State - 알고리즘 상태를 저장하는 구조
+
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+**************************************************************************/
 void lsfitcreatefgh(const real_2d_array &x, const real_1d_array &y, const real_1d_array &c, lsfitstate &state)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -6602,6 +10753,35 @@ stopping criterion selection (according to the scheme used by MINLM unit).
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+비선형 최소 제곱 피팅을위한 정지 조건.
+
+입력 매개 변수 :
+    State - 알고리즘 상태를 저장하는 구조
+    EpsF - 중지 기준. 알고리즘 중지되는 경우
+                | F (k + 1) -F (k) | <= EpsF * max {| F (k) |, | F (k + 1) |, 1}
+    EpsX -> = 0
+                서브 루틴은 k + 1 번째 반복에서 작업을 마칩니다.
+                | v | <= EpsX 조건이 충족됩니다. 여기서,
+                * |. | 유클리드 규범을 의미한다.
+                * v - 스케일 된 스텝 벡터, v [i] = dx [i] / s [i]
+                * dx - ste pvector, dx = X (k + 1) -X (k)
+                * s - LSFitSetScale ()에 의해 설정된 스케일링 계수
+    MaxIts - 최대 반복 횟수입니다. MaxIts = 0이면,
+                반복은 무제한입니다. Levenberg-Marquardt 만
+                반복 횟수가 계산됩니다 (L-BFGS / CG 반복은 불가능 함).
+                그들의 비용이 그것의 비용에 비해 매우 낮기 때문에 계산됩니다.
+                LM).
+
+노트
+
+EpsF = 0, EpsX = 0 및 MaxIts = 0 (동시에)을 전달하면 자동
+정지 기준 선택 (MINLM 장치에서 사용되는 구성에 따라).
+
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+**************************************************************************/
 void lsfitsetcond(const lsfitstate &state, const double epsf, const double epsx, const ae_int_t maxits)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -6639,6 +10819,27 @@ with limits on step size.
   -- ALGLIB --
      Copyright 02.04.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 함수는 최대 스텝 길이를 설정합니다.
+
+입력 매개 변수 :
+    State - 알고리즘 상태를 저장하는 구조
+    StpMax - 최대 스텝 길이,> = 0. StpMax를 0.0으로 설정하십시오.
+                스텝 길이를 제한하고 싶다.
+
+exp ()가 포함 된 대상 함수를 최적화 할 때이 서브 루틴을 사용하십시오.
+또는 다른 빠른 성장 기능 및 최적화 알고리즘을 만듭니다
+오버 플로우로 이어지는 큰 단계. 이 기능을 사용하면 거부 할 수 있습니다.
+너무 큰 단계 (가능한 한 우리를 노출시킵니다.
+overflow) x + stp * d에서 실제로 함수 값을 계산하지 않아도된다.
+
+참고 : 0이 아닌 StpMax는 성능 저하를 완화합니다.
+사전 조건화 된 L-BFGS 최적화의 중간 단계는 호환되지 않습니다.
+단계 크기에 제한이 있습니다.
+
+  - ALGLIB -
+     저작권 02.04.2010 Bochkanov Sergey
+**************************************************************************/
 void lsfitsetstpmax(const lsfitstate &state, const double stpmax)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -6669,6 +10870,20 @@ value of fitting function) are reported.
   -- ALGLIB --
      Copyright 15.08.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 기능은보고 기능을 켜거나 끕니다.
+
+입력 매개 변수 :
+    State - 알고리즘 상태를 저장하는 구조
+    NeedXRep - 반복 보고서가 필요한지 아닌지
+
+보고서가 필요할 때 State.C (현재 매개 변수) 및 State.F (현재
+피팅 함수의 값)이보고됩니다.
+
+
+  - ALGLIB -
+     저작권 15.08.2010 Bochkanov Sergey
+**************************************************************************/
 void lsfitsetxrep(const lsfitstate &state, const bool needxrep)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -6712,6 +10927,33 @@ INPUT PARAMETERS:
   -- ALGLIB --
      Copyright 14.01.2011 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 함수는 기본 최적화 프로그램의 크기 조정 계수를 설정합니다.
+
+ALGLIB 최적화 프로그램은 스케일링 매트릭스를 사용하여 정지 조건을 테스트합니다 (단계
+크기 및 그래디언트는 공차와 비교하기 전에 크기가 조정됩니다.) 규모
+I 번째 변수는 다음에 대한 변환 불변성 측정 값입니다.
+a) 변수의 "크기"
+b) 함수에서 중요한 변화를 만드는 단계는 얼마나 커야 하는가?
+
+일반적으로 규모는 전제 조건의 한 형태로 간주되지 않습니다. 하지만 LM
+최적화 프로그램은 멈춤에서 스케일링 매트릭스를 사용한다는 점에서 독특합니다.
+상태 테스트 및 마커드 댐핑 팩터로 사용됩니다.
+
+적절한 스케일링은 알고리즘 성능에 매우 중요합니다. 그것은 적다.
+결과의 품질에 중요하지만 여전히 영향력이 있습니다 (
+변수가 적절하게 조정될 때 수렴하기 쉽기 때문에 조기에
+매우 잘못된 scalled 변수가
+완화 된 정지 조건).
+
+입력 매개 변수 :
+    상태 - 구조 알고리즘 상태 저장
+    S - 배열 [N], 0이 아닌 스케일링 계수
+                S [i]는 음수 일 수 있습니다. 부호는 중요하지 않습니다.
+
+  - ALGLIB -
+     저작권 14.01.2011 Bochkanov Sergey
+**************************************************************************/
 void lsfitsetscale(const lsfitstate &state, const real_1d_array &s)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -6756,6 +10998,34 @@ following useful properties:
   -- ALGLIB --
      Copyright 14.01.2011 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 함수는 기본 최적화 프로그램의 경계 제약 조건을 설정합니다.
+
+경계 제약 조건은 기본적으로 비활성화됩니다 (초기 생성 후).
+다른 SetBC () 호출로 명시 적으로 해제 될 때까지 보존됩니다.
+
+입력 매개 변수 :
+    상태 - 구조 알고리즘 상태 저장
+    BndL - 하한, 배열 [K].
+                일부 (모든) 변수에 제한이없는 경우,
+                매우 작은 수 또는 -INF (후자가 권장됩니다.
+                그것은 솔버가 더 나은 알고리즘을 사용할 수있게 해줍니다).
+    BndU - 상한, 배열 [K].
+                일부 (모든) 변수에 제한이없는 경우,
+                매우 큰 숫자 또는 + INF (후자가 권장됩니다.
+                그것은 솔버가 더 나은 알고리즘을 사용할 수있게 해줍니다).
+
+비고 1 : BndL [i] = BndU [i]를 지정할 수있다. 이 경우 I-th
+변수는 X [i] = BndL [i] = BndU [i]에서 "고정"됩니다.
+
+NOTE 2 : 다른 제약 최적화 알고리즘과는 달리,이 해는 다음과 같다.
+유용한 속성 다음 :
+* 경계 제약은 항상 정확하게 만족된다.
+* 함수는 바인딩 된 제약 조건에 의해 지정된 INSIDE 영역에서만 평가됩니다.
+
+  - ALGLIB -
+     저작권 14.01.2011 Bochkanov Sergey
+**************************************************************************/
 void lsfitsetbc(const lsfitstate &state, const real_1d_array &bndl, const real_1d_array &bndu)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -6776,6 +11046,11 @@ void lsfitsetbc(const lsfitstate &state, const real_1d_array &bndl, const real_1
 This function provides reverse communication interface
 Reverse communication interface is not documented or recommended to use.
 See below for functions which provide better documented API
+*************************************************************************/
+/***********************************************************************
+이 기능은 역방향 통신 인터페이스를 제공합니다.
+역방향 통신 인터페이스는 문서화되어 있지 않거나 사용하도록 권장되지 않습니다.
+보다 잘 문서화 된 API를 제공하는 함수는 아래를 참조하십시오.
 *************************************************************************/
 bool lsfititeration(const lsfitstate &state)
 {
@@ -6998,6 +11273,80 @@ NOTE:       covariance matrix is estimated using  correction  for  degrees
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+비선형 최소 자승 피팅 결과.
+
+LSFitFit ()에서 반환 된 후에 호출됩니다.
+
+입력 매개 변수 :
+    상태 - 알고리즘 상태
+
+출력 매개 변수 :
+    정보 - 완료 코드 :
+                    * -7 그래디언트 확인에 실패했습니다.
+                            자세한 내용은 LSFitSetGradientCheck ()를 참조하십시오.
+                    * 1 상대 기능 개선은
+                            EpsF.
+                    * 2 상대 단계는 EpsX 이상입니다.
+                    * 4 그래디언트 표준은 EpsG 이상입니다.
+                    * 5 MaxIts 단계가 수행되었습니다.
+                    * 7 정지 조건은 너무 엄격합니다.
+                            더 이상의 개선은 불가능하다.
+    C- 어레이 [0..K-1], 용액
+    담당자 최적화 보고서. 성공시 다음 필드가 설정됩니다.
+                * R2 비 조정 계수
+                                    (가중치 제외)
+                * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+                * (X, Y)에 대한 AvgError 평균 오류.
+                * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+                * MaxError 최대 오류
+                                    중요하지 않은 오류가 계산됩니다.
+                * (X, Y)에서 WRMSError 가중치 rms 오류.
+
+매개 변수의 오류
+
+이 솔버는 또한 매개 변수에서 다양한 종류의 오류를 계산하고
+보고서의 해당 필드를 채 웁니다.
+* 매개 변수에 대한 Rep.CovPar 공분산 행렬, 배열 [K, K].
+매개 변수의 Rep.ErrPar 오류, 배열 [K],
+                    errpar = sqrt (diag (CovPar))
+* Rep.ErrCurve 적합 오차 벡터 - 경험적 표준 편차
+                    내장 된 "이상적인"최적 곡선의 최적 곡선
+                    무한 개수의 샘플, 배열 [N].
+                    errcurve = sqrt (diag (J * CovPar * J ')),
+                    여기서 J는 자 코비안 행렬입니다.
+* Rep. 잡음 당 포인트 추정치의 잡음 벡터, 배열 [N]
+
+중요 : 매개 변수의 오류는
+            계정 경계 / 선형 제약! 제약 조건의 존재
+            오류 배포를 변경하지만 쉬운 방법은 없습니다.
+            공분산 행렬을 계산할 때 제약 조건을 설명합니다.
+
+참고 : 데이터의 노이즈는 다음과 같이 추정됩니다.
+            * 사용자가 제공하는 무게없이 모든 피팅을 맞추기 위해
+              동일한 수준의 잡음을 갖는 것으로 가정하며,
+              자료
+            * 사용자가 제공 한 무게로 피팅하기 위해 우리는 소음
+              레벨은 Ith 가중치에 반비례합니다.
+              비례 계수는 데이터로부터 추정됩니다.
+
+참고 : 우리는 제곱을 반전 할 때 소량의 정규화를 적용합니다.
+            자 코비안 (Jacobian)을 선택하고 공분산 행렬을 계산합니다. 그것은
+            알고리즘은 반전시 0으로 나누지 않지만 비뚤어 짐
+            오류 추정 조금 (분수 오류 약 10 ^ -9)입니다.
+
+            그러나 우리는이 차이가
+            원하는 상황을 제외한 모든 실제적인 목적
+            ALGLIB 결과를 "참조"구현과 비교
+            마지막 유효 숫자로
+
+참고 : 공분산 행렬은도에 대한 보정을 사용하여 추정됩니다.
+            자유의 (공분산은 나누기 대신에 NM으로 나누어진다.
+            N에 의해).
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+**************************************************************************/
 void lsfitresults(const lsfitstate &state, ae_int_t &info, real_1d_array &c, lsfitreport &rep)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -7065,6 +11414,57 @@ INPUT PARAMETERS:
   -- ALGLIB --
      Copyright 15.06.2012 by Bochkanov Sergey
 *************************************************************************/
+/************************************************** **********************
+이 서브 루틴은 사용자가 제공 한 분석의 검증을 켭니다.
+구배:
+* 사용자가 피팅이 시작되기 전에이 서브 루틴을 호출합니다.
+* LSFitFit ()가 호출되었습니다.
+* 실제 피팅에 앞서, 데이터 세트 X_i의 각 포인트에 대해
+  C_j 알고리즘은 다음과 같이 수행됩니다.
+  단계 :
+  * C_j-TestStep * S [j]와 C_j + TestStep * S [j]에 대해 두 가지 시험 단계가 수행됩니다.
+    여기서 C_j는 j 번째 매개 변수이고 S [j]는 j 번째 매개 변수의 눈금
+  * 필요한 경우 단계는 C []의 제약 조건에 따라 제한됩니다.
+  * F (X_i | C)는 이러한 시험 포인트에서 평가됩니다.
+  * 간격의 중간 지점에서 또 하나의 평가를 수행합니다.
+  * 우리는 함수 값과 파생 상품을 사용하여 삼차원 모델을 시험해 보았다.
+    우리는 예측치를 중간의 실제 값과 비교합니다
+    포인트
+  * 예상 값과 실제 값의 차이가
+    소정의 소정의 임계 값, 알고리즘은 완료 코드 -7로 정지한다;
+    Rep.VarIdx가 잘못된 파생어로 매개 변수의 인덱스로 설정됩니다.
+* 검증이 끝나면 알고리즘은 실제 최적화로 진행합니다.
+
+비고 1 : 검증에는 N * K (포인트 카운트 * 파라미터 카운트) 그라디언트가 필요하다.
+        평가. 그것은 매우 비싸고 당신은 낮은 것에 대해서만 사용해야합니다.
+        3 차원 문제, 당신이 당신이
+        올바르게 계산 된 파생 상품. 너는 그것을 사용하면 안된다.
+        생산 코드에서 (파생 상품을 확인하고 싶지 않다면)
+        제 3 자 제공).
+
+참고 2 : TestStep을 신중하게 선택해야합니다. 너무 큰 값
+        (너무 커서 함수의 동작은 상당히 비 큐빅이다.)
+        거짓 경보로 연결됩니다. 다른 단계를 사용할 수도 있습니다.
+        LSFitSetScale ()을 사용하여 축척을 설정하여 매개 변수를 설정합니다.
+
+참고 3 :이 기능은 위양성을 유발할 수 있습니다. 보고서에
+        I 차수 미분이 잘못 계산되었으므로 테스트를 줄일 수 있습니다.
+        한 번 더 시도해보십시오. 아마도 기능이 변경 될 수도 있습니다.
+        급격하게 그리고 당신의 발걸음이 그렇게 급속히 챈드하기에는 너무 큽니다.
+        기능.
+
+참고 4 :이 함수는 LSFitCreateWFG ()로 만든 최적화 프로그램에서만 작동합니다.
+        또는 LSFitCreateFG () 생성자.
+
+입력 매개 변수 :
+    상태 - 알고리즘 상태를 저장하는 데 사용되는 구조
+    TestStep - 확인 단계 :
+                    * TestStep = 0으로 설정하면 인증이 해제됩니다.
+                    * TestStep> 0으로 인증이 활성화됩니다.
+
+  - ALGLIB -
+     저작권 15.06.2012 Bochkanov Sergey
+**************************************************************************/
 void lsfitsetgradientcheck(const lsfitstate &state, const double teststep)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -7087,6 +11487,12 @@ Parametric spline inteprolant: 2-dimensional curve.
 You should not try to access its members directly - use PSpline2XXXXXXXX()
 functions instead.
 *************************************************************************/
+/************************************************************************
+파라 메트릭 스플라인 inteprolant : 2 차원 커브.
+
+PSpline2XXXXXXXX ()를 사용하여 멤버에 직접 액세스해서는 안됩니다.
+기능을 대신합니다.
+**************************************************************************/
 _pspline2interpolant_owner::_pspline2interpolant_owner()
 {
     p_struct = (alglib_impl::pspline2interpolant*)alglib_impl::ae_malloc(sizeof(alglib_impl::pspline2interpolant), NULL);
@@ -7157,6 +11563,12 @@ Parametric spline inteprolant: 3-dimensional curve.
 You should not try to access its members directly - use PSpline3XXXXXXXX()
 functions instead.
 *************************************************************************/
+/*************************************************************************
+파라 메트릭 스플라인 inteprolant : 3 차원 커브.
+
+PSpline3XXXXXXXX ()를 사용하여 멤버에 직접 액세스해서는 안됩니다.
+기능을 대신합니다.
+**************************************************************************/
 _pspline3interpolant_owner::_pspline3interpolant_owner()
 {
     p_struct = (alglib_impl::pspline3interpolant*)alglib_impl::ae_malloc(sizeof(alglib_impl::pspline3interpolant), NULL);
@@ -7252,6 +11664,38 @@ NOTES:
   -- ALGLIB PROJECT --
      Copyright 28.05.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 함수는 비주기적인 2 차원 파라 메트릭 스플라인을 만듭니다.
+(X [0], Y [0])에서 시작하여 (X [N-1], Y [N-1])에서 끝납니다.
+
+입력 매개 변수 :
+    XY - 점, 배열 [0..N-1,0..1].
+            XY [I, 0 : 1]은 I 포인트에 해당합니다.
+            포인트 순서가 중요합니다!
+    N 점 수, Akima 스플라인의 경우 N> = 5, 다른 유형의 경우 N> = 2
+            스플라인.
+    ST - 스플라인 유형 :
+            * 0 아키마 스플라인
+            * 1 Catmull-Rom 스플라인 포락선 (장력 = 0)
+            * 2 파라볼 릭 종료 입방 스플라인
+    PT - 매개 변수화 유형 :
+            * 0 유니폼
+            * 1 코드 길이
+            * 2 구심
+
+출력 매개 변수 :
+    P - 파라 메트릭 스플라인 보간
+
+
+노트:
+*이 함수는 모든 결과 포인트가 구별되어 있다고 가정합니다.
+  즉 (x0, y0) <> (x1, y1), (x1, y1) <> (x2, y2), (x2, y2) <> (x3, y3) 등이다.
+  그러나 비 연속적인 점들이 일치 할 수 있습니다. 즉, (x0, y0) =
+  = (x2, y2)이다.
+
+  - ALGLIB 프로젝트 -
+     Copyright 28.05.2010 Bochkanov Sergey
+**************************************************************************/
 void pspline2build(const real_2d_array &xy, const ae_int_t n, const ae_int_t st, const ae_int_t pt, pspline2interpolant &p)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -7278,6 +11722,16 @@ description here.
   -- ALGLIB PROJECT --
      Copyright 28.05.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 함수는 비주기적인 3 차원 파라 메트릭 스플라인을 만듭니다.
+(X [0], Y [0], Z [0])에서 시작하여 (X [N-1], Y [N-1], Z [N-1])에서 끝난다.
+
+PSpline2Build () 함수와 동일하지만 3D 용이므로 복제하지 않습니다.
+여기에 설명.
+
+  - ALGLIB 프로젝트 -
+     Copyright 28.05.2010 Bochkanov Sergey
+**************************************************************************/
 void pspline3build(const real_2d_array &xy, const ae_int_t n, const ae_int_t st, const ae_int_t pt, pspline3interpolant &p)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -7328,6 +11782,40 @@ NOTES:
   -- ALGLIB PROJECT --
      Copyright 28.05.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 함수는주기적인 2 차원 매개 변수 스플라인을 만듭니다.
+(X [0], Y [0])에서 시작하여 모든 점을 통과하여 (X [N-1], Y [N-1])
+back to (X [0], Y [0]).
+
+입력 매개 변수 :
+    XY - 점, 배열 [0..N-1,0..1].
+            XY [I, 0 : 1]은 I 포인트에 해당합니다.
+            XY [N-1,0 : 1]은 XY [0,0 : 1]과 달라야합니다.
+            포인트 순서가 중요합니다!
+    다른 유형의 스플라인의 경우 N 포인트 수, N> = 3입니다.
+    ST - 스플라인 유형 :
+            * 1 순환 경계 조건이있는 Catmull-Rom 스플라인 (인장 = 0)
+            순환 경계 조건을 갖는 * 2 입체 스플라인
+    PT - 매개 변수화 유형 :
+            * 0 유니폼
+            * 1 코드 길이
+            * 2 구심
+
+출력 매개 변수 :
+    P - 파라 메트릭 스플라인 보간
+
+
+노트:
+*이 함수는 모든 결과 포인트가 구별되어 있다고 가정합니다.
+  즉 (x0, y0) <> (x1, y1), (x1, y1) <> (x2, y2), (x2, y2) <> (x3, y3) 등이다.
+  그러나 비 연속적인 점들이 일치 할 수 있습니다. 즉, (x0, y0) =
+  = (x2, y2)이다.
+* 순서의 마지막 점은 첫 번째 점과 동일하지 않습니다. 너는 안된다.
+  그것들을 동일하게함으로써 "명시 적으로주기적인"곡선을 만든다.
+
+  - ALGLIB 프로젝트 -
+     Copyright 28.05.2010 Bochkanov Sergey
+**************************************************************************/
 void pspline2buildperiodic(const real_2d_array &xy, const ae_int_t n, const ae_int_t st, const ae_int_t pt, pspline2interpolant &p)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -7355,6 +11843,17 @@ description here.
   -- ALGLIB PROJECT --
      Copyright 28.05.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 함수는주기적인 3 차원 매개 변수 스플라인을 빌드합니다.
+(X [0], Y [0], Z [0])에서 시작하여 모든 점을 (X [N-1], Y [N-1], Z [N-1])
+(X [0], Y [0], Z [0])로 돌아 간다.
+
+PSpline2Build () 함수와 동일하지만 3D 용이므로 복제하지 않습니다.
+여기에 설명.
+
+  - ALGLIB 프로젝트 -
+     Copyright 28.05.2010 Bochkanov Sergey
+**************************************************************************/
 void pspline3buildperiodic(const real_2d_array &xy, const ae_int_t n, const ae_int_t st, const ae_int_t pt, pspline3interpolant &p)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -7396,6 +11895,31 @@ NOTES:
   -- ALGLIB PROJECT --
      Copyright 28.05.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 함수는 점에 해당하는 매개 변수 값의 벡터를 반환합니다.
+
+즉, (X [0], Y [0]) ... (X [N-1], Y [N-1]) 및 U = TValues ​​(P)로부터 생성 된 P
+있다
+    (X [0], Y [0]) = PSpline2Calc (P, U [0]),
+    (X [1], Y [1]) = PSpline2Calc (P, U [1]),
+    (X [2], Y [2]) = PSpline2Calc (P, U [2]),
+    ...
+
+입력 매개 변수 :
+    P - 파라 메트릭 스플라인 보간
+
+출력 매개 변수 :
+    N - 배열 크기
+    T- 어레이 [0..N-1]
+
+
+노트:
+* 비 정기 스플라인 U [0] = 0, U [0] <U [1] <... <U [N-1], U [N-1] = 1
+*주기 스프 라인 U [0] = 0, U [0] <U [1] <... <U [N-1], U [N-1] <1
+
+  - ALGLIB 프로젝트 -
+     Copyright 28.05.2010 Bochkanov Sergey
+**************************************************************************/
 void pspline2parametervalues(const pspline2interpolant &p, ae_int_t &n, real_1d_array &t)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -7420,6 +11944,14 @@ Same as PSpline2ParameterValues(), but for 3D.
   -- ALGLIB PROJECT --
      Copyright 28.05.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 함수는 점에 해당하는 매개 변수 값의 벡터를 반환합니다.
+
+PSpline2ParameterValues ​​()와 동일하지만 3D에 해당합니다.
+
+  - ALGLIB 프로젝트 -
+     Copyright 28.05.2010 Bochkanov Sergey
+**************************************************************************/
 void pspline3parametervalues(const pspline3interpolant &p, ae_int_t &n, real_1d_array &t)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -7457,6 +11989,27 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 28.05.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 함수는 주어진 파라 메트릭 스플라인의 값을 계산합니다.
+파라미터 T의 값
+
+입력 매개 변수 :
+    P - 파라 메트릭 스플라인 보간
+    T- 포인트 :
+            * [0,1]의 T는 점들 사이의 간격에 해당합니다.
+            * 비주기 스프 라인 T <0 (또는 T> 1)은
+              첫 번째 (마지막 점 이후) 지점 앞의 곡선
+            *주기 스프 라인 T <0 (또는 T> 1)은 [0,1]
+              T = T-floor (T)로 만듦.
+
+출력 매개 변수 :
+    X - X 위치
+    Y - Y 위치
+
+
+  - ALGLIB 프로젝트 -
+     Copyright 28.05.2010 Bochkanov Sergey
+**************************************************************************/
 void pspline2calc(const pspline2interpolant &p, const double t, double &x, double &y)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -7495,6 +12048,28 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 28.05.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 함수는 주어진 파라 메트릭 스플라인의 값을 계산합니다.
+파라미터 T의 값.
+
+입력 매개 변수 :
+    P - 파라 메트릭 스플라인 보간
+    T- 포인트 :
+            * [0,1]의 T는 점들 사이의 간격에 해당합니다.
+            * 비주기 스프 라인 T <0 (또는 T> 1)은
+              첫 번째 (마지막 점 이후) 지점 앞의 곡선
+            *주기 스프 라인 T <0 (또는 T> 1)은 [0,1]
+              T = T-floor (T)로 만듦.
+
+출력 매개 변수 :
+    X - X 위치
+    Y - Y 위치
+    Z - Z 위치
+
+
+  - ALGLIB 프로젝트 -
+     Copyright 28.05.2010 Bochkanov Sergey
+**************************************************************************/
 void pspline3calc(const pspline3interpolant &p, const double t, double &x, double &y, double &z)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -7534,6 +12109,29 @@ NOTE:
   -- ALGLIB PROJECT --
      Copyright 28.05.2010 by Bochkanov Sergey
 *************************************************************************/
+/**************************************************************************
+이 함수는 매개 변수 T의 주어진 값에 대한 접선 벡터를 계산합니다.
+
+입력 매개 변수 :
+    P - 파라 메트릭 스플라인 보간
+    T- 포인트 :
+            * [0,1]의 T는 점들 사이의 간격에 해당합니다.
+            * 비주기 스프 라인 T <0 (또는 T> 1)은
+              첫 번째 (마지막 점 이후) 지점 앞의 곡선
+            *주기 스프 라인 T <0 (또는 T> 1)은 [0,1]
+              T = T-floor (T)로 만듦.
+
+출력 매개 변수 :
+    X - 접선 벡터의 X- 성분 (정규화)
+    Y - 접선 벡터의 Y 성분 (정규화)
+
+노트:
+    X ^ 2 + Y ^ 2는 1 (0이 아닌 탄젠트 벡터의 경우) 또는 0입니다.
+
+
+  - ALGLIB 프로젝트 -
+     Copyright 28.05.2010 Bochkanov Sergey
+**************************************************************************/
 void pspline2tangent(const pspline2interpolant &p, const double t, double &x, double &y)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -7574,6 +12172,30 @@ NOTE:
   -- ALGLIB PROJECT --
      Copyright 28.05.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 함수는 매개 변수 T의 주어진 값에 대한 접선 벡터를 계산합니다.
+
+입력 매개 변수 :
+    P - 파라 메트릭 스플라인 보간
+    T- 포인트 :
+            * [0,1]의 T는 점들 사이의 간격에 해당합니다.
+            * 비주기 스프 라인 T <0 (또는 T> 1)은
+              첫 번째 (마지막 점 이후) 지점 앞의 곡선
+            *주기 스프 라인 T <0 (또는 T> 1)은 [0,1]
+              T = T-floor (T)로 만듦.
+
+출력 매개 변수 :
+    X - 접선 벡터의 X- 성분 (정규화)
+    Y - 접선 벡터의 Y 성분 (정규화)
+    Z - 접선 벡터의 Z- 성분 (정규화)
+
+노트:
+    X ^ 2 + Y ^ 2 + Z ^ 2는 1 (0이 아닌 탄젠트 벡터의 경우) 또는 0입니다.
+
+
+  - ALGLIB 프로젝트 -
+     Copyright 28.05.2010 Bochkanov Sergey
+**************************************************************************/
 void pspline3tangent(const pspline3interpolant &p, const double t, double &x, double &y, double &z)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -7591,6 +12213,7 @@ void pspline3tangent(const pspline3interpolant &p, const double t, double &x, do
 }
 
 /*************************************************************************
+
 This function calculates derivative, i.e. it returns (dX/dT,dY/dT).
 
 INPUT PARAMETERS:
@@ -7612,6 +12235,28 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 28.05.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 함수는 미분을 계산합니다. 즉, (dX / dT, dY / dT)를 반환합니다.
+
+입력 매개 변수 :
+    P - 파라 메트릭 스플라인 보간
+    T- 포인트 :
+            * [0,1]의 T는 점들 사이의 간격에 해당합니다.
+            * 비주기 스프 라인 T <0 (또는 T> 1)은
+              첫 번째 (마지막 점 이후) 지점 앞의 곡선
+            *주기 스프 라인 T <0 (또는 T> 1)은 [0,1]
+              T = T-floor (T)로 만듦.
+
+출력 매개 변수 :
+    X - X 값
+    DX - X 미분
+    Y - Y 값
+    DY - Y 파생 상품
+
+
+  - ALGLIB 프로젝트 -
+     Copyright 28.05.2010 Bochkanov Sergey
+**************************************************************************/
 void pspline2diff(const pspline2interpolant &p, const double t, double &x, double &dx, double &y, double &dy)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -7652,6 +12297,30 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 28.05.2010 by Bochkanov Sergey
 *************************************************************************/
+/***************************************************************************
+이 함수는 미분을 계산합니다. 즉, (dX / dT, dY / dT, dZ / dT)를 반환합니다.
+
+입력 매개 변수 :
+    P - 파라 메트릭 스플라인 보간
+    T- 포인트 :
+            * [0,1]의 T는 점들 사이의 간격에 해당합니다.
+            * 비주기 스프 라인 T <0 (또는 T> 1)은
+              첫 번째 (마지막 점 이후) 지점 앞의 곡선
+            *주기 스프 라인 T <0 (또는 T> 1)은 [0,1]
+              T = T-floor (T)로 만듦.
+
+출력 매개 변수 :
+    X - X 값
+    DX - X 미분
+    Y - Y 값
+    DY - Y 파생 상품
+    Z - Z 값
+    DZ - Z 미분
+
+
+  - ALGLIB 프로젝트 -
+     Copyright 28.05.2010 Bochkanov Sergey
+*************************************************** ***********************/
 void pspline3diff(const pspline3interpolant &p, const double t, double &x, double &dx, double &y, double &dy, double &z, double &dz)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -7692,6 +12361,30 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 28.05.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 함수는 T에 대해 1 차 및 2 차 미분을 계산합니다.
+
+입력 매개 변수 :
+    P - 파라 메트릭 스플라인 보간
+    T- 포인트 :
+            * [0,1]의 T는 점들 사이의 간격에 해당합니다.
+            * 비주기 스프 라인 T <0 (또는 T> 1)은
+              첫 번째 (마지막 점 이후) 지점 앞의 곡선
+            *주기 스프 라인 T <0 (또는 T> 1)은 [0,1]
+              T = T-floor (T)로 만듦.
+
+출력 매개 변수 :
+    X - X 값
+    DX - 파생물
+    D2X - 2 차 미분
+    Y - Y 값
+    DY - 파생 상품
+    D2Y - 2 차 미분
+
+
+  - ALGLIB 프로젝트 -
+     Copyright 28.05.2010 Bochkanov Sergey
+**************************************************************************/
 void pspline2diff2(const pspline2interpolant &p, const double t, double &x, double &dx, double &d2x, double &y, double &dy, double &d2y)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -7735,6 +12428,34 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 28.05.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 함수는 T에 대해 1 차 및 2 차 미분을 계산합니다.
+
+입력 매개 변수 :
+    P - 파라 메트릭 스플라인 보간
+    T- 포인트 :
+            * [0,1]의 T는 점들 사이의 간격에 해당합니다.
+            * 비주기 스프 라인 T <0 (또는 T> 1)은
+              첫 번째 (마지막 점 이후) 지점 앞의 곡선
+            *주기 스프 라인 T <0 (또는 T> 1)은 [0,1]
+              T = T-floor (T)로 만듦.
+
+출력 매개 변수 :
+    X - X 값
+    DX - 파생물
+    D2X - 2 차 미분
+    Y - Y 값
+    DY - 파생 상품
+    D2Y - 2 차 미분
+    Z - Z 값
+    DZ - 파생 상품
+    D2Z - 2 차 미분
+
+
+  - ALGLIB 프로젝트 -
+     Copyright 28.05.2010 Bochkanov Sergey
+**************************************************************************/
+
 void pspline3diff2(const pspline3interpolant &p, const double t, double &x, double &dx, double &d2x, double &y, double &dy, double &d2y, double &z, double &dz, double &d2z)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -7768,6 +12489,23 @@ RESULT:
   -- ALGLIB PROJECT --
      Copyright 30.05.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 함수는 호 길이, 즉 t = a 사이의 곡선 길이를 계산합니다.
+그리고 t = b.
+
+입력 매개 변수 :
+    P - 파라 메트릭 스플라인 보간
+    A, B - 호 끝에 해당하는 매개 변수 값 :
+            * B> A는 양의 길이를 반환합니다.
+            * B <A는 음의 길이를 반환합니다.
+
+결과:
+    T = A에서 시작하여 T = B에서 끝나는 호의 길이.
+
+
+  - ALGLIB 프로젝트 -
+     Copyright 30.05.2010 Bochkanov Sergey
+**************************************************************************/
 double pspline2arclength(const pspline2interpolant &p, const double a, const double b)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -7801,6 +12539,23 @@ RESULT:
   -- ALGLIB PROJECT --
      Copyright 30.05.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 함수는 호 길이, 즉 t = a 사이의 곡선 길이를 계산합니다.
+그리고 t = b.
+
+입력 매개 변수 :
+    P - 파라 메트릭 스플라인 보간
+    A, B - 호 끝에 해당하는 매개 변수 값 :
+            * B> A는 양의 길이를 반환합니다.
+            * B <A는 음의 길이를 반환합니다.
+
+결과:
+    T = A에서 시작하여 T = B에서 끝나는 호의 길이.
+
+
+  - ALGLIB 프로젝트 -
+     Copyright 30.05.2010 Bochkanov Sergey
+**************************************************************************/
 double pspline3arclength(const pspline3interpolant &p, const double a, const double b)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -7823,6 +12578,12 @@ RBF model.
 Never try to directly work with fields of this object - always use  ALGLIB
 functions to use this object.
 *************************************************************************/
+/***************************************************************************
+RBF 모델.
+
+이 객체의 필드를 직접 사용하지 마십시오. 항상 ALGLIB를 사용하십시오.
+이 객체를 사용하는 함수.
+**************************************************************************/
 _rbfmodel_owner::_rbfmodel_owner()
 {
     p_struct = (alglib_impl::rbfmodel*)alglib_impl::ae_malloc(sizeof(alglib_impl::rbfmodel), NULL);
@@ -7892,6 +12653,11 @@ RBF solution report:
 * TerminationType   -   termination type, positive values - success,
                         non-positive - failure.
 *************************************************************************/
+/************************************************************************
+RBF 솔루션 보고서 :
+* TerminationType - 종료 유형, 양수 값 - 성공,
+                        비 양성 - 실패.
+**************************************************************************/
 _rbfreport_owner::_rbfreport_owner()
 {
     p_struct = (alglib_impl::rbfreport*)alglib_impl::ae_malloc(sizeof(alglib_impl::rbfreport), NULL);
@@ -7976,6 +12742,26 @@ Important properties of s_out:
   serialize  it  in  C++ version of ALGLIB and unserialize in C# one, 
   and vice versa.
 *************************************************************************/
+/************************************************************************
+이 함수는 데이터 구조를 문자열로 serialize합니다.
+
+s_out의 중요한 속성 :
+* 영숫자, 점, 밑줄, 빼기 부호가 포함되어 있습니다.
+*이 기호는 공백으로 구분 된 단어로 그룹화됩니다.
+  및 Windows 스타일 (CR + LF) 개행
+* serializer는 공백과 CR + LF를 구분 기호로 사용하지만 
+  공백을 임의로 조합하여 구분 문자를 대체하십시오.
+  탭, Windows 또는 Unix 개행. 유연한 재 포맷이 가능합니다.
+  텍스트 또는 XML 파일에 포함하려는 경우의 문자열입니다. 
+  그러나 "단어"의 중간에 구분 기호를 삽입해서는 안됩니다.
+  편지의 대소 문자를 변경해서는 안됩니다.
+* s_out은 32 비트와 64 비트 시스템 사이에서 자유롭게 이동할 수 있습니다.
+  빅 엔디안 머신 등이 있습니다. 구조를 직렬화 할 수 있습니다.
+  32 비트 컴퓨터에서 실행하고 64 비트 컴퓨터에서 직렬화 해제하거나 그 반대의 경우
+  SPARC에서 직렬화하고 x86에서 직렬화 해제하십시오. 당신은 또한 수
+  ALGLIB의 C ++ 버전에서 직렬화하고 C # 하나에서 직렬화 해제하십시오. 
+  그 반대.
+**************************************************************************/
 void rbfserialize(rbfmodel &obj, std::string &s_out)
 {
     alglib_impl::ae_state state;
@@ -8007,6 +12793,9 @@ void rbfserialize(rbfmodel &obj, std::string &s_out)
 /*************************************************************************
 This function unserializes data structure from string.
 *************************************************************************/
+/************************************************************************
+이 함수는 문자열에서 데이터 구조를 unserializes.
+**************************************************************************/
 void rbfunserialize(std::string &s_in, rbfmodel &obj)
 {
     alglib_impl::ae_state state;
@@ -8077,6 +12866,55 @@ NOTE 1: memory requirements. RBF models require amount of memory  which is
   -- ALGLIB --
      Copyright 13.12.2011 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 함수는 스칼라 (NY = 1) 또는 벡터 (NY> 1)에 대한 RBF 모델을 만듭니다.
+기능을 NX 차원 공간 (NX = 2 또는 NX = 3)에서 사용할 수 있습니다.
+
+새로 생성 된 모델이 비어 있습니다. 다음 보간 직후에 사용할 수 있습니다.
+생성하지만 단지 0을 반환합니다. 모델에 포인트를 추가해야합니다.
+보간 설정을 조정 한 다음 모델 구성 함수를 호출합니다.
+RBFBuildModel ()은 사양에 따라 모델을 업데이트합니다.
+
+용법:
+1. 사용자가 RBFCreate ()로 모델을 생성합니다.
+2. 사용자가 RBFSetPoints ()를 사용하여 데이터 세트를 추가합니다 (포인트는
+   정규 그리드)
+3. (선택 사항) 사용자는 다음을 호출하여 다항식 항을 선택합니다.
+   * 선형 항을 설정하는 RBFLinTerm ()
+   * 상수를 설정하는 RBFConstTerm ()
+   * 제로 기간을 설정하는 RBFZeroTerm ()
+   기본적으로 선형 항이 사용됩니다.
+4. 사용자가 사용할 특정 RBF 알고리즘을 선택합니다 : QNN (RBFSetAlgoQNN)
+   또는 ML (RBFSetAlgoMultiLayer).
+5. 사용자는 모델을 다시 빌드하는 RBFBuildModel () 함수를 호출합니다.
+   명세
+6. 사용자는 지정된 점에서 모델 값을 계산하기 위해 RBFCalc ()를 호출 할 수 있습니다.
+   RBFGridCalc ()를 사용하여 일반 지점의 모델 값을 계산합니다.
+   그리드. 사용자는 RBFUnpack () 호출로 모델 계수를 추출 할 수 있습니다.
+
+입력 매개 변수 :
+    NX - 공간 치수, NX = 2 또는 NX = 3
+    NY - 함수 차원, NY> = 1
+
+출력 매개 변수 :
+    S - RBF 모델 (초기에는 0 임)
+
+참고 1 : 메모리 요구 사항. RBF 모델은
+        데이터 포인트의 수에 비례합니다. 메모리가 할당 됨
+        모델을 만드는 동안이 메모리의 대부분은
+        모델 계수가 계산됩니다.
+
+        기본 설정이있는 N 개의 센터에 대한 대략적인 추정치는 다음과 같습니다.
+        아래에 주어진다 :
+        * 약 250 * N * (sizeof (double) + 2 * sizeof (int)) 바이트의 메모리가 있습니다.
+          모델 제작 단계에서 필요합니다.
+        * 모델 제작 후 약 15 * N * sizeof (double) 바이트가 필요합니다.
+        예를 들어, N = 100000의 경우 빌드하는 데 0.6GB의 메모리가 필요할 수 있습니다.
+        모델이지만 0.012GB 정도만 저장할 수 있습니다.
+
+  - ALGLIB -
+     저작권 13.12.2011 Bochkanov Sergey
+**************************************************************************/
 void rbfcreate(const ae_int_t nx, const ae_int_t ny, rbfmodel &s)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -8119,6 +12957,32 @@ NOTE: this   function  has   some   serialization-related  subtleties.  We
   -- ALGLIB --
      Copyright 13.12.2011 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 함수는 데이터 집합을 추가합니다.
+
+이 함수는 이전 호출의 결과, 즉 여러 호출을 무시합니다.
+이 기능을 사용하면 마지막 세트 만 추가됩니다.
+
+입력 매개 변수 :
+    S - RBF 모델 (RBFCreate () 호출로 초기화 됨).
+    XY - 점, 배열 [N, NX + NY]. 한 행은 한 점에 해당합니다.
+                데이터 세트에서. 첫 번째 NX 요소는 좌표이며, 다음
+                NY 요소는 함수 값입니다. 배열은 다음보다 클 수 있습니다.
+                이 경우에는 [N, NX + NY] 요소 만 이끌어냅니다
+                사용하게 될 것이다.
+    N - 데이터 세트의 포인트 수
+
+데이터 집합 및 (선택적으로) 조정 된 알고리즘 설정을 추가 한 후에는
+모델을 빌드하기 위해 RBFBuildModel ()을 호출해야합니다.
+
+참고 :이 함수에는 몇 가지 serialization 관련 미묘한 차이가 있습니다. 우리
+      ALGLIB Reference에서 직렬화 예제를 공부하도록 권장합니다.
+      모델의 직렬화를 수행하려면 수동으로하십시오.
+
+
+  - ALGLIB -
+     저작권 13.12.2011 Bochkanov Sergey
+**************************************************************************/
 void rbfsetpoints(const rbfmodel &s, const real_2d_array &xy, const ae_int_t n)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -8161,6 +13025,32 @@ NOTE: this   function  has   some   serialization-related  subtleties.  We
   -- ALGLIB --
      Copyright 13.12.2011 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 함수는 데이터 집합을 추가합니다.
+
+이 함수는 이전 호출의 결과, 즉 여러 호출을 무시합니다.
+이 기능을 사용하면 마지막 세트 만 추가됩니다.
+
+입력 매개 변수 :
+    S - RBF 모델 (RBFCreate () 호출로 초기화 됨).
+    XY - 점, 배열 [N, NX + NY]. 한 행은 한 점에 해당합니다.
+                데이터 세트에서. 첫 번째 NX 요소는 좌표이며, 다음
+                NY 요소는 함수 값입니다. 배열은 다음보다 클 수 있습니다.
+                이 경우에는 [N, NX + NY] 요소 만 이끌어냅니다
+                사용하게 될 것이다.
+    N - 데이터 세트의 포인트 수
+
+데이터 집합 및 (선택적으로) 조정 된 알고리즘 설정을 추가 한 후에는
+모델을 빌드하기 위해 RBFBuildModel ()을 호출해야합니다.
+
+참고 :이 함수에는 몇 가지 serialization 관련 미묘한 차이가 있습니다. 우리
+      ALGLIB Reference에서 직렬화 예제를 공부하도록 권장합니다.
+      모델의 직렬화를 수행하려면 수동으로하십시오.
+
+
+  - ALGLIB -
+     저작권 13.12.2011 Bochkanov Sergey
+**************************************************************************/
 void rbfsetpoints(const rbfmodel &s, const real_2d_array &xy)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -8234,6 +13124,59 @@ NOTE: this   function  has   some   serialization-related  subtleties.  We
   -- ALGLIB --
      Copyright 13.12.2011 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 함수는 RBF 보간 알고리즘을 설정합니다. ALGLIB는 몇 가지를 지원합니다
+다른 속성을 가진 RBF 알고리즘.
+
+이 알고리즘은 RBF-QNN이라고하며,
+다음 속성 :
+a) 모든 점은 뚜렷하다.
+b) 모든 점들은 잘 분리되어있다.
+c) 점 분포는 거의 균일하다. '윤곽선이 없습니다.
+   라인 ", 포인트 클러스터 또는 기타 소규모 구조.
+
+알고리즘 설명 :
+1) 보간 중심을 데이터 포인트에 할당
+2) 보간 반경은 가장 가까운 중심까지의 거리로 계산됩니다
+   시간 Q 계수 (여기서 Q는 [0.75,1.50]의 값).
+3) (2) 반지름을 수행 한 후 상황을 피하기 위해 변환됩니다
+   단일 이상치가 매우 큰 반경을 갖고 많은 점에 영향을 미칠 때
+   모든 데이터 세트에서 변환 형식은 다음과 같습니다.
+       new_r [i] = min (r [i], Z * median (r []))
+   여기서 r [i]는 I 번째 반지름, median ()은 전체 반지름의 중앙 반지름
+   데이터 세트에서 Z는 편차의 양을 제어하는 ​​사용자 지정 값입니다.
+   중앙 반경에서.
+
+(a)를 위반하면 RBF 모델을 구축 할 수 없습니다. (b) 또는
+(c)를 위반하면 모델이 만들어 지지만 보간 품질은
+낮은. 이에 대한 더 자세한 정보는 http://www.alglib.net/interpolation/을 참조하십시오.
+제목.
+
+이 알고리즘은 기본적으로 사용됩니다.
+
+추가 Q 매개 변수는 RBF 기초의 부드러움 특성을 제어합니다.
+* Q <0.75는 완벽하게 컨디셔닝 된 기초를 제공하지만 끔찍한 부드러움
+  속성 (RBF 보간은 함수 값 주위에 날카로운 피크를 가짐)
+* Q 약 1.0은 매끈함과 조건 수 사이에 좋은 균형을 제공합니다.
+* Q> 1.5는 나쁘게 컨디셔닝 된 시스템과
+  기본 선형 솔버 (부드러움은 아주 좋음)
+* Q> 2.0은 효과적으로 수렴하지 않기 때문에 유용하지 않게 만듭니다.
+  합리적인 양의 반복. 그러한 큰 값을 설정할 수 있습니다.
+  Q,하지만 그렇게하지 않는 것이 좋습니다.
+
+입력 매개 변수 :
+    RBFCreate () 호출로 초기화 된 S - RBF 모델
+    Q - Q 매개 변수, Q> 0, 권장 값 - 1.0
+    Z - Z 매개 변수, Z> 0, 권장 값 - 5.0
+
+참고 :이 함수에는 몇 가지 serialization 관련 미묘한 차이가 있습니다. 우리
+      ALGLIB Reference에서 직렬화 예제를 공부하도록 권장합니다.
+      모델의 직렬화를 수행하려면 수동으로하십시오.
+
+
+  - ALGLIB -
+     저작권 13.12.2011 Bochkanov Sergey
+**************************************************************************/
 void rbfsetalgoqnn(const rbfmodel &s, const double q, const double z)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -8303,6 +13246,59 @@ NOTE: this   function  has   some   serialization-related  subtleties.  We
   -- ALGLIB --
      Copyright 13.12.2011 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 RBF 보간 알고리즘을 설정합니다. ALGLIB는 몇 가지를 지원합니다
+다른 속성을 가진 RBF 알고리즘.
+
+이 알고리즘은 RBF-QNN이라고하며,
+다음 속성 :
+a) 모든 점은 뚜렷하다.
+b) 모든 점들은 잘 분리되어있다.
+c) 점 분포는 거의 균일하다. '윤곽선이 없습니다.
+   라인 ", 포인트 클러스터 또는 기타 소규모 구조.
+
+알고리즘 설명 :
+1) 보간 중심을 데이터 포인트에 할당
+2) 보간 반경은 가장 가까운 중심까지의 거리로 계산됩니다
+   시간 Q 계수 (여기서 Q는 [0.75,1.50]의 값).
+3) (2) 반지름을 수행 한 후 상황을 피하기 위해 변환됩니다
+   단일 이상치가 매우 큰 반경을 갖고 많은 점에 영향을 미칠 때
+   모든 데이터 세트에서 변환 형식은 다음과 같습니다.
+       new_r [i] = min (r [i], Z * median (r []))
+   여기서 r [i]는 I 번째 반지름, median ()은 전체 반지름의 중앙 반지름
+   데이터 세트에서 Z는 편차의 양을 제어하는 ​​사용자 지정 값입니다.
+   중앙 반경에서.
+
+(a)를 위반하면 RBF 모델을 구축 할 수 없습니다. (b) 또는
+(c)를 위반하면 모델이 만들어 지지만 보간 품질은
+낮은. 이에 대한 더 자세한 정보는 http://www.alglib.net/interpolation/을 참조하십시오.
+제목.
+
+이 알고리즘은 기본적으로 사용됩니다.
+
+추가 Q 매개 변수는 RBF 기초의 부드러움 특성을 제어합니다.
+* Q <0.75는 완벽하게 컨디셔닝 된 기초를 제공하지만 끔찍한 부드러움
+  속성 (RBF 보간은 함수 값 주위에 날카로운 피크를 가짐)
+* Q 약 1.0은 매끈함과 조건 수 사이에 좋은 균형을 제공합니다.
+* Q> 1.5는 나쁘게 컨디셔닝 된 시스템과
+  기본 선형 솔버 (부드러움은 아주 좋음)
+* Q> 2.0은 효과적으로 수렴하지 않기 때문에 유용하지 않게 만듭니다.
+  합리적인 양의 반복. 그러한 큰 값을 설정할 수 있습니다.
+  Q,하지만 그렇게하지 않는 것이 좋습니다.
+
+입력 매개 변수 :
+    RBFCreate () 호출로 초기화 된 S - RBF 모델
+    Q - Q 매개 변수, Q> 0, 권장 값 - 1.0
+    Z - Z 매개 변수, Z> 0, 권장 값 - 5.0
+
+참고 :이 함수에는 몇 가지 serialization 관련 미묘한 차이가 있습니다. 우리
+      ALGLIB Reference에서 직렬화 예제를 공부하도록 권장합니다.
+      모델의 직렬화를 수행하려면 수동으로하십시오.
+
+
+  - ALGLIB -
+     저작권 13.12.2011 Bochkanov Sergey
+**************************************************************************/
 void rbfsetalgoqnn(const rbfmodel &s)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -8415,6 +13411,96 @@ TYPICAL ERRORS
   -- ALGLIB --
      Copyright 02.03.2012 by Bochkanov Sergey
 *************************************************************************/
+/************************************************** **********************
+이 함수는 RBF 보간 알고리즘을 설정합니다. ALGLIB는 몇 가지를 지원합니다
+다른 속성을 가진 RBF 알고리즘.
+
+이 알고리즘을 RBF-ML이라고합니다. 다층 RBF 모델, 즉
+우리가 결합 할 수있게하는 반경을 줄이는 모델
+정확도 (제 1 층의 큰 반경으로 인한)
+마지막 층의 작은 반경) 및 빠른 수렴.
+
+내부적으로 RBF-ML은 스파 스로부터 많은 다른 가속화 방법을 사용합니다.
+행렬을 KD- 트리에 적용하면 알고리즘이 작동 시간이
+대략적으로 N * log (N)에 비례 * 밀도 * RBase ^ 2 * NLayers, 여기서 N은
+점의 수, 밀도는 단위의 점 당 평균 밀도입니다.
+보간 공간, RBase는 초기 반경, NLayers는
+레이어.
+
+RBF-ML은 다음 종류의 보간 문제에 유용합니다.
+1. 잘 맞는 점들로 "정확한"문제들 (완벽한 적합성)
+2. 점의 임의적 분포에 대한 최소 제곱 문제 (알고리즘
+   가능한 곳에서 완벽한 적합성을 제공하고 최소 제곱에 가깝다.
+   단단한 지역에서 적합하십시오).
+3. 우리가 통제 된 양을 적용하기를 원하는 시끄러운 문제
+   부드럽게.
+
+입력 매개 변수 :
+    RBFCreate () 호출로 초기화 된 S - RBF 모델
+    RBase - RBase 매개 변수, RBase> 0
+    NLayers - NLayers 매개 변수, NLayers> 0, 시작할 값 권장
+                약 5.
+    LambdaV - 정규화 값, 문제를 해결할 때 유용 할 수 있습니다.
+                최소 제곱의 의미로. 최적의 람다는 문제 -
+                의존적이어서 시행 착오가 필요합니다. 우리의 경험에서,
+                좋은 람다는 0.1만큼 클 수 있으며, 0.001
+                초기 추측으로.
+                기본값 - 0.01, LambdaV가 아닌 경우 사용됩니다.
+                주어진. 0 값을 지정할 수는 있지만 0은 아닙니다.
+                그렇게하는 것이 좋습니다.
+
+튜닝 알고리즘
+
+이 알고리즘을 사용하려면 세 가지 매개 변수를 선택해야합니다.
+* 초기 반지름 RBase
+* 모델 NLayers의 레이어 수
+* 정규화 계수 LambdaV
+
+초기 반경은 선택하기가 쉽습니다. 몇 번이라도 선택할 수 있습니다.
+점 사이의 평균 거리보다 큽니다. 알고리즘이 중단되지 않습니다.
+반경이 너무 큰 경우 모델 생성 시간이 단축됩니다.
+증가하지만 모델은 올바르게 구축됩니다).
+
+RLast = RBase / 2 ^ (NLayers-1) (사용한 반경)과 같은 레이어 수를 선택합니다.
+마지막 레이어에 의해)은 일반적인 거리보다 작을 것입니다.
+전철기. 모델 오류가 너무 큰 경우,
+레이어. 더 많은 레이어가 있으면 모델 구성 및 평가가 가능합니다.
+비례 적으로 느리지 만, 정확하게 모델을 가질 수 있습니다.
+귀하의 데이터에 적합합니다. 다른 쪽에서는 소음을 억제하려면
+모델의 유연성을 떨어 뜨리기 위해 레이어 수를 줄일 수 있습니다.
+
+정규화 계수 LambdaV는 개인의 부드러움을 제어합니다.
+각 레이어에 대해 만들어진 모델. 경우에 따라 기본값을 사용하는 것이 좋습니다.
+이 매개 변수를 조정하고 싶지는 않습니다. 왜냐하면 0이 아닌 LambdaV
+내부 반복 알고리즘을 가속화하고 안정화시킵니다. 원하는 경우에
+노이즈를 억제하기 위해 LambdaV를 추가 매개 변수로 사용할 수 있습니다 (더 큰
+값 = 더 부드러움)을 조정합니다.
+
+일반적인 오류
+
+1. 초기 반경이 너무 큽니다. 메모리 요구 사항
+   RBF-ML은 대략적으로 N * Density * RBase ^ 2에 비례합니다 (여기서 밀도는
+   보간 공간의 단위 당 평균 포인트 밀도). 에서
+   매우 큰 RBase의 극단적 인 경우 우리는 O (N ^ 2) 단위의
+   메모리 - 여러 레이어를 반경을 합리적으로 줄이기 위해
+   작은 값.
+
+2. 너무 적은 수의 레이어 사용 - 반경이 큰 RBF 모델은 그렇지 않습니다.
+   목표 함수의 작은 변화를 재현 할만큼 충분히 유연합니다.
+   큰 반지름에서 작은 반지름으로 여러 레이어가 필요합니다.
+   좋은 모델을 갖기 위해서.
+
+3. 초기 반경이 너무 작습니다. 당신은 모델을 얻을 것이다.
+   보간 센터에서 너무 멀리 떨어져있는 영역에 "구멍"이 생깁니다.
+   그러나 알고리즘은이 경우 올바르게 (그리고 빨리) 작동합니다.
+
+4. 너무 많은 레이어를 사용하여 - 당신은 너무 크고 너무 느린 모델을 얻을 것이다. 이
+   모델이 완벽하게 기능을 재현하지만 어쩌면 당신은
+   더 적은 레이어 (그리고 적은 메모리)로 비슷한 결과를 얻을 수 있습니다.
+
+  - ALGLIB -
+     저작권 02.03.2012 Bochkanov Sergey
+**************************************************************************/
 void rbfsetalgomultilayer(const rbfmodel &s, const double rbase, const ae_int_t nlayers, const double lambdav)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -8521,6 +13607,96 @@ TYPICAL ERRORS
   -- ALGLIB --
      Copyright 02.03.2012 by Bochkanov Sergey
 *************************************************************************/
+/************************************************** **********************
+이 함수는 RBF 보간 알고리즘을 설정합니다. ALGLIB는 몇 가지를 지원합니다
+다른 속성을 가진 RBF 알고리즘.
+
+이 알고리즘을 RBF-ML이라고합니다. 다층 RBF 모델, 즉
+우리가 결합 할 수있게하는 반경을 줄이는 모델
+정확도 (제 1 층의 큰 반경으로 인한)
+마지막 층의 작은 반경) 및 빠른 수렴.
+
+내부적으로 RBF-ML은 스파 스로부터 많은 다른 가속화 방법을 사용합니다.
+행렬을 KD- 트리에 적용하면 알고리즘이 작동 시간이
+대략적으로 N * log (N)에 비례 * 밀도 * RBase ^ 2 * NLayers, 여기서 N은
+점의 수, 밀도는 단위의 점 당 평균 밀도입니다.
+보간 공간, RBase는 초기 반경, NLayers는
+레이어.
+
+RBF-ML은 다음 종류의 보간 문제에 유용합니다.
+1. 잘 맞는 점들로 "정확한"문제들 (완벽한 적합성)
+2. 점의 임의적 분포에 대한 최소 제곱 문제 (알고리즘
+   가능한 곳에서 완벽한 적합성을 제공하고 최소 제곱에 가깝다.
+   단단한 지역에서 적합하십시오).
+3. 우리가 통제 된 양을 적용하기를 원하는 시끄러운 문제
+   부드럽게.
+
+입력 매개 변수 :
+    RBFCreate () 호출로 초기화 된 S - RBF 모델
+    RBase - RBase 매개 변수, RBase> 0
+    NLayers - NLayers 매개 변수, NLayers> 0, 시작할 값 권장
+                약 5.
+    LambdaV - 정규화 값, 문제를 해결할 때 유용 할 수 있습니다.
+                최소 제곱의 의미로. 최적의 람다는 문제 -
+                의존적이어서 시행 착오가 필요합니다. 우리의 경험에서,
+                좋은 람다는 0.1만큼 클 수 있으며, 0.001
+                초기 추측으로.
+                기본값 - 0.01, LambdaV가 아닌 경우 사용됩니다.
+                주어진. 0 값을 지정할 수는 있지만 0은 아닙니다.
+                그렇게하는 것이 좋습니다.
+
+튜닝 알고리즘
+
+이 알고리즘을 사용하려면 세 가지 매개 변수를 선택해야합니다.
+* 초기 반지름 RBase
+* 모델 NLayers의 레이어 수
+* 정규화 계수 LambdaV
+
+초기 반경은 선택하기가 쉽습니다. 몇 번이라도 선택할 수 있습니다.
+점 사이의 평균 거리보다 큽니다. 알고리즘이 중단되지 않습니다.
+반경이 너무 큰 경우 모델 생성 시간이 단축됩니다.
+증가하지만 모델은 올바르게 구축됩니다).
+
+RLast = RBase / 2 ^ (NLayers-1) (사용한 반경)과 같은 레이어 수를 선택합니다.
+마지막 레이어에 의해)은 일반적인 거리보다 작을 것입니다.
+전철기. 모델 오류가 너무 큰 경우,
+레이어. 더 많은 레이어가 있으면 모델 구성 및 평가가 가능합니다.
+비례 적으로 느리지 만, 정확하게 모델을 가질 수 있습니다.
+귀하의 데이터에 적합합니다. 다른 쪽에서는 소음을 억제하려면
+모델의 유연성을 떨어 뜨리기 위해 레이어 수를 줄일 수 있습니다.
+
+정규화 계수 LambdaV는 개인의 부드러움을 제어합니다.
+각 레이어에 대해 만들어진 모델. 경우에 따라 기본값을 사용하는 것이 좋습니다.
+이 매개 변수를 조정하고 싶지는 않습니다. 왜냐하면 0이 아닌 LambdaV
+내부 반복 알고리즘을 가속화하고 안정화시킵니다. 원하는 경우에
+노이즈를 억제하기 위해 LambdaV를 추가 매개 변수로 사용할 수 있습니다 (더 큰
+값 = 더 부드러움)을 조정합니다.
+
+일반적인 오류
+
+1. 초기 반경이 너무 큽니다. 메모리 요구 사항
+   RBF-ML은 대략적으로 N * Density * RBase ^ 2에 비례합니다 (여기서 밀도는
+   보간 공간의 단위 당 평균 포인트 밀도). 에서
+   매우 큰 RBase의 극단적 인 경우 우리는 O (N ^ 2) 단위의
+   메모리 - 여러 레이어를 반경을 합리적으로 줄이기 위해
+   작은 값.
+
+2. 너무 적은 수의 레이어 사용 - 반경이 큰 RBF 모델은 그렇지 않습니다.
+   목표 함수의 작은 변화를 재현 할만큼 충분히 유연합니다.
+   큰 반지름에서 작은 반지름으로 여러 레이어가 필요합니다.
+   좋은 모델을 갖기 위해서.
+
+3. 초기 반경이 너무 작습니다. 당신은 모델을 얻을 것이다.
+   보간 센터에서 너무 멀리 떨어져있는 영역에 "구멍"이 생깁니다.
+   그러나 알고리즘은이 경우 올바르게 (그리고 빨리) 작동합니다.
+
+4. 너무 많은 레이어를 사용하여 - 당신은 너무 크고 너무 느린 모델을 얻을 것이다. 이
+   모델이 완벽하게 기능을 재현하지만 어쩌면 당신은
+   더 적은 레이어 (그리고 적은 메모리)로 비슷한 결과를 얻을 수 있습니다.
+
+  - ALGLIB -
+     저작권 02.03.2012 Bochkanov Sergey
+**************************************************************************/
 void rbfsetalgomultilayer(const rbfmodel &s, const double rbase, const ae_int_t nlayers)
 {
     alglib_impl::ae_state _alglib_env_state;    
@@ -8556,6 +13732,21 @@ NOTE: this   function  has   some   serialization-related  subtleties.  We
   -- ALGLIB --
      Copyright 13.12.2011 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 함수는 선형 항을 설정합니다 (모델은 방사형 기본 함수
+플러스 선형 다항식). 이 기능은 다음 호출 때까지 적용되지 않습니다.
+RBFBuildModel ().
+
+입력 매개 변수 :
+    RBFCreate () 호출로 초기화 된 S - RBF 모델
+
+참고 :이 함수에는 몇 가지 serialization 관련 미묘한 차이가 있습니다. 우리
+      ALGLIB Reference에서 직렬화 예제를 공부하도록 권장합니다.
+      모델의 직렬화를 수행하려면 수동으로하십시오.
+
+  - ALGLIB -
+     저작권 13.12.2011 Bochkanov Sergey
+**************************************************************************/
 void rbfsetlinterm(const rbfmodel &s)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -8587,6 +13778,21 @@ NOTE: this   function  has   some   serialization-related  subtleties.  We
   -- ALGLIB --
      Copyright 13.12.2011 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 상수 항을 설정합니다 (모델은 방사형 기본 함수
+상수). 이 함수는 다음에 호출 할 때까지 적용되지 않습니다.
+RBFBuildModel ().
+
+입력 매개 변수 :
+    RBFCreate () 호출로 초기화 된 S - RBF 모델
+
+참고 :이 함수에는 몇 가지 serialization 관련 미묘한 차이가 있습니다. 우리
+      ALGLIB Reference에서 직렬화 예제를 공부하도록 권장합니다.
+      모델의 직렬화를 수행하려면 수동으로하십시오.
+
+  - ALGLIB -
+     저작권 13.12.2011 Bochkanov Sergey
+**************************************************************************/
 void rbfsetconstterm(const rbfmodel &s)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -8618,6 +13824,21 @@ NOTE: this   function  has   some   serialization-related  subtleties.  We
   -- ALGLIB --
      Copyright 13.12.2011 by Bochkanov Sergey
 *************************************************************************/
+/************************************************** ***********************
+이 함수는 0 항을 설정합니다 (모델은 방사형 기본 함수
+다항식 용어 없음). 이 기능은 다음 호출 때까지 적용되지 않습니다.
+RBFBuildModel ().
+
+입력 매개 변수 :
+    RBFCreate () 호출로 초기화 된 S - RBF 모델
+
+참고 :이 함수에는 몇 가지 serialization 관련 미묘한 차이가 있습니다. 우리
+      ALGLIB Reference에서 직렬화 예제를 공부하도록 권장합니다.
+      모델의 직렬화를 수행하려면 수동으로하십시오.
+
+  - ALGLIB -
+     저작권 13.12.2011 Bochkanov Sergey
+**************************************************************************/
 void rbfsetzeroterm(const rbfmodel &s)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -8668,6 +13889,40 @@ unchanged.
   -- ALGLIB --
      Copyright 13.12.2011 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 함수는 RBF 모델을 구축하고 보고서를 반환합니다 (일부 포함).
+알고리즘 특성의 평가에 사용될 수있는 정보).
+
+이 함수를 호출하면 RBF 모델의 중심 / 반지름 /
+RBFModel 구조에 저장합니다. 처음에는 RBFModel
+제로 계수를 포함하지만이 함수를 호출 한 후에는
+계수는 우리의 데이터 세트에 적합하도록 계산되었습니다.
+
+이 함수를 호출 한 후에는 RBFCalc (), RBFGridCalc () 및
+다른 모델 계산 기능.
+
+입력 매개 변수 :
+    RBFCreate () 호출로 초기화 된 S - RBF 모델
+    담당자 - 신고 :
+                * Rep.TerminationType :
+                  * -5 - 뚜렷하지 않은 기저 기능 센터가 발견되었습니다.
+                         보간이 중단되었습니다.
+                  * -4 - 내부 SVD 솔버의 비 집중
+                  * 1 - 성공적인 종료
+                필드는 디버깅 목적으로 사용됩니다.
+                * Rep.IterationsCount - LSQR 솔버의 반복 횟수
+                * Rep.NMV - 매트릭스 - 벡터 제품의 수
+                * Rep.ARows - 시스템 행의 행 수
+                * Rep.ACols - 시스템 행렬에 대한 열 수
+                * Rep.ANNZ - 상당히 0이 아닌 요소의 수
+                  (일부 알고리즘 결정 임계 값을 초과하는 요소)
+
+참고 : 모델을 작성하지 않으면 구조의 현재 상태가 그대로 유지됩니다.
+변하지 않은.
+
+  - ALGLIB -
+     저작권 13.12.2011 Bochkanov Sergey
+**************************************************************************/
 void rbfbuildmodel(const rbfmodel &s, rbfreport &rep)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -8712,6 +13967,34 @@ RESULT:
   -- ALGLIB --
      Copyright 13.12.2011 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 주어진 점에서 RBF 모델의 값을 계산합니다.
+
+이 함수는 NY = 1 (스칼라 함수)이고 NX = 2 일 때 사용해야합니다.
+(2 차원 공간). 3 차원 공간이 있다면 RBFCalc3 ()을 사용하십시오. 만약
+당신은 일반적인 상황 (NX 차원 공간, NY 차원 함수)
+RBFCalc ()를 덜 효율적으로 구현해야합니다.
+
+함수 값을 여러 번 계산하려면 다음을 사용하십시오.
+이후의 많은 호출보다 훨씬 효율적인 RBFGridCalc2 ()
+RBFCalc2 ().
+
+이 함수는 다음의 경우 0.0을 반환합니다.
+* 모델이 초기화되지 않았습니다.
+* NX <> 2
+ * NY <> 1
+
+입력 매개 변수 :
+    S - RBF 모델
+    X0 - 첫 번째 좌표, 유한 수
+    X1 - 두 번째 좌표, 유한 수
+
+결과:
+    모델의 값 또는 0.0 (위에 정의 된대로)
+
+  - ALGLIB -
+     저작권 13.12.2011 Bochkanov Sergey
+**************************************************************************/
 double rbfcalc2(const rbfmodel &s, const double x0, const double x1)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -8753,6 +14036,31 @@ RESULT:
   -- ALGLIB --
      Copyright 13.12.2011 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 주어진 점에서 RBF 모델의 값을 계산합니다.
+
+이 함수는 NY = 1 (스칼라 함수)이고 NX = 3 일 때 사용해야합니다.
+(3 차원 공간). 2 차원 공간이 있다면 RBFCalc2 ()를 사용하십시오. 만약
+당신은 일반적인 상황 (NX 차원 공간, NY 차원 함수)
+RBFCalc ()를 덜 효율적으로 구현해야합니다.
+
+이 함수는 다음의 경우 0.0을 반환합니다.
+* 모델이 초기화되지 않았습니다.
+* NX <> 3
+ * NY <> 1
+
+입력 매개 변수 :
+    S - RBF 모델
+    X0 - 첫 번째 좌표, 유한 수
+    X1 - 두 번째 좌표, 유한 수
+    X2 - 세 번째 좌표, 유한 수
+
+결과:
+    모델의 값 또는 0.0 (위에 정의 된대로)
+
+  - ALGLIB -
+     저작권 13.12.2011 Bochkanov Sergey
+**************************************************************************/
 double rbfcalc3(const rbfmodel &s, const double x0, const double x1, const double x2)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -8794,6 +14102,31 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 13.12.2011 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 함수는 주어진 지점에서 RBF 모델의 값을 계산합니다.
+
+이것은 임의의 NX (dimension of of NX)에 사용될 수있는 일반적인 함수입니다.
+인수의 공간)과 NY (함수 자체의 차원). 하나
+NY = 1 일 때 RBFCalc2 () 또는
+RBFCalc3 ().
+
+모델이 초기화되지 않은 경우이 함수는 0.0을 반환합니다.
+
+입력 매개 변수 :
+    S - RBF 모델
+    X 좌표, 배열 [NX].
+                X는 NX 개 이상의 요소를 가질 수 있습니다.이 경우에만
+                선도적 인 NX가 사용됩니다.
+
+출력 매개 변수 :
+    Y - 함수 값, array [NY]. Y는 매개 변수가 아니며
+                이 함수를 호출 한 후 다시 할당됩니다. 원하는 경우에
+                이전에 할당 된 Y를 재사용하려면 RBFCalcBuf ()를 사용할 수 있습니다.
+                Y가 너무 작을 때만 Y를 재 할당합니다.
+
+  - ALGLIB -
+     저작권 13.12.2011 Bochkanov Sergey
+**************************************************************************/
 void rbfcalc(const rbfmodel &s, const real_1d_array &x, real_1d_array &y)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -8830,6 +14163,26 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 13.12.2011 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 주어진 지점에서 RBF 모델의 값을 계산합니다.
+
+RBFCalc ()와 동일하지만 in이 충분히 큰 경우 Y를 재 할당하지 않습니다.
+함수 값을 저장하십시오.
+
+입력 매개 변수 :
+    S - RBF 모델
+    X 좌표, 배열 [NX].
+                X는 NX 개 이상의 요소를 가질 수 있습니다.이 경우에만
+                선도적 인 NX가 사용됩니다.
+    Y - 아마 사전 할당 된 배열
+
+출력 매개 변수 :
+    Y - 함수 값, array [NY]. Y는 재 할당되지 않습니다.
+                NY보다 큽니다.
+
+  - ALGLIB -
+     저작권 13.12.2011 Bochkanov Sergey
+**************************************************************************/
 void rbfcalcbuf(const rbfmodel &s, const real_1d_array &x, real_1d_array &y)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -8870,6 +14223,30 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 13.12.2011 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 정규 그리드에서 RBF 모델의 값을 계산합니다.
+
+Grid는 Point [I, J] = (X0 [I], X1 [J])와 함께 N0 * N1 점을 가진다.
+
+이 함수는 다음의 경우 0.0을 반환합니다.
+* 모델이 초기화되지 않았습니다.
+* NX <> 2
+ * NY <> 1
+
+입력 매개 변수 :
+    S - RBF 모델
+    X0 - 그리드 노드의 배열, 첫 번째 좌표, 배열 [N0]
+    N0 - 첫 번째 차원의 격자 크기 (노드 수)
+    X1 - 그리드 노드의 배열, 두 번째 좌표, 배열 [N1]
+    N1 - 두 번째 차원의 격자 크기 (노드 수)
+
+출력 매개 변수 :
+    Y - 함수 값, 배열 [N0, N1]. Y는 변수가 아니며
+                이 함수에 의해 재 할당됩니다.
+
+  - ALGLIB -
+     저작권 13.12.2011 Bochkanov Sergey
+**************************************************************************/
 void rbfgridcalc2(const rbfmodel &s, const real_1d_array &x0, const ae_int_t n0, const real_1d_array &x1, const ae_int_t n1, real_2d_array &y)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -8911,6 +14288,31 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 13.12.2011 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 계수를 추출하여 RBF 모델을 "압축 해제"합니다.
+
+입력 매개 변수 :
+    S - RBF 모델
+
+출력 매개 변수 :
+    NX - 인수의 차원
+    NY - 대상 함수의 차원
+    XWR - 모델 정보, 배열 [NC, NX + NY + 1].
+                배열의 한 행은 하나의 기저 함수에 해당합니다.
+                * 첫 번째 NX 열 - 중심 좌표
+                * 다음 뉴욕 칼럼 - 가중치,
+                                      기능을 모델링하고있다.
+                * 마지막 열 - 반경, 모든 치수에서 동일
+                                      함수가 모델링되고있다.
+    노스 캐롤라이나 - 센터의 수
+    V - 다항식 항, array [NY, NX + 1]. 하나당 한 행
+                모델링되는 함수의 차원. 첫 번째 NX
+                요소는 선형 계수이며, V [NX]는
+                일정 부분.
+
+  - ALGLIB -
+     저작권 13.12.2011 Bochkanov Sergey
+**************************************************************************/
 void rbfunpack(const rbfmodel &s, ae_int_t &nx, ae_int_t &ny, real_2d_array &xwr, ae_int_t &nc, real_2d_array &v)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -8929,6 +14331,9 @@ void rbfunpack(const rbfmodel &s, ae_int_t &nx, ae_int_t &ny, real_2d_array &xwr
 
 /*************************************************************************
 2-dimensional spline inteprolant
+*************************************************************************/
+/************************************************************************
+2 차원 스플라인 인터 롤란 트
 *************************************************************************/
 _spline2dinterpolant_owner::_spline2dinterpolant_owner()
 {
@@ -9008,6 +14413,21 @@ Result:
   -- ALGLIB PROJECT --
      Copyright 05.07.2007 by Bochkanov Sergey
 *************************************************************************/
+/************************************************** **********************
+이 서브 루틴은에서 bilinear 또는 bicubic 스플라인의 값을 계산합니다.
+주어진 점 X.
+
+입력 매개 변수 :
+    C - 계수 테이블.
+            BuildBilinearSpline 또는 BuildBicubicSpline에 의해 작성됩니다.
+    X, Y- 포인트
+
+결과:
+    S (x, y)
+
+  - ALGLIB 프로젝트 -
+     저작권 05.07.2007 Bochkanov Sergey
+*************************************************** ***********************/
 double spline2dcalc(const spline2dinterpolant &c, const double x, const double y)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -9041,6 +14461,23 @@ Output parameters:
   -- ALGLIB PROJECT --
      Copyright 05.07.2007 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은에서 bilinear 또는 bicubic 스플라인의 값을 계산합니다.
+주어진 점 X와 그 파생물
+
+입력 매개 변수 :
+    C - 스플라인 보간.
+    X, Y- 포인트
+
+출력 매개 변수 :
+    F - S (x, y)
+    FX - dS (x, y) / dX
+    FY - dS (x, y) / dY
+    FXY - d2S (x, y) / dXdY
+
+  - ALGLIB 프로젝트 -
+     저작권 05.07.2007 Bochkanov Sergey
+*************************************************************************/
 void spline2ddiff(const spline2dinterpolant &c, const double x, const double y, double &f, double &fx, double &fy, double &fxy)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -9070,6 +14507,19 @@ Result:
   -- ALGLIB PROJECT --
      Copyright 30.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 스플라인 인수의 선형 변환을 수행합니다.
+
+입력 매개 변수 :
+    C - 스플라인 보간
+    AX, BX - 변환 계수 : x = A * t + B
+    AY, BY - 변환 계수 : y = A * u + B
+결과:
+    C - 변형 된 스플라인
+
+  - ALGLIB 프로젝트 -
+     저작권 30.06.2007 Bochkanov Sergey
+**************************************************************************/
 void spline2dlintransxy(const spline2dinterpolant &c, const double ax, const double bx, const double ay, const double by)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -9099,6 +14549,19 @@ Output parameters:
   -- ALGLIB PROJECT --
      Copyright 30.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 스플라인의 선형 변환을 수행합니다.
+
+입력 매개 변수 :
+    C - 스플라인 보간.
+    A, B 변환 계수 : S2 (x, y) = A * S (x, y) + B
+
+출력 매개 변수 :
+    C - 변형 된 스플라인
+
+  - ALGLIB 프로젝트 -
+     저작권 30.06.2007 Bochkanov Sergey
+**************************************************************************/
 void spline2dlintransf(const spline2dinterpolant &c, const double a, const double b)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -9127,6 +14590,18 @@ Output parameters:
   -- ALGLIB PROJECT --
      Copyright 29.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 스플라인 모델의 복사본을 만듭니다.
+
+입력 매개 변수 :
+    C - 스플라인 보간
+
+출력 매개 변수 :
+    CC - 스플라인 복사본
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 29.06.2007
+**************************************************************************/
 void spline2dcopy(const spline2dinterpolant &c, spline2dinterpolant &cc)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -9162,6 +14637,25 @@ Output parameters:
      15 May, 2007
      Copyright by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+바이 큐빅 스플라인 리샘플링
+
+입력 매개 변수 :
+    A - 기존 그리드에서의 함수 값,
+                    배열 [0..OldHeight-1, 0..OldWidth-1]
+    OldHeight - 오래된 그리드 높이, OldHeight> 1
+    OldWidth - 이전 그리드 폭, OldWidth> 1
+    NewHeight - 새로운 그리드 높이, NewHeight> 1
+    NewWidth - 새로운 그리드 폭, NewWidth> 1
+
+출력 매개 변수 :
+    B - 새로운 그리드에서의 함수 값,
+                    배열 [0..NewHeight-1, 0..NewWidth-1]
+
+  - ALGLIB 루틴 -
+     2007 년 5 월 15 일
+     Bochkanov Sergey의 저작권
+**************************************************************************/
 void spline2dresamplebicubic(const real_2d_array &a, const ae_int_t oldheight, const ae_int_t oldwidth, real_2d_array &b, const ae_int_t newheight, const ae_int_t newwidth)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -9197,6 +14691,25 @@ Output parameters:
      09.07.2007
      Copyright by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+쌍 선형 스플라인 재 샘플링
+
+입력 매개 변수 :
+    A - 기존 그리드에서의 함수 값,
+                    배열 [0..OldHeight-1, 0..OldWidth-1]
+    OldHeight - 오래된 그리드 높이, OldHeight> 1
+    OldWidth - 이전 그리드 폭, OldWidth> 1
+    NewHeight - 새로운 그리드 높이, NewHeight> 1
+    NewWidth - 새로운 그리드 폭, NewWidth> 1
+
+출력 매개 변수 :
+    B - 새로운 그리드에서의 함수 값,
+                    배열 [0..NewHeight-1, 0..NewWidth-1]
+
+  - ALGLIB 루틴 -
+     09.07.2007
+     Bochkanov Sergey의 저작권
+**************************************************************************/
 void spline2dresamplebilinear(const real_2d_array &a, const ae_int_t oldheight, const ae_int_t oldwidth, real_2d_array &b, const ae_int_t newheight, const ae_int_t newwidth)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -9233,6 +14746,26 @@ Output parameters:
   -- ALGLIB PROJECT --
      Copyright 16.04.2012 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 쌍 선형 벡터 값 스플라인을 작성합니다.
+
+입력 매개 변수 :
+    X - 스플라인 가로 좌표, 배열 [0..N-1]
+    Y - 스플라인 세로 좌표, array [0..M-1]
+    F - 함수 값, array [0..M * N * D-1] :
+            * 첫 번째 D 요소는 D 값을 (X [0], Y [0])에 저장합니다.
+            * 다음 D 요소는 D 값을 (X [1], Y [0])에 저장합니다.
+            * 일반 형식 - (X [i], Y [j])의 D 함수 값이 저장됩니다.
+              F (D * (J * N + I) ... D * (J * N + I) + D-1).
+    M, N - 격자 크기, M> = 2, N> = 2
+    D - 벡터 차원, D> = 1
+
+출력 매개 변수 :
+    C - 스플라인 보간
+
+  - ALGLIB 프로젝트 -
+     Copyright 16.04.2012 Bochkanov Sergey
+**************************************************************************/
 void spline2dbuildbilinearv(const real_1d_array &x, const ae_int_t n, const real_1d_array &y, const ae_int_t m, const real_1d_array &f, const ae_int_t d, spline2dinterpolant &c)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -9269,6 +14802,26 @@ Output parameters:
   -- ALGLIB PROJECT --
      Copyright 16.04.2012 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 바이 큐빅 벡터 값 스플라인을 만듭니다.
+
+입력 매개 변수 :
+    X - 스플라인 가로 좌표, 배열 [0..N-1]
+    Y - 스플라인 세로 좌표, array [0..M-1]
+    F - 함수 값, array [0..M * N * D-1] :
+            * 첫 번째 D 요소는 D 값을 (X [0], Y [0])에 저장합니다.
+            * 다음 D 요소는 D 값을 (X [1], Y [0])에 저장합니다.
+            * 일반 형식 - (X [i], Y [j])의 D 함수 값이 저장됩니다.
+              F (D * (J * N + I) ... D * (J * N + I) + D-1).
+    M, N - 격자 크기, M> = 2, N> = 2
+    D - 벡터 차원, D> = 1
+
+출력 매개 변수 :
+    C - 스플라인 보간
+
+  - ALGLIB 프로젝트 -
+     Copyright 16.04.2012 Bochkanov Sergey
+**************************************************************************/
 void spline2dbuildbicubicv(const real_1d_array &x, const ae_int_t n, const real_1d_array &y, const ae_int_t m, const real_1d_array &f, const ae_int_t d, spline2dinterpolant &c)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -9302,6 +14855,23 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 16.04.2012 by Bochkanov Sergey
 *************************************************************************/
+/***************************************************************************
+이 서브 루틴은 bilinear 또는 bicubic 벡터 값 스플라인을
+주어진 점 (X, Y).
+
+입력 매개 변수 :
+    C - 스플라인 보간.
+    X, Y- 포인트
+    F - 출력 버퍼, 사전 할당 된 배열. 배열 크기
+            결과를 저장할만큼 충분히 크면 다시 할당되지 않습니다. 정렬
+            너무 짧으면 재 할당됩니다.
+
+출력 매개 변수 :
+    F - 함수 값을 저장하는 배열 [D] (또는 그 이상)
+
+  - ALGLIB 프로젝트 -
+     Copyright 16.04.2012 Bochkanov Sergey
+**************************************************************************/
 void spline2dcalcvbuf(const spline2dinterpolant &c, const double x, const double y, real_1d_array &f)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -9336,6 +14906,24 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 16.04.2012 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 bilinear 또는 bicubic 벡터 값 스플라인을
+주어진 점 (X, Y).
+
+입력 매개 변수 :
+    C - 스플라인 보간.
+    X, Y- 포인트
+
+출력 매개 변수 :
+    F - 함수 값을 저장하는 배열 [D]. F는 매개 변수가 아니며
+            이 함수를 호출 한 후에 재 할당됩니다. 당신이
+            이전에 할당 된 F를 다시 사용하려면
+            Spline2DCalcVBuf () : F가있을 때만 F를 다시 할당합니다.
+            작은.
+
+  - ALGLIB 프로젝트 -
+     Copyright 16.04.2012 Bochkanov Sergey
+**************************************************************************/
 void spline2dcalcv(const spline2dinterpolant &c, const double x, const double y, real_1d_array &f)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -9390,6 +14978,44 @@ Result:
   -- ALGLIB PROJECT --
      Copyright 16.04.2012 by Bochkanov Sergey
 *************************************************************************/
+/***************************************************************************
+이 서브 루틴은 2 차원 스플라인을 계수 테이블에 압축을 풉니 다.
+
+입력 매개 변수 :
+    C - 스플라인 보간.
+
+결과:
+    M, N- 그리드 크기 (x 축 및 y 축)
+    D - 구성 요소의 수
+    Tbl - 계수 테이블, 압축 해제 된 형식,
+            D- 성분 : [0 .. (N-1) * (M-1) * D-1, 0..19].
+            T = 0..D-1 (구성 요소 색인), I = 0 ... N-2 (x 색인),
+            J = 0..M-2 (y 지수) :
+                K : = T + I * D + J * D * (N-1)
+
+                K 번째 행은 T 번째 구성 요소에 대한 분해를 저장합니다.
+                벡터 값 함수
+
+                Tbl [K, 0] = X [i]
+                Tbl [K, 1] = X [i + 1]
+                Tbl [K, 2] = Y [j]
+                Tbl [K, 3] = Y [j + 1]
+                Tbl [K, 4] = C00
+                Tbl [K, 5] = C01
+                Tbl [K, 6] = CO2
+                Tbl [K, 7] = C03
+                Tbl [K, 8] = C10
+                Tbl [K, 9] = C11
+                ...
+                Tbl [K, 19] = C33
+            각 격자 스퀘어에서 스플라인은 다음과 같습니다.
+                S (x) = SUM (c [i, j] * (t ^ i) * (u ^ j), i = 0..3, j = 0..3)
+                t = xx [j]
+                u = yy [i]
+
+  - ALGLIB 프로젝트 -
+     Copyright 16.04.2012 Bochkanov Sergey
+**************************************************************************/
 void spline2dunpackv(const spline2dinterpolant &c, ae_int_t &m, ae_int_t &n, ae_int_t &d, real_2d_array &tbl)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -9415,6 +15041,15 @@ flexible and accepts its arguments in more convenient order.
   -- ALGLIB PROJECT --
      Copyright 05.07.2007 by Bochkanov Sergey
 *************************************************************************/
+/***************************************************************************
+이 서브 루틴은 ALGLIB 3.6.0에서 더 이상 사용되지 않습니다.
+
+Spline2DBuildBilinearV ()로 전환하는 것이 좋습니다.
+유연하고 인수를보다 편리한 순서로 받아들입니다.
+
+  - ALGLIB 프로젝트 -
+     저작권 05.07.2007 Bochkanov Sergey
+**************************************************************************/
 void spline2dbuildbilinear(const real_1d_array &x, const real_1d_array &y, const real_2d_array &f, const ae_int_t m, const ae_int_t n, spline2dinterpolant &c)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -9440,6 +15075,15 @@ flexible and accepts its arguments in more convenient order.
   -- ALGLIB PROJECT --
      Copyright 05.07.2007 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 ALGLIB 3.6.0에서 더 이상 사용되지 않습니다.
+
+Spline2DBuildBicubicV ()로 전환하는 것이 좋습니다.
+유연하고 인수를보다 편리한 순서로 받아들입니다.
+
+  - ALGLIB 프로젝트 -
+     저작권 05.07.2007 Bochkanov Sergey
+**************************************************************************/
 void spline2dbuildbicubic(const real_1d_array &x, const real_1d_array &y, const real_2d_array &f, const ae_int_t m, const ae_int_t n, spline2dinterpolant &c)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -9465,6 +15109,15 @@ and accepts its arguments in more convenient order.
   -- ALGLIB PROJECT --
      Copyright 29.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 ALGLIB 3.6.0에서 더 이상 사용되지 않습니다.
+
+유연한 Spline2DUnpackV ()로 전환하는 것이 좋습니다.
+그 주장을보다 편리한 순서로 받아 들인다.
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 29.06.2007
+**************************************************************************/
 void spline2dunpack(const spline2dinterpolant &c, ae_int_t &m, ae_int_t &n, real_2d_array &tbl)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -9483,6 +15136,9 @@ void spline2dunpack(const spline2dinterpolant &c, ae_int_t &m, ae_int_t &n, real
 
 /*************************************************************************
 3-dimensional spline inteprolant
+*************************************************************************/
+/************************************************************************
+3 차원 스플라인 혈행 세포
 *************************************************************************/
 _spline3dinterpolant_owner::_spline3dinterpolant_owner()
 {
@@ -9563,6 +15219,22 @@ Result:
   -- ALGLIB PROJECT --
      Copyright 26.04.2012 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은에서 삼선 형 또는 삼차 정형 스플라인의 값을 계산합니다.
+주어진 점 (X, Y, Z).
+
+입력 매개 변수 :
+    C - 계수 테이블.
+            BuildBilinearSpline 또는 BuildBicubicSpline에 의해 작성됩니다.
+    X, Y,
+    Z- 지점
+
+결과:
+    S (x, y, z)
+
+  - ALGLIB 프로젝트 -
+     Copyright 26.04.2012 Bochkanov Sergey
+**************************************************************************/
 double spline3dcalc(const spline3dinterpolant &c, const double x, const double y, const double z)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -9594,6 +15266,21 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 26.04.2012 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 스플라인 인수의 선형 변환을 수행합니다.
+
+입력 매개 변수 :
+    C - 스플라인 보간
+    AX, BX - 변환 계수 : x = A * u + B
+    AY, BY - 변환 계수 : y = A * v + B
+    AZ, BZ - 변환 계수 : z = A * w + B
+
+출력 매개 변수 :
+    C - 변형 된 스플라인
+
+  - ALGLIB 프로젝트 -
+     Copyright 26.04.2012 Bochkanov Sergey
+**************************************************************************/
 void spline3dlintransxyz(const spline3dinterpolant &c, const double ax, const double bx, const double ay, const double by, const double az, const double bz)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -9623,6 +15310,19 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 26.04.2012 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 스플라인의 선형 변환을 수행합니다.
+
+입력 매개 변수 :
+    C - 스플라인 보간.
+    A, B- 변환 계수 : S2 (x, y) = A * S (x, y, z) + B
+
+출력 매개 변수 :
+    C - 변형 된 스플라인
+
+  - ALGLIB 프로젝트 -
+     Copyright 26.04.2012 Bochkanov Sergey
+**************************************************************************/
 void spline3dlintransf(const spline3dinterpolant &c, const double a, const double b)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -9674,6 +15374,41 @@ OUTPUT PARAMETERS:
      26.04.2012
      Copyright by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+삼선 형 스플라인 리샘플링
+
+입력 매개 변수 :
+    A - 배열 [0..OldXCount * OldYCount * OldZCount-1], 함수
+                    이전 그리드의 값 :
+                        A [0] x = 0, y = 0, z = 0
+                        A [1] x = 1, y = 0, z = 0
+                        [...] ...
+                        A [..] x = oldxcount-1, y = 0, z = 0
+                        A [..] x = 0, y = 1, z = 0
+                        [...] ...
+                        ...
+    OldZCount - 오래된 Z- 카운트, OldZCount> 1
+    OldYCount - 이전 Y- 계수, OldYCount> 1
+    OldXCount - 이전 X- 개수, OldXCount> 1
+    NewZCount - 새로운 Z- 카운트, NewZCount> 1
+    NewYCount - 새로운 Y- 카운트, NewYCount> 1
+    NewXCount - 새로운 X- 카운트, NewXCount> 1
+
+출력 매개 변수 :
+    B- 배열 [0..NewXCount * NewYCount * NewZCount-1], 함수
+                    새 그리드의 값 :
+                        B [0] x = 0, y = 0, z = 0
+                        B [1] x = 1, y = 0, z = 0
+                        B [..] ...
+                        B [..] x = newxcount-1, y = 0, z = 0
+                        B [..] x = 0, y = 1, z = 0
+                        B [..] ...
+                        ...
+
+  - ALGLIB 루틴 -
+     26.04.2012
+     Bochkanov Sergey의 저작권
+**************************************************************************/
 void spline3dresampletrilinear(const real_1d_array &a, const ae_int_t oldzcount, const ae_int_t oldycount, const ae_int_t oldxcount, const ae_int_t newzcount, const ae_int_t newycount, const ae_int_t newxcount, real_1d_array &b)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -9722,6 +15457,38 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 26.04.2012 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+이 서브 루틴은 삼선 형 벡터 값 스플라인을 작성합니다.
+
+입력 매개 변수 :
+    X - 스플라인 가로 좌표, 배열 [0..N-1]
+    Y - 스플라인 세로 좌표, array [0..M-1]
+    Z-spline applicates, array [0..L-1]
+    F - 함수 값, array [0..M * N * L * D-1] :
+            * 첫 번째 D 요소는 (X [0], Y [0], Z [0])에 D 값을 저장합니다.
+            * 다음 D 요소는 D 값을 (X [1], Y [0], Z [0])에 저장합니다.
+            * 다음 D 요소는 D 값을 (X [2], Y [0], Z [0])에 저장합니다.
+            * ...
+            * 다음 D 요소는 D 값을 (X [0], Y [1], Z [0])에 저장합니다.
+            * 다음 D 요소는 D 값을 (X [1], Y [1], Z [0])에 저장합니다.
+            * 다음 D 요소는 D 값을 (X [2], Y [1], Z [0])에 저장합니다.
+            * ...
+            * 다음 D 요소는 D 값을 (X [0], Y [0], Z [1])에 저장합니다.
+            * 다음 D 요소는 D 값을 (X [1], Y [0], Z [1])에 저장합니다.
+            * 다음 D 요소는 D 값을 (X [2], Y [0], Z [1])에 저장합니다.
+            * ...
+            * 일반 형식 - (X [i], Y [j])의 D 함수 값이 저장됩니다.
+              D * (N * (M * K + J) + I) + D-1]에서 F [D * (N * (M * K + J) + I)
+    M, N,
+    L - 그리드 크기, M> = 2, N> = 2, L> = 2
+    D - 벡터 차원, D> = 1
+
+출력 매개 변수 :
+    C - 스플라인 보간
+
+  - ALGLIB 프로젝트 -
+     Copyright 26.04.2012 Bochkanov Sergey
+**************************************************************************/
 void spline3dbuildtrilinearv(const real_1d_array &x, const ae_int_t n, const real_1d_array &y, const ae_int_t m, const real_1d_array &z, const ae_int_t l, const real_1d_array &f, const ae_int_t d, spline3dinterpolant &c)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -9756,6 +15523,24 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 26.04.2012 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 bilinear 또는 bicubic 벡터 값 스플라인을
+주어진 점 (X, Y, Z).
+
+입력 매개 변수 :
+    C - 스플라인 보간.
+    X, Y,
+    Z- 지점
+    F - 출력 버퍼, 사전 할당 된 배열. 배열 크기
+            결과를 저장할만큼 충분히 크면 다시 할당되지 않습니다. 정렬
+            너무 짧으면 재 할당됩니다.
+
+출력 매개 변수 :
+    F - 함수 값을 저장하는 배열 [D] (또는 그 이상)
+
+  - ALGLIB 프로젝트 -
+     Copyright 26.04.2012 Bochkanov Sergey
+**************************************************************************/
 void spline3dcalcvbuf(const spline3dinterpolant &c, const double x, const double y, const double z, real_1d_array &f)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -9791,6 +15576,25 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 26.04.2012 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 삼각형 또는 삼차 벡터 벡터 값 스플라인을
+주어진 점 (X, Y, Z).
+
+입력 매개 변수 :
+    C - 스플라인 보간.
+    X, Y,
+    Z- 지점
+
+출력 매개 변수 :
+    F - 함수 값을 저장하는 배열 [D]. F는 매개 변수가 아니며
+            이 함수를 호출 한 후에 재 할당됩니다. 당신이
+            이전에 할당 된 F를 다시 사용하려면
+            Spline2DCalcVBuf () : F가있을 때만 F를 다시 할당합니다.
+            작은.
+
+  - ALGLIB 프로젝트 -
+     Copyright 26.04.2012 Bochkanov Sergey
+**************************************************************************/
 void spline3dcalcv(const spline3dinterpolant &c, const double x, const double y, const double z, real_1d_array &f)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -9856,6 +15660,55 @@ Result:
   -- ALGLIB PROJECT --
      Copyright 26.04.2012 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 3 차원 스플라인을 계수 테이블에 압축을 풉니 다.
+
+입력 매개 변수 :
+    C - 스플라인 보간.
+
+결과:
+    N - 그리드 크기 (X)
+    M - 격자 크기 (Y)
+    L - 그리드 크기 (Z)
+    D - 구성 요소의 수
+    SType- 스플라인 유형. 현재 하나의 스플라인 유형 만 지원됩니다.
+            SType = 1로 표시된 것처럼 삼선 형 스플라인
+    Tbl- 스플라인 계수 : [0 .. (N-1) * (M-1) * (L-1) * D-1, 0..13].
+            T = 0..D-1 (구성 요소 색인), I = 0 ... N-2 (x 색인),
+            J = 0..M-2 (y 인덱스), K = 0..L-2 (z 인덱스)
+                Q : = T + I * D + J * D * (N-1) + K * D * (N-1) * (M-1)
+
+                Q 번째 행은 T 번째 열의 분해를 저장합니다.
+                벡터 값 함수
+
+                Tbl [Q, 0] = X [i]
+                Tbl [Q, 1] = X [i + 1]
+                Tbl [Q, 2] = Y [j]
+                Tbl [Q, 3] = Y [j + 1]
+                Tbl [Q, 4] = Z [k]
+                Tbl [Q, 5] = Z [k + 1]
+
+                Tbl [Q, 6] = C000
+                Tbl [Q, 7] = C100
+                Tbl [Q, 8] = C010
+                Tbl [Q, 9] = C110
+                Tbl [Q, 10] = C001
+                Tbl [Q, 11] = C101
+                Tbl [Q, 12] = C011
+                Tbl [Q, 13] = C111
+            각 격자 스퀘어에서 스플라인은 다음과 같습니다.
+                S (x) = SUM (c [i, j, k) * (x ^ i) * (y ^ j) * (z ^ k), i = 0..1, j = 0..1, k = 0..1)
+                t = xx [j]
+                u = yy [i]
+                v = zz [k]
+
+            참고 : Tbl의 형식은 SType = 1에 대해 제공됩니다. 다음 버전의
+                  ALGLIB는 다양한 값에 대해 다른 형식을 사용할 수 있습니다.
+                  SType.
+
+  - ALGLIB 프로젝트 -
+     Copyright 26.04.2012 Bochkanov Sergey
+**************************************************************************/
 void spline3dunpackv(const spline3dinterpolant &c, ae_int_t &n, ae_int_t &m, ae_int_t &l, ae_int_t &d, ae_int_t &stype, real_2d_array &tbl)
 {
     alglib_impl::ae_state _alglib_env_state;
@@ -9876,6 +15729,11 @@ void spline3dunpackv(const spline3dinterpolant &c, ae_int_t &n, ae_int_t &m, ae_
 /////////////////////////////////////////////////////////////////////////
 //
 // THIS SECTION CONTAINS IMPLEMENTATION OF COMPUTATIONAL CORE
+//
+/////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////
+//
+//이 섹션에는 컴퓨팅 핵심 구현이 포함되어 있습니다.
 //
 /////////////////////////////////////////////////////////////////////////
 namespace alglib_impl
@@ -10153,6 +16011,20 @@ Result:
   -- ALGLIB --
      Copyright 02.03.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+IDW 보간법
+
+입력 매개 변수 :
+    모델 건물 중 하나와 함께 지어진 Z - IDW 보간
+            서브 루틴.
+    X- 배열 [0..NX-1], 보간 점
+
+결과:
+    IDW 보간 기 Z (X)
+
+  - ALGLIB -
+     저작권 02.03.2010 Bochkanov Sergey
+**************************************************************************/
 double idwcalc(idwinterpolant* z,
      /* Real    */ ae_vector* x,
      ae_state *_state)
@@ -10174,16 +16046,26 @@ double idwcalc(idwinterpolant* z,
      * these initializers are not really necessary,
      * but without them compiler complains about uninitialized locals
      */
+    /*
+     *이 이니셜 라이저는 실제로 필요하지 않습니다.
+     * 컴파일러가 없으면 컴파일러가 초기화되지 않은 것에 대해 불평합니다.
+     */
     k = 0;
     
     /*
      * Query
+     */
+    /*
+     * 쿼리
      */
     if( z->modeltype==0 )
     {
         
         /*
          * NQ/NW-based model
+         */
+        /*
+         * NQ / NW 기반 모델
          */
         k = kdtreequeryknn(&z->tree, x, z->nw, ae_true, _state);
         kdtreequeryresultsdistances(&z->tree, &z->rbuf, _state);
@@ -10195,6 +16077,9 @@ double idwcalc(idwinterpolant* z,
         /*
          * R-based model
          */
+        /*
+         * R 기반 모델
+         */
         k = kdtreequeryrnn(&z->tree, x, z->r, ae_true, _state);
         kdtreequeryresultsdistances(&z->tree, &z->rbuf, _state);
         kdtreequeryresultstags(&z->tree, &z->tbuf, _state);
@@ -10203,6 +16088,9 @@ double idwcalc(idwinterpolant* z,
             
             /*
              * we need at least IDWKMin points
+             */
+            /*
+             * 최소한 IDWKMin 포인트가 필요합니다.
              */
             k = kdtreequeryknn(&z->tree, x, idwint_idwkmin, ae_true, _state);
             kdtreequeryresultsdistances(&z->tree, &z->rbuf, _state);
@@ -10226,6 +16114,22 @@ double idwcalc(idwinterpolant* z,
      * be used for fitting because sometimes it will gain NON-ZERO
      * weight - for example, when all distances are equal.
      */
+    /*
+     * 선형 / 2 차 구성원 계산을 위해 가중치를 초기화합니다.
+     *
+     * NOTE 1 : 가중치는 NORMALIZED 수정을 사용하여 계산됩니다.
+     * 셰퍼드의 공식. 원래 공식은 w (i) = sqr ((R-di) / (R * di))를 제공하고,
+     * 여기서 di는 i 번째 거리, R은 최대 (di)입니다. 수정 된 수식 있음
+     * 다음 양식 :
+     * w_mod (i) = 1, di = d0 인 경우
+     * w_mod (i) = w (i) / w (0), di ≠ d0
+     *
+     * 참고 2 :이 쿼리에 대해 자체 일치가 USED입니다.
+     *
+     * NOTE 3 : 마지막 포인트는 거의 항상 0의 가중치를 얻지 만, 반드시
+     * 때로는 NON-ZERO를 얻기 때문에 피팅에 사용됩니다.
+     * weight - 예를 들어, 모든 거리가 같을 때.
+     */
     r = z->rbuf.ptr.p_double[k-1];
     d0 = z->rbuf.ptr.p_double[0];
     result = 0;
@@ -10242,6 +16146,12 @@ double idwcalc(idwinterpolant* z,
              * us same result, but 'll expose us to the risk of
              * division by zero).
              */
+            /*
+             * 거리가 가장 짧고 1.0으로 설정합니다.
+             * 명시 적으로 계산하지 않고 (이것은
+             * 우리와 같은 결과이지만 우리를 위험에 노출시킬 것입니다.
+             * 0으로 나누기).
+             */
             w = 1;
         }
         else
@@ -10249,6 +16159,9 @@ double idwcalc(idwinterpolant* z,
             
             /*
              * use normalized formula
+             */
+            /*
+             * 정규화 된 수식 사용
              */
             v1 = (r-di)/(r-d0);
             v2 = d0/di;
@@ -10317,6 +16230,61 @@ NOTES:
   -- ALGLIB PROJECT --
      Copyright 02.03.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+균일 한 점에 대해 수정 된 셰퍼드 (Shepard) 방법을 사용한 IDW 보간
+배포판.
+
+입력 매개 변수 :
+    XY - X 및 Y 값, array [0..N-1,0..NX].
+            첫 번째 NX 열은 X 값을 포함하고 마지막 열은 X 값을 포함합니다.
+            Y 값.
+    N - 노드 수, N> 0.
+    NX - 공간 차원, NX> = 1.
+    D 조 - 노드 기능 유형 중 하나 :
+            * 0 상수 모델. 데모 용으로 만, 최악의 경우에
+                    모델.
+            * 1 선형 모델, 최소 제곱 피팅. Simpe 모델 용
+                    2 차 모델에 비해 너무 작은 데이터 세트
+            * 2 2 차 모델, 최소 제곱 피팅. 최고의 모델
+                    사용할 수 있습니다 (데이터 세트가 충분히 큰 경우).
+            * -1 "빠른"선형 모델,주의해서 사용하십시오 !!! 그것은
+                    선형 / 2 차 이상보다 훨씬 빠른 속도
+                    상수 모델보다. 그러나 덜 강력합니다 (특히
+                    노이즈가있는 경우).
+    NQ - 노드 기능을 계산하는 데 사용 된 점의 수 (무시 됨)
+            상수 모델의 경우). NQ는 다음보다 크다.
+            선형 모델의 경우 max * (1.5 * (1 + NX), 2 ^ NX + 1)
+            * 2 차 모델의 경우 max (3 / 4 * (NX + 2) * (NX + 1), 2 ^ NX + 1)
+            이 임계 값보다 작은 값은 자동으로 증가합니다.
+    NW - 가중치를 계산하고 보간하는 데 사용되는 점의 수입니다.
+            필수 :> = 2 ^ NX + 1,이 임계 값보다 작은 값은
+            조용히 증가했다.
+            권장 값 : 약 2 * NQ
+
+출력 매개 변수 :
+    Z - IDW 보간.
+    
+노트:
+  * 최상의 결과는 2 차 모델로 얻습니다. 최악 - ​​상수
+    모델
+  * N이 클 때 NQ와 NW는 N보다 훨씬 작아야합니다.
+    최적의 성능을 얻고 최적의 정확도를 얻을 수 있습니다. 2 또는
+    3 차원 작업 NQ = 15 및 NW = 25는 좋은 값입니다.
+  * NQ와 NW는 N보다 클 수 있습니다.
+    자동으로 감소했습니다.
+  *이 서브 루틴은 항상 성공합니다 (올바른 매개 변수가
+    통과).
+  * '분산 된 데이터 세트의 다 변수 보간'을 참조하십시오.
+    이 알고리즘에 대한 자세한 정보는 Robert J. Renka.
+  *이 서브 루틴은 점 분포가 작은 점
+    저울. 그렇지 않은 경우 - 예를 들어 점수가 집중되어있는 경우
+    "선들"이지만, "선들"분포는 더 큰 축척에서 균일하다.
+    IDWBuildModifiedShepardR ()을 사용해야합니다.
+
+
+  - ALGLIB 프로젝트 -
+     저작권 02.03.2010 Bochkanov Sergey
+**************************************************************************/
 void idwbuildmodifiedshepard(/* Real    */ ae_matrix* xy,
      ae_int_t n,
      ae_int_t nx,
@@ -10370,10 +16338,17 @@ void idwbuildmodifiedshepard(/* Real    */ ae_matrix* xy,
      * these initializers are not really necessary,
      * but without them compiler complains about uninitialized locals
      */
+    /*
+     *이 이니셜 라이저는 실제로 필요하지 않습니다.
+     * 컴파일러가 없으면 컴파일러가 초기화되지 않은 것에 대해 불평합니다.
+     */
     nc = 0;
     
     /*
      * assertions
+     */
+    /*
+     * 단언
      */
     ae_assert(n>0, "IDWBuildModifiedShepard: N<=0!", _state);
     ae_assert(nx>=1, "IDWBuildModifiedShepard: NX<1!", _state);
@@ -10381,6 +16356,9 @@ void idwbuildmodifiedshepard(/* Real    */ ae_matrix* xy,
     
     /*
      * Correct parameters if needed
+     */
+    /*
+     * 필요한 경우 매개 변수 수정
      */
     if( d==1 )
     {
@@ -10399,11 +16377,17 @@ void idwbuildmodifiedshepard(/* Real    */ ae_matrix* xy,
     /*
      * primary initialization of Z
      */
+    /*
+     Z의 기본 초기화
+     */
     idwint_idwinit1(n, nx, d, nq, nw, z, _state);
     z->modeltype = 0;
     
     /*
      * Create KD-tree
+     */
+    /*
+     * KD 트리 만들기
      */
     ae_vector_set_length(&tags, n, _state);
     for(i=0; i<=n-1; i++)
@@ -10414,6 +16398,9 @@ void idwbuildmodifiedshepard(/* Real    */ ae_matrix* xy,
     
     /*
      * build nodal functions
+     */
+    /*
+     * 빌드 노드 기능
      */
     ae_vector_set_length(&temp, nq+1, _state);
     ae_vector_set_length(&x, nx, _state);
@@ -10433,6 +16420,10 @@ void idwbuildmodifiedshepard(/* Real    */ ae_matrix* xy,
          * NX for linear members,
          * 1 for temporary storage
          */
+        /*
+         선형 부재의 경우 NX,
+         * 1 임시 저장 용
+         */
         ae_matrix_set_length(&fmatrix, nq, nx+1, _state);
     }
     if( d==2 )
@@ -10446,6 +16437,11 @@ void idwbuildmodifiedshepard(/* Real    */ ae_matrix* xy,
          * Round(NX*(NX+1)*0.5) for quadratic model,
          * 1 for temporary storage
          */
+        /*
+         선형 부재의 경우 NX,
+         * 2 차 모델의 경우 라운드 (NX * (NX + 1) * 0.5)
+         * 1 임시 저장 용
+         */
         ae_matrix_set_length(&fmatrix, nq, nx+ae_round(nx*(nx+1)*0.5, _state)+1, _state);
     }
     for(i=0; i<=n-1; i++)
@@ -10454,6 +16450,10 @@ void idwbuildmodifiedshepard(/* Real    */ ae_matrix* xy,
         /*
          * Initialize center and function value.
          * If D=0 it is all what we need
+         */
+        /*
+         * 센터 및 기능 값을 초기화하십시오.
+         * D = 0이면 필요한 모든 것입니다.
          */
         ae_v_move(&z->q.ptr.pp_double[i][0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,nx));
         if( d==0 )
@@ -10477,6 +16477,22 @@ void idwbuildmodifiedshepard(/* Real    */ ae_matrix* xy,
          * be used for fitting because sometimes it will gain NON-ZERO
          * weight - for example, when all distances are equal.
          */
+        /*
+         * 선형 / 2 차 구성원 계산에 대한 가중치를 계산합니다.
+         *
+         * NOTE 1 : 가중치는 NORMALIZED 수정을 사용하여 계산됩니다.
+         * 셰퍼드의 공식. 원래 공식은 w (i) = sqr ((R-di) / (R * di))이고,
+         * 여기서 di는 i 번째 거리, R은 최대 (di)입니다. 수정 된 수식 있음
+         * 다음 양식 :
+         * w_mod (i) = 1, di = d0 인 경우
+         * w_mod (i) = w (i) / w (0), di ≠ d0
+         *
+         * 참고 2 :이 쿼리에는 자체 일치가 사용되지 않습니다.
+         *
+         * NOTE 3 : 마지막 포인트는 거의 항상 0의 가중치를 얻지 만, 반드시
+         * 때로는 NON-ZERO를 얻기 때문에 피팅에 사용됩니다.
+         * weight - 예를 들어, 모든 거리가 같을 때.
+         */
         ae_v_move(&x.ptr.p_double[0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,nx-1));
         k = kdtreequeryknn(&z->tree, &x, nq, ae_false, _state);
         kdtreequeryresultsxy(&z->tree, &qxybuf, _state);
@@ -10495,6 +16511,13 @@ void idwbuildmodifiedshepard(/* Real    */ ae_matrix* xy,
                  * us same result, but 'll expose us to the risk of
                  * division by zero).
                  */
+                /*
+                 * 거리가 가장 짧고 1.0으로 설정합니다.
+                 * 명시 적으로 계산하지 않고 (이것은
+                 * 우리와 같은 결과이지만 우리를 위험에 노출시킬 것입니다.
+                 * 0으로 나누기).
+                 */
+                
                 w.ptr.p_double[j] = 1;
             }
             else
@@ -10502,6 +16525,9 @@ void idwbuildmodifiedshepard(/* Real    */ ae_matrix* xy,
                 
                 /*
                  * use normalized formula
+                 */
+                /*
+                 * 정규화 된 수식 사용
                  */
                 v1 = (r-di)/(r-d0);
                 v2 = d0/di;
@@ -10512,12 +16538,19 @@ void idwbuildmodifiedshepard(/* Real    */ ae_matrix* xy,
         /*
          * calculate linear/quadratic members
          */
+        /*
+         * 선형 / 이차원 계산
+         */
         if( d==-1 )
         {
             
             /*
              * "Fast" linear nodal function calculated using
              * inverse distance weighting
+             */
+            /*
+             * "고속"선형 노드 함수는 다음을 사용하여 계산됩니다.
+             * 역 거리 가중치
              */
             for(j=0; j<=nx-1; j++)
             {
@@ -10529,6 +16562,7 @@ void idwbuildmodifiedshepard(/* Real    */ ae_matrix* xy,
                 
                 /*
                  * calculate J-th inverse distance weighted gradient:
+                 * J 번째 역 거리 가중치 그라데이션 계산 :
                  *     grad_k = (y_j-y_k)*(x_j-x_k)/sqr(norm(x_j-x_k))
                  *     grad   = sum(wk*grad_k)/sum(w_k)
                  */
@@ -10542,6 +16576,11 @@ void idwbuildmodifiedshepard(/* Real    */ ae_matrix* xy,
                  * Although x_j<>x_k, sqr(norm(x_j-x_k)) may be zero due to
                  * underflow. If it is, we assume than J-th gradient is zero
                  * (i.e. don't add anything)
+                 */
+                /*
+                 * x_j <> x_k이지만 sqr (norm (x_j-x_k))은 0 일 수 있습니다.
+                 * 언더 플로우. 그렇다면 J 번째 기울기가 0이라고 가정합니다.
+                 * (즉, 아무것도 추가하지 마십시오)
                  */
                 if( ae_fp_neq(v,0) )
                 {
@@ -10563,12 +16602,19 @@ void idwbuildmodifiedshepard(/* Real    */ ae_matrix* xy,
             /*
              * Least squares models: build
              */
+            /*
+             * 최소한의 사각형 모델 : 빌드
+             */
             if( d==1 )
             {
                 
                 /*
                  * Linear nodal function calculated using
                  * least squares fitting to its neighbors
+                 */
+                /*
+                 * 선형 노드 기능은 다음을 사용하여 계산됩니다.
+                 * 이웃에 맞는 최소한의 사각형
                  */
                 for(j=0; j<=k-1; j++)
                 {
@@ -10586,6 +16632,10 @@ void idwbuildmodifiedshepard(/* Real    */ ae_matrix* xy,
                 /*
                  * Quadratic nodal function calculated using
                  * least squares fitting to its neighbors
+                 */
+                /*
+                 * 이차 노드 함수는 다음을 사용하여 계산됩니다.
+                 * 이웃에 맞는 최소한의 사각형
                  */
                 for(j=0; j<=k-1; j++)
                 {
@@ -10612,11 +16662,17 @@ void idwbuildmodifiedshepard(/* Real    */ ae_matrix* xy,
             /*
              * Least squares models: copy results
              */
+            /*
+             * 최소 제곱 모형 : 결과 복사
+             */
             if( info>0 )
             {
                 
                 /*
                  * LLS task is solved, copy results
+                 */
+                /*
+                 * LLS 작업이 해결되고 결과 복사
                  */
                 z->debugworstrcond = ae_minreal(z->debugworstrcond, taskrcond, _state);
                 z->debugbestrcond = ae_maxreal(z->debugbestrcond, taskrcond, _state);
@@ -10631,6 +16687,10 @@ void idwbuildmodifiedshepard(/* Real    */ ae_matrix* xy,
                 /*
                  * Solver failure, very strange, but we will use
                  * zero values to handle it.
+                 */
+                /*
+                 솔버 실패, 아주 이상하지만, 우리는 사용합니다
+                 * 처리 할 값이 0입니다.
                  */
                 z->debugsolverfailures = z->debugsolverfailures+1;
                 for(j=0; j<=nc-1; j++)
@@ -10671,6 +16731,33 @@ NOTES:
   -- ALGLIB PROJECT --
      Copyright 11.04.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+비 균일 데이터 세트에 대해 수정 된 셰퍼드 방법을 사용하는 IDW 보간.
+
+이 유형의 모델은 상수 노드 기능을 사용하고 다음을 사용하여 보간합니다.
+사용자가 지정한 반지름 R보다 가까운 모든 노드
+소규모에서는 점 분포가 균일하지 않지만
+R만큼 큰 거리.
+
+입력 매개 변수 :
+    XY - X 및 Y 값, array [0..N-1,0..NX].
+            첫 번째 NX 열은 X 값을 포함하고 마지막 열은 X 값을 포함합니다.
+            Y 값.
+    N - 노드 수, N> 0.
+    NX - 공간 차원, NX> = 1.
+    R - 반경, R> 0
+
+출력 매개 변수 :
+    Z - IDW 보간.
+
+노트:
+* R-ball 내에서 IDWKMin 포인트보다 작 으면 알고리즘은
+  IDWK 가장 가까운 것, 그래서 보간의 연속성 속성은
+  심지어 지점에서 멀리 보존.
+
+  - ALGLIB 프로젝트 -
+     Copyright 11.04.2010 Bochkanov Sergey
+**************************************************************************/
 void idwbuildmodifiedshepardr(/* Real    */ ae_matrix* xy,
      ae_int_t n,
      ae_int_t nx,
@@ -10690,6 +16777,9 @@ void idwbuildmodifiedshepardr(/* Real    */ ae_matrix* xy,
     /*
      * assertions
      */
+    /*
+     * 단언
+     */
     ae_assert(n>0, "IDWBuildModifiedShepardR: N<=0!", _state);
     ae_assert(nx>=1, "IDWBuildModifiedShepardR: NX<1!", _state);
     ae_assert(ae_fp_greater(r,0), "IDWBuildModifiedShepardR: R<=0!", _state);
@@ -10697,12 +16787,18 @@ void idwbuildmodifiedshepardr(/* Real    */ ae_matrix* xy,
     /*
      * primary initialization of Z
      */
+    /*
+     Z의 기본 초기화
+     */
     idwint_idwinit1(n, nx, 0, 0, n, z, _state);
     z->modeltype = 1;
     z->r = r;
     
     /*
      * Create KD-tree
+     */
+    /*
+     * KD 트리 만들기
      */
     ae_vector_set_length(&tags, n, _state);
     for(i=0; i<=n-1; i++)
@@ -10713,6 +16809,9 @@ void idwbuildmodifiedshepardr(/* Real    */ ae_matrix* xy,
     
     /*
      * build nodal functions
+     */
+    /*
+     빌드 노드 기능
      */
     for(i=0; i<=n-1; i++)
     {
@@ -10785,6 +16884,69 @@ NOTES:
   -- ALGLIB PROJECT --
      Copyright 02.03.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************** **********************
+시끄러운 데이터를위한 IDW 모델.
+
+이 서브 루틴은 잡음이 많은 데이터, 즉 잡음이있는 데이터를 처리하는 데 사용될 수 있습니다.
+출력 값. IDWBuildModifiedShepard ()와 다음과 다릅니다.
+상들:
+* 노드 함수는 노드를 통과하도록 제한되지 않습니다. Qi (xi) <> yi,
+  즉 우리는 보간 대신 피팅을합니다.
+* 최소 제곱 피팅 단계에서 사용되는 가중치는 모두 동일합니다.
+  ~ 1.0 (거리에 관계없이)
+* "빠른"선형 또는 상수 노드 기능은 지원되지 않습니다 (
+  충분히 견고하거나 너무 단단함)
+
+이 문제는 보간 문제보다 훨씬 복잡한 튜닝을 필요로합니다.
+아래에서이 문제와 관련된 몇 가지 권장 사항을 찾을 수 있습니다.
+* NQ 튜닝에 중점을 둡니다. 그것은 소음 감소를 제어합니다. NW와 마찬가지로
+  2 * NQ와 동일하게 만드십시오.
+* 교차 유효성 검사를 사용하여 최적의 NQ를 결정할 수 있습니다.
+* 최적의 NQ는 노이즈 레벨 (
+  잡음 =보다 큰 NQ 요구) 및 기본 함수 복잡성 (주어진 NQ
+  고정 N, 더 큰 NQ는 데이터에서 compex 기능의 평활화를 의미합니다). 에 대한
+  예를 들어, NQ = N은 가능한 한 최소 수준으로 노이즈를 줄이지 만,
+  (D에 따라) 상수 / 선형 / 2 차 함수로 끝날 것입니다.
+  전체 데이터 세트에 대한 사각형 모델.
+
+입력 매개 변수 :
+    XY - X 및 Y 값, array [0..N-1,0..NX].
+            첫 번째 NX 열은 X 값을 포함하고 마지막 열은 X 값을 포함합니다.
+            Y 값.
+    N - 노드 수, N> 0.
+    NX - 공간 차원, NX> = 1.
+    D 조 - 노드 기능 학위 중 하나 :
+            * 1 선형 모델, 최소 제곱 피팅. Simpe 모델 용
+                    2 차 모델의 경우 너무 작은 데이터 세트 (또는
+                    시끄러운 문제).
+            * 2 2 차 모델, 최소 제곱 피팅. 최고의 모델
+                    사용할 수 있습니다 (데이터 세트가 충분히 큰 경우).
+    NQ - 노드 기능을 계산하는 데 사용 된 점의 수입니다. NQ는해야한다.
+            의 1.5 배보다 훨씬 클 수있다.
+            잡음의 영향을 극복하기위한 노드 함수의 계수 :
+            * 선형 모델의 경우 1.5 * (1 + NX)보다 크고,
+            * 2 차 모델의 경우 3/4 * (NX + 2) * (NX + 1)보다 큽니다.
+            이 임계 값보다 작은 값은 자동으로 증가합니다.
+    NW - 가중치를 계산하고 보간하는 데 사용되는 점의 수입니다.
+            필수 :> = 2 ^ NX + 1,이 임계 값보다 작은 값은
+            조용히 증가했다.
+            권장 값 : 약 2 * NQ 이상
+
+출력 매개 변수 :
+    Z - IDW 보간.
+
+노트:
+  * 최상의 결과는 2 차 모델로 얻어지며, 선형 모델은 그렇지 않습니다.
+    그것이 당신이 원하는 것이라고 확신하지 않는 한 사용을 권장합니다.
+  *이 서브 루틴은 항상 성공합니다 (올바른 매개 변수가
+    통과).
+  * '분산 된 데이터 세트의 다 변수 보간'을 참조하십시오.
+    이 알고리즘에 대한 자세한 정보는 Robert J. Renka.
+
+
+  - ALGLIB 프로젝트 -
+     저작권 02.03.2010 Bochkanov Sergey
+**************************************************************************/
 void idwbuildnoisy(/* Real    */ ae_matrix* xy,
      ae_int_t n,
      ae_int_t nx,
@@ -10832,10 +16994,17 @@ void idwbuildnoisy(/* Real    */ ae_matrix* xy,
      * these initializers are not really necessary,
      * but without them compiler complains about uninitialized locals
      */
+    /*
+     *이 이니셜 라이저는 실제로 필요하지 않습니다.
+     * 컴파일러가 없으면 컴파일러가 초기화되지 않은 것에 대해 불평합니다.
+     */
     nc = 0;
     
     /*
      * assertions
+     */
+    /*
+     어설 션
      */
     ae_assert(n>0, "IDWBuildNoisy: N<=0!", _state);
     ae_assert(nx>=1, "IDWBuildNoisy: NX<1!", _state);
@@ -10843,6 +17012,9 @@ void idwbuildnoisy(/* Real    */ ae_matrix* xy,
     
     /*
      * Correct parameters if needed
+     */
+    /*
+     * 필요한 경우 매개 변수 수정
      */
     if( d==1 )
     {
@@ -10859,11 +17031,17 @@ void idwbuildnoisy(/* Real    */ ae_matrix* xy,
     /*
      * primary initialization of Z
      */
+    /*
+     Z의 기본 초기화
+     */
     idwint_idwinit1(n, nx, d, nq, nw, z, _state);
     z->modeltype = 0;
     
     /*
      * Create KD-tree
+     */
+    /*
+     * KD 트리 만들기
      */
     ae_vector_set_length(&tags, n, _state);
     for(i=0; i<=n-1; i++)
@@ -10875,6 +17053,10 @@ void idwbuildnoisy(/* Real    */ ae_matrix* xy,
     /*
      * build nodal functions
      * (special algorithm for noisy data is used)
+     */
+    /*
+     * 빌드 노드 기능
+     * (잡음이 많은 데이터에 대한 특수 알고리즘 사용)
      */
     ae_vector_set_length(&temp, nq+1, _state);
     ae_vector_set_length(&x, nx, _state);
@@ -10891,6 +17073,11 @@ void idwbuildnoisy(/* Real    */ ae_matrix* xy,
          * NX for linear members,
          * 1 for temporary storage
          */
+        /*
+         * 1 상시 회원의 경우,
+         선형 부재의 경우 NX,
+         * 1 임시 저장 용
+         */
         ae_matrix_set_length(&fmatrix, nq, 1+nx+1, _state);
     }
     if( d==2 )
@@ -10905,6 +17092,12 @@ void idwbuildnoisy(/* Real    */ ae_matrix* xy,
          * Round(NX*(NX+1)*0.5) for quadratic model,
          * 1 for temporary storage
          */
+        /*
+         * 1 상시 회원의 경우,
+         선형 부재의 경우 NX,
+         * 2 차 모델의 경우 라운드 (NX * (NX + 1) * 0.5)
+         * 1 임시 저장 용
+         */
         ae_matrix_set_length(&fmatrix, nq, 1+nx+ae_round(nx*(nx+1)*0.5, _state)+1, _state);
     }
     for(i=0; i<=n-1; i++)
@@ -10913,6 +17106,9 @@ void idwbuildnoisy(/* Real    */ ae_matrix* xy,
         /*
          * Initialize center.
          */
+        /*
+         * 센터를 초기화하십시오.
+         */
         ae_v_move(&z->q.ptr.pp_double[i][0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,nx-1));
         
         /*
@@ -10920,6 +17116,12 @@ void idwbuildnoisy(/* Real    */ ae_matrix* xy,
          * using least squares fit
          * NOTE 1: all weight are equal to 1.0
          * NOTE 2: self-match is USED for this query
+         */
+        /*
+         * 선형 / 이차원 계산
+         * 최소 자승 적합 사용
+         * 비고 1 : 모든 무게는 1.0입니다.
+         * 참고 2 :이 쿼리에 대해 자체 일치가 USED입니다.
          */
         ae_v_move(&x.ptr.p_double[0], 1, &xy->ptr.pp_double[i][0], 1, ae_v_len(0,nx-1));
         k = kdtreequeryknn(&z->tree, &x, nq, ae_true, _state);
@@ -10931,6 +17133,10 @@ void idwbuildnoisy(/* Real    */ ae_matrix* xy,
             /*
              * Linear nodal function calculated using
              * least squares fitting to its neighbors
+             */
+            /*
+             * 선형 노드 기능은 다음을 사용하여 계산됩니다.
+             * 이웃에 맞는 최소한의 사각형
              */
             for(j=0; j<=k-1; j++)
             {
@@ -10950,6 +17156,10 @@ void idwbuildnoisy(/* Real    */ ae_matrix* xy,
             /*
              * Quadratic nodal function calculated using
              * least squares fitting to its neighbors
+             */
+            /*
+             * 이차 노드 함수는 다음을 사용하여 계산됩니다.
+             * 이웃에 맞는 최소한의 사각형
              */
             for(j=0; j<=k-1; j++)
             {
@@ -10978,11 +17188,17 @@ void idwbuildnoisy(/* Real    */ ae_matrix* xy,
         /*
          * Least squares models: copy results
          */
+        /*
+         * 최소 제곱 모형 : 결과 복사
+         */
         if( info>0 )
         {
             
             /*
              * LLS task is solved, copy results
+             */
+            /*
+             * LLS 작업이 해결되고 결과 복사
              */
             z->debugworstrcond = ae_minreal(z->debugworstrcond, taskrcond, _state);
             z->debugbestrcond = ae_maxreal(z->debugbestrcond, taskrcond, _state);
@@ -10997,6 +17213,10 @@ void idwbuildnoisy(/* Real    */ ae_matrix* xy,
             /*
              * Solver failure, very strange, but we will use
              * zero values to handle it.
+             */
+            /*
+             * 솔버 실패, 아주 이상하지만, 우리는 사용합니다
+             * 처리 할 값이 0입니다.
              */
             z->debugsolverfailures = z->debugsolverfailures+1;
             v = 0;
@@ -11021,6 +17241,12 @@ Internal subroutine: K-th nodal function calculation
   -- ALGLIB --
      Copyright 02.03.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+내부 서브 루틴 : K 번째 노드 함수 계산
+
+  - ALGLIB -
+     저작권 02.03.2010 Bochkanov Sergey
+**************************************************************************/
 static double idwint_idwcalcq(idwinterpolant* z,
      /* Real    */ ae_vector* x,
      ae_int_t k,
@@ -11040,10 +17266,16 @@ static double idwint_idwcalcq(idwinterpolant* z,
     /*
      * constant member
      */
+    /*
+     * 상수 회원
+     */
     result = z->q.ptr.pp_double[k][nx];
     
     /*
      * linear members
+     */
+    /*
+     * 선형 멤버
      */
     if( z->d>=1 )
     {
@@ -11055,6 +17287,9 @@ static double idwint_idwcalcq(idwinterpolant* z,
     
     /*
      * quadratic members
+     */
+    /*
+     * 이차원
      */
     if( z->d>=2 )
     {
@@ -11080,6 +17315,14 @@ It assumes correctness of all parameters.
   -- ALGLIB --
      Copyright 02.03.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+내부 구조의 초기화.
+
+모든 매개 변수의 정확성을 가정합니다.
+
+  - ALGLIB -
+     저작권 02.03.2010 Bochkanov Sergey
+**************************************************************************/
 static void idwint_idwinit1(ae_int_t n,
      ae_int_t nx,
      ae_int_t d,
@@ -11148,6 +17391,21 @@ INPUT PARAMETERS:
                 values
     Temp        array[0..N]
 *************************************************************************/
+/*************************************************************************
+작은 작업을위한 선형 최소 자승법.
+
+비 퇴화 사례에서 표준 ALGLIB 솔버보다 빠르게 작동합니다 (
+내부 할당 및 최적화 된 행 / 열 없음). 축축하게
+표준 솔버라고 부르는 경우 성능이 저하 될 수 있습니다.
+예비 단계와 관련있다.
+
+입력 매개 변수 :
+    Y 어레이 [0..N-1]
+    W 어레이 [0..N-1]
+    FMatrix 어레이 [0..N-1.0..M], 임시 컬럼 추가
+                값
+    온도 배열 [0..N]
+**************************************************************************/
 static void idwint_idwinternalsolver(/* Real    */ ae_vector* y,
      /* Real    */ ae_vector* w,
      /* Real    */ ae_matrix* fmatrix,
@@ -11176,10 +17434,16 @@ static void idwint_idwinternalsolver(/* Real    */ ae_vector* y,
     /*
      * set up info
      */
+    /*
+     * 정보 설정
+     */
     *info = 1;
     
     /*
      * prepare matrix
+     */
+    /*
+     * 매트릭스 준비
      */
     for(i=0; i<=n-1; i++)
     {
@@ -11191,12 +17455,19 @@ static void idwint_idwinternalsolver(/* Real    */ ae_vector* y,
     /*
      * use either fast algorithm or general algorithm
      */
+    /*
+     * 빠른 알고리즘 또는 일반적인 알고리즘 사용
+     */
     if( m<=n )
     {
         
         /*
          * QR decomposition
          * We assume that M<=N (we would have called LSFit() otherwise)
+         */
+        /*
+         * QR 분해
+         * M <= N이라고 가정합니다 (그렇지 않으면 LSFit ()을 호출했을 것입니다)
          */
         for(i=0; i<=m-1; i++)
         {
@@ -11218,11 +17489,18 @@ static void idwint_idwinternalsolver(/* Real    */ ae_vector* y,
         /*
          * Check condition number
          */
+        /*
+         * 조건 번호 확인
+         */
         *taskrcond = rmatrixtrrcondinf(fmatrix, m, ae_true, ae_false, _state);
         
         /*
          * use either fast algorithm for non-degenerate cases
          * or slow algorithm for degenerate cases
+         */
+        /*
+         * 비 퇴보의 경우 빠른 알고리즘 사용
+         * 퇴보 한 경우 * 또는 느린 알고리즘
          */
         if( ae_fp_greater(*taskrcond,10000*n*ae_machineepsilon) )
         {
@@ -11230,6 +17508,10 @@ static void idwint_idwinternalsolver(/* Real    */ ae_vector* y,
             /*
              * solve triangular system R*x = FMatrix[0:M-1,M]
              * using fast algorithm, then exit
+             */
+            /*
+             * 삼각형 시스템을 푸십시오. R * x = FMatrix [0 : M-1, M]
+             * 빠른 알고리즘 사용 후 종료
              */
             x->ptr.p_double[m-1] = fmatrix->ptr.pp_double[m-1][m]/fmatrix->ptr.pp_double[m-1][m-1];
             for(i=m-2; i>=0; i--)
@@ -11243,6 +17525,9 @@ static void idwint_idwinternalsolver(/* Real    */ ae_vector* y,
             
             /*
              * use more general algorithm
+             */
+            /*
+             *보다 일반적인 알고리즘 사용
              */
             ae_vector_set_length(&b, m, _state);
             for(i=0; i<=m-1; i++)
@@ -11261,6 +17546,9 @@ static void idwint_idwinternalsolver(/* Real    */ ae_vector* y,
         
         /*
          * use more general algorithm
+         */
+        /*
+         *보다 일반적인 알고리즘 사용
          */
         ae_vector_set_length(&b, n, _state);
         for(i=0; i<=n-1; i++)
@@ -11367,6 +17655,22 @@ Result:
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+중성 수식을 사용한 합리적인 보간법
+
+/ SUM (i = 0, n-1, w [i] / (tx [i])], F (t) = SUM (i = 0, n-1, w [i] [나는]))
+
+입력 매개 변수 :
+    B - 모델 건물 중 하나를 사용하여 빌드 된 중거리 보간법
+            서브 루틴.
+    T - 보간 점
+
+결과:
+    중력 보간법 F (t)
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+**************************************************************************/
 double barycentriccalc(barycentricinterpolant* b,
      double t,
      ae_state *_state)
@@ -11384,6 +17688,9 @@ double barycentriccalc(barycentricinterpolant* b,
     /*
      * special case: NaN
      */
+    /*
+     * 특별한 경우 : NaN
+     */
     if( ae_isnan(t, _state) )
     {
         result = _state->v_nan;
@@ -11392,6 +17699,9 @@ double barycentriccalc(barycentricinterpolant* b,
     
     /*
      * special case: N=1
+     */
+    /*
+     * 특별한 경우 : N = 1
      */
     if( b->n==1 )
     {
@@ -11404,6 +17714,12 @@ double barycentriccalc(barycentricinterpolant* b,
      * 1. abs(Y[i])<=1
      * 2. abs(W[i])<=1
      * 3. X[] is ordered
+     */
+    /*
+     * 여기서 우리는 작업이 정규화되어 있다고 가정합니다. 즉 :
+     * 1. abs (Y [i]) <= 1
+     * 2. abs (W [i]) <= 1
+     * 3. X []가 주문되었습니다.
      */
     s = ae_fabs(t-b->x.ptr.p_double[0], _state);
     for(i=0; i<=b->n-1; i++)
@@ -11456,6 +17772,28 @@ NOTE
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+barycentric interpolant의 차등화 : 1 차 미분.
+
+이 서브 루틴에 사용 된 알고리즘은 매우 강력하며 실패 할 때까지 실패하지 않아야합니다.
+MaxRealNumber에 너무 가까운 값을 제공합니다 (일반적으로 MaxRealNumber / N
+이상이 오버 플로우됩니다).
+
+입력 매개 변수 :
+    B - 모델 건물 중 하나를 사용하여 빌드 된 중거리 보간법
+            서브 루틴.
+    T - 보간 점
+
+출력 매개 변수 :
+    F - T에서의 중성 삽입
+    DF - 1 차 미분
+    
+노트
+
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+**************************************************************************/
 void barycentricdiff1(barycentricinterpolant* b,
      double t,
      double* f,
@@ -11490,6 +17828,9 @@ void barycentricdiff1(barycentricinterpolant* b,
     /*
      * special case: NaN
      */
+    /*
+     * 특별한 경우 : NaN
+     */
     if( ae_isnan(t, _state) )
     {
         *f = _state->v_nan;
@@ -11499,6 +17840,9 @@ void barycentricdiff1(barycentricinterpolant* b,
     
     /*
      * special case: N=1
+     */
+    /*
+     * 특별한 경우 : N = 1
      */
     if( b->n==1 )
     {
@@ -11519,6 +17863,11 @@ void barycentricdiff1(barycentricinterpolant* b,
      * 1. pivot point (X[i] closest to T)
      * 2. width of interval containing X[i]
      */
+    /*
+     * N> 1이고 B.SY> 0이라고 가정합니다. 발견:
+     * 1. 피벗 포인트 (X [i]가 T에 가장 가깝습니다)
+     * 2. X [i]를 포함하는 간격 폭
+     */
     v = ae_fabs(b->x.ptr.p_double[0]-t, _state);
     k = 0;
     xmin = b->x.ptr.p_double[0];
@@ -11537,6 +17886,9 @@ void barycentricdiff1(barycentricinterpolant* b,
     
     /*
      * pivot point found, calculate dNumerator and dDenominator
+     */
+    /*
+     * 피벗 점이 발견되면 dNumerator 및 dDenominator를 계산하십시오.
      */
     xscale1 = 1/(xmax-xmin);
     xoffs1 = -xmin/(xmax-xmin)+1;
@@ -11608,6 +17960,27 @@ BarycentricDiff1() subroutine in such cases.
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+barycentric interpolant의 차별화 : 1 차 / 2 차 파생 요소.
+
+입력 매개 변수 :
+    B - 모델 건물 중 하나를 사용하여 빌드 된 중거리 보간법
+            서브 루틴.
+    T - 보간 점
+
+출력 매개 변수 :
+    F - T에서의 중성 삽입
+    DF - 1 차 미분
+    D2F - 2 차 미분
+
+참고 :이 알고리즘은 데이터에 사용되는 경우 오버플로 / 언더 플로로 인해 실패 할 수 있습니다.
+값은 MaxRealNumber 또는 MinRealNumber에 가깝습니다. 보다 견고한 사용
+그런 경우 BarycentricDiff1 () 서브 루틴.
+
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+**************************************************************************/
 void barycentricdiff2(barycentricinterpolant* b,
      double t,
      double* f,
@@ -11640,6 +18013,9 @@ void barycentricdiff2(barycentricinterpolant* b,
     /*
      * special case: NaN
      */
+    /*
+     * 특별한 경우 : NaN
+     */
     if( ae_isnan(t, _state) )
     {
         *f = _state->v_nan;
@@ -11650,6 +18026,9 @@ void barycentricdiff2(barycentricinterpolant* b,
     
     /*
      * special case: N=1
+     */
+    /*
+     * 특별한 경우 : N = 1
      */
     if( b->n==1 )
     {
@@ -11671,6 +18050,11 @@ void barycentricdiff2(barycentricinterpolant* b,
      * 1. pivot point (X[i] closest to T)
      * 2. width of interval containing X[i]
      */
+    /*
+     * N> 1이고 B.SY> 0이라고 가정합니다. 발견:
+     * 1. 피벗 포인트 (X [i]가 T에 가장 가깝습니다)
+     * 2. X [i]를 포함하는 간격 폭
+     */
     ae_assert(ae_fp_greater(b->sy,0), "BarycentricDiff: internal error", _state);
     *f = 0;
     *df = 0;
@@ -11689,6 +18073,9 @@ void barycentricdiff2(barycentricinterpolant* b,
     
     /*
      * pivot point found, calculate dNumerator and dDenominator
+     */
+    /*
+     * 피벗 점이 발견되면 dNumerator 및 dDenominator를 계산하십시오.
      */
     xk = b->x.ptr.p_double[k];
     v = t-xk;
@@ -11742,6 +18129,19 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 19.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 인수의 선형 변환을 수행합니다.
+
+입력 매개 변수 :
+    B - 중성자 형태의 합리적인 보간법
+    CA, CB - 변환 계수 : x = CA * t + CB
+
+출력 매개 변수 :
+    B - X로 대체 된 보간법을 T로 바꾼다.
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 19.08.2009
+**************************************************************************/
 void barycentriclintransx(barycentricinterpolant* b,
      double ca,
      double cb,
@@ -11755,6 +18155,9 @@ void barycentriclintransx(barycentricinterpolant* b,
     
     /*
      * special case, replace by constant F(CB)
+     */
+    /*
+     * 특별한 경우, 상수 F (CB)
      */
     if( ae_fp_eq(ca,0) )
     {
@@ -11771,6 +18174,9 @@ void barycentriclintransx(barycentricinterpolant* b,
     
     /*
      * general case: CA<>0
+     */
+    /*
+     * 일반적인 경우 : CA <> 0
      */
     for(i=0; i<=b->n-1; i++)
     {
@@ -11816,6 +18222,20 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 19.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 barycentric의 선형 변환을 수행합니다.
+보간법.
+
+입력 매개 변수 :
+    B - 중성자 형태의 합리적인 보간법
+    CA, CB - 변환 계수 : B2 (x) = CA * B (x) + CB
+
+출력 매개 변수 :
+    B - 변형 된 보간법
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 19.08.2009
+*************************************************************************/
 void barycentriclintransy(barycentricinterpolant* b,
      double ca,
      double cb,
@@ -11857,6 +18277,21 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+합리적인 보간에서 X / Y / W 배열 추출
+
+입력 매개 변수 :
+    B - 중력 보간법
+
+출력 매개 변수 :
+    N - 노드 수, N> 0
+    X - 보간 노드, array [0..N-1]
+    F - 함수 값, array [0..N-1]
+    W - 중력 가중치, 배열 [0..N-1]
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+**************************************************************************/
 void barycentricunpack(barycentricinterpolant* b,
      ae_int_t* n,
      /* Real    */ ae_vector* x,
@@ -11899,6 +18334,23 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+X / Y / W 배열의 Rational interpolant
+
+/ SUM (i = 0, n-1, w [i] / (tx [i])], F (t) = SUM (i = 0, n-1, w [i] [나는]))
+
+입력 매개 변수 :
+    X - 보간 노드, array [0..N-1]
+    F - 함수 값, array [0..N-1]
+    W - 중력 가중치, 배열 [0..N-1]
+    N - 노드 수, N> 0
+
+출력 매개 변수 :
+    B - (X, Y, W)에서 빌드 된 중거리 보간법
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+**************************************************************************/
 void barycentricbuildxyw(/* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
      /* Real    */ ae_vector* w,
@@ -11914,6 +18366,9 @@ void barycentricbuildxyw(/* Real    */ ae_vector* x,
     /*
      * fill X/Y/W
      */
+    /*
+     * 채우기 X / Y / W
+     */
     ae_vector_set_length(&b->x, n, _state);
     ae_vector_set_length(&b->y, n, _state);
     ae_vector_set_length(&b->w, n, _state);
@@ -11924,6 +18379,9 @@ void barycentricbuildxyw(/* Real    */ ae_vector* x,
     
     /*
      * Normalize
+     */
+    /*
+     * 표준화
      */
     ratint_barycentricnormalize(b, _state);
 }
@@ -11956,6 +18414,33 @@ Note:
   -- ALGLIB PROJECT --
      Copyright 17.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+극이없는 합리적인 보간법
+
+서브 루틴은 실제없이 합리적인 보간 함수를 만듭니다.
+극점 (극점이없는 고저 평행 보간법 참조)
+근사 율 ', Michael S. Floater. 카이 호르만 (Kai Hormann)
+이 주제에 대한 정보).
+
+입력 매개 변수 :
+    X - 보간 노드, array [0..N-1].
+    Y - 함수 값, array [0..N-1].
+    N - 노드 수, N> 0.
+    D - 보간 체계의 차수, 0 <= D <= N-1.
+            D <0이면 오류가 발생합니다.
+            D> = N이면 D = N-1로 바뀝니다.
+            선택할 D를 모른다면 3-5 정도의 작은 값을 사용하십시오.
+
+출력 매개 변수 :
+    B - barycentric interpolant.
+
+노트 :
+    이 알고리즘은 항상 성공하고 닫음으로 가중치를 계산합니다.
+    기계 정밀도.
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 17.06.2007
+**************************************************************************/
 void barycentricbuildfloaterhormann(/* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
      ae_int_t n,
@@ -11988,6 +18473,9 @@ void barycentricbuildfloaterhormann(/* Real    */ ae_vector* x,
     /*
      * Prepare
      */
+    /*
+     * 준비
+     */
     if( d>n-1 )
     {
         d = n-1;
@@ -11996,6 +18484,9 @@ void barycentricbuildfloaterhormann(/* Real    */ ae_vector* x,
     
     /*
      * special case: N=1
+     */
+    /*
+     * 특별한 경우 : N = 1
      */
     if( n==1 )
     {
@@ -12013,6 +18504,9 @@ void barycentricbuildfloaterhormann(/* Real    */ ae_vector* x,
     /*
      * Fill X/Y
      */
+    /*
+     * X / Y 채우기
+     */
     ae_vector_set_length(&b->x, n, _state);
     ae_vector_set_length(&b->y, n, _state);
     ae_v_move(&b->x.ptr.p_double[0], 1, &x->ptr.p_double[0], 1, ae_v_len(0,n-1));
@@ -12021,6 +18515,9 @@ void barycentricbuildfloaterhormann(/* Real    */ ae_vector* x,
     
     /*
      * Calculate Wk
+     */
+    /*
+     * 계산 Wk
      */
     ae_vector_set_length(&b->w, n, _state);
     s0 = 1;
@@ -12058,6 +18555,9 @@ void barycentricbuildfloaterhormann(/* Real    */ ae_vector* x,
     /*
      * Normalize
      */
+    /*
+     * 표준화
+     */
     ratint_barycentricnormalize(b, _state);
     ae_frame_leave(_state);
 }
@@ -12075,6 +18575,18 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+중복 중심 보간의 복사 (내부 용도로만 사용)
+
+입력 매개 변수 :
+    B - 중력 보간법
+
+출력 매개 변수 :
+    B2 - 사본 (B1)
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+**************************************************************************/
 void barycentriccopy(barycentricinterpolant* b,
      barycentricinterpolant* b2,
      ae_state *_state)
@@ -12103,6 +18615,16 @@ Normalization of barycentric interpolant:
 
 Internal subroutine.
 *************************************************************************/
+/*************************************************************************
+barycentric interpolant의 정규화 :
+* BN, BX, BY 및 BW가 초기화됩니다.
+* B.SY가 초기화되지 않았습니다.
+* Y []는 정규화되고, 스케일링 계수는 B.SY에 저장됩니다.
+* W []는 정규화되고 스케일링 계수는 저장되지 않습니다.
+* X []가 정렬 됨
+
+내부 서브 루틴.
+**************************************************************************/
 static void ratint_barycentricnormalize(barycentricinterpolant* b,
      ae_state *_state)
 {
@@ -12121,6 +18643,9 @@ static void ratint_barycentricnormalize(barycentricinterpolant* b,
     
     /*
      * Normalize task: |Y|<=1, |W|<=1, sort X[]
+     */
+    /*
+     * 작업 정규화 : | Y | <= 1, | W | <= 1, 정렬 X []
      */
     b->sy = 0;
     for(i=0; i<=b->n-1; i++)
@@ -12240,6 +18765,30 @@ NOTES:
   -- ALGLIB --
      Copyright 30.09.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+barycentric representation에서 Chebyshev basis로 변환.
+이 함수는 O (N ^ 2) 복잡도를가집니다.
+
+입력 매개 변수 :
+    P - 다항식 형태의 다항식
+    A, B - Chebyshev 다항식의 기본 간격 (아래 참조)
+            A <> B
+
+출력 매개 변수
+    T - Chebyshev 표현의 계수;
+            P (x) = sum {T [i] * Ti (2 * (xA) / (BA) -1), i = 0..N-
+            여기서 Ti - I - th Chebyshev 다항식.
+
+노트:
+    P로 전달 된 중성분 보간은 다항식이 될 수 있습니다.
+    다항식 보간 / 피팅 또는 합리적인 함수로부터
+    다항식이 아닙니다. 이 두 가지 경우를 구분할 수 없으며
+    알고리즘은 P가 다항식이라고 가정하여 작업을 시도합니다. 그렇지 않은 경우,
+    알고리즘은 결과를 반환하지만 아무런 의미가 없습니다.
+
+  - ALGLIB -
+     저작권 30.09.2010 Bochkanov Sergey
+**************************************************************************/
 void polynomialbar2cheb(barycentricinterpolant* p,
      double a,
      double b,
@@ -12270,6 +18819,9 @@ void polynomialbar2cheb(barycentricinterpolant* p,
     /*
      * Calculate function values on a Chebyshev grid
      */
+    /*
+     * Chebyshev 격자에서 함수 값 계산
+     */
     ae_vector_set_length(&vp, p->n, _state);
     ae_vector_set_length(&vx, p->n, _state);
     for(i=0; i<=p->n-1; i++)
@@ -12299,6 +18851,16 @@ void polynomialbar2cheb(barycentricinterpolant* p,
      *    * still leaves us with O(N^2) algorithm because
      *      preparation of function values is O(N^2) process
      */
+    /*
+     * 다른 T의.
+     *
+     * 노트:
+     * 1. TK는 VX에 T {k}를 저장하고, TK1은 VX에 T {k-1}을 저장합니다.
+     * 2. 빠른 DCT로 동일한 계산을 할 수 있지만
+     * *는 종속성을 추가합니다.
+     * *는 여전히 O (N ^ 2) 알고리즘을 남겨 둡니다. 왜냐하면
+     * 함수 값 준비는 O (N ^ 2) 프로세스입니다.
+     */
     if( p->n>1 )
     {
         ae_vector_set_length(&tk, p->n, _state);
@@ -12314,11 +18876,17 @@ void polynomialbar2cheb(barycentricinterpolant* p,
             /*
              * calculate discrete product of function vector and TK
              */
+            /*
+             * 함수 벡터와 TK의 이산 결과를 계산합니다.
+             */
             v = ae_v_dotproduct(&tk.ptr.p_double[0], 1, &vp.ptr.p_double[0], 1, ae_v_len(0,p->n-1));
             t->ptr.p_double[k] = v/(0.5*p->n);
             
             /*
              * Update TK and TK1
+             */
+            /*
+             * TK 및 TK1 업데이트
              */
             for(i=0; i<=p->n-1; i++)
             {
@@ -12352,6 +18920,26 @@ OUTPUT PARAMETERS
   -- ALGLIB --
      Copyright 30.09.2010 by Bochkanov Sergey
 *************************************************************************/
+/************************************************************************
+Chebyshev 기초에서 중성 표상으로의 전환.
+이 함수는 O (N ^ 2) 복잡도를가집니다.
+
+입력 매개 변수 :
+    T - Chebyshev 표현의 계수;
+            P (x) = sum {T [i] * Ti (2 * (xA) / (BA) -1), i = 0..N}
+            여기서 Ti - I - th Chebyshev 다항식.
+    N - 계수의 수 :
+            * 주어진 경우 T의 선행 N 요소 만 사용됩니다.
+            * 주어지지 않은 경우, T의 크기로부터 자동으로 결정됩니다.
+    A, B - Chebyshev 다항식의 기본 간격 (위 참조)
+            A <B
+
+출력 매개 변수
+    P - 다항식 형태의 다항식
+
+  - ALGLIB -
+     저작권 30.09.2010 Bochkanov Sergey
+**************************************************************************/
 void polynomialcheb2bar(/* Real    */ ae_vector* t,
      ae_int_t n,
      double a,
@@ -12383,12 +18971,18 @@ void polynomialcheb2bar(/* Real    */ ae_vector* t,
     /*
      * Calculate function values on a Chebyshev grid spanning [-1,+1]
      */
+    /*
+     * [-1, + 1]에 걸친 Chebyshev 그리드의 함수 값 계산
+     */
     ae_vector_set_length(&y, n, _state);
     for(i=0; i<=n-1; i++)
     {
         
         /*
          * Calculate value on a grid spanning [-1,+1]
+         */
+        /*
+         * [-1, + 1] 스패닝에 대한 값 계산
          */
         vx = ae_cos(ae_pi*(i+0.5)/n, _state);
         vy = t->ptr.p_double[0];
@@ -12406,6 +19000,9 @@ void polynomialcheb2bar(/* Real    */ ae_vector* t,
     
     /*
      * Build barycentric interpolant, map grid from [-1,+1] to [A,B]
+     */
+    /*
+     * [-1, + 1]부터 [A, B]까지 그리드 중심의 보간법을 작성하십시오.
      */
     polynomialbuildcheb1(a, b, &y, n, p, _state);
     ae_frame_leave(_state);
@@ -12452,6 +19049,46 @@ NOTES:
   -- ALGLIB --
      Copyright 30.09.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+barycentric representation에서 power basis 로의 변환.
+이 함수는 O (N ^ 2) 복잡도를가집니다.
+
+입력 매개 변수 :
+    P - 다항식 형태의 다항식
+    C - 오프셋 (아래 참조). 0.0이 기본값으로 사용됩니다.
+    S - 규모 (아래 참조); 1.0이 기본값으로 사용됩니다. S ≠ 0.
+
+출력 매개 변수
+    A-coefficient, P (x) = sum {A [i] * ((XC) / S) ^ i, i = 0..N-1}
+    N - 계수의 수 (다항식 차수 + 1)
+
+노트:
+1.이 기능은 오프셋 및 스케일을 허용하며,이를 개선하도록 설정할 수 있습니다
+    다항식의 수치 적 속성. 예를 들어, P가
+    [-1, + 1]에 대한 보간 결과, C = 0과 S = 1을 설정할 수 있고
+    P를 1, x, x ^ 2, x ^ 3 등의 합으로 나타냅니다. 대부분의 경우
+    정확히 당신이 필요로하는 것입니다.
+
+    그러나 보간 모델이 [999,1001]에 빌드 된 경우
+    {1, x, x ^ 2, x ^ 3}을 사용할 때 수치 오류가 크게 증가하는 것을보십시오.
+    기초로서. P를 1, (x-1000), (x-1000) ^ 2, (x-1000) ^ 3
+    더 나은 옵션이 될 것입니다. 이러한 표현은 다음을 사용하여 얻을 수 있습니다.
+    오프셋 C로 1000.0, 스케일 S로 1.0
+
+2. 힘 기초는 아픈 조건이 있고 전술 한 트릭은 풀 수 없다.
+    이 문제는 완전히. 이 함수는
+    어떤 경우이든, N> 8 일 때 그들은 신뢰할 수 없게 될 것이다. 그러나, N 's
+    5 개 미만은 꽤 안전합니다.
+    
+3. P로 전달 된 중성분 보간은 다항식이 될 수 있습니다.
+    다항식 보간 / 피팅 또는 합리적인 함수로부터
+    다항식이 아닙니다. 이 두 가지 경우를 구분할 수 없으며
+    알고리즘은 P가 다항식이라고 가정하여 작업을 시도합니다. 그렇지 않은 경우,
+    알고리즘은 결과를 반환하지만 아무런 의미가 없습니다.
+
+  - ALGLIB -
+     저작권 30.09.2010 Bochkanov Sergey
+**************************************************************************/
 void polynomialbar2pow(barycentricinterpolant* p,
      double c,
      double s,
@@ -12486,6 +19123,9 @@ void polynomialbar2pow(barycentricinterpolant* p,
     /*
      * Calculate function values on a Chebyshev grid
      */
+    /*
+     * Chebyshev 격자에서 함수 값 계산
+     */
     ae_vector_set_length(&vp, p->n, _state);
     ae_vector_set_length(&vx, p->n, _state);
     for(i=0; i<=p->n-1; i++)
@@ -12515,6 +19155,16 @@ void polynomialbar2pow(barycentricinterpolant* p,
      *    * still leaves us with O(N^2) algorithm because
      *      preparation of function values is O(N^2) process
      */
+    /*
+     * 다른 T의.
+     *
+     * 노트:
+     * 1. TK는 VX에 T {k}를 저장하고, TK1은 VX에 T {k-1}을 저장합니다.
+     * 2. 빠른 DCT로 동일한 계산을 할 수 있지만
+     * *는 종속성을 추가합니다.
+     * *는 여전히 O (N ^ 2) 알고리즘을 남겨 둡니다. 왜냐하면
+     * 함수 값 준비는 O (N ^ 2) 프로세스입니다.
+     */
     if( p->n>1 )
     {
         ae_vector_set_length(&tk, p->n, _state);
@@ -12530,12 +19180,18 @@ void polynomialbar2pow(barycentricinterpolant* p,
             /*
              * calculate discrete product of function vector and TK
              */
+            /*
+             * 함수 벡터와 TK의 이산 결과를 계산합니다.
+             */
             v = ae_v_dotproduct(&tk.ptr.p_double[0], 1, &vp.ptr.p_double[0], 1, ae_v_len(0,p->n-1));
             t.ptr.p_double[k] = v/(0.5*p->n);
             
             /*
              * Update TK and TK1
              */
+            /*
+             * TK 및 TK1 업데이트
+             */ 
             for(i=0; i<=p->n-1; i++)
             {
                 v = 2*vx.ptr.p_double[i]*tk.ptr.p_double[i]-tk1.ptr.p_double[i];
@@ -12547,6 +19203,9 @@ void polynomialbar2pow(barycentricinterpolant* p,
     
     /*
      * Convert from Chebyshev basis to power basis
+     */
+    /*
+     * Chebyshev 기초에서 힘 기초로 개조하십시오
      */
     ae_vector_set_length(a, p->n, _state);
     for(i=0; i<=p->n-1; i++)
@@ -12627,6 +19286,42 @@ NOTES:
   -- ALGLIB --
      Copyright 30.09.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+힘 기반에서 중성 표상으로의 전환.
+이 함수는 O (N ^ 2) 복잡도를가집니다.
+
+입력 매개 변수 :
+    A-coefficient, P (x) = sum {A [i] * ((XC) / S) ^ i, i = 0..N-1}
+    N - 계수의 수 (다항식 차수 + 1)
+            * 주어진 경우 A의 선행 N 요소 만 사용됩니다.
+            * 주어지지 않은 경우 A의 크기로부터 자동으로 결정됩니다.
+    C - 오프셋 (아래 참조). 0.0이 기본값으로 사용됩니다.
+    S - 규모 (아래 참조); 1.0이 기본값으로 사용됩니다. S ≠ 0.
+
+출력 매개 변수
+    P - 다항식 형태의 다항식
+
+
+노트:
+1.이 기능은 오프셋 및 스케일을 허용하며,이를 개선하도록 설정할 수 있습니다
+    다항식의 수치 적 속성. 예를 들어,
+    [-1, + 1]로 설정하면 C = 0 및 S = 1을 설정하고 1, x, x ^ 2,
+    x ^ 3 등등. 대부분의 경우 그것은 정확히 당신이 필요로하는 것입니다.
+
+    그러나 보간 모델이 [999,1001]에 빌드 된 경우
+    {1, x, x ^ 2, x ^ 3}을 사용할 때 수치 오류가 크게 증가하는 것을보십시오.
+    입력 기준. 1, (x-1000), (x-1000) ^ 2,
+    (x-1000) ^ 3이 더 좋은 옵션이 될 것입니다 (오프셋으로 1000.0을 지정해야합니다.
+    C 및 1.0은 눈금 S로 표시).
+
+2. 힘 기초는 아픈 조건이 있고 전술 한 트릭은 풀 수 없다.
+    이 문제는 완전히. 이 함수는 barycentric 모델을 반환합니다.
+    어떤 경우에도, 그러나 N> 8 정확도는 잘 떨어집니다. 그러나 N은
+    5는 꽤 안전합니다.
+
+  - ALGLIB -
+     저작권 30.09.2010 Bochkanov Sergey
+**************************************************************************/
 void polynomialpow2bar(/* Real    */ ae_vector* a,
      ae_int_t n,
      double c,
@@ -12656,12 +19351,18 @@ void polynomialpow2bar(/* Real    */ ae_vector* a,
     /*
      * Calculate function values on a Chebyshev grid spanning [-1,+1]
      */
+    /*
+     * [-1, + 1]에 걸친 Chebyshev 그리드의 함수 값 계산
+     */
     ae_vector_set_length(&y, n, _state);
     for(i=0; i<=n-1; i++)
     {
         
         /*
          * Calculate value on a grid spanning [-1,+1]
+         */
+        /*
+         * [-1, + 1] 스패닝에 대한 값 계산
          */
         vx = ae_cos(ae_pi*(i+0.5)/n, _state);
         vy = a->ptr.p_double[0];
@@ -12676,6 +19377,9 @@ void polynomialpow2bar(/* Real    */ ae_vector* a,
     
     /*
      * Build barycentric interpolant, map grid from [-1,+1] to [A,B]
+     */
+    /*
+     * [-1, + 1]부터 [A, B]까지 그리드 중심의 보간법을 작성하십시오.
      */
     polynomialbuildcheb1(c-s, c+s, &y, n, p, _state);
     ae_frame_leave(_state);
@@ -12699,6 +19403,23 @@ OUTPUT PARAMETERS
   -- ALGLIB --
      Copyright 02.12.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+Lagrange intepolant : 일반 그리드에서 모델 생성.
+이 함수는 O (N ^ 2) 복잡도를가집니다.
+
+입력 매개 변수 :
+    X - 가로 좌표, array [0..N-1]
+    Y - 함수 값, 배열 [0..N-1]
+    N - 포인트 수, N> = 1
+
+출력 매개 변수
+    P - 라그랑주 보간을 나타내는 바이 트 센 트릭 모델
+            (ratint 단위 정보 및 BarycentricCalc () 설명을 참조하십시오.
+            자세한 정보).
+
+  - ALGLIB -
+     저작권 02.12.2009 Bochkanov Sergey
+**************************************************************************/
 void polynomialbuild(/* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
      ae_int_t n,
@@ -12740,6 +19461,10 @@ void polynomialbuild(/* Real    */ ae_vector* x,
      * calculate W[j]
      * multi-pass algorithm is used to avoid overflow
      */
+    /*
+     * W [j]를 계산한다.
+     * 멀티 패스 알고리즘은 오버 플로우를 피하기 위해 사용됩니다.
+     */
     ae_vector_set_length(&w, n, _state);
     a = x->ptr.p_double[0];
     b = x->ptr.p_double[0];
@@ -12757,6 +19482,11 @@ void polynomialbuild(/* Real    */ ae_vector* x,
          * cycle on J does not touch K-th element
          * and we MUST get maximum from ALL elements
          */
+        /*
+         * 0.0 대신에 W [K]가 사용됩니다.
+         * J 사이클은 K 번째 요소를 건드리지 않는다.
+         * 우리는 반드시 모든 요소로부터 최대 값을 얻어야합니다.
+         */
         mx = ae_fabs(w.ptr.p_double[k], _state);
         for(j=0; j<=n-1; j++)
         {
@@ -12773,7 +19503,11 @@ void polynomialbuild(/* Real    */ ae_vector* x,
             /*
              * every 5-th run we renormalize W[]
              */
+            /*
+             * 매 5 일마다 우리는 W []
+             */
             v = 1/mx;
+
             ae_v_muld(&w.ptr.p_double[0], 1, ae_v_len(0,n-1), v);
         }
     }
@@ -12801,6 +19535,25 @@ OUTPUT PARAMETERS
   -- ALGLIB --
      Copyright 03.12.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+Lagrange intepolant : 등거리 그리드에서 모델 생성.
+이 함수는 O (N) 복잡도를가집니다.
+
+입력 매개 변수 :
+    A - [A, B]의 왼쪽 경계
+    B - [A, B]의 오른쪽 경계
+    노드에서 Y - 함수 값, array [0..N-1]
+    N - 포인트 수, N> = 1
+            N = 1 인 경우 상수 모델이 구성됩니다.
+
+출력 매개 변수
+    P - 라그랑주 보간을 나타내는 바이 트 센 트릭 모델
+            (ratint 단위 정보 및 BarycentricCalc () 설명을 참조하십시오.
+            자세한 정보).
+
+  - ALGLIB -
+     Copyright 03.12.2009 Bochkanov Sergey
+**************************************************************************/
 void polynomialbuildeqdist(double a,
      double b,
      /* Real    */ ae_vector* y,
@@ -12830,6 +19583,9 @@ void polynomialbuildeqdist(double a,
     /*
      * Special case: N=1
      */
+    /*
+     * 특별한 경우 : N = 1
+     */
     if( n==1 )
     {
         ae_vector_set_length(&x, 1, _state);
@@ -12843,6 +19599,9 @@ void polynomialbuildeqdist(double a,
     
     /*
      * general case
+     */
+    /*
+     * 일반적인 경우
      */
     ae_vector_set_length(&x, n, _state);
     ae_vector_set_length(&w, n, _state);
@@ -12879,6 +19638,26 @@ OUTPUT PARAMETERS
   -- ALGLIB --
      Copyright 03.12.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+Chebyshev 격자 (첫 번째 종류)에 Lagrange intepolant.
+이 함수는 O (N) 복잡도를가집니다.
+
+입력 매개 변수 :
+    A - [A, B]의 왼쪽 경계
+    B - [A, B]의 오른쪽 경계
+    노드에서 Y - 함수 값, array [0..N-1],
+            (PI * (2 * i + 1) / (2 * n)))에 의해 결정된다 .Y [I] = Y (0.5 * (B + A)
+    N - 포인트 수, N> = 1
+            N = 1 인 경우 상수 모델이 구성됩니다.
+
+출력 매개 변수
+    P - 라그랑주 보간을 나타내는 바이 트 센 트릭 모델
+            (ratint 단위 정보 및 BarycentricCalc () 설명을 참조하십시오.
+            자세한 정보).
+
+  - ALGLIB -
+     Copyright 03.12.2009 Bochkanov Sergey
+**************************************************************************/
 void polynomialbuildcheb1(double a,
      double b,
      /* Real    */ ae_vector* y,
@@ -12908,6 +19687,9 @@ void polynomialbuildcheb1(double a,
     /*
      * Special case: N=1
      */
+    /*
+     * 특별한 경우 : N = 1
+     */
     if( n==1 )
     {
         ae_vector_set_length(&x, 1, _state);
@@ -12921,6 +19703,9 @@ void polynomialbuildcheb1(double a,
     
     /*
      * general case
+     */
+    /*
+     * 일반적인 경우
      */
     ae_vector_set_length(&x, n, _state);
     ae_vector_set_length(&w, n, _state);
@@ -12957,6 +19742,26 @@ OUTPUT PARAMETERS
   -- ALGLIB --
      Copyright 03.12.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+Chebyshev 그리드 (두 번째 종류)에 Lagrange intepolant.
+이 함수는 O (N) 복잡도를가집니다.
+
+입력 매개 변수 :
+    A - [A, B]의 왼쪽 경계
+    B - [A, B]의 오른쪽 경계
+    노드에서 Y - 함수 값, array [0..N-1],
+            (PI * i / (n-1))) Y [I] = Y (0.5 * (B + A) + 0.5 * (BA)
+    N - 포인트 수, N> = 1
+            N = 1 인 경우 상수 모델이 구성됩니다.
+
+출력 매개 변수
+    P - 라그랑주 보간을 나타내는 바이 트 센 트릭 모델
+            (ratint 단위 정보 및 BarycentricCalc () 설명을 참조하십시오.
+            자세한 정보).
+
+  - ALGLIB -
+     Copyright 03.12.2009 Bochkanov Sergey
+**************************************************************************/
 void polynomialbuildcheb2(double a,
      double b,
      /* Real    */ ae_vector* y,
@@ -12985,6 +19790,9 @@ void polynomialbuildcheb2(double a,
     /*
      * Special case: N=1
      */
+    /*
+     * 특별한 경우 : N = 1
+     */
     if( n==1 )
     {
         ae_vector_set_length(&x, 1, _state);
@@ -12998,6 +19806,9 @@ void polynomialbuildcheb2(double a,
     
     /*
      * general case
+     */
+    /*
+     * 일반적인 경우
      */
     ae_vector_set_length(&x, n, _state);
     ae_vector_set_length(&w, n, _state);
@@ -13044,6 +19855,30 @@ IMPORTANT
   -- ALGLIB --
      Copyright 02.12.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+O (N) 복잡도를 갖는 고속 등거리 다항식 보간 함수
+
+입력 매개 변수 :
+    A - [A, B]의 왼쪽 경계
+    B - [A, B]의 오른쪽 경계
+    F - 함수 값, array [0..N-1]
+    N - 등거리 그리드상의 점의 수, N> = 1
+            N = 1 인 경우 상수 모델이 구성됩니다.
+    T - P (x)를 계산하는 위치
+
+결과
+    T에서의 Lagrange 보간 값
+    
+중대한
+    이 함수는 오버 플로우 방지가 아닌 빠른 인터페이스를 제공합니다.
+    매우 정확하지도 않습니다.
+    가장 좋은 방법은 PolynomialBuildEqDist () / BarycentricCalc ()를 사용하는 것입니다.
+    당신의 데이터가 결과가 나오지 않는다고 확신하지 않는 한 서브 루틴
+    오버플로에서.
+
+  - ALGLIB -
+     저작권 02.12.2009 Bochkanov Sergey
+**************************************************************************/
 double polynomialcalceqdist(double a,
      double b,
      /* Real    */ ae_vector* f,
@@ -13075,6 +19910,9 @@ double polynomialcalceqdist(double a,
     /*
      * Special case: T is NAN
      */
+    /*
+     * 특별한 경우 : T는 NAN입니다.
+     */
     if( ae_isnan(t, _state) )
     {
         result = _state->v_nan;
@@ -13083,6 +19921,9 @@ double polynomialcalceqdist(double a,
     
     /*
      * Special case: N=1
+     */
+    /*
+     * 특별한 경우 : N = 1
      */
     if( n==1 )
     {
@@ -13093,6 +19934,10 @@ double polynomialcalceqdist(double a,
     /*
      * First, decide: should we use "safe" formula (guarded
      * against overflow) or fast one?
+     */
+    /*
+     * 첫째, 결정 : 우리는 "안전한"공식을 사용해야합니다 (경계
+     * 오버플로) 또는 빠른 하나?
      */
     threshold = ae_sqrt(ae_minrealnumber, _state);
     j = 0;
@@ -13117,12 +19962,18 @@ double polynomialcalceqdist(double a,
         /*
          * use fast formula
          */
+       /*
+         * 빠른 공식 사용
+         */
         j = -1;
         s = 1.0;
     }
     
     /*
      * Calculate using safe or fast barycentric formula
+     */
+    /*
+     * 안전 또는 빠른 중력 식을 사용하여 계산
      */
     s1 = 0;
     s2 = 0;
@@ -13176,6 +20027,32 @@ IMPORTANT
   -- ALGLIB --
      Copyright 02.12.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+Chebyshev 포인트에서의 빠른 다항식 보간 함수 (첫 번째 종류)
+O (N) 복잡도.
+
+입력 매개 변수 :
+    A - [A, B]의 왼쪽 경계
+    B - [A, B]의 오른쪽 경계
+    F - 함수 값, array [0..N-1]
+    N - Chebyshev 그리드 (첫 번째 종류)의 점수,
+            X * [i] = 0.5 * (B + A) + 0.5 * (BA) * Cos (PI * (2 * i + 1) / (2 * n)
+            N = 1 인 경우 상수 모델이 구성됩니다.
+    T - P (x)를 계산하는 위치
+
+결과
+    T에서의 Lagrange 보간 값
+
+중대한
+    이 함수는 오버 플로우 방지가 아닌 빠른 인터페이스를 제공합니다.
+    매우 정확하지도 않습니다.
+    가장 좋은 방법은 PolIntBuildCheb1 () / BarycentricCalc ()를 사용하는 것입니다.
+    당신의 데이터가 결과가 나오지 않는다고 확신하지 않는 한 서브 루틴
+    오버플로에서.
+
+  - ALGLIB -
+     저작권 02.12.2009 Bochkanov Sergey
+**************************************************************************/
 double polynomialcalccheb1(double a,
      double b,
      /* Real    */ ae_vector* f,
@@ -13215,6 +20092,9 @@ double polynomialcalccheb1(double a,
     /*
      * Special case: T is NAN
      */
+    /*
+     * 특별한 경우 : T는 NAN입니다.
+     */
     if( ae_isnan(t, _state) )
     {
         result = _state->v_nan;
@@ -13223,6 +20103,9 @@ double polynomialcalccheb1(double a,
     
     /*
      * Special case: N=1
+     */
+    /*
+     * 특별한 경우 : N = 1
      */
     if( n==1 )
     {
@@ -13248,6 +20131,24 @@ double polynomialcalccheb1(double a,
      *
      * to repeatedly calculate sin(..) and cos(..).
      */
+    /*
+     * 반복 수식에 대한 정보를 준비하십시오.
+     * sin (pi * (2j + 1) / (2n + 2))을 계산하는 데 사용되며
+     * cos (pi * (2j + 1) / (2n + 2)) :
+     *
+     * A0 = pi / (2n + 2)
+     * 델타 = pi / (n + 1)
+     * 알파 = 2 sin ^ 2 (델타 / 2)
+     * 베타 = sin (델타)
+     *
+     sin (A0 + j * delta)와 cos (..) = cos (A0 + j * delta)가되도록.
+     * 그런 다음
+     *
+     * sin (x + delta) = sin (x) - (alpha * sin (x) - beta * cos (x))
+     * cos (x + delta) = cos (x) - (α * cos (x) - β * sin (x))
+     *
+     * 반복적으로 sin (..) 및 cos (..)을 계산합니다.
+     */
     threshold = ae_sqrt(ae_minrealnumber, _state);
     t = (t-0.5*(a+b))/(0.5*(b-a));
     a0 = ae_pi/(2*(n-1)+2);
@@ -13258,6 +20159,10 @@ double polynomialcalccheb1(double a,
     /*
      * First, decide: should we use "safe" formula (guarded
      * against overflow) or fast one?
+     */
+    /*
+     * 첫째, 결정 : 우리는 "안전한"공식을 사용해야합니다 (경계
+     * 오버플로) 또는 빠른 하나?
      */
     ca = ae_cos(a0, _state);
     sa = ae_sin(a0, _state);
@@ -13296,12 +20201,18 @@ double polynomialcalccheb1(double a,
         /*
          * use fast formula
          */
+        /*
+         * 빠른 공식 사용
+         */
         j = -1;
         s = 1.0;
     }
     
     /*
      * Calculate using safe or fast barycentric formula
+     */
+    /*
+     * 안전 또는 빠른 중력 식을 사용하여 계산
      */
     s1 = 0;
     s2 = 0;
@@ -13319,6 +20230,9 @@ double polynomialcalccheb1(double a,
         
         /*
          * Proceed
+         */
+         /*
+         * 진행
          */
         if( i!=j )
         {
@@ -13373,6 +20287,32 @@ IMPORTANT
   -- ALGLIB --
      Copyright 02.12.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+Chebyshev 포인트에서의 빠른 다항식 보간 기능 (두 번째 종류)
+O (N) 복잡도.
+
+입력 매개 변수 :
+    A - [A, B]의 왼쪽 경계
+    B - [A, B]의 오른쪽 경계
+    F - 함수 값, array [0..N-1]
+    N - Chebyshev 격자 (두 번째 종류)의 점 수,
+            X (i) = 0.5 * (B + A) + 0.5 * (BA) * Cos (PI * i / (n-1))
+            N = 1 인 경우 상수 모델이 구성됩니다.
+    T - P (x)를 계산하는 위치
+
+결과
+    T에서의 Lagrange 보간 값
+
+중대한
+    이 함수는 오버 플로우 방지가 아닌 빠른 인터페이스를 제공합니다.
+    매우 정확하지도 않습니다.
+    가장 좋은 방법은 PolIntBuildCheb2 () / BarycentricCalc ()를 사용하는 것입니다.
+    당신의 데이터가 결과가 나오지 않는다고 확신하지 않는 한 서브 루틴
+    오버플로에서.
+
+  - ALGLIB -
+     저작권 02.12.2009 Bochkanov Sergey
+**************************************************************************/
 double polynomialcalccheb2(double a,
      double b,
      /* Real    */ ae_vector* f,
@@ -13412,6 +20352,9 @@ double polynomialcalccheb2(double a,
     /*
      * Special case: T is NAN
      */
+    /*
+     * 특별한 경우 : T는 NAN입니다.
+     */
     if( ae_isnan(t, _state) )
     {
         result = _state->v_nan;
@@ -13420,6 +20363,9 @@ double polynomialcalccheb2(double a,
     
     /*
      * Special case: N=1
+     */
+    /*
+     * 특별한 경우 : N = 1
      */
     if( n==1 )
     {
@@ -13445,6 +20391,24 @@ double polynomialcalccheb2(double a,
      *
      * to repeatedly calculate sin(..) and cos(..).
      */
+    /*
+     * 반복 수식에 대한 정보를 준비하십시오.
+     * sin (pi * i / n)과
+     * cos (pi * i / n) :
+     *
+     * A0 = 0
+     * 델타 = pi / n
+     * 알파 = 2 sin ^ 2 (델타 / 2)
+     * 베타 = sin (델타)
+     *
+     sin (A0 + j * delta)와 cos (..) = cos (A0 + j * delta)가되도록.
+     * 그런 다음
+     *
+     * sin (x + delta) = sin (x) - (alpha * sin (x) - beta * cos (x))
+     * cos (x + delta) = cos (x) - (α * cos (x) - β * sin (x))
+     *
+     * 반복적으로 sin (..) 및 cos (..)을 계산합니다.
+     */
     threshold = ae_sqrt(ae_minrealnumber, _state);
     t = (t-0.5*(a+b))/(0.5*(b-a));
     a0 = 0.0;
@@ -13455,6 +20419,10 @@ double polynomialcalccheb2(double a,
     /*
      * First, decide: should we use "safe" formula (guarded
      * against overflow) or fast one?
+     */
+    /*
+     * 첫째, 결정 : 우리는 "안전한"공식을 사용해야합니다 (경계
+     * 오버플로) 또는 빠른 하나?
      */
     ca = ae_cos(a0, _state);
     sa = ae_sin(a0, _state);
@@ -13493,12 +20461,18 @@ double polynomialcalccheb2(double a,
         /*
          * use fast formula
          */
+        /*
+         * 빠른 공식 사용
+         */
         j = -1;
         s = 1.0;
     }
     
     /*
      * Calculate using safe or fast barycentric formula
+     */
+    /*
+     * 안전 또는 빠른 중력 식을 사용하여 계산
      */
     s1 = 0;
     s2 = 0;
@@ -13523,6 +20497,9 @@ double polynomialcalccheb2(double a,
         
         /*
          * Proceed
+         */
+        /*
+         * 진행
          */
         if( i!=j )
         {
@@ -13576,6 +20553,29 @@ Subroutine automatically sorts points, so caller may pass unsorted array.
   -- ALGLIB PROJECT --
      Copyright 24.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 선형 스플라인 보간을 작성합니다.
+
+입력 매개 변수 :
+    X - 스플라인 노드, 배열 [0..N-1]
+    Y - 함수 값, 배열 [0..N-1]
+    N - 포인트 카운트 (옵션) :
+            * N> = 2
+            * 주어진 경우 첫 번째 N 점만이 스플라인을 작성하는 데 사용됩니다.
+            * 지정하지 않으면 X / Y 크기에서 자동 감지
+              (len (X)는 len (Y)와 같아야 함)
+    
+출력 매개 변수 :
+    C - 스플라인 보간
+
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 24.06.2007
+**************************************************************************/
 void spline1dbuildlinear(/* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
      ae_int_t n,
@@ -13600,6 +20600,9 @@ void spline1dbuildlinear(/* Real    */ ae_vector* x,
     
     /*
      * check and sort points
+     */
+    /*
+     * 포인트 확인 및 정렬
      */
     ae_assert(isfinitevector(x, n, _state), "Spline1DBuildLinear: X contains infinite or NAN values!", _state);
     ae_assert(isfinitevector(y, n, _state), "Spline1DBuildLinear: Y contains infinite or NAN values!", _state);
@@ -13685,6 +20688,59 @@ i.e. to make Y[first_point]=Y[last_point].
   -- ALGLIB PROJECT --
      Copyright 23.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 3 차 스플라인 보간을 만듭니다.
+
+입력 매개 변수 :
+    X - 스플라인 노드, 배열 [0..N-1].
+    Y - 함수 값, array [0..N-1].
+    
+선택 가능한 매개 변수 :
+    N - 점 수 :
+                    * N> = 2
+                    * 주어진 경우 첫 번째 N 점만이 스플라인을 작성하는 데 사용됩니다.
+                    * 지정하지 않으면 X / Y 크기에서 자동 감지
+                      (len (X)는 len (Y)와 같아야 함)
+    BoundLType - 왼쪽 경계의 경계 조건 유형
+    BoundL - 왼쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundLType에 따라 다름)
+    BoundRType - 오른쪽 경계의 경계 조건 타입
+    BoundR - 오른쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundRType에 따라 다름)
+
+출력 매개 변수 :
+    C - 스플라인 보간
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+
+경계 값 설정 :
+
+BoundLType / BoundRType 매개 변수의 값은 다음과 같습니다.
+    * -1은주기적인 (주기적) 경계 조건에 해당합니다.
+          이 경우 :
+          BoundLType와 BoundRType는 모두 -1과 같아야합니다.
+          * BoundL / BoundR은 무시됩니다.
+          * Y [last]는 무시됩니다 (Y [first]와 같음).
+    * 0은 파라볼 릭 종료 스플라인에 해당합니다.
+          BoundL 및 / 또는 BoundR은 무시됩니다.
+    * 1, 1 차 미분 경계 조건에 해당
+    * 2, 이차 미분 경계 조건에 해당
+    * 기본적으로 BoundType = 0이 사용됩니다.
+
+정기적 인 경계 조건과 관련된 문제 :
+
+주기적인 경계 조건의 문제는 Y [first_point] = Y [last_point]입니다.
+그러나이 서브 루틴에서는 다음과 같은 값을 지정할 필요가 없습니다.
+첫번째와 마지막 점 - 자동으로 그것들을 동일하게 만든다.
+Y [first_point] (가장 왼쪽, 최소 X []에 해당)를
+Y [last_point]. 그러나 Y []의 일관된 값을 전달하는 것이 좋습니다.
+즉 Y [first_point] = Y [last_point]를 만들 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     저작권 23.06.2007 Bochkanov Sergey
+**************************************************************************/
 void spline1dbuildcubic(/* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
      ae_int_t n,
@@ -13725,6 +20781,10 @@ void spline1dbuildcubic(/* Real    */ ae_vector* x,
     /*
      * check correctness of boundary conditions
      */
+
+    /*
+     * 경계 조건의 정확성 검사
+     */
     ae_assert(((boundltype==-1||boundltype==0)||boundltype==1)||boundltype==2, "Spline1DBuildCubic: incorrect BoundLType!", _state);
     ae_assert(((boundrtype==-1||boundrtype==0)||boundrtype==1)||boundrtype==2, "Spline1DBuildCubic: incorrect BoundRType!", _state);
     ae_assert((boundrtype==-1&&boundltype==-1)||(boundrtype!=-1&&boundltype!=-1), "Spline1DBuildCubic: incorrect BoundLType/BoundRType!", _state);
@@ -13740,12 +20800,18 @@ void spline1dbuildcubic(/* Real    */ ae_vector* x,
     /*
      * check lengths of arguments
      */
+    /*
+     * 인수 길이 확인
+     */
     ae_assert(n>=2, "Spline1DBuildCubic: N<2!", _state);
     ae_assert(x->cnt>=n, "Spline1DBuildCubic: Length(X)<N!", _state);
     ae_assert(y->cnt>=n, "Spline1DBuildCubic: Length(Y)<N!", _state);
     
     /*
      * check and sort points
+     */
+    /*
+     * 포인트 확인 및 정렬
      */
     ylen = n;
     if( boundltype==-1 )
@@ -13761,6 +20827,11 @@ void spline1dbuildcubic(/* Real    */ ae_vector* x,
      * Now we've checked and preordered everything,
      * so we can call internal function to calculate derivatives,
      * and then build Hermite spline using these derivatives
+     */
+    /*
+     * 이제 우리는 모든 것을 점검하고 선매했다.
+     * 그래서 우리는 파생 상품을 계산하기 위해 내부 함수를 호출 할 수 있습니다.
+     * 그런 다음 이러한 파생 상품을 사용하여 Hermite 스플라인을 작성하십시오.
      */
     if( boundltype==-1||boundrtype==-1 )
     {
@@ -13835,6 +20906,67 @@ i.e. to make Y[first_point]=Y[last_point].
   -- ALGLIB PROJECT --
      Copyright 03.09.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 다음과 같은 문제를 해결합니다 : 주어진 테이블 y [] 함수 값
+노드 x []에서 함수 파생 ​​테이블 d []를 계산하여 반환합니다.
+(동일한 노드 x []에서 계산 됨).
+
+이 함수는 Spline1DBuildCubic () 호출과 동일한 결과를 산출 한 다음
+Spline1DDiff () 호출의 시퀀스를
+순서가있는 X []와 X2 []를 호출했습니다.
+
+입력 매개 변수 :
+    X - 스플라인 노드
+    Y - 함수 값
+
+선택 가능한 매개 변수 :
+    N - 점 수 :
+                    * N> = 2
+                    * 주어진 경우 첫 번째 N 점만 사용됩니다.
+                    * 지정하지 않으면 X / Y 크기에서 자동 감지
+                      (len (X)는 len (Y)와 같아야 함)
+    BoundLType - 왼쪽 경계의 경계 조건 유형
+    BoundL - 왼쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundLType에 따라 다름)
+    BoundRType - 오른쪽 경계의 경계 조건 타입
+    BoundR - 오른쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundRType에 따라 다름)
+
+출력 매개 변수 :
+    D - X []에서 미분 값
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+미분 값은 반환시 올바르게 재정렬되므로 D [I]는 항상
+점 순서와 관계없이 S '(X [I])와 같습니다.
+
+경계 값 설정 :
+
+BoundLType / BoundRType 매개 변수의 값은 다음과 같습니다.
+    * -1은주기적인 (주기적) 경계 조건에 해당합니다.
+          이 경우 :
+          BoundLType와 BoundRType는 모두 -1과 같아야합니다.
+          * BoundL / BoundR은 무시됩니다.
+          * Y [last]는 무시됩니다 (Y [first]와 같음).
+    * 0은 파라볼 릭 종료 스플라인에 해당합니다.
+          BoundL 및 / 또는 BoundR은 무시됩니다.
+    * 1, 1 차 미분 경계 조건에 해당
+    * 2, 이차 미분 경계 조건에 해당
+    * 기본적으로 BoundType = 0이 사용됩니다.
+
+정기적 인 경계 조건과 관련된 문제 :
+
+주기적인 경계 조건의 문제는 Y [first_point] = Y [last_point]입니다.
+그러나이 서브 루틴에서는 다음과 같은 값을 지정할 필요가 없습니다.
+첫번째와 마지막 점 - 자동으로 그것들을 동일하게 만든다.
+Y [first_point] (가장 왼쪽, 최소 X []에 해당)를
+Y [last_point]. 그러나 Y []의 일관된 값을 전달하는 것이 좋습니다.
+즉 Y [first_point] = Y [last_point]를 만들 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     저작권 03.09.2010 Bochkanov Sergey
+**************************************************************************/
 void spline1dgriddiffcubic(/* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
      ae_int_t n,
@@ -13874,6 +21006,9 @@ void spline1dgriddiffcubic(/* Real    */ ae_vector* x,
     /*
      * check correctness of boundary conditions
      */
+    /*
+     * 경계 조건의 정확성 검사
+     */
     ae_assert(((boundltype==-1||boundltype==0)||boundltype==1)||boundltype==2, "Spline1DGridDiffCubic: incorrect BoundLType!", _state);
     ae_assert(((boundrtype==-1||boundrtype==0)||boundrtype==1)||boundrtype==2, "Spline1DGridDiffCubic: incorrect BoundRType!", _state);
     ae_assert((boundrtype==-1&&boundltype==-1)||(boundrtype!=-1&&boundltype!=-1), "Spline1DGridDiffCubic: incorrect BoundLType/BoundRType!", _state);
@@ -13889,12 +21024,18 @@ void spline1dgriddiffcubic(/* Real    */ ae_vector* x,
     /*
      * check lengths of arguments
      */
+  /*
+     * 인수 길이 확인
+     */
     ae_assert(n>=2, "Spline1DGridDiffCubic: N<2!", _state);
     ae_assert(x->cnt>=n, "Spline1DGridDiffCubic: Length(X)<N!", _state);
     ae_assert(y->cnt>=n, "Spline1DGridDiffCubic: Length(Y)<N!", _state);
     
     /*
      * check and sort points
+     */
+    /*
+     * 포인트 확인 및 정렬
      */
     ylen = n;
     if( boundltype==-1 )
@@ -13910,11 +21051,19 @@ void spline1dgriddiffcubic(/* Real    */ ae_vector* x,
      * Now we've checked and preordered everything,
      * so we can call internal function.
      */
+    /*
+     * 이제 우리는 모든 것을 점검하고 선매했다.
+     * 그래서 우리는 내부 함수를 호출 할 수 있습니다.
+     */
     spline1d_spline1dgriddiffcubicinternal(x, y, n, boundltype, boundl, boundrtype, boundr, d, &a1, &a2, &a3, &b, &dt, _state);
     
     /*
      * Remember that HeapSortPPoints() call?
      * Now we have to reorder them back.
+     */
+    /*
+     * HeapSortPPoints () 호출을 기억하십니까?
+     * 이제 우리는 그들을 다시 정리해야합니다.
      */
     if( dt.cnt<n )
     {
@@ -13991,6 +21140,68 @@ i.e. to make Y[first_point]=Y[last_point].
   -- ALGLIB PROJECT --
      Copyright 03.09.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 다음과 같은 문제를 해결합니다 : 주어진 테이블 y [] 함수 값
+노드 x []에서 첫 번째 및 두 번째 테이블을 계산하여 반환합니다.
+함수 파생 ​​d1 []과 d2 [] (같은 노드 x []에서 계산).
+
+이 함수는 Spline1DBuildCubic () 호출과 동일한 결과를 산출 한 다음
+Spline1DDiff () 호출의 시퀀스를
+순서가있는 X []와 X2 []를 호출했습니다.
+
+입력 매개 변수 :
+    X - 스플라인 노드
+    Y - 함수 값
+
+선택 가능한 매개 변수 :
+    N - 점 수 :
+                    * N> = 2
+                    * 주어진 경우 첫 번째 N 점만 사용됩니다.
+                    * 지정하지 않으면 X / Y 크기에서 자동 감지
+                      (len (X)는 len (Y)와 같아야 함)
+    BoundLType - 왼쪽 경계의 경계 조건 유형
+    BoundL - 왼쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundLType에 따라 다름)
+    BoundRType - 오른쪽 경계의 경계 조건 타입
+    BoundR - 오른쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundRType에 따라 다름)
+
+출력 매개 변수 :
+    X []에서 D1 - S '값
+    X []에서 D2 - S "값
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+미분 값은 반환시 올바르게 재정렬되므로 D [I]는 항상
+점 순서와 관계없이 S '(X [I])와 같습니다.
+
+경계 값 설정 :
+
+BoundLType / BoundRType 매개 변수의 값은 다음과 같습니다.
+    * -1은주기적인 (주기적) 경계 조건에 해당합니다.
+          이 경우 :
+          BoundLType와 BoundRType는 모두 -1과 같아야합니다.
+          * BoundL / BoundR은 무시됩니다.
+          * Y [last]는 무시됩니다 (Y [first]와 같음).
+    * 0은 파라볼 릭 종료 스플라인에 해당합니다.
+          BoundL 및 / 또는 BoundR은 무시됩니다.
+    * 1, 1 차 미분 경계 조건에 해당
+    * 2, 이차 미분 경계 조건에 해당
+    * 기본적으로 BoundType = 0이 사용됩니다.
+
+정기적 인 경계 조건과 관련된 문제 :
+
+주기적인 경계 조건의 문제는 Y [first_point] = Y [last_point]입니다.
+그러나이 서브 루틴에서는 다음과 같은 값을 지정할 필요가 없습니다.
+첫번째와 마지막 점 - 자동으로 그것들을 동일하게 만든다.
+Y [first_point] (가장 왼쪽, 최소 X []에 해당)를
+Y [last_point]. 그러나 Y []의 일관된 값을 전달하는 것이 좋습니다.
+즉 Y [first_point] = Y [last_point]를 만들 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     저작권 03.09.2010 Bochkanov Sergey
+**************************************************************************/
 void spline1dgriddiff2cubic(/* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
      ae_int_t n,
@@ -14037,6 +21248,9 @@ void spline1dgriddiff2cubic(/* Real    */ ae_vector* x,
     /*
      * check correctness of boundary conditions
      */
+    /*
+     * 경계 조건의 정확성 검사
+     */
     ae_assert(((boundltype==-1||boundltype==0)||boundltype==1)||boundltype==2, "Spline1DGridDiff2Cubic: incorrect BoundLType!", _state);
     ae_assert(((boundrtype==-1||boundrtype==0)||boundrtype==1)||boundrtype==2, "Spline1DGridDiff2Cubic: incorrect BoundRType!", _state);
     ae_assert((boundrtype==-1&&boundltype==-1)||(boundrtype!=-1&&boundltype!=-1), "Spline1DGridDiff2Cubic: incorrect BoundLType/BoundRType!", _state);
@@ -14052,12 +21266,18 @@ void spline1dgriddiff2cubic(/* Real    */ ae_vector* x,
     /*
      * check lengths of arguments
      */
+    /*
+     * 인수 길이 확인
+     */
     ae_assert(n>=2, "Spline1DGridDiff2Cubic: N<2!", _state);
     ae_assert(x->cnt>=n, "Spline1DGridDiff2Cubic: Length(X)<N!", _state);
     ae_assert(y->cnt>=n, "Spline1DGridDiff2Cubic: Length(Y)<N!", _state);
     
     /*
      * check and sort points
+     */
+    /*
+     * 포인트 확인 및 정렬
      */
     ylen = n;
     if( boundltype==-1 )
@@ -14075,6 +21295,13 @@ void spline1dgriddiff2cubic(/* Real    */ ae_vector* x,
      *
      * After this call we will calculate second derivatives
      * (manually, by converting to the power basis)
+     */
+    /*
+     * 이제 우리는 모든 것을 점검하고 선매했다.
+     * 그래서 우리는 내부 함수를 호출 할 수 있습니다.
+     *
+     *이 통화 후 2 차 파생 상품을 계산합니다.
+     * (수동으로 전력 기준으로 변환하여)
      */
     spline1d_spline1dgriddiffcubicinternal(x, y, n, boundltype, boundl, boundrtype, boundr, d1, &a1, &a2, &a3, &b, &dt, _state);
     ae_vector_set_length(d2, n, _state);
@@ -14094,6 +21321,16 @@ void spline1dgriddiff2cubic(/* Real    */ ae_vector* x,
          * will be over, we will need other coefficients
          * to calculate spline value at the last node.
          */
+        /*
+         * 우리는 허미먼스 기반에서 권력 기반으로 전환한다.
+         * Si는 x ^ i 앞의 계수입니다.
+         *
+         *이주기 안에 S2가 필요합니다.
+         * 스플라인 노드에서 S ''를 정확하게 계산하기 때문에,
+         * (x = 0에서 x ^ 2 문제 만), 반복 후
+         *는 끝나고 다른 계수가 필요합니다.
+         * 마지막 노드에서 스플라인 값을 계산합니다.
+         */
         delta = x->ptr.p_double[i+1]-x->ptr.p_double[i];
         delta2 = ae_sqr(delta, _state);
         delta3 = delta*delta2;
@@ -14106,6 +21343,10 @@ void spline1dgriddiff2cubic(/* Real    */ ae_vector* x,
     /*
      * Remember that HeapSortPPoints() call?
      * Now we have to reorder them back.
+     */
+    /*
+     * HeapSortPPoints () 호출을 기억하십니까?
+     * 이제 우리는 그들을 다시 정리해야합니다.
      */
     if( dt.cnt<n )
     {
@@ -14191,6 +21432,72 @@ i.e. to make Y[first_point]=Y[last_point].
   -- ALGLIB PROJECT --
      Copyright 03.09.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 다음과 같은 문제를 해결합니다 : 주어진 테이블 y [] 함수 값
+이전 노드 x []와 새로운 노드 x2 []에서,
+함수 값 y2 [] (x2 []에서 계산).
+
+이 함수는 Spline1DBuildCubic () 호출과 동일한 결과를 산출 한 다음
+Spline1DDiff () 호출의 시퀀스를
+순서가있는 X []와 X2 []를 호출했습니다.
+
+입력 매개 변수 :
+    X - 오래된 스플라인 노드
+    Y - 함수 값
+    X2 - 새로운 스플라인 노드
+
+선택 가능한 매개 변수 :
+    N - 점 수 :
+                    * N> = 2
+                    * 주어지면 X / Y에서 처음 N 포인트 만 사용됩니다.
+                    * 지정하지 않으면 X / Y 크기에서 자동 감지
+                      (len (X)는 len (Y)와 같아야 함)
+    BoundLType - 왼쪽 경계의 경계 조건 유형
+    BoundL - 왼쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundLType에 따라 다름)
+    BoundRType - 오른쪽 경계의 경계 조건 타입
+    BoundR - 오른쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundRType에 따라 다름)
+    N2 - 새로운 점수 계산 :
+                    * N2> = 2
+                    * 주어진 경우 X2에서 첫 번째 N2 점만 사용됩니다.
+                    * 지정하지 않으면 X2 크기에서 자동으로 감지됩니다.
+
+출력 매개 변수 :
+    F2 - X2 [에서 함수 값
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+함수 값은 반환시 올바르게 재정렬되므로 F2 [I]는 항상
+점 순서와 관계없이 S (X2 [I])와 같습니다.
+
+경계 값 설정 :
+
+BoundLType / BoundRType 매개 변수의 값은 다음과 같습니다.
+    * -1은주기적인 (주기적) 경계 조건에 해당합니다.
+          이 경우 :
+          BoundLType와 BoundRType는 모두 -1과 같아야합니다.
+          * BoundL / BoundR은 무시됩니다.
+          * Y [last]는 무시됩니다 (Y [first]와 같음).
+    * 0은 파라볼 릭 종료 스플라인에 해당합니다.
+          BoundL 및 / 또는 BoundR은 무시됩니다.
+    * 1, 1 차 미분 경계 조건에 해당
+    * 2, 이차 미분 경계 조건에 해당
+    * 기본적으로 BoundType = 0이 사용됩니다.
+
+정기적 인 경계 조건과 관련된 문제 :
+
+주기적인 경계 조건의 문제는 Y [first_point] = Y [last_point]입니다.
+그러나이 서브 루틴에서는 다음과 같은 값을 지정할 필요가 없습니다.
+첫번째와 마지막 점 - 자동으로 그것들을 동일하게 만든다.
+Y [first_point] (가장 왼쪽, 최소 X []에 해당)를
+Y [last_point]. 그러나 Y []의 일관된 값을 전달하는 것이 좋습니다.
+즉 Y [first_point] = Y [last_point]를 만들 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     저작권 03.09.2010 Bochkanov Sergey
+**************************************************************************/
 void spline1dconvcubic(/* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
      ae_int_t n,
@@ -14245,6 +21552,9 @@ void spline1dconvcubic(/* Real    */ ae_vector* x,
     /*
      * check correctness of boundary conditions
      */
+    /*
+     * 경계 조건의 정확성 검사
+     */
     ae_assert(((boundltype==-1||boundltype==0)||boundltype==1)||boundltype==2, "Spline1DConvCubic: incorrect BoundLType!", _state);
     ae_assert(((boundrtype==-1||boundrtype==0)||boundrtype==1)||boundrtype==2, "Spline1DConvCubic: incorrect BoundRType!", _state);
     ae_assert((boundrtype==-1&&boundltype==-1)||(boundrtype!=-1&&boundltype!=-1), "Spline1DConvCubic: incorrect BoundLType/BoundRType!", _state);
@@ -14260,6 +21570,9 @@ void spline1dconvcubic(/* Real    */ ae_vector* x,
     /*
      * check lengths of arguments
      */
+    /*
+     * 인수 길이 확인
+     */
     ae_assert(n>=2, "Spline1DConvCubic: N<2!", _state);
     ae_assert(x->cnt>=n, "Spline1DConvCubic: Length(X)<N!", _state);
     ae_assert(y->cnt>=n, "Spline1DConvCubic: Length(Y)<N!", _state);
@@ -14268,6 +21581,9 @@ void spline1dconvcubic(/* Real    */ ae_vector* x,
     
     /*
      * check and sort X/Y
+     */
+    /*
+     * X / Y 확인 및 정렬
      */
     ylen = n;
     if( boundltype==-1 )
@@ -14283,6 +21599,9 @@ void spline1dconvcubic(/* Real    */ ae_vector* x,
     /*
      * set up DT (we will need it below)
      */
+    /*
+     * DT 설정 (아래에 필요함)
+     */
     ae_vector_set_length(&dt, ae_maxint(n, n2, _state), _state);
     
     /*
@@ -14290,6 +21609,12 @@ void spline1dconvcubic(/* Real    */ ae_vector* x,
      * * use fake array DT because HeapSortPPoints() needs both integer AND real arrays
      * * if we have periodic problem, wrap points
      * * sort them, store permutation at P2
+     */
+    /*
+     * sort X2 :
+     HeapSortPPoints ()가 정수와 실제 배열을 모두 필요로하기 때문에 * 위조 배열 DT를 사용한다.
+     * *주기적인 문제가있는 경우, 랩 포인트
+     * * 정렬, P2에 순열 저장
      */
     if( boundrtype==-1&&boundltype==-1 )
     {
@@ -14307,6 +21632,12 @@ void spline1dconvcubic(/* Real    */ ae_vector* x,
      * * call internal GridDiff() function to get Hermite form of spline
      * * convert using internal Conv() function
      * * convert Y2 back to original order
+     */
+   /*
+     * 이제 모든 것을 확인하고 선주문했습니다.
+     * * 내부 GridDiff () 함수를 호출하여 Hermite 형태의 스플라인을 얻습니다.
+     * * 내부 Conv () 함수를 사용하여 변환
+     * * Y2를 원래 순서로 다시 변환합니다.
      */
     spline1d_spline1dgriddiffcubicinternal(x, y, n, boundltype, boundl, boundrtype, boundr, &d, &a1, &a2, &a3, &b, &dt, _state);
     spline1dconvdiffinternal(x, y, &d, n, x2, n2, y2, ae_true, &d1, ae_false, &d2, ae_false, _state);
@@ -14387,6 +21718,73 @@ i.e. to make Y[first_point]=Y[last_point].
   -- ALGLIB PROJECT --
      Copyright 03.09.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 다음과 같은 문제를 해결합니다 : 주어진 테이블 y [] 함수 값
+이전 노드 x []와 새로운 노드 x2 []에서,
+함수 값 y2 []와 미분 d2 [] (x2 []에서 계산)입니다.
+
+이 함수는 Spline1DBuildCubic () 호출과 동일한 결과를 산출 한 다음
+Spline1DDiff () 호출의 시퀀스를
+순서가있는 X []와 X2 []를 호출했습니다.
+
+입력 매개 변수 :
+    X - 오래된 스플라인 노드
+    Y - 함수 값
+    X2 - 새로운 스플라인 노드
+
+선택 가능한 매개 변수 :
+    N - 점 수 :
+                    * N> = 2
+                    * 주어지면 X / Y에서 처음 N 포인트 만 사용됩니다.
+                    * 지정하지 않으면 X / Y 크기에서 자동 감지
+                      (len (X)는 len (Y)와 같아야 함)
+    BoundLType - 왼쪽 경계의 경계 조건 유형
+    BoundL - 왼쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundLType에 따라 다름)
+    BoundRType - 오른쪽 경계의 경계 조건 타입
+    BoundR - 오른쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundRType에 따라 다름)
+    N2 - 새로운 점수 계산 :
+                    * N2> = 2
+                    * 주어진 경우 X2에서 첫 번째 N2 점만 사용됩니다.
+                    * 지정하지 않으면 X2 크기에서 자동으로 감지됩니다.
+
+출력 매개 변수 :
+    F2 - X2 [에서 함수 값
+    D2 - X2에서의 1 차 미분 []
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+함수 값은 반환시 올바르게 재정렬되므로 F2 [I]는 항상
+점 순서와 관계없이 S (X2 [I])와 같습니다.
+
+경계 값 설정 :
+
+BoundLType / BoundRType 매개 변수의 값은 다음과 같습니다.
+    * -1은주기적인 (주기적) 경계 조건에 해당합니다.
+          이 경우 :
+          BoundLType와 BoundRType는 모두 -1과 같아야합니다.
+          * BoundL / BoundR은 무시됩니다.
+          * Y [last]는 무시됩니다 (Y [first]와 같음).
+    * 0은 파라볼 릭 종료 스플라인에 해당합니다.
+          BoundL 및 / 또는 BoundR은 무시됩니다.
+    * 1, 1 차 미분 경계 조건에 해당
+    * 2, 이차 미분 경계 조건에 해당
+    * 기본적으로 BoundType = 0이 사용됩니다.
+
+정기적 인 경계 조건과 관련된 문제 :
+
+주기적인 경계 조건의 문제는 Y [first_point] = Y [last_point]입니다.
+그러나이 서브 루틴에서는 다음과 같은 값을 지정할 필요가 없습니다.
+첫번째와 마지막 점 - 자동으로 그것들을 동일하게 만든다.
+Y [first_point] (가장 왼쪽, 최소 X []에 해당)를
+Y [last_point]. 그러나 Y []의 일관된 값을 전달하는 것이 좋습니다.
+즉 Y [first_point] = Y [last_point]를 만들 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     저작권 03.09.2010 Bochkanov Sergey
+**************************************************************************/
 void spline1dconvdiffcubic(/* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
      ae_int_t n,
@@ -14441,6 +21839,10 @@ void spline1dconvdiffcubic(/* Real    */ ae_vector* x,
     /*
      * check correctness of boundary conditions
      */
+ 
+    /*
+     * 경계 조건의 정확성 검사
+     */
     ae_assert(((boundltype==-1||boundltype==0)||boundltype==1)||boundltype==2, "Spline1DConvDiffCubic: incorrect BoundLType!", _state);
     ae_assert(((boundrtype==-1||boundrtype==0)||boundrtype==1)||boundrtype==2, "Spline1DConvDiffCubic: incorrect BoundRType!", _state);
     ae_assert((boundrtype==-1&&boundltype==-1)||(boundrtype!=-1&&boundltype!=-1), "Spline1DConvDiffCubic: incorrect BoundLType/BoundRType!", _state);
@@ -14456,6 +21858,10 @@ void spline1dconvdiffcubic(/* Real    */ ae_vector* x,
     /*
      * check lengths of arguments
      */
+  
+    /*
+     * 인수 길이 확인
+     */
     ae_assert(n>=2, "Spline1DConvDiffCubic: N<2!", _state);
     ae_assert(x->cnt>=n, "Spline1DConvDiffCubic: Length(X)<N!", _state);
     ae_assert(y->cnt>=n, "Spline1DConvDiffCubic: Length(Y)<N!", _state);
@@ -14464,6 +21870,10 @@ void spline1dconvdiffcubic(/* Real    */ ae_vector* x,
     
     /*
      * check and sort X/Y
+     */
+  
+    /*
+     * X / Y 확인 및 정렬
      */
     ylen = n;
     if( boundltype==-1 )
@@ -14479,6 +21889,10 @@ void spline1dconvdiffcubic(/* Real    */ ae_vector* x,
     /*
      * set up DT (we will need it below)
      */
+    
+    /*
+     * DT 설정 (아래에 필요함)
+     */
     ae_vector_set_length(&dt, ae_maxint(n, n2, _state), _state);
     
     /*
@@ -14486,6 +21900,12 @@ void spline1dconvdiffcubic(/* Real    */ ae_vector* x,
      * * use fake array DT because HeapSortPPoints() needs both integer AND real arrays
      * * if we have periodic problem, wrap points
      * * sort them, store permutation at P2
+     */
+    /*
+     * sort X2 :
+     HeapSortPPoints ()가 정수와 실제 배열을 모두 필요로하기 때문에 * 위조 배열 DT를 사용한다.
+     * *주기적인 문제가있는 경우, 랩 포인트
+     * * 정렬, P2에 순열 저장
      */
     if( boundrtype==-1&&boundltype==-1 )
     {
@@ -14503,6 +21923,13 @@ void spline1dconvdiffcubic(/* Real    */ ae_vector* x,
      * * call internal GridDiff() function to get Hermite form of spline
      * * convert using internal Conv() function
      * * convert Y2 back to original order
+     */
+  
+    /*
+     * 이제 모든 것을 확인하고 선주문했습니다.
+     * * 내부 GridDiff () 함수를 호출하여 Hermite 형태의 스플라인을 얻습니다.
+     * * 내부 Conv () 함수를 사용하여 변환
+     * * Y2를 원래 순서로 다시 변환합니다.
      */
     spline1d_spline1dgriddiffcubicinternal(x, y, n, boundltype, boundl, boundrtype, boundr, &d, &a1, &a2, &a3, &b, &dt, _state);
     spline1dconvdiffinternal(x, y, &d, n, x2, n2, y2, ae_true, d2, ae_true, &rt1, ae_false, _state);
@@ -14590,6 +22017,75 @@ i.e. to make Y[first_point]=Y[last_point].
   -- ALGLIB PROJECT --
      Copyright 03.09.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 다음과 같은 문제를 해결합니다 : 주어진 테이블 y [] 함수 값
+이전 노드 x []와 새로운 노드 x2 []에서,
+함수 값 y2 [], 제 1 및 제 2 미분 d2 [] 및 dd2 []
+(x2 []에서 계산).
+
+이 함수는 Spline1DBuildCubic () 호출과 동일한 결과를 산출 한 다음
+Spline1DDiff () 호출의 시퀀스를
+순서가있는 X []와 X2 []를 호출했습니다.
+
+입력 매개 변수 :
+    X - 오래된 스플라인 노드
+    Y - 함수 값
+    X2 - 새로운 스플라인 노드
+
+선택 가능한 매개 변수 :
+    N - 점 수 :
+                    * N> = 2
+                    * 주어지면 X / Y에서 처음 N 포인트 만 사용됩니다.
+                    * 지정하지 않으면 X / Y 크기에서 자동 감지
+                      (len (X)는 len (Y)와 같아야 함)
+    BoundLType - 왼쪽 경계의 경계 조건 유형
+    BoundL - 왼쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundLType에 따라 다름)
+    BoundRType - 오른쪽 경계의 경계 조건 타입
+    BoundR - 오른쪽 경계 조건 (1 차 또는 2 차 미분,
+                    BoundRType에 따라 다름)
+    N2 - 새로운 점수 계산 :
+                    * N2> = 2
+                    * 주어진 경우 X2에서 첫 번째 N2 점만 사용됩니다.
+                    * 지정하지 않으면 X2 크기에서 자동으로 감지됩니다.
+
+출력 매개 변수 :
+    F2 - X2 [에서 함수 값
+    D2 - X2에서의 1 차 미분 []
+    DD2 - X2에서의 2 차 미분 []
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+함수 값은 반환시 올바르게 재정렬되므로 F2 [I]는 항상
+점 순서와 관계없이 S (X2 [I])와 같습니다.
+
+경계 값 설정 :
+
+BoundLType / BoundRType 매개 변수의 값은 다음과 같습니다.
+    * -1은주기적인 (주기적) 경계 조건에 해당합니다.
+          이 경우 :
+          BoundLType와 BoundRType는 모두 -1과 같아야합니다.
+          * BoundL / BoundR은 무시됩니다.
+          * Y [last]는 무시됩니다 (Y [first]와 같음).
+    * 0은 파라볼 릭 종료 스플라인에 해당합니다.
+          BoundL 및 / 또는 BoundR은 무시됩니다.
+    * 1, 1 차 미분 경계 조건에 해당
+    * 2, 이차 미분 경계 조건에 해당
+    * 기본적으로 BoundType = 0이 사용됩니다.
+
+정기적 인 경계 조건과 관련된 문제 :
+
+주기적인 경계 조건의 문제는 Y [first_point] = Y [last_point]입니다.
+그러나이 서브 루틴에서는 다음과 같은 값을 지정할 필요가 없습니다.
+첫번째와 마지막 점 - 자동으로 그것들을 동일하게 만든다.
+Y [first_point] (가장 왼쪽, 최소 X []에 해당)를
+Y [last_point]. 그러나 Y []의 일관된 값을 전달하는 것이 좋습니다.
+즉 Y [first_point] = Y [last_point]를 만들 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     저작권 03.09.2010 Bochkanov Sergey
+**************************************************************************/
 void spline1dconvdiff2cubic(/* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
      ae_int_t n,
@@ -14644,6 +22140,9 @@ void spline1dconvdiff2cubic(/* Real    */ ae_vector* x,
     /*
      * check correctness of boundary conditions
      */
+    /*
+     * 경계 조건의 정확성 검사
+     */
     ae_assert(((boundltype==-1||boundltype==0)||boundltype==1)||boundltype==2, "Spline1DConvDiff2Cubic: incorrect BoundLType!", _state);
     ae_assert(((boundrtype==-1||boundrtype==0)||boundrtype==1)||boundrtype==2, "Spline1DConvDiff2Cubic: incorrect BoundRType!", _state);
     ae_assert((boundrtype==-1&&boundltype==-1)||(boundrtype!=-1&&boundltype!=-1), "Spline1DConvDiff2Cubic: incorrect BoundLType/BoundRType!", _state);
@@ -14659,6 +22158,9 @@ void spline1dconvdiff2cubic(/* Real    */ ae_vector* x,
     /*
      * check lengths of arguments
      */
+    /*
+     * 인수 길이 확인
+     */
     ae_assert(n>=2, "Spline1DConvDiff2Cubic: N<2!", _state);
     ae_assert(x->cnt>=n, "Spline1DConvDiff2Cubic: Length(X)<N!", _state);
     ae_assert(y->cnt>=n, "Spline1DConvDiff2Cubic: Length(Y)<N!", _state);
@@ -14667,6 +22169,9 @@ void spline1dconvdiff2cubic(/* Real    */ ae_vector* x,
     
     /*
      * check and sort X/Y
+     */
+    /*
+     * X / Y 확인 및 정렬
      */
     ylen = n;
     if( boundltype==-1 )
@@ -14682,6 +22187,9 @@ void spline1dconvdiff2cubic(/* Real    */ ae_vector* x,
     /*
      * set up DT (we will need it below)
      */
+    /*
+     * DT 설정 (아래에 필요함)
+     */
     ae_vector_set_length(&dt, ae_maxint(n, n2, _state), _state);
     
     /*
@@ -14689,6 +22197,12 @@ void spline1dconvdiff2cubic(/* Real    */ ae_vector* x,
      * * use fake array DT because HeapSortPPoints() needs both integer AND real arrays
      * * if we have periodic problem, wrap points
      * * sort them, store permutation at P2
+     */
+    /*
+     * sort X2 :
+     HeapSortPPoints ()가 정수와 실제 배열을 모두 필요로하기 때문에 * 위조 배열 DT를 사용한다.
+     * *주기적인 문제가있는 경우, 랩 포인트
+     * * 정렬, P2에 순열 저장
      */
     if( boundrtype==-1&&boundltype==-1 )
     {
@@ -14706,6 +22220,13 @@ void spline1dconvdiff2cubic(/* Real    */ ae_vector* x,
      * * call internal GridDiff() function to get Hermite form of spline
      * * convert using internal Conv() function
      * * convert Y2 back to original order
+     */
+
+    /*
+     * 이제 모든 것을 확인하고 선주문했습니다.
+     * * 내부 GridDiff () 함수를 호출하여 Hermite 형태의 스플라인을 얻습니다.
+     * * 내부 Conv () 함수를 사용하여 변환
+     * * Y2를 원래 순서로 다시 변환합니다.
      */
     spline1d_spline1dgriddiffcubicinternal(x, y, n, boundltype, boundl, boundrtype, boundr, &d, &a1, &a2, &a3, &b, &dt, _state);
     spline1dconvdiffinternal(x, y, &d, n, x2, n2, y2, ae_true, d2, ae_true, dd2, ae_true, _state);
@@ -14769,6 +22290,46 @@ i.e. to make Y[first_point]=Y[last_point].
   -- ALGLIB PROJECT --
      Copyright 23.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 Catmull-Rom 스플라인 보간을 만듭니다.
+
+입력 매개 변수 :
+    X - 스플라인 노드, 배열 [0..N-1].
+    Y - 함수 값, array [0..N-1].
+    
+선택 가능한 매개 변수 :
+    N - 점 수 :
+                    * N> = 2
+                    * 주어진 경우 첫 번째 N 점만이 스플라인을 작성하는 데 사용됩니다.
+                    * 지정하지 않으면 X / Y 크기에서 자동 감지
+                      (len (X)는 len (Y)와 같아야 함)
+    BoundType - 경계 조건 유형 :
+                    주기 경계 조건의 경우 -1
+                    * 0 파라볼 릭 종료 스플라인 (기본값)
+    장력 - 장력 매개 변수 :
+                    * tension = 0은 기존 Catmull-Rom 스플라인에 해당 (기본값)
+                    * 0 <장력 <1은보다 일반적인 형태에 해당 - 기본 스플라인
+
+출력 매개 변수 :
+    C - 스플라인 보간
+
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+
+정기적 인 경계 조건과 관련된 문제 :
+
+주기적인 경계 조건의 문제는 Y [first_point] = Y [last_point]입니다.
+그러나이 서브 루틴에서는 다음과 같은 값을 지정할 필요가 없습니다.
+첫번째와 마지막 점 - 자동으로 그것들을 동일하게 만든다.
+Y [first_point] (가장 왼쪽, 최소 X []에 해당)를
+Y [last_point]. 그러나 Y []의 일관된 값을 전달하는 것이 좋습니다.
+즉 Y [first_point] = Y [last_point]를 만들 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     저작권 23.06.2007 Bochkanov Sergey
+**************************************************************************/
 void spline1dbuildcatmullrom(/* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
      ae_int_t n,
@@ -14801,6 +22362,9 @@ void spline1dbuildcatmullrom(/* Real    */ ae_vector* x,
     /*
      * check and sort points
      */
+    /*
+     * 포인트 확인 및 정렬
+     */
     ae_assert(isfinitevector(x, n, _state), "Spline1DBuildCatmullRom: X contains infinite or NAN values!", _state);
     ae_assert(isfinitevector(y, n, _state), "Spline1DBuildCatmullRom: Y contains infinite or NAN values!", _state);
     spline1d_heapsortpoints(x, y, n, _state);
@@ -14811,11 +22375,21 @@ void spline1dbuildcatmullrom(/* Real    */ ae_vector* x,
      * * N=2, parabolic terminated boundary condition on both ends
      * * N=2, periodic boundary condition
      */
+  
+    /*
+     * 특수한 상황들:
+     * * N = 2, 양쪽 끝의 파라볼 릭 종료 경계 조건
+     * * N = 2,주기적인 경계 조건
+     */
     if( n==2&&boundtype==0 )
     {
         
         /*
          * Just linear spline
+         */
+  
+        /*
+         * 선형 스플라인 만
          */
         spline1dbuildlinear(x, y, n, c, _state);
         ae_frame_leave(_state);
@@ -14827,6 +22401,10 @@ void spline1dbuildcatmullrom(/* Real    */ ae_vector* x,
         /*
          * Same as cubic spline with periodic conditions
          */
+  
+        /*
+         *주기 조건이있는 3 차 스플라인과 동일
+         */
         spline1dbuildcubic(x, y, n, -1, 0.0, -1, 0.0, c, _state);
         ae_frame_leave(_state);
         return;
@@ -14835,11 +22413,18 @@ void spline1dbuildcatmullrom(/* Real    */ ae_vector* x,
     /*
      * Periodic or non-periodic boundary conditions
      */
+    /*
+     * 주기적 또는 비 주기적 경계 조건
+     */
     if( boundtype==-1 )
     {
         
         /*
          * Periodic boundary conditions
+         */
+   
+        /*
+         * 주기적 경계 조건
          */
         y->ptr.p_double[n-1] = y->ptr.p_double[0];
         ae_vector_set_length(&d, n, _state);
@@ -14862,6 +22447,9 @@ void spline1dbuildcatmullrom(/* Real    */ ae_vector* x,
         /*
          * Non-periodic boundary conditions
          */
+        /*
+         * 비 주기적 경계 조건
+         */
         ae_vector_set_length(&d, n, _state);
         for(i=1; i<=n-2; i++)
         {
@@ -14872,6 +22460,10 @@ void spline1dbuildcatmullrom(/* Real    */ ae_vector* x,
         
         /*
          * Now problem is reduced to the cubic Hermite spline
+         */
+
+        /*
+         * 이제 문제는 큐빅 Hermite 스플라인으로 축소됩니다.
          */
         spline1dbuildhermite(x, y, &d, n, c, _state);
     }
@@ -14903,6 +22495,30 @@ Subroutine automatically sorts points, so caller may pass unsorted array.
   -- ALGLIB PROJECT --
      Copyright 23.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 Hermite 스플라인 보간을 만듭니다.
+
+입력 매개 변수 :
+    X - 스플라인 노드, 배열 [0..N-1]
+    Y - 함수 값, 배열 [0..N-1]
+    D- 유도체, 배열 [0..N-1]
+    N - 포인트 카운트 (옵션) :
+                    * N> = 2
+                    * 주어진 경우 첫 번째 N 점만이 스플라인을 작성하는 데 사용됩니다.
+                    * 지정하지 않으면 X / Y 크기에서 자동 감지
+                      (len (X)는 len (Y)와 같아야 함)
+
+출력 매개 변수 :
+    C - 스플라인 보간.
+
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     저작권 23.06.2007 Bochkanov Sergey
+**************************************************************************/
 void spline1dbuildhermite(/* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
      /* Real    */ ae_vector* d,
@@ -14935,6 +22551,9 @@ void spline1dbuildhermite(/* Real    */ ae_vector* x,
     
     /*
      * check and sort points
+     */
+    /*
+     * 포인트 확인 및 정렬
      */
     ae_assert(isfinitevector(x, n, _state), "Spline1DBuildHermite: X contains infinite or NAN values!", _state);
     ae_assert(isfinitevector(y, n, _state), "Spline1DBuildHermite: Y contains infinite or NAN values!", _state);
@@ -14994,6 +22613,29 @@ Subroutine automatically sorts points, so caller may pass unsorted array.
   -- ALGLIB PROJECT --
      Copyright 24.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 Akima 스플라인 보간을 만듭니다.
+
+입력 매개 변수 :
+    X - 스플라인 노드, 배열 [0..N-1]
+    Y - 함수 값, 배열 [0..N-1]
+    N - 포인트 카운트 (옵션) :
+                    * N> = 2
+                    * 주어진 경우 첫 번째 N 점만이 스플라인을 작성하는 데 사용됩니다.
+                    * 지정하지 않으면 X / Y 크기에서 자동 감지
+                      (len (X)는 len (Y)와 같아야 함)
+
+출력 매개 변수 :
+    C - 스플라인 보간
+
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 24.06.2007
+**************************************************************************/
 void spline1dbuildakima(/* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
      ae_int_t n,
@@ -15025,6 +22667,9 @@ void spline1dbuildakima(/* Real    */ ae_vector* x,
     /*
      * check and sort points
      */
+    /*
+     * 포인트 확인 및 정렬
+     */
     ae_assert(isfinitevector(x, n, _state), "Spline1DBuildAkima: X contains infinite or NAN values!", _state);
     ae_assert(isfinitevector(y, n, _state), "Spline1DBuildAkima: Y contains infinite or NAN values!", _state);
     spline1d_heapsortpoints(x, y, n, _state);
@@ -15032,6 +22677,9 @@ void spline1dbuildakima(/* Real    */ ae_vector* x,
     
     /*
      * Handle special cases: N=2, N=3, N=4
+     */
+    /*
+     * 특별한 경우 처리 : N = 2, N = 3, N = 4
      */
     if( n<=4 )
     {
@@ -15042,6 +22690,10 @@ void spline1dbuildakima(/* Real    */ ae_vector* x,
     
     /*
      * Prepare W (weights), Diff (divided differences)
+     */
+   
+    /*
+     * 준비 W (무게), Diff (분할 된 차이)
      */
     ae_vector_set_length(&w, n-1, _state);
     ae_vector_set_length(&diff, n-1, _state);
@@ -15056,6 +22708,10 @@ void spline1dbuildakima(/* Real    */ ae_vector* x,
     
     /*
      * Prepare Hermite interpolation scheme
+     */
+  
+    /*
+     * Hermite 보간 체계 준비
      */
     ae_vector_set_length(&d, n, _state);
     for(i=2; i<=n-3; i++)
@@ -15077,6 +22733,9 @@ void spline1dbuildakima(/* Real    */ ae_vector* x,
     /*
      * Build Akima spline using Hermite interpolation scheme
      */
+    /*
+     * Hermite 보간 체계를 사용하여 Akima 스플라인을 구축하십시오.
+     */
     spline1dbuildhermite(x, y, &d, n, c, _state);
     ae_frame_leave(_state);
 }
@@ -15095,6 +22754,19 @@ Result:
   -- ALGLIB PROJECT --
      Copyright 23.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 주어진 점 X에서 스플라인 값을 계산합니다.
+
+입력 매개 변수 :
+    C - 스플라인 보간
+    X- 포인트
+
+결과:
+    S (x)
+
+  - ALGLIB 프로젝트 -
+     저작권 23.06.2007 Bochkanov Sergey
+**************************************************************************/
 double spline1dcalc(spline1dinterpolant* c, double x, ae_state *_state)
 {
     ae_int_t l;
@@ -15110,6 +22782,9 @@ double spline1dcalc(spline1dinterpolant* c, double x, ae_state *_state)
     /*
      * special case: NaN
      */
+    /*
+     * 특별한 경우 : NaN
+     */
     if( ae_isnan(x, _state) )
     {
         result = _state->v_nan;
@@ -15119,6 +22794,9 @@ double spline1dcalc(spline1dinterpolant* c, double x, ae_state *_state)
     /*
      * correct if periodic
      */
+    /*
+     * 정기적 인 경우 수정
+     */
     if( c->periodic )
     {
         apperiodicmap(&x, c->x.ptr.p_double[0], c->x.ptr.p_double[c->n-1], &t, _state);
@@ -15126,6 +22804,9 @@ double spline1dcalc(spline1dinterpolant* c, double x, ae_state *_state)
     
     /*
      * Binary search in the [ x[0], ..., x[n-2] ] (x[n-1] is not included)
+     */
+    /*
+     * [x [0], ..., x [n-2]] (x [n-1])의 이진 검색은 포함되지 않습니다.
      */
     l = 0;
     r = c->n-2+1;
@@ -15144,6 +22825,9 @@ double spline1dcalc(spline1dinterpolant* c, double x, ae_state *_state)
     
     /*
      * Interpolation
+     */
+    /*
+     * 보간법
      */
     x = x-c->x.ptr.p_double[l];
     m = 4*l;
@@ -15167,6 +22851,21 @@ Result:
   -- ALGLIB PROJECT --
      Copyright 24.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 스플라인을 구분합니다.
+
+입력 매개 변수 :
+    C - 스플라인 보간.
+    X- 포인트
+
+결과:
+    S - S (x)
+    DS - S '(x)
+    D2S - S "(x)
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 24.06.2007
+**************************************************************************/
 void spline1ddiff(spline1dinterpolant* c,
      double x,
      double* s,
@@ -15189,6 +22888,9 @@ void spline1ddiff(spline1dinterpolant* c,
     /*
      * special case: NaN
      */
+    /*
+     * 특별한 경우 : NaN
+     */
     if( ae_isnan(x, _state) )
     {
         *s = _state->v_nan;
@@ -15200,6 +22902,9 @@ void spline1ddiff(spline1dinterpolant* c,
     /*
      * correct if periodic
      */
+    /*
+     * 정기적 인 경우 수정
+     */
     if( c->periodic )
     {
         apperiodicmap(&x, c->x.ptr.p_double[0], c->x.ptr.p_double[c->n-1], &t, _state);
@@ -15207,6 +22912,9 @@ void spline1ddiff(spline1dinterpolant* c,
     
     /*
      * Binary search
+     */
+    /*
+     * 바이너리 검색
      */
     l = 0;
     r = c->n-2+1;
@@ -15225,6 +22933,9 @@ void spline1ddiff(spline1dinterpolant* c,
     
     /*
      * Differentiation
+     */
+    /*
+     * 차별화
      */
     x = x-c->x.ptr.p_double[l];
     m = 4*l;
@@ -15246,6 +22957,18 @@ Result:
   -- ALGLIB PROJECT --
      Copyright 29.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 스플라인의 복사본을 만듭니다.
+
+입력 매개 변수 :
+    C - 스플라인 보간.
+
+결과:
+    CC - 스플라인 복사본
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 29.06.2007
+**************************************************************************/
 void spline1dcopy(spline1dinterpolant* c,
      spline1dinterpolant* cc,
      ae_state *_state)
@@ -15294,6 +23017,35 @@ NOTE:
   -- ALGLIB PROJECT --
      Copyright 29.06.2007 by Bochkanov Sergey
 *************************************************************************/
+
+/*************************************************************************
+이 서브 루틴은 스플라인을 계수 테이블에 압축 해제합니다.
+
+입력 매개 변수 :
+    C - 스플라인 보간.
+    X- 포인트
+
+출력 매개 변수 :
+    Tbl - 계수 테이블, 언 패킹 된 포맷, 배열 [0..N-2, 0..5].
+            I = 0 ... N-2 :
+                Tbl [I, 0] = X [i]
+                Tbl [1, 1] = X [i + 1]
+                Tbl [1, 2] = C0
+                Tbl [1, 3] = C1
+                Tbl [1, 4] = C2
+                Tbl [1, 5] = C3
+            [x [i], x [i + 1]] 스플라인은 다음과 같습니다.
+                S (x) = C0 + C1 * t + C2 * t ^ 2 + C3 * t ^ 3
+                t = xx [i]
+                
+노트:
+    Spline1DBuildHermite () 함수를 사용하여 스플라인을 다시 작성할 수 있습니다.
+    노드로 함수 값과 미분을 입력으로 받아들입니다.
+    계수가있을 때 쉽게 계산할 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 29.06.2007
+**************************************************************************/
 void spline1dunpack(spline1dinterpolant* c,
      ae_int_t* n,
      /* Real    */ ae_matrix* tbl,
@@ -15335,6 +23087,18 @@ Result:
   -- ALGLIB PROJECT --
      Copyright 30.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 스플라인 인수의 선형 변환을 수행합니다.
+
+입력 매개 변수 :
+    C - 스플라인 보간.
+    A, B- 변환 계수 : x = A * t + B
+결과:
+    C - 변형 된 스플라인
+
+  - ALGLIB 프로젝트 -
+     저작권 30.06.2007 Bochkanov Sergey
+**************************************************************************/
 void spline1dlintransx(spline1dinterpolant* c,
      double a,
      double b,
@@ -15367,11 +23131,18 @@ void spline1dlintransx(spline1dinterpolant* c,
      * Unpack, X, Y, dY/dX.
      * Scale and pack with Spline1DBuildHermite again.
      */
+    /*
+     * 포장 풀기, X, Y, dY / dX.
+     * Spline1DBuildHermite를 사용하여 다시 크기 조정 및 압축하십시오.
+     */
     if( ae_fp_eq(a,0) )
     {
         
         /*
          * Special case: A=0
+         */
+        /*
+         * 특별한 경우 : A = 0
          */
         v = spline1dcalc(c, b, _state);
         for(i=0; i<=n-1; i++)
@@ -15386,6 +23157,9 @@ void spline1dlintransx(spline1dinterpolant* c,
         
         /*
          * General case, A<>0
+         */
+        /*
+         * 일반적인 경우, A <> 0
          */
         for(i=0; i<=n-1; i++)
         {
@@ -15424,6 +23198,18 @@ Result:
   -- ALGLIB PROJECT --
      Copyright 30.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 스플라인의 선형 변환을 수행합니다.
+
+입력 매개 변수 :
+    C - 스플라인 보간.
+    A, B- 변환 계수 : S2 (x) = A * S (x) + B
+결과:
+    C - 변형 된 스플라인
+
+  - ALGLIB 프로젝트 -
+     저작권 30.06.2007 Bochkanov Sergey
+**************************************************************************/
 void spline1dlintransy(spline1dinterpolant* c,
      double a,
      double b,
@@ -15462,6 +23248,19 @@ Result:
   -- ALGLIB PROJECT --
      Copyright 23.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 스플라인을 통합합니다.
+
+입력 매개 변수 :
+    C - 스플라인 보간.
+    X - 적분 구간 [a, x]의 오른쪽 경계
+            여기서 'a'는 min (x [])을 나타냅니다.
+결과:
+    적분 (S (t) dt, a, x)
+
+  - ALGLIB 프로젝트 -
+     저작권 23.06.2007 Bochkanov Sergey
+**************************************************************************/
 double spline1dintegrate(spline1dinterpolant* c,
      double x,
      ae_state *_state)
@@ -15492,11 +23291,24 @@ double spline1dintegrate(spline1dinterpolant* c,
      * AdditionalTerm is equals to integral(S(t)dt,A,B) times some
      * integer number (may be zero).
      */
+    /*
+     * 정기적 스플라인에는 특별한 치료가 필요합니다. 우리는
+     * 다음 변환 :
+     *
+     * integral (S (t) dt, A, X) = 적분 (S (t) dt, A, Z) + AdditionalTerm
+     *
+     * 여기서 X는 [A, B]의 바깥쪽에 놓일 수 있고, Z는 [A, B],
+     * AdditionalTerm은 적분 (S (t) dt, A, B)에 대해
+     * 정수 (0 일 수 있음).
+     */
     if( c->periodic&&(ae_fp_less(x,c->x.ptr.p_double[0])||ae_fp_greater(x,c->x.ptr.p_double[c->n-1])) )
     {
         
         /*
          * compute integral(S(x)dx,A,B)
+         */
+        /*
+         * 적분 계산 (S (x) dx, A, B)
          */
         intab = 0;
         for(i=0; i<=c->n-2; i++)
@@ -15515,6 +23327,9 @@ double spline1dintegrate(spline1dinterpolant* c,
         /*
          * map X into [A,B]
          */
+        /*
+         * X를 [A, B]로 매핑하십시오.
+         */
         apperiodicmap(&x, c->x.ptr.p_double[0], c->x.ptr.p_double[c->n-1], &t, _state);
         additionalterm = t*intab;
     }
@@ -15525,6 +23340,9 @@ double spline1dintegrate(spline1dinterpolant* c,
     
     /*
      * Binary search in the [ x[0], ..., x[n-2] ] (x[n-1] is not included)
+     */
+    /*
+     * [x [0], ..., x [n-2]] (x [n-1])의 이진 검색은 포함되지 않습니다.
      */
     l = 0;
     r = n-2+1;
@@ -15543,6 +23361,9 @@ double spline1dintegrate(spline1dinterpolant* c,
     
     /*
      * Integration
+     */
+    /*
+     * 통합
      */
     result = 0;
     for(i=0; i<=l-1; i++)
@@ -15601,6 +23422,36 @@ OUTPUT ARRAYS:
   -- ALGLIB PROJECT --
      Copyright 03.09.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+Spline1DConvDiff의 내부 버전
+
+그리드 XOld에 의해 주어진 Hermite 스플라인에서 새 그리드 X2로 변환합니다.
+
+입력 매개 변수 :
+    XOld - 이전 그리드
+    YOld - 이전 그리드의 값
+    DOld - 오래된 그리드의 1 차 미분
+    N - 그리드 크기
+    X2 - 새로운 그리드
+    N2 - 새 그리드 크기
+    Y - 사전에 할당 된 출력 배열
+                (너무 작은 경우 재 할당)
+    NeedY - Y가 필요합니까?
+    D1 - 사전에 할당 된 출력 배열
+                (너무 작은 경우 재 할당)
+    NeedD1 - D1이 필요합니까?
+    D2 - 사전에 할당 된 출력 배열
+                (너무 작은 경우 재 할당)
+    NeedD2 - D1이 필요합니까?
+
+출력 배열 :
+    Y- 값 (필요한 경우)
+    D1 - 필요한 경우 1 차 미분
+    D2 - 필요한 경우 2 차 미분
+
+  - ALGLIB 프로젝트 -
+     저작권 03.09.2010 Bochkanov Sergey
+**************************************************************************/
 void spline1dconvdiffinternal(/* Real    */ ae_vector* xold,
      /* Real    */ ae_vector* yold,
      /* Real    */ ae_vector* dold,
@@ -15638,6 +23489,10 @@ void spline1dconvdiffinternal(/* Real    */ ae_vector* xold,
     /*
      * Prepare space
      */
+    
+    /*
+     * 공간 준비
+     */
     if( needy&&y->cnt<n2 )
     {
         ae_vector_set_length(y, n2, _state);
@@ -15655,6 +23510,12 @@ void spline1dconvdiffinternal(/* Real    */ ae_vector* xold,
      * These assignments aren't actually needed
      * (variables are initialized in the loop below),
      * but without them compiler will complain about uninitialized locals
+     */
+    
+    /*
+     * 이러한 과제는 실제로 필요하지 않습니다.
+     * (변수는 아래 루프에서 초기화 됨),
+     * 컴파일러없이 컴파일러는 초기화되지 않은 지역 주민들에 대해 불평 할 것입니다.
      */
     c0 = 0;
     c1 = 0;
@@ -15674,6 +23535,9 @@ void spline1dconvdiffinternal(/* Real    */ ae_vector* xold,
         /*
          * are we ready to exit?
          */
+        /*
+         * 우리는 나갈 준비가 되셨습니까?
+         */
         if( pointindex>=n2 )
         {
             break;
@@ -15682,6 +23546,9 @@ void spline1dconvdiffinternal(/* Real    */ ae_vector* xold,
         
         /*
          * do we need to advance interval?
+         */
+        /*
+         * 간격을 앞당길 필요가 있습니까?
          */
         havetoadvance = ae_false;
         if( intervalindex==-1 )
@@ -15716,6 +23583,9 @@ void spline1dconvdiffinternal(/* Real    */ ae_vector* xold,
         
         /*
          * Calculate spline and its derivatives using power basis
+         */
+        /*
+         * 힘 기반을 사용하여 스플라인 및 그 파생어 계산
          */
         t = t-a;
         if( needy )
@@ -15777,6 +23647,48 @@ NOTES:
  -- ALGLIB PROJECT --
      Copyright 26.09.2011 by Bochkanov Sergey   
 *************************************************************************/
+/*************************************************************************
+이 함수는에서 정의 된 스플라인 S (x)의 모든 근원과 극한을 찾습니다.
+[A, B] (스플라인 노드를 포함하는 간격).
+
+함수를 외삽하지 않으므로 외부에있는 뿌리와 극한치 
+[A, B]가 발견되지 않습니다. 그것은 고립 된 (다중을 포함한)
+뿌리와 극한치.
+
+입력 매개 변수
+    C - 스플라인 보간
+    
+출력 매개 변수
+    R - 배열 [NR], 스플라인의 루트를 포함합니다. 
+                    루트가없는 경우이 배열의 길이는 0입니다.
+    NR - 뿌리의 수,> = 0
+    DR - 적어도 하나의 간격이있는 경우 True로 설정됩니다.
+                    여기서 스플라인은 단지 0 상수입니다. 그런 퇴화 된
+                    R / NR에 사례가보고되지 않았습니다.
+    E - 배열 [NE], (최대 / 최소) 극한치 
+                    스플라인. 극한치가없는 경우,이 배열
+                    길이가 0입니다.
+    ET - 배열 [NE], 극한 형식 :
+                    * ET [i]> 0 일 때 I의 극한치가 최소 일 때
+                    * ET [i] <0 - I 번째 극한치가 최대 인 경우
+    NE - 극한의 수,> = 0
+    DE - 적어도 하나의 간격이있는 경우 True로 설정됩니다.
+                    여기서 스플라인은 상수입니다. 그러한 퇴보 사례는  
+                    E / NE에는보고되지 않았다.
+                    
+노트:
+
+1.이 함수는 다음과 같은 종류의 루트를보고하지 않습니다.
+   함수가 항상 0 인 간격
+   * [A, B]의 바깥에있는 뿌리 (참고 : A 또는 B를 반환 할 수 있음)
+
+2.이 함수는 다음 종류의 극한치를보고하지 않습니다 :
+   함수가 상수 인 간격
+   * (A, B)의 외부에있는 * extrema (참고 : A 또는 B를 반환하지 않습니다)
+   
+ - ALGLIB 프로젝트 -
+     저작권 26.09.2011 Bochkanov Sergey   
+**************************************************************************/
 void spline1drootsandextrema(spline1dinterpolant* c,
      /* Real    */ ae_vector* r,
      ae_int_t* nr,
@@ -15827,11 +23739,17 @@ void spline1drootsandextrema(spline1dinterpolant* c,
     /*
      *exception handling
      */
+    /*
+     *예외 처리
+     */
     ae_assert(c->k==3, "Spline1DRootsAndExtrema : incorrect parameter C.K!", _state);
     ae_assert(c->continuity>=0, "Spline1DRootsAndExtrema : parameter C.Continuity must not be less than 0!", _state);
     
     /*
      *initialization of variable
+     */
+    /*
+     변수의 초기화
      */
     *nr = 0;
     *ne = 0;
@@ -15842,6 +23760,9 @@ void spline1drootsandextrema(spline1dinterpolant* c,
     /*
      *consider case, when C.Continuty=0
      */
+    /*
+     * C.Continuty = 0 인 경우를 고려하십시오.
+     */
     if( c->continuity==0 )
     {
         
@@ -15851,6 +23772,12 @@ void spline1drootsandextrema(spline1dinterpolant* c,
          *'TmpE ' - it stores a time value for extremums
          *'TmpET '- it stores a time value for extremums type
          */
+        /*
+         보조 배열을위한 * 할당 
+         * 'TmpR'- 뿌리의 시간 값을 저장합니다.
+         * 'TmpE'- 극값에 대한 시간 값을 저장합니다.
+         * 'TmpET'- 극값 유형의 시간 값을 저장합니다.
+         */
         rvectorsetlengthatleast(&tmpr, 3*(c->n-1), _state);
         rvectorsetlengthatleast(&tmpe, 2*(c->n-1), _state);
         ivectorsetlengthatleast(&tmpet, 2*(c->n-1), _state);
@@ -15858,11 +23785,17 @@ void spline1drootsandextrema(spline1dinterpolant* c,
         /*
          *start calculating
          */
+        /*
+         * 계산 시작
+         */
         for(i=0; i<=c->n-2; i++)
         {
             
             /*
              *initialization pL, mL, pR, mR
+             */
+            /*
+             * 초기화 pL, mL, pR, mR
              */
             pl = c->c.ptr.p_double[4*i];
             ml = c->c.ptr.p_double[4*i+1];
@@ -15872,6 +23805,10 @@ void spline1drootsandextrema(spline1dinterpolant* c,
             /*
              *pre-searching roots and extremums
              */
+
+            /*
+             * 사전 검색 뿌리와 극값
+             */
             solvecubicpolinom(pl, ml, pr, mr, c->x.ptr.p_double[i], c->x.ptr.p_double[i+1], &x0, &x1, &x2, &ex0, &ex1, &tnr, &tne, &tr, _state);
             *dr = *dr||tnr==-1;
             *de = *de||tne==-1;
@@ -15879,11 +23816,18 @@ void spline1drootsandextrema(spline1dinterpolant* c,
             /*
              *searching of roots
              */
+      
+            /*
+             * 뿌리의 검색
+             */
             if( tnr==1&&nstep )
             {
                 
                 /*
                  *is there roots?
+                 */
+                /*
+                 * 뿌리가 있습니까?
                  */
                 if( *nr>0 )
                 {
@@ -15891,6 +23835,11 @@ void spline1drootsandextrema(spline1dinterpolant* c,
                     /*
                      *is a next root equal a previous root?
                      *if is't, then write new root
+                     */
+                    
+                    /*
+                     *는 다음 루트가 이전 루트와 동일합니까?
+                     * 그렇지 않으면 새로운 루트를 작성하십시오.
                      */
                     if( ae_fp_neq(x0,tmpr.ptr.p_double[*nr-1]) )
                     {
@@ -15904,6 +23853,10 @@ void spline1drootsandextrema(spline1dinterpolant* c,
                     /*
                      *write a first root
                      */
+                    
+                    /*
+                     * 첫 번째 루트 작성
+                     */
                     tmpr.ptr.p_double[*nr] = x0;
                     *nr = *nr+1;
                 }
@@ -15916,11 +23869,19 @@ void spline1drootsandextrema(spline1dinterpolant* c,
                  *then we have to clear a root, if the one located on a 
                  *constant segment
                  */
+                /*
+                 * 세그먼트에서 0과 동일하게 기능하는 경우
+                 * 다음에 루트에있는 것이 있으면 루트를 지워야합니다. 
+                 * 상수 세그먼트
+                 */
                 if( tnr==-1 )
                 {
                     
                     /*
                      *safe state variable as constant
+                     */
+                    /*
+                     안전한 상태 변수를 상수로
                      */
                     if( nstep )
                     {
@@ -15929,6 +23890,10 @@ void spline1drootsandextrema(spline1dinterpolant* c,
                     
                     /*
                      *clear the root, if there is
+                     */
+                    
+                    /*
+                     * 루트가 있으면 그 루트를 지운다.
                      */
                     if( *nr>0 )
                     {
@@ -15940,6 +23905,9 @@ void spline1drootsandextrema(spline1dinterpolant* c,
                     
                     /*
                      *change state for 'DR'
+                     */
+                    /*
+                     * 'DR'에 대한 상태 변경
                      */
                     if( !*dr )
                     {
@@ -15954,6 +23922,10 @@ void spline1drootsandextrema(spline1dinterpolant* c,
             
             /*
              *searching of extremums
+             */
+             
+            /*
+             * 극한의 검색
              */
             if( i>0 )
             {
@@ -16001,12 +23973,19 @@ void spline1drootsandextrema(spline1dinterpolant* c,
         /*
          *write final result
          */
+        
+        /*
+         * 최종 결과 작성
+         */
         rvectorsetlengthatleast(r, *nr, _state);
         rvectorsetlengthatleast(e, *ne, _state);
         ivectorsetlengthatleast(et, *ne, _state);
         
         /*
          *write roots
+         */
+        /*
+         * 뿌리 쓰기
          */
         for(i=0; i<=*nr-1; i++)
         {
@@ -16015,6 +23994,9 @@ void spline1drootsandextrema(spline1dinterpolant* c,
         
         /*
          *write extremums and their types
+         */
+        /*
+         * 극값과 유형을 쓰십시오
          */
         for(i=0; i<=*ne-1; i++)
         {
@@ -16033,6 +24015,15 @@ void spline1drootsandextrema(spline1dinterpolant* c,
          *'TmpE' - it stores a time value for extremums only
          *'TmpET'- it stores a time value for extremums type
          */
+ 
+        /*
+         * 경우, C.Continuity> = 1 일 때 
+         * 'TmpR'- 뿌리의 시간 값을 저장합니다.
+         * 'TmpC'- 극값에 대한 시간 값을 저장하고 
+         * 그들의 함수 값 (TmpC = {EX0, F (EX0), EX1, F (EX1), ..., EXn, F (EXn)};)
+         * 'TmpE'- 극값에 대해서만 시간 값을 저장합니다.
+         * 'TmpET'- 극값 유형의 시간 값을 저장합니다.
+         */
         rvectorsetlengthatleast(&tmpr, 2*c->n-1, _state);
         rvectorsetlengthatleast(&tmpc, 4*c->n, _state);
         rvectorsetlengthatleast(&tmpe, 2*c->n, _state);
@@ -16041,11 +24032,18 @@ void spline1drootsandextrema(spline1dinterpolant* c,
         /*
          *start calculating
          */
+        
+        /*
+         * 계산 시작
+         */
         for(i=0; i<=c->n-2; i++)
         {
             
             /*
              *we calculate pL,mL, pR,mR as Fi+1(F'i+1) at left border
+             */
+            /*
+             * 왼쪽 경계에서 pL, mL, pR, mR을 Fi + 1 (F'i + 1)로 계산합니다.
              */
             pl = c->c.ptr.p_double[4*i];
             ml = c->c.ptr.p_double[4*i+1];
@@ -16055,16 +24053,26 @@ void spline1drootsandextrema(spline1dinterpolant* c,
             /*
              *calculating roots and extremums at [X[i],X[i+1]]
              */
+            /*
+             * [X [i], X [i + 1]]에서의 뿌리와 극값 계산
+             */
             solvecubicpolinom(pl, ml, pr, mr, c->x.ptr.p_double[i], c->x.ptr.p_double[i+1], &x0, &x1, &x2, &ex0, &ex1, &tnr, &tne, &tr, _state);
             
             /*
              *searching roots
+             */
+            
+            /*
+             * 뿌리를 찾기
              */
             if( tnr>0 )
             {
                 
                 /*
                  *re-init tR
+                 */
+                /*
+                 * 재 초기화
                  */
                 if( tnr>=1 )
                 {
@@ -16082,6 +24090,10 @@ void spline1drootsandextrema(spline1dinterpolant* c,
                 /*
                  *start root selection
                  */
+                /*
+                 * 루트 선택 시작
+                 */
+
                 if( *nr>0 )
                 {
                     if( ae_fp_neq(tmpr.ptr.p_double[*nr-1],x0) )
@@ -16089,6 +24101,9 @@ void spline1drootsandextrema(spline1dinterpolant* c,
                         
                         /*
                          *previous segment was't constant identical zero
+                         */
+                        /*
+                         * 이전 세그먼트는 상수 동일 0
                          */
                         if( nstep )
                         {
@@ -16104,6 +24119,10 @@ void spline1drootsandextrema(spline1dinterpolant* c,
                             /*
                              *previous segment was constant identical zero
                              *and we must ignore [NR+j-1] root
+                             */
+                            /* 
+                             * 이전 세그먼트는 일정한 동일 제로였습니다.
+                             * [NR + j-1] 루트를 무시해야합니다.
                              */
                             for(j=1; j<=tnr-1; j++)
                             {
@@ -16128,6 +24147,9 @@ void spline1drootsandextrema(spline1dinterpolant* c,
                     /*
                      *write first root
                      */
+                    /*
+                     * 첫 번째 루트 쓰기
+                     */
                     for(j=0; j<=tnr-1; j++)
                     {
                         tmpr.ptr.p_double[*nr+j] = tr.ptr.p_double[j];
@@ -16144,6 +24166,10 @@ void spline1drootsandextrema(spline1dinterpolant* c,
                      *decrement 'NR' if at previous step was writen a root
                      *(previous segment identical zero)
                      */
+                    /*
+                     * 이전 단계에서 루트가 작성된 경우 'NR'감소
+                     * (이전 세그먼트 동일 0)
+                     */
                     if( *nr>0&&nstep )
                     {
                         *nr = *nr-1;
@@ -16152,6 +24178,9 @@ void spline1drootsandextrema(spline1dinterpolant* c,
                     /*
                      *previous segment is't constant
                      */
+                    /*
+                     * 이전 세그먼트는 상수가 아닙니다.
+                     */
                     if( nstep )
                     {
                         nstep = ae_false;
@@ -16159,6 +24188,9 @@ void spline1drootsandextrema(spline1dinterpolant* c,
                     
                     /*
                      *rewrite 'DR'
+                     */
+                    /*
+                     * 'DR'다시 쓰기
                      */
                     if( !*dr )
                     {
@@ -16171,6 +24203,10 @@ void spline1drootsandextrema(spline1dinterpolant* c,
              *searching extremums
              *write all term like extremums
              */
+            /*
+             * 극값 검색
+             * 모든 용어를 극값과 같이 쓰십시오.
+             */
             if( tne==1 )
             {
                 if( *ne>0 )
@@ -16179,6 +24215,10 @@ void spline1drootsandextrema(spline1dinterpolant* c,
                     /*
                      *just ignore identical extremums
                      *because he must be one
+                     */
+                    /*
+                     * 똑같은 극단을 그냥 무시합니다.
+                     그는 반드시 하나가되어야하기 때문에
                      */
                     if( ae_fp_neq(tmpc.ptr.p_double[*ne-2],ex0) )
                     {
@@ -16192,6 +24232,9 @@ void spline1drootsandextrema(spline1dinterpolant* c,
                     
                     /*
                      *write first extremum and it function value
+                     */
+                    /*
+                     * 첫 번째 극값을 쓰면 함수 값이됩니다.
                      */
                     tmpc.ptr.p_double[*ne] = ex0;
                     tmpc.ptr.p_double[*ne+1] = c->c.ptr.p_double[4*i]+c->c.ptr.p_double[4*i+1]*(ex0-c->x.ptr.p_double[i])+c->c.ptr.p_double[4*i+2]*(ex0-c->x.ptr.p_double[i])*(ex0-c->x.ptr.p_double[i])+c->c.ptr.p_double[4*i+3]*(ex0-c->x.ptr.p_double[i])*(ex0-c->x.ptr.p_double[i])*(ex0-c->x.ptr.p_double[i]);
@@ -16208,6 +24251,9 @@ void spline1drootsandextrema(spline1dinterpolant* c,
                         /*
                          *ignore identical extremum
                          */
+                        /*
+                         * 동일한 극값을 무시하십시오.
+                         */
                         if( ae_fp_neq(tmpc.ptr.p_double[*ne-2],ex0) )
                         {
                             tmpc.ptr.p_double[*ne] = ex0;
@@ -16221,6 +24267,9 @@ void spline1drootsandextrema(spline1dinterpolant* c,
                         /*
                          *write first extremum
                          */
+                        /*
+                         * 첫 번째 극값 기록
+                         */
                         tmpc.ptr.p_double[*ne] = ex0;
                         tmpc.ptr.p_double[*ne+1] = c->c.ptr.p_double[4*i]+c->c.ptr.p_double[4*i+1]*(ex0-c->x.ptr.p_double[i])+c->c.ptr.p_double[4*i+2]*(ex0-c->x.ptr.p_double[i])*(ex0-c->x.ptr.p_double[i])+c->c.ptr.p_double[4*i+3]*(ex0-c->x.ptr.p_double[i])*(ex0-c->x.ptr.p_double[i])*(ex0-c->x.ptr.p_double[i]);
                         *ne = *ne+2;
@@ -16228,6 +24277,9 @@ void spline1drootsandextrema(spline1dinterpolant* c,
                     
                     /*
                      *write second extremum
+                     */
+                    /*
+                     * 두 번째 극값 기록
                      */
                     tmpc.ptr.p_double[*ne] = ex1;
                     tmpc.ptr.p_double[*ne+1] = c->c.ptr.p_double[4*i]+c->c.ptr.p_double[4*i+1]*(ex1-c->x.ptr.p_double[i])+c->c.ptr.p_double[4*i+2]*(ex1-c->x.ptr.p_double[i])*(ex1-c->x.ptr.p_double[i])+c->c.ptr.p_double[4*i+3]*(ex1-c->x.ptr.p_double[i])*(ex1-c->x.ptr.p_double[i])*(ex1-c->x.ptr.p_double[i]);
@@ -16251,6 +24303,12 @@ void spline1drootsandextrema(spline1dinterpolant* c,
          *get number of extremums (tNe=NE/2)
          *initialize pL as value F0(X[0]) and
          *initialize pR as value Fn-1(X[N])
+         */
+        /*
+         배열 검사
+         * 극값 수 (tNe = NE / 2)
+         * pL을 값 F0 (X [0])으로 초기화하고
+         * pR을 값 Fn-1로 초기화합니다 (X [N]).
          */
         tne = *ne/2;
         *ne = 0;
@@ -16354,12 +24412,19 @@ void spline1drootsandextrema(spline1dinterpolant* c,
          *final results
          *allocate R, E, ET
          */
+        /*
+         * 최종 결과
+         * R, E, ET 할당
+         */
         rvectorsetlengthatleast(r, *nr, _state);
         rvectorsetlengthatleast(e, *ne, _state);
         ivectorsetlengthatleast(et, *ne, _state);
         
         /*
          *write result for extremus and their types
+         */
+        /*
+         극한과 그 유형에 대한 결과 쓰기
          */
         for(i=0; i<=*ne-1; i++)
         {
@@ -16369,6 +24434,9 @@ void spline1drootsandextrema(spline1dinterpolant* c,
         
         /*
          *write result for roots
+         */
+        /*
+         * 뿌리에 대한 결과 쓰기
          */
         for(i=0; i<=*nr-1; i++)
         {
@@ -16382,6 +24450,9 @@ void spline1drootsandextrema(spline1dinterpolant* c,
 /*************************************************************************
 Internal subroutine. Heap sort.
 *************************************************************************/
+/*************************************************************************
+내부 서브 루틴. 힙 정렬.
+**************************************************************************/
 void heapsortdpoints(/* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
      /* Real    */ ae_vector* d,
@@ -16451,6 +24522,35 @@ Number of roots is NR.
  -- ALGLIB PROJECT --
      Copyright 26.09.2011 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 절차는 [0; 1] 안에 2 차 방정식의 뿌리를 찾고 뿌리의 수입니다.
+
+입력 매개 변수 :
+    P0 - 0에있는 함수의 값
+    M0 - 0의 미분 값
+    P1 - 1의 함수 값
+    M1 - 1의 미분 값
+
+출력 매개 변수 :
+    X0 - 방정식의 첫 번째 근원
+    X1 - 방정식의 두 번째 루트
+    NR - 뿌리의 수
+    
+매개 변수의 제한 :
+
+이 절차의 매개 변수는 동시에 0이 아니어야합니다. 기대된다.
+그 입력 polinom은 0 축약 또는 상수 동일합니다 제로.
+
+
+말:
+
+이 프로시 저는 [0; 1]에 속하지 않더라도 항상 X1 및 X2의 값을 채 웁니다.
+하지만 첫 번째 true 루트 (기존 노드가 있더라도)가 X1에 있습니다.
+뿌리의 수는 NR입니다.
+
+ - ALGLIB 프로젝트 -
+     저작권 26.09.2011 Bochkanov Sergey
+**************************************************************************/
 void solvepolinom2(double p0,
      double m0,
      double p1,
@@ -16476,6 +24576,9 @@ void solvepolinom2(double p0,
     /*
      *calculate parameters for equation: A, B  and C
      */
+    /*
+     방정식에 대한 매개 변수를 계산합니다 : A, B 및 C
+     */
     a = 6*p0+3*m0-6*p1+3*m1;
     b = -6*p0-4*m0+6*p1-2*m1;
     c = m0;
@@ -16484,12 +24587,20 @@ void solvepolinom2(double p0,
      *check case, when A=0
      *we are considering the linear equation
      */
+    /*
+     * 체크 케이스, A = 0 일 때
+     * 우리는 선형 방정식을 고려하고있다.
+     */
     if( ae_fp_eq(a,0) )
     {
         
         /*
          *B<>0 and root inside [0;1]
          *one root
+         */
+        /*
+         * B <> 0이고 루트는 [0; 1]
+         * 하나의 루트
          */
         if( (ae_fp_neq(b,0)&&ae_sign(c, _state)*ae_sign(b, _state)<=0)&&ae_fp_greater_eq(ae_fabs(b, _state),ae_fabs(c, _state)) )
         {
@@ -16508,6 +24619,10 @@ void solvepolinom2(double p0,
      *consider case, when extremumu outside (0;1)
      *exist one root only
      */
+    /*
+     * 외부의 extremumu (0; 1)
+     * 하나의 루트 만 존재 함
+     */
     if( ae_fp_less_eq(ae_fabs(2*a, _state),ae_fabs(b, _state))||ae_sign(b, _state)*ae_sign(a, _state)>=0 )
     {
         if( ae_sign(m0, _state)*ae_sign(m1, _state)>0 )
@@ -16519,6 +24634,11 @@ void solvepolinom2(double p0,
         /*
          *consider case, when the one exist
          *same sign of derivative
+         */
+        
+        /*
+         * 고려할 경우, 존재할 때
+         * 파생 상품의 동일한 기호
          */
         if( ae_sign(m0, _state)*ae_sign(m1, _state)<0 )
         {
@@ -16541,6 +24661,9 @@ void solvepolinom2(double p0,
         /*
          *consider case, when the one is 0
          */
+        /*
+         * 고려할 경우, 0 일 때
+         */
         if( ae_fp_eq(m0,0) )
         {
             *x0 = 0;
@@ -16560,6 +24683,9 @@ void solvepolinom2(double p0,
         /*
          *consider case, when both of derivatives is 0
          */
+        /*
+         * 파생 상품이 모두 0 인 경우를 고려하십시오.
+         */
         if( ae_fp_eq(m0,0)&&ae_fp_eq(m1,0) )
         {
             *x0 = 0;
@@ -16570,6 +24696,9 @@ void solvepolinom2(double p0,
         
         /*
          *consider case, when derivative at 0 is 0, and derivative at 1 is't 0
+         */
+        /*
+         * 0을 유추 할 때 유도체가 0이고 1의 유도체가 0이 아닌 경우를 고려하십시오.
          */
         if( ae_fp_eq(m0,0)&&ae_fp_neq(m1,0) )
         {
@@ -16604,6 +24733,9 @@ void solvepolinom2(double p0,
                 
                 /*
                  *roots must placed ascending
+                 */
+                /*
+                 * 뿌리는 오름차순으로 배치해야합니다.
                  */
                 if( ae_fp_greater(*x0,*x1) )
                 {
@@ -16648,6 +24780,9 @@ void solvepolinom2(double p0,
                 /*
                  *roots must placed ascending
                  */
+                /*
+                 * 뿌리는 오름차순으로 배치해야합니다.
+                 */
                 if( ae_fp_greater(*x0,*x1) )
                 {
                     tmp = *x0;
@@ -16678,12 +24813,19 @@ void solvepolinom2(double p0,
             /*
              *if EXF and m0, EXF and m1 has different signs, then equation has two roots              
              */
+            
+            /*
+             * EXF와 m0, EXF와 m1이 다른 부호를 갖는다면 방정식은 두 개의 뿌리를 갖는다.              
+             */
             if( ae_sign(exf, _state)*ae_sign(m0, _state)<0&&ae_sign(exf, _state)*ae_sign(m1, _state)<0 )
             {
                 *nr = 2;
                 
                 /*
                  *roots must placed ascending
+                 */
+                /*
+                 * 뿌리는 오름차순으로 배치해야합니다.
                  */
                 if( ae_fp_greater(*x0,*x1) )
                 {
@@ -16752,6 +24894,40 @@ If 'NE' is -1 it's mean, than polinom has infiniti extremums.
  -- ALGLIB PROJECT --
      Copyright 26.09.2011 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 절차는 [A; B] 내부의 3 차 방정식의 근원을 찾으며, 뿌리의 수 
+및 극값의 수.
+
+입력 매개 변수 :
+    pA - A에서의 함수의 값
+    mA - A의 미분 값
+    pB - B에서의 함수의 값
+    mB - B의 파생 값
+    A0 - 왼쪽 테두리 [A0; B0]
+    B0 - 오른쪽 테두리 [A0; B0]
+
+출력 매개 변수 :
+    X0 - 방정식의 첫 번째 근원
+    X1 - 방정식의 두 번째 루트
+    X2 - 방정식의 세 번째 근원
+    EX0 - 함수의 첫 번째 극값
+    EX0 - 함수의 두 번째 극값
+    NR - 뿌리의 수
+    NR - 확장 수
+    
+매개 변수의 제한 :
+
+[A; B]의 길이는 양수 여야하며 A <> B 및 A <B 인 0이 아니어야합니다.
+
+
+말:
+
+'NR'이 -1이면 폴리 인치가 인피니티의 뿌리를 가진 것보다 의미가 있습니다.
+'NE'가 -1이면 폴리 노움이 인피니티 극값을 갖는 것보다 평균입니다.
+
+ - ALGLIB 프로젝트 -
+     저작권 26.09.2011 Bochkanov Sergey
+**************************************************************************/
 void solvecubicpolinom(double pa,
      double ma,
      double pb,
@@ -16787,11 +24963,19 @@ void solvecubicpolinom(double pa,
     /*
      *case, when A>B
      */
+    
+    /*
+     * 경우, A> B 일 때
+     */
     ae_assert(ae_fp_less(a,b), "\nSolveCubicPolinom: incorrect borders for [A;B]!\n", _state);
     
     /*
      *case 1    
      *function can be identicaly to ZERO
+     */
+    /*
+     * 사례 1    
+     * 기능은 ZERO와 동일 할 수 있습니다.
      */
     if( ((ae_fp_eq(ma,0)&&ae_fp_eq(mb,0))&&ae_fp_eq(pa,pb))&&ae_fp_eq(pa,0) )
     {
@@ -16815,6 +24999,11 @@ void solvecubicpolinom(double pa,
      *case 3.1
      *no extremums at [A;B]
      */
+    
+    /*
+     * 사례 3.1
+     * [A; B]에 극단이 없습니다.
+     */
     if( *ne==0 )
     {
         *nr = bisectmethod(pa, tmpma, pb, tmpmb, 0, 1, x0, _state);
@@ -16828,6 +25017,10 @@ void solvecubicpolinom(double pa,
     /*
      *case 3.2
      *one extremum
+     */
+    /*
+     * 사례 3.2
+     * 하나의 극값
      */
     if( *ne==1 )
     {
@@ -16895,6 +25088,14 @@ void solvecubicpolinom(double pa,
          *
          *case 3.3.0
          *both extremums at the border
+         */
+        /*
+         * 사례 3.3
+         * 두 극값 (또는 그 이상,하지만 불가능)
+         *
+         *
+         * 사례 3.3.0
+         * 국경의 양쪽 극값
          */
         if( ae_fp_eq(*ex0,a)&&ae_fp_eq(*ex1,b) )
         {
@@ -16990,6 +25191,10 @@ void solvecubicpolinom(double pa,
              *case 3.3.2
              *both extremums inside (0;1)
              */
+            /*
+             * 사례 3.3.2
+             * 양쪽 극값 (0, 1)
+             */
             *nr = 0;
             i = 0;
             tex0 = spline1d_rescaleval(a, b, 0, 1, *ex0, _state);
@@ -17048,6 +25253,9 @@ void solvecubicpolinom(double pa,
             /*
              *write are found roots
              */
+            /*
+             * 쓰기는 뿌리를 찾는다.
+             */
             if( *nr>0 )
             {
                 *x0 = tempdata->ptr.p_double[0];
@@ -17092,6 +25300,32 @@ The function dont check value A0,B0!
  -- ALGLIB PROJECT --
      Copyright 26.09.2011 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+[A; B]에서 근원을 이등분 법으로 검색하고 뿌리 수를 반환하는 기능
+(0 또는 1)
+
+입력 매개 변수 :
+    pA - A에서의 함수의 값
+    mA - A의 미분 값
+    pB - B에서의 함수의 값
+    mB - B의 파생 값
+    A0 - 왼쪽 테두리 [A0; B0] 
+    B0 - 오른쪽 테두리 [A0; B0]
+    
+매개 변수의 제한 :
+
+우리는 B0> A0이라고 가정합니다.
+
+
+말:
+
+그것이 [A; B]에만 하나의 루트로 존재한다고 가정합니다. 
+기능이 제대로 작동하지 않을 수 있습니다.
+이 함수는 값 A0, B0를 확인하지 않습니다!
+
+ - ALGLIB 프로젝트 -
+     저작권 26.09.2011 Bochkanov Sergey
+**************************************************************************/
 ae_int_t bisectmethod(double pa,
      double ma,
      double pb,
@@ -17117,10 +25351,17 @@ ae_int_t bisectmethod(double pa,
     /*
      *accuracy
      */
+    
+    /*
+     *정확성
+     */
     eps = 1000*(b-a)*ae_machineepsilon;
     
     /*
      *initialization left and right borders
+     */
+    /*
+     * 초기화 왼쪽 및 오른쪽 테두리
      */
     a0 = a;
     b0 = b;
@@ -17128,12 +25369,19 @@ ae_int_t bisectmethod(double pa,
     /*
      *initialize function value at 'A' and 'B'
      */
+    /*
+     * 'A'와 'B'에서 함수 값 초기화
+     */
     spline1d_hermitecalc(pa, ma, pb, mb, a, &lf, &vacuum, _state);
     spline1d_hermitecalc(pa, ma, pb, mb, b, &rf, &vacuum, _state);
     
     /*
      *check, that 'A' and 'B' are't roots,
      *and that root exist
+     */
+    /*
+     * 확인, 'A'와 'B'는 뿌리가 아님,
+     * 그 뿌리가 존재합니다.
      */
     if( ae_sign(lf, _state)*ae_sign(rf, _state)>0 )
     {
@@ -17161,6 +25409,9 @@ ae_int_t bisectmethod(double pa,
     
     /*
      *searching a root
+     */
+    /*
+     * 루트 검색
      */
     do
     {
@@ -17228,6 +25479,26 @@ OUTPUT PARAMETERS:
  -- ALGLIB PROJECT --
      Copyright 21.06.2012 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 단조 3 차원 Hermite 보간을 만듭니다. 이 보간법
+[x (0), x (n-1)]에서 단조롭고이 구간의 바깥 쪽에서 일정하다.
+
+y []가 비 단조 식 시퀀스를 구성하는 경우, 보간은
+단조로운. x = (0,1,2,3,4) 및 y = (0,1,2,1,0) 보간 기가
+단조롭게 [0..2]에서 성장하고 [2..4]에서 단조 감소한다.
+
+입력 매개 변수 :
+    X - 스플라인 노드, 배열 [0..N-1]. 자동으로 서브 루틴
+                    점을 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+    Y - 함수 값, 배열 [0..N-1]
+    N - 점의 수 (N> = 2)
+
+출력 매개 변수 :
+    C - 스플라인 보간.
+
+ - ALGLIB 프로젝트 -
+     저작권 21.06.2012 Bochkanov Sergey
+**************************************************************************/
 void spline1dbuildmonotone(/* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
      ae_int_t n,
@@ -17267,12 +25538,18 @@ void spline1dbuildmonotone(/* Real    */ ae_vector* x,
     /*
      * Check lengths of arguments
      */
+    /*
+     * 인수 길이 확인
+     */
     ae_assert(n>=2, "Spline1DBuildMonotone: N<2", _state);
     ae_assert(x->cnt>=n, "Spline1DBuildMonotone: Length(X)<N", _state);
     ae_assert(y->cnt>=n, "Spline1DBuildMonotone: Length(Y)<N", _state);
     
     /*
      * Check and sort points
+     */
+    /*
+     * 포인트 확인 및 정렬
      */
     ae_assert(isfinitevector(x, n, _state), "Spline1DBuildMonotone: X contains infinite or NAN values", _state);
     ae_assert(isfinitevector(y, n, _state), "Spline1DBuildMonotone: Y contains infinite or NAN values", _state);
@@ -17296,6 +25573,9 @@ void spline1dbuildmonotone(/* Real    */ ae_vector* x,
     /*
      * Init sign of the function for first segment
      */
+    /*
+     * 첫 번째 세그먼트에 대한 함수의 초기화 기호
+     */
     i = 0;
     ca = 0;
     do
@@ -17314,6 +25594,9 @@ void spline1dbuildmonotone(/* Real    */ ae_vector* x,
         
         /*
          * Partition of the segment [X0;Xn]
+         */
+        /*
+         세그먼트의 분할 [X0; Xn]
          */
         tmpn = 1;
         for(j=i; j<=n-2; j++)
@@ -17334,6 +25617,9 @@ void spline1dbuildmonotone(/* Real    */ ae_vector* x,
         
         /*
          * Calculate derivatives for current segment
+         */
+        /*
+         * 현재 세그먼트의 파생 상품 계산
          */
         d.ptr.p_double[i] = 0;
         d.ptr.p_double[sn-1] = 0;
@@ -17379,6 +25665,9 @@ void spline1dbuildmonotone(/* Real    */ ae_vector* x,
         /*
          * Transition to next segment
          */
+        /*
+         * 다음 세그먼트로 전환
+         */
         i = sn-1;
     }
     spline1dbuildhermite(&ex, &ey, &d, n, c, _state);
@@ -17400,6 +25689,19 @@ be equal to the first one (if periodic boundary conditions are specified).
   -- ALGLIB PROJECT --
      Copyright 03.09.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+Spline1DGridDiffCubic의 내부 버전입니다.
+
+사전 정렬 된 X / Y, 임시 배열 (사전 할당 될 수 있음,
+당신은 시간을 절약하길 원합니다), 출력 배열 (미리 할당 될 수 있습니다
+너무).
+
+마지막 요소를 ~에 강제로 넣어야 할 수도 있기 때문에 Y가 var 매개 변수로 전달됩니다.
+첫 번째 것과 같아야합니다 (주기적인 경계 조건이 지정된 경우).
+
+  - ALGLIB 프로젝트 -
+     저작권 03.09.2010 Bochkanov Sergey
+**************************************************************************/
 static void spline1d_spline1dgriddiffcubicinternal(/* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
      ae_int_t n,
@@ -17421,6 +25723,9 @@ static void spline1d_spline1dgriddiffcubicinternal(/* Real    */ ae_vector* x,
     
     /*
      * allocate arrays
+     */
+    /*
+     배열 할당
      */
     if( d->cnt<n )
     {
@@ -17452,6 +25757,11 @@ static void spline1d_spline1dgriddiffcubicinternal(/* Real    */ ae_vector* x,
      * * N=2, parabolic terminated boundary condition on both ends
      * * N=2, periodic boundary condition
      */
+    /*
+     * 특수한 상황들:
+     * * N = 2, 양쪽 끝의 파라볼 릭 종료 경계 조건
+     * * N = 2,주기적인 경계 조건
+     */
     if( (n==2&&boundltype==0)&&boundrtype==0 )
     {
         d->ptr.p_double[0] = (y->ptr.p_double[1]-y->ptr.p_double[0])/(x->ptr.p_double[1]-x->ptr.p_double[0]);
@@ -17469,17 +25779,28 @@ static void spline1d_spline1dgriddiffcubicinternal(/* Real    */ ae_vector* x,
      * Periodic and non-periodic boundary conditions are
      * two separate classes
      */
+    /*
+     * 주기적 및 비 주기적 경계 조건은 다음과 같습니다.
+     * 두 개의 개별 수업
+     */
     if( boundrtype==-1&&boundltype==-1 )
     {
         
         /*
          * Periodic boundary conditions
          */
+        /*
+         * 주기적 경계 조건
+         */
         y->ptr.p_double[n-1] = y->ptr.p_double[0];
         
         /*
          * Boundary conditions at N-1 points
          * (one point less because last point is the same as first point).
+         */
+        /*
+         * N-1 점의 경계 조건
+         * (마지막 점은 첫 번째 점과 동일하기 때문에 한 점 줄임)
          */
         a1->ptr.p_double[0] = x->ptr.p_double[1]-x->ptr.p_double[0];
         a2->ptr.p_double[0] = 2*(x->ptr.p_double[1]-x->ptr.p_double[0]+x->ptr.p_double[n-1]-x->ptr.p_double[n-2]);
@@ -17492,6 +25813,10 @@ static void spline1d_spline1dgriddiffcubicinternal(/* Real    */ ae_vector* x,
              * Altough last point is [N-2], we use X[N-1] and Y[N-1]
              * (because of periodicity)
              */
+            /*
+             마지막 점은 [N-2]이고, 우리는 X [N-1]과 Y [N-1]을 사용한다.
+             * (주기성 때문에)
+             */
             a1->ptr.p_double[i] = x->ptr.p_double[i+1]-x->ptr.p_double[i];
             a2->ptr.p_double[i] = 2*(x->ptr.p_double[i+1]-x->ptr.p_double[i-1]);
             a3->ptr.p_double[i] = x->ptr.p_double[i]-x->ptr.p_double[i-1];
@@ -17500,6 +25825,9 @@ static void spline1d_spline1dgriddiffcubicinternal(/* Real    */ ae_vector* x,
         
         /*
          * Solve, add last point (with index N-1)
+         */
+        /*
+         * 마지막 점 추가 (색인 N-1 포함)
          */
         spline1d_solvecyclictridiagonal(a1, a2, a3, b, n-1, dt, _state);
         ae_v_move(&d->ptr.p_double[0], 1, &dt->ptr.p_double[0], 1, ae_v_len(0,n-2));
@@ -17511,6 +25839,10 @@ static void spline1d_spline1dgriddiffcubicinternal(/* Real    */ ae_vector* x,
         /*
          * Non-periodic boundary condition.
          * Left boundary conditions.
+         */
+        /*
+         * 비주기적인 경계 조건.
+         왼쪽 경계 조건.
          */
         if( boundltype==0 )
         {
@@ -17537,6 +25869,10 @@ static void spline1d_spline1dgriddiffcubicinternal(/* Real    */ ae_vector* x,
         /*
          * Central conditions
          */
+        
+        /*
+         * 중앙 조건
+         */
         for(i=1; i<=n-2; i++)
         {
             a1->ptr.p_double[i] = x->ptr.p_double[i+1]-x->ptr.p_double[i];
@@ -17547,6 +25883,9 @@ static void spline1d_spline1dgriddiffcubicinternal(/* Real    */ ae_vector* x,
         
         /*
          * Right boundary conditions
+         */
+        /*
+         * 오른쪽 경계 조건
          */
         if( boundrtype==0 )
         {
@@ -17573,6 +25912,9 @@ static void spline1d_spline1dgriddiffcubicinternal(/* Real    */ ae_vector* x,
         /*
          * Solve
          */
+        /*
+         * 해결
+         */
         spline1d_solvetridiagonal(a1, a2, a3, b, n, d, _state);
     }
 }
@@ -17581,6 +25923,10 @@ static void spline1d_spline1dgriddiffcubicinternal(/* Real    */ ae_vector* x,
 /*************************************************************************
 Internal subroutine. Heap sort.
 *************************************************************************/
+
+/*************************************************************************
+내부 서브 루틴. 힙 정렬.
+**************************************************************************/
 static void spline1d_heapsortpoints(/* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
      ae_int_t n,
@@ -17611,6 +25957,18 @@ Returns:
     P       -   array of permutations; I-th position of output
                 arrays X/Y contains (X[P[I]],Y[P[I]])
 *************************************************************************/
+/*************************************************************************
+내부 서브 루틴. 힙 정렬.
+
+수락 :
+    X, Y - 포인트
+    P - 비어 있거나 사전 할당 된 배열
+    
+보고:
+    X, Y - X로 정렬
+    P - 순열의 배열; 출력의 I 번째 위치
+                배열 X / Y는 (X [P [I]], Y [P [I]])
+**************************************************************************/
 static void spline1d_heapsortppoints(/* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
      /* Integer */ ae_vector* p,
@@ -17657,6 +26015,18 @@ Internal subroutine. Tridiagonal solver. Solves
 (                  A[N-1] B[N-1] )
 
 *************************************************************************/
+/*************************************************************************
+내부 서브 루틴. Tridiagonal 솔버. 해결
+
+(B [0] C [0]                      
+(A [1] B [1] C [1])
+(A [2] B [2] C [2])
+(..........) * X = D
+(..........)
+(A [N-2] B [N-2] C [N-2])
+(A [N-1] B [N-1])
+
+**************************************************************************/
 static void spline1d_solvetridiagonal(/* Real    */ ae_vector* a,
      /* Real    */ ae_vector* b,
      /* Real    */ ae_vector* c,
@@ -17707,6 +26077,17 @@ Internal subroutine. Cyclic tridiagonal solver. Solves
 (           A[N-2] B[N-2] C[N-2] )
 ( C[N-1]           A[N-1] B[N-1] )
 *************************************************************************/
+/*************************************************************************
+내부 서브 루틴. 순환 트리 다니엘 솔버. 해결
+
+(B [0] C [0] A [0])
+(A [1] B [1] C [1])
+(A [2] B [2] C [2])
+(..........) * X = D
+(..........)
+(A [N-2] B [N-2] C [N-2])
+(C [N-1] A [N-1] B [N-1])
+**************************************************************************/
 static void spline1d_solvecyclictridiagonal(/* Real    */ ae_vector* a,
      /* Real    */ ae_vector* b,
      /* Real    */ ae_vector* c,
@@ -17761,6 +26142,9 @@ static void spline1d_solvecyclictridiagonal(/* Real    */ ae_vector* a,
 /*************************************************************************
 Internal subroutine. Three-point differentiation
 *************************************************************************/
+/*************************************************************************
+내부 서브 루틴. 3 점 차별화
+**************************************************************************/
 static double spline1d_diffthreepoint(double t,
      double x0,
      double f0,
@@ -17803,6 +26187,24 @@ OUTPUT PARAMETERS:
  -- ALGLIB PROJECT --
      Copyright 26.09.2011 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+함수의 값을 계산하는 절차는
+Hermite polinom  
+
+입력 매개 변수 :
+    P0 - 0에있는 함수의 값
+    M0 - 0의 미분 값
+    P1 - 1의 함수 값
+    M1 - 1의 미분 값
+    T - 내부의 [0; 1]
+    
+출력 매개 변수 :
+    S - T에서 함수의 값
+    B0 - T에서 미분 함수의 값
+    
+ - ALGLIB 프로젝트 -
+     저작권 26.09.2011 Bochkanov Sergey
+**************************************************************************/
 static void spline1d_hermitecalc(double p0,
      double m0,
      double p1,
@@ -17854,6 +26256,38 @@ The function dont check value A0,B0 and A1,B1!
  -- ALGLIB PROJECT --
      Copyright 26.09.2011 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+[A0; B0]에서 [A1; B1]까지 매핑하는 기능.
+
+입력 매개 변수 :
+    A0 - 왼쪽 테두리 [A0; B0]
+    B0 - 오른쪽 테두리 [A0; B0]
+    A1 - 왼쪽 테두리 [A1; B1]
+    B1 - 오른쪽 테두리 [A1; B1]
+    T - 내부 값 [A0; B0]  
+    
+매개 변수의 제한 :
+
+우리는 B0> A0 및 B1> A1이라고 가정합니다. 그러나 우리는 T가 내부에 있음을 털어 놓는다 [A0; B0],
+T <A0이면 T는 A1이되고, T> B0이면 T-B1이된다. 
+
+입력 매개 변수 :
+        A0 - 'T'의 세그먼트 [A0; B0]에 대한 왼쪽 경계선이 [A1; B1]로 변환됩니다. 
+        B0 - 'T'의 세그먼트 [A0; B0]에 대한 오른쪽 경계선이 [A1; B1]로 변환됩니다. 
+        A1 - 세그먼트 [A1; B1]의 왼쪽 경계선을 'T'로 변환하면 [A0; B0] 
+        B1 - 세그먼트 [A1; B1]의 오른쪽 경계선을 'T'로 변환하면 [A0; B0] 
+        T - 매개 변수는 [A0; B0]에서 [A1; B1]로 매핑됩니다. 
+
+결과:
+    'T'에 대한 값을 [A0; B0]에서 [A1; B1]
+         
+말:
+
+이 함수는 값 A0, B0 및 A1, B1을 확인하지 않습니다!
+
+ - ALGLIB 프로젝트 -
+     저작권 26.09.2011 Bochkanov Sergey
+**************************************************************************/
 static double spline1d_rescaleval(double a0,
      double b0,
      double a1,
@@ -17870,6 +26304,9 @@ static double spline1d_rescaleval(double a0,
     /*
      *return left border
      */
+    /*
+     * 왼쪽 테두리 반환
+     */
     if( ae_fp_less_eq(t,a0) )
     {
         result = a1;
@@ -17879,6 +26316,9 @@ static double spline1d_rescaleval(double a0,
     /*
      *return right border
      */
+    /*
+     * 오른쪽 테두리를 반환합니다.
+     */
     if( ae_fp_greater_eq(t,b0) )
     {
         result = b1;
@@ -17887,6 +26327,9 @@ static double spline1d_rescaleval(double a0,
     
     /*
      *return value between left and right borders
+     */
+    /*
+     * 왼쪽과 오른쪽 테두리 사이의 값 반환
      */
     result = (b1-a1)*(t-a0)/(b0-a0)+a1;
     return result;
@@ -17982,6 +26425,47 @@ NOTES:
   -- ALGLIB PROJECT --
      Copyright 10.12.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+바이올린 중심의 다항식으로 피팅. 이 함수는 간단한
+무제한 unweighted fitting을위한 unterface. PolynomialFitWC ()를 참조하십시오.
+당신은 제한된 피팅이 필요합니다.
+
+작업은 선형이므로 선형 최소 자 솔버가 사용됩니다. 이 복잡성
+계산 방식은 O (N * M ^ 2)이며, 대부분 최소 자승법이 지배합니다
+
+관련 항목 :
+    PolynomialFitWC ()
+
+입력 매개 변수 :
+    X- 점, 배열 [0..N-1].
+    Y - 함수 값, array [0..N-1].
+    N - 포인트 수, N> 0
+            * 주어진 경우 X / Y의 선행 N 요소 만 사용됩니다.
+            * 지정하지 않으면 X / Y의 크기에서 자동으로 결정됩니다.
+    M - 기저 함수의 수 (= polynomial_degree + 1), M> = 1
+
+출력 매개 변수 :
+    LSFitLinearW () 서브 루틴에서와 같은 정보 포맷 :
+            * 정보> 0 작업이 해결되었습니다.
+            * 정보 <= 0 오류가 발생했습니다 :
+                        -4는 내부 SVD의 불일치를 의미합니다.
+    P - 중성자 형태의 보간법.
+    Rep -보고, LSFitLinearW () 서브 루틴과 동일한 형식.
+            다음 필드가 설정됩니다.
+            * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+            * (X, Y)에 대한 AvgError 평균 오류.
+            * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+            * MaxError 최대 오류
+                            중요하지 않은 오류가 계산됩니다.
+
+노트:
+    P를 중성 양식에서 힘 또는 체비 셰프로 변환 할 수 있습니다.
+    PolynomialBar2Pow () 또는 PolynomialBar2Cheb () 함수의 기준은
+    POLINT 하위 패키지.
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 10.12.2009
+**************************************************************************/
 void polynomialfit(/* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
      ae_int_t n,
@@ -18102,6 +26586,85 @@ above is not guaranteed and may result in inconsistency.
   -- ALGLIB PROJECT --
      Copyright 10.12.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+바이어 센 트릭 형태의 다항식에 의한 가중치 적용
+함수 값 또는 1 차 미분.
+
+작은 정규화 용어는 제한된 작업을 해결할 때 사용됩니다 (
+안정).
+
+작업은 선형이므로 선형 최소 자 솔버가 사용됩니다. 이 복잡성
+계산 방식은 O (N * M ^ 2)이며, 대부분 최소 자승법이 지배합니다
+
+관련 항목 :
+    PolynomialFit ()
+
+입력 매개 변수 :
+    X- 점, 배열 [0..N-1].
+    Y - 함수 값, array [0..N-1].
+    W - 가중치, 배열 [0..N-1]
+            근사 편차의 제곱합에있는 각 summand
+            주어진 값에 해당하는 제곱을 곱합니다.
+            무게. 가중치를 풀고 싶지 않은 경우 1로 채우기
+            태스크.
+    N - 포인트 수, N> 0.
+            * 주어진 경우 X / Y / W의 선행 N 요소 만 사용됩니다.
+            * 지정하지 않으면 X / Y / W 크기에서 자동으로 결정됩니다.
+    XC - 다항식 값 / 미분 값이 제한되는 지점,
+            배열 [0..K-1].
+    YC - 제약 조건 값, array [0..K-1]
+    DC - 배열 [0..K-1], 제약 유형 :
+            * DC [i] = 0은 P (XC [i]) = YC [i]
+            * DC [i] = 1은 P '(XC [i]) = YC [i]
+            제약 조건에 대한 중요한 정보는 아래를보십시오.
+    K - 제약 수, 0 <= K <M.
+            K = 0은 제약이 없음을 의미합니다 (XC / YC / DC는 이러한 경우 사용되지 않음)
+    M - 기저 함수의 수 (= polynomial_degree + 1), M> = 1
+
+출력 매개 변수 :
+    LSFitLinearW () 서브 루틴에서와 같은 정보 포맷 :
+            * 정보> 0 작업이 해결되었습니다.
+            * 정보 <= 0 오류가 발생했습니다 :
+                        -4는 내부 SVD의 불일치를 의미합니다.
+                        -3은 일관성없는 제약 조건을 의미합니다.
+    P - 중성자 형태의 보간법.
+    Rep -보고, LSFitLinearW () 서브 루틴과 동일한 형식.
+            다음 필드가 설정됩니다.
+            * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+            * (X, Y)에 대한 AvgError 평균 오류.
+            * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+            * MaxError 최대 오류
+                            중요하지 않은 오류가 계산됩니다.
+
+중대한:
+    이 서브 루틴은 K <> 0에 대한 작업의 조건 번호를 계산하지 않습니다.
+
+노트:
+    P를 중성 양식에서 힘 또는 체비 셰프로 변환 할 수 있습니다.
+    PolynomialBar2Pow () 또는 PolynomialBar2Cheb () 함수의 기준은
+    POLINT 하위 패키지.
+
+제약 조건 설정 - 위험 및 기회 :
+
+제약 조건 설정은 부적절한 결과처럼 바람직하지 않은 결과를 초래할 수 있습니다.
+행동 또는 불일치가 감지됩니다. 다른면에서 보면
+우리는 착용감을 향상시킬 수 있습니다. 여기에 우리는
+구속 회귀 스플라인 :
+* 단순한 제약조차도 일치하지 않을 수 있습니다. Wikipedia article on
+  이 주제 : http://en.wikipedia.org/wiki/Birkhoff_interpolation
+* M이 클수록 (고정 된 제약 조건이 주어짐), 더 많은 기회가 주어진다.
+  제약 조건은 일관성이있다.
+* 일반적으로 제약 조건의 일관성은 보장되지 않습니다.
+* 한 가지 특수한 경우에는 일관성을 보장 할 수 있습니다. 이
+  예 : M> 1이고 함수 값에 대한 제약 (NOT DERIVATIVES)
+
+우리의 최종 권고는 제약 조건을 언제 어디서나 사용하는 것입니다.
+그것들 없이는 당신의 과제를 해결할 수 없습니다. 주어진 특별한 경우를 넘어선 것
+상기 보증은 보장되지 않으며 불일치가 발생할 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 10.12.2009
+**************************************************************************/
 void polynomialfitwc(/* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
      /* Real    */ ae_vector* w,
@@ -18192,6 +26755,10 @@ void polynomialfitwc(/* Real    */ ae_vector* x,
      * Scale X, Y, XC, YC.
      * Solve scaled problem using internal Chebyshev fitting function.
      */
+    /*
+     * 스케일 X, Y, XC, YC.
+     * Chebyshev 내부 피팅 기능을 사용하여 확장 된 문제를 해결하십시오.
+     */
     lsfitscalexy(x, y, w, n, xc, yc, dc, k, &xa, &xb, &sa, &sb, &xoriginal, &yoriginal, _state);
     lsfit_internalchebyshevfit(x, y, w, n, xc, yc, dc, k, m, info, &tmp, &lrep, _state);
     if( *info<0 )
@@ -18208,6 +26775,15 @@ void polynomialfitwc(/* Real    */ ae_vector* x,
      * Model intialization is done in O(M^2). In principle, it can be
      * done in O(M*log(M)), but before it we solved task with O(N*M^2)
      * complexity, so it is only a small amount of total time spent.
+     */
+    /*
+     * 중력 모델 생성 및 확장
+     * * BX, 상점 바이 트 중심 모델 노드
+     * * FMatrix가 재사용됩니다 (기억하십시오 - 적어도 MxM, 우리가 필요로하는 것입니다)
+     *
+     * 모델 초기화는 O (M ^ 2)로 수행됩니다. 원칙적으로
+     * O (M * log (M))에서 행해졌지만, 그 전에 우리는 O (N * M ^ 2)
+     * 복잡성, 그래서 그것은 총 소요 시간의 단지 작은 금액입니다.
      */
     ae_vector_set_length(&bx, m, _state);
     ae_vector_set_length(&by, m, _state);
@@ -18261,6 +26837,11 @@ void polynomialfitwc(/* Real    */ ae_vector* x,
      * Scale absolute errors obtained from LSFitLinearW.
      * Relative error should be calculated separately
      * (because of shifting/scaling of the task)
+     */
+    /*
+     * LSFitLinearW에서 얻은 절대 오류의 크기를 조정합니다.
+     * 상대 오차는 별도로 계산해야합니다.
+     * (작업 이동 / 크기 조정 때문에)
      */
     rep->taskrcond = lrep.taskrcond;
     rep->rmserror = lrep.rmserror*(sb-sa);
@@ -18368,6 +26949,90 @@ above is not guaranteed and may result in inconsistency.
   -- ALGLIB PROJECT --
      Copyright 18.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+Floater-Hormann 합리적인 방법을 사용하여 합리적인 최소 제곱합 피팅
+제약 조건과 함께 [0,9]에서 선택된 최적 D를 갖는 함수
+개인적인 무게.
+
+[min (x), max (x)]에 M 노드가있는 등전위 그리드는 기초를 만드는 데 사용됩니다
+기능. D의 다른 값들이 시도되고, 최적의 D (가장 적게 가중 된 루트
+평균 제곱 오차)가 선택된다. 작업은 선형이므로 선형 최소 자승
+솔버가 사용됩니다. 이 계산 방식의 복잡도는 O (N * M ^ 2)
+(대부분 최소 자승법에 의해 지배 됨).
+
+관련 항목
+* BarycentricFitFloaterHormann (), "경량"피팅없이 무조건 피팅
+  가중치 및 제약 조건.
+
+입력 매개 변수 :
+    X- 점, 배열 [0..N-1].
+    Y - 함수 값, array [0..N-1].
+    W - 가중치, 배열 [0..N-1]
+            근사 편차의 제곱합에있는 각 summand
+            주어진 값에 해당하는 제곱을 곱합니다.
+            무게. 가중치를 풀고 싶지 않은 경우 1로 채우기
+            태스크.
+    N - 포인트 수, N> 0.
+    XC - 함수 값 / 파생물이 제한되는 지점,
+            배열 [0..K-1].
+    YC - 제약 조건 값, array [0..K-1]
+    DC - 배열 [0..K-1], 제약 유형 :
+            * DC [i] = 0은 S (XC [i]) = YC [i]
+            * DC [i] = 1은 S '(XC [i]) = YC [i]
+            제약 조건에 대한 중요한 정보는 아래를보십시오.
+    K - 제약 수, 0 <= K <M.
+            K = 0은 제약이 없음을 의미합니다 (XC / YC / DC는 이러한 경우 사용되지 않음)
+    M - 기본 함수의 수 (= number_of_nodes), M> = 2.
+
+출력 매개 변수 :
+    LSFitLinearWC () 서브 루틴과 같은 정보입니다.
+            * 정보> 0 작업이 해결되었습니다.
+            * 정보 <= 0 오류가 발생했습니다 :
+                        -4는 내부 SVD의 불일치를 의미합니다.
+                        -3은 일관성없는 제약 조건을 의미합니다.
+                        -1은 전달 된 매개 변수의 다른 오류를 의미합니다.
+                           (예 : N <= 0)
+    B - barycentric interpolant.
+    Rep -보고, LSFitLinearWC () 서브 루틴과 동일한 형식.
+            다음 필드가 설정됩니다.
+            D 매개 변수의 DBest 최적 값
+            * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+            * (X, Y)에 대한 AvgError 평균 오류.
+            * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+            * MaxError 최대 오류
+                            중요하지 않은 오류가 계산됩니다.
+
+중대한:
+    이 서브 루틴은 K <> 0에 대한 작업 조건 번호를 계산하지 않습니다.
+
+제약 조건 설정 - 위험 및 기회 :
+
+제약 조건 설정은 부적절한 결과처럼 바람직하지 않은 결과를 초래할 수 있습니다.
+행동 또는 불일치가 감지됩니다. 다른면에서 보면
+우리는 착용감을 향상시킬 수 있습니다. 여기에 우리는
+구속 된 barycentric interpolants :
+* 과도한 제약 조건이 일치하지 않을 수 있습니다. 플로터 - 호르만 기초
+  함수는 스플라인만큼 유연하지 않습니다 (매우 부드럽지만).
+* 더 균등하게 제약 조건이 [min (x), max (x)]에 퍼지면 더 많은
+  그들이 일관성있게 일할 수있는 기회
+* M이 클수록 (고정 된 제약 조건이 주어짐), 더 많은 기회가 주어진다.
+  제약 조건은 일관성이있다.
+* 일반적으로 제약 조건의 일관성은 보장되지 않습니다.
+* 몇 가지 특수한 경우에는 일관성을 보장 할 수 있습니다.
+*이 경우 중 하나는 해당 간격의 함수 VALUES에 대한 제약입니다.
+  경계. 함수에 대한 제약 조건의 절박함
+  유도체는 보장되지 않습니다 (이러한 경우에는 3 차 스플라인을 사용할 수 있습니다
+  더 유연합니다).
+* 또 다른 특별한 경우는 함수 값에 대한 하나의 제약입니다 (OR, 그러나
+  AND, 파생물이 아님)
+
+우리의 최종 권고는 언제 어디서나 제약 조건을 사용하는 것입니다.
+그것들 없이는 당신의 과제를 해결할 수 없습니다. 주어진 특별한 경우를 넘어선 것
+상기 보증은 보장되지 않으며 불일치가 발생할 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 18.08.2009
+**************************************************************************/
 void barycentricfitfloaterhormannwc(/* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
      /* Real    */ ae_vector* w,
@@ -18425,6 +27090,13 @@ void barycentricfitfloaterhormannwc(/* Real    */ ae_vector* x,
      * If LocInfo will always be equal to -3, Info will remain equal to -3.
      * If at least once LocInfo will be -4, Info will be -4.
      */
+    /*
+     * 최적의 D 찾기
+     *
+     * Info는 기본적으로 -3입니다 (축퇴 제한 조건).
+     * LocInfo가 항상 -3이면 Info는 -3과 동일하게 유지됩니다.
+     * 적어도 한 번 LocInfo가 -4이면 Info는 -4가됩니다.
+     */
     wrmsbest = ae_maxrealnumber;
     rep->dbest = -1;
     *info = -3;
@@ -18437,6 +27109,9 @@ void barycentricfitfloaterhormannwc(/* Real    */ ae_vector* x,
             
             /*
              * Calculate weghted RMS
+             */
+            /*
+             * 무게가있는 RMS를 계산하십시오.
              */
             wrmscur = 0;
             for(i=0; i<=n-1; i++)
@@ -18504,6 +27179,41 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 18.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+Floater-Hormann 합리적인 함수를 사용하는 합리적인 최소 제곱 피팅
+최적의 D는 [0,9]에서 선택된다.
+
+[min (x), max (x)]에 M 노드가있는 등전위 그리드는 기초를 만드는 데 사용됩니다
+기능. 다른 값의 D가 시도되고, 최적 D (최소 평균값
+제곱 오차)가 선택된다. 작업은 선형이므로 선형 최소 자 솔버
+사용. 이 계산 방식의 복잡도는 O (N * M ^ 2) (주로
+최소 자승법에 의해 지배 됨).
+
+입력 매개 변수 :
+    X- 점, 배열 [0..N-1].
+    Y - 함수 값, array [0..N-1].
+    N - 포인트 수, N> 0.
+    M - 기본 함수의 수 (= number_of_nodes), M> = 2.
+
+출력 매개 변수 :
+    LSFitLinearWC () 서브 루틴과 같은 정보입니다.
+            * 정보> 0 작업이 해결되었습니다.
+            * 정보 <= 0 오류가 발생했습니다 :
+                        -4는 내부 SVD의 불일치를 의미합니다.
+                        -3은 일관성없는 제약 조건을 의미합니다.
+    B - barycentric interpolant.
+    Rep -보고, LSFitLinearWC () 서브 루틴과 동일한 형식.
+            다음 필드가 설정됩니다.
+            D 매개 변수의 DBest 최적 값
+            * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+            * (X, Y)에 대한 AvgError 평균 오류.
+            * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+            * MaxError 최대 오류
+                            중요하지 않은 오류가 계산됩니다.
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 18.08.2009
+**************************************************************************/
 void barycentricfitfloaterhormann(/* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
      ae_int_t n,
@@ -18580,6 +27290,41 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 18.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+Floater-Hormann 합리적인 함수를 사용하는 합리적인 최소 제곱 피팅
+최적의 D는 [0,9]에서 선택된다.
+
+[min (x), max (x)]에 M 노드가있는 등전위 그리드는 기초를 만드는 데 사용됩니다
+기능. 다른 값의 D가 시도되고, 최적 D (최소 평균값
+제곱 오차)가 선택된다. 작업은 선형이므로 선형 최소 자 솔버
+사용. 이 계산 방식의 복잡도는 O (N * M ^ 2) (주로
+최소 자승법에 의해 지배 됨).
+
+입력 매개 변수 :
+    X- 점, 배열 [0..N-1].
+    Y - 함수 값, array [0..N-1].
+    N - 포인트 수, N> 0.
+    M - 기본 함수의 수 (= number_of_nodes), M> = 2.
+
+출력 매개 변수 :
+    LSFitLinearWC () 서브 루틴과 같은 정보입니다.
+            * 정보> 0 작업이 해결되었습니다.
+            * 정보 <= 0 오류가 발생했습니다 :
+                        -4는 내부 SVD의 불일치를 의미합니다.
+                        -3은 일관성없는 제약 조건을 의미합니다.
+    B - barycentric interpolant.
+    Rep -보고, LSFitLinearWC () 서브 루틴과 동일한 형식.
+            다음 필드가 설정됩니다.
+            D 매개 변수의 DBest 최적 값
+            * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+            * (X, Y)에 대한 AvgError 평균 오류.
+            * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+            * MaxError 최대 오류
+                            중요하지 않은 오류가 계산됩니다.
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 18.08.2009
+**************************************************************************/
 void spline1dfitpenalized(/* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
      ae_int_t n,
@@ -18689,6 +27434,72 @@ array.
   -- ALGLIB PROJECT --
      Copyright 19.10.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+페널티 입방 스플라인에 의한 가중치 적용.
+
+[min (x, xc), max (x, xc)]에 M 노드가있는 등전위 그리드를 사용하여
+기초 기능. 기본 함수는 자연 경계를 갖는 3 차 스플라인입니다.
+정황. 문제는 비선형 성 패널티를 추가하여 정규화됩니다.
+평소 최소 제곱 페널티 기능 :
+
+    S (x) = arg min {LS + P}, 여기서,
+    LS = SUM {w [i] ^ 2 * (y [i] - S (x [i])) ^ 2} - 최소 자승 페널티
+    P = C * 10 ^ ρ * 적분 {S "(x) ^ 2 * dx} - 비선형 성 패널티
+    rho - 사용자가 지정한 튜너 블 상수
+    C - 자동으로 결정된 스케일 파라미터,
+           X, Y, W의 스케일링과 관련하여 페널티를 불변으로 만듭니다.
+
+입력 매개 변수 :
+    X- 점, 배열 [0..N-1].
+    Y - 함수 값, array [0..N-1].
+    W - 가중치, 배열 [0..N-1]
+            근사 편차의 제곱합에있는 각 summand
+            주어진 값에 해당하는 제곱을 곱합니다.
+            무게. 가중치를 풀고 싶지 않은 경우 1로 채우기
+            문제.
+    N - 점수 (선택 사항) :
+            * N> 0
+            * 주어진 경우 X / Y / W의 처음 N 개 요소 만 처리됩니다.
+            * 지정하지 않으면 X / Y / W 크기에서 자동 결정
+    M - 기본 함수의 수 (= number_of_nodes), M> = 4.
+    Rho - 사용자가 전달한 정규화 상수입니다. 벌칙이 부과된다.
+            회귀 스플라인의 비선형 성. 대수적으로
+            스케일 된, 즉 정규화 상수의 실제 값은이다.
+            10 ^ Rho로 계산됩니다. 다음과 같이 자동으로 조정됩니다.
+            * Rho = 2.0은 중간 정도의 비선형성에 해당합니다.
+            * 일반적으로 [-8.0, + 8.0]
+            비선형 적 처벌을 원하지 않는다면,
+            작은 Rho. -15만큼 낮은 값을 사용해야합니다.
+
+출력 매개 변수 :
+    LSFitLinearWC () 서브 루틴과 같은 정보입니다.
+            * 정보> 0 작업이 해결되었습니다.
+            * 정보 <= 0 오류가 발생했습니다 :
+                        -4는 내부 SVD의 불일치 또는
+                           콜레 스키 분해; 문제는
+                           너무 아프다 (매우 드문 경우)
+    S - 스플라인 보간.
+    담당자 - 다음 필드가 설정됩니다.
+            * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+            * (X, Y)에 대한 AvgError 평균 오류.
+            * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+            * MaxError 최대 오류
+                            중요하지 않은 오류가 계산됩니다.
+
+중대한:
+    이 서브 루틴은 K <> 0에 대한 작업의 조건 번호를 계산하지 않습니다.
+
+비고 1 : 피팅 외부의 스플라인에 추가 노드가 추가됩니다.
+x <min (x, xc) 또는 x> max (x, xc) 일 때 선형성을 강요하는 간격. 완료되었습니다.
+일관성을 위해 - 우리는 [min (x, xc), max (x, xc)]에서 비선형 성을 처벌한다.
+이 간격 밖에서 ​​선형성을 강요하는 것이 자연 스럽다.
+
+참고 2 : 함수는 점을 자동으로 정렬하므로 호출자는 정렬되지 않은
+정렬.
+
+  - ALGLIB 프로젝트 -
+     Copyright 19.10.2010 Bochkanov Sergey
+**************************************************************************/
 void spline1dfitpenalizedw(/* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
      /* Real    */ ae_vector* w,
@@ -18795,6 +27606,9 @@ void spline1dfitpenalizedw(/* Real    */ ae_vector* x,
     /*
      * Prepare LambdaV
      */
+    /*
+     * 람다 준비
+     */
     v = -ae_log(ae_machineepsilon, _state)/ae_log(10, _state);
     if( ae_fp_less(rho,-v) )
     {
@@ -18809,15 +27623,24 @@ void spline1dfitpenalizedw(/* Real    */ ae_vector* x,
     /*
      * Sort X, Y, W
      */
+    /*
+     * X, Y, W 정렬
+     */
     heapsortdpoints(x, y, w, n, _state);
     
     /*
      * Scale X, Y, XC, YC
      */
+    /*
+     * 스케일 X, Y, XC, YC
+     */
     lsfitscalexy(x, y, w, n, &xc, &yc, &dc, 0, &xa, &xb, &sa, &sb, &xoriginal, &yoriginal, _state);
     
     /*
      * Allocate space
+     */
+    /*
+     * 공간 할당
      */
     ae_matrix_set_length(&fmatrix, n, m, _state);
     ae_matrix_set_length(&amatrix, m, m, _state);
@@ -18836,12 +27659,21 @@ void spline1dfitpenalizedw(/* Real    */ ae_vector* x,
      * * TmpAMatrix by second derivatives of I-th function at J-th point
      * * CMatrix by constraints
      */
+    /*
+     * 채우기 :
+     * 기본 함수의 값에 의한 FMatrix
+     * J 번째 점에서 I 번째 함수의 2 차 미분에 의한 TmpAMatrix
+     제약에 의한 * CMatrix
+     */
     fdmax = 0;
     for(b=0; b<=m-1; b++)
     {
         
         /*
          * Prepare I-th basis function
+         */
+        /*
+         * I 번째 기초 함수 준비
          */
         for(j=0; j<=m-1; j++)
         {
@@ -18856,6 +27688,10 @@ void spline1dfitpenalizedw(/* Real    */ ae_vector* x,
          * Calculate B-th column of FMatrix
          * Update FDMax (maximum column norm)
          */
+        /*
+         * FMatrix의 B 번째 열 계산
+         * FDMax 업데이트 (최대 열 표준)
+         */
         spline1dconvcubic(&bx, &by, m, 2, 0.0, 2, 0.0, x, n, &fcolumn, _state);
         ae_v_move(&fmatrix.ptr.pp_double[0][b], fmatrix.stride, &fcolumn.ptr.p_double[0], 1, ae_v_len(0,n-1));
         v = 0;
@@ -18868,6 +27704,9 @@ void spline1dfitpenalizedw(/* Real    */ ae_vector* x,
         /*
          * Fill temporary with second derivatives of basis function
          */
+        /*
+         * 기본 함수의 2 차 파생물로 임시 채우기
+         */
         ae_v_move(&d2matrix.ptr.pp_double[b][0], 1, &bd2.ptr.p_double[0], 1, ae_v_len(0,m-1));
     }
     
@@ -18875,6 +27714,11 @@ void spline1dfitpenalizedw(/* Real    */ ae_vector* x,
      * * calculate penalty matrix A
      * * calculate max of diagonal elements of A
      * * calculate PDecay - coefficient before penalty matrix
+     */
+    /*
+     * * 벌칙 행렬 A 계산
+     * * A의 대각선 요소의 최대 값 계산
+     * * PDecay 계산 - 페널티 행렬 이전의 계수
      */
     for(i=0; i<=m-1; i++)
     {
@@ -18885,6 +27729,11 @@ void spline1dfitpenalizedw(/* Real    */ ae_vector* x,
              * calculate integral(B_i''*B_j'') where B_i and B_j are
              * i-th and j-th basis splines.
              * B_i and B_j are piecewise linear functions.
+             */
+            /*
+             * 적분 계산 (B_i "* B_j") 여기서 B_i와 B_j는
+             * i 번째 및 j 번째 기본 스플라인.
+             * B_i와 B_j는 조각 별 선형 함수입니다.
              */
             v = 0;
             for(b=0; b<=m-2; b++)
@@ -18909,12 +27758,21 @@ void spline1dfitpenalizedw(/* Real    */ ae_vector* x,
     /*
      * Calculate TDecay for Tikhonov regularization
      */
+    /*
+     * Tikhonov 정규화를위한 TDecay 계산
+     */
     tdecay = fdmax*(1+pdecay)*10*ae_machineepsilon;
     
     /*
      * Prepare system
      *
      * NOTE: FMatrix is spoiled during this process
+     */
+    
+    /*
+     * 시스템 준비
+     *
+     * 참고 :이 과정에서 FMatrix가 손상됩니다.
      */
     for(i=0; i<=n-1; i++)
     {
@@ -18946,6 +27804,9 @@ void spline1dfitpenalizedw(/* Real    */ ae_vector* x,
     /*
      * Solve system
      */
+    /*
+     * 시스템 해결
+     */
     if( !spdmatrixcholesky(&nmatrix, m, ae_true, _state) )
     {
         *info = -4;
@@ -18957,6 +27818,9 @@ void spline1dfitpenalizedw(/* Real    */ ae_vector* x,
     
     /*
      * add nodes to force linearity outside of the fitting interval
+     */
+    /*
+     * 피팅 간격 밖의 선형성을 강요하는 노드 추가
      */
     spline1dgriddiffcubic(&bx, &c, m, 2, 0.0, 2, 0.0, &bd1, _state);
     ae_vector_set_length(&tx, m+2, _state);
@@ -18978,6 +27842,9 @@ void spline1dfitpenalizedw(/* Real    */ ae_vector* x,
     
     /*
      * Fill report
+     */
+    /*
+     * 보고서 작성
      */
     rep->rmserror = 0;
     rep->avgerror = 0;
@@ -19106,6 +27973,105 @@ above is not guaranteed and may result in inconsistency.
   -- ALGLIB PROJECT --
      Copyright 18.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+함수 값에 대한 제약이있는 3 차 스플라인에 의한 가중치 피팅 또는
+파생 상품.
+
+[min (x, xc), max (x, xc)]에 M-2 노드가있는 등전위 그리드를 사용하여
+기초 기능. 기본 함수는 연속 2 초
+간격 끝에서 유래 물과 비 고정 일차 파생물. 작은
+정규화 용어는 제한된 작업을 해결할 때 사용됩니다 (
+안정).
+
+작업은 선형이므로 선형 최소 자 솔버가 사용됩니다. 이 복잡성
+계산 방식은 O (N * M ^ 2)이며, 대부분 최소 자승법이 지배합니다
+
+관련 항목
+    Spline1DFitHermiteWC () - Hermite 스플라인으로 피팅 (더 유연함,
+                                덜 부드러운)
+    Spline1DFitCubic () - 입방 스플라인에 의한 "경량"피팅,
+                                무의미한 가중치와 제약없이
+
+입력 매개 변수 :
+    X- 점, 배열 [0..N-1].
+    Y - 함수 값, array [0..N-1].
+    W - 가중치, 배열 [0..N-1]
+            근사 편차의 제곱합에있는 각 summand
+            주어진 값에 해당하는 제곱을 곱합니다.
+            무게. 가중치를 풀고 싶지 않은 경우 1로 채우기
+            태스크.
+    N - 점수 (선택 사항) :
+            * N> 0
+            * 주어진 경우 X / Y / W의 처음 N 개 요소 만 처리됩니다.
+            * 지정하지 않으면 X / Y / W 크기에서 자동 결정
+    XC - 스플라인 값 / 파생물이 제한되는 지점,
+            배열 [0..K-1].
+    YC - 제약 조건 값, array [0..K-1]
+    DC - 배열 [0..K-1], 제약 유형 :
+            * DC [i] = 0은 S (XC [i]) = YC [i]
+            * DC [i] = 1은 S '(XC [i]) = YC [i]
+            제약 조건에 대한 중요한 정보는 아래를보십시오.
+    K - 제약 조건 수 (선택 사항) :
+            * 0 <= K <M.
+            * K = 0은 제약이 없음을 의미합니다 (XC / YC / DC가 사용되지 않음)
+            * 주어진 경우 XC / YC / DC의 첫 번째 K 요소 만 사용됩니다.
+            * 지정하지 않으면 XC / YC / DC에서 자동으로 결정됩니다.
+    M - 기본 함수의 수 (= number_of_nodes + 2), M> = 4.
+
+출력 매개 변수 :
+    LSFitLinearWC () 서브 루틴과 같은 정보입니다.
+            * 정보> 0 작업이 해결되었습니다.
+            * 정보 <= 0 오류가 발생했습니다 :
+                        -4는 내부 SVD의 불일치를 의미합니다.
+                        -3은 일관성없는 제약 조건을 의미합니다.
+    S - 스플라인 보간.
+    Rep -보고, LSFitLinearWC () 서브 루틴과 동일한 형식.
+            다음 필드가 설정됩니다.
+            * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+            * (X, Y)에 대한 AvgError 평균 오류.
+            * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+            * MaxError 최대 오류
+                            중요하지 않은 오류가 계산됩니다.
+
+중대한:
+    이 서브 루틴은 K <> 0에 대한 작업의 조건 번호를 계산하지 않습니다.
+
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+
+제약 조건 설정 - 위험 및 기회 :
+
+제약 조건 설정은 부적절한 결과처럼 바람직하지 않은 결과를 초래할 수 있습니다.
+행동 또는 불일치가 감지됩니다. 다른면에서 보면
+우리는 착용감을 향상시킬 수 있습니다. 여기에 우리는
+구속 회귀 스플라인 :
+* 과도한 제약 조건이 일치하지 않을 수 있습니다. 스플라인은 조각 별 입방체입니다.
+  함수를 사용하고 예제를 만드는 것이 쉽습니다.
+  작은 영역에 제약이 집중되면 불일치가 발생합니다.
+  스플라인은 모든 것을 만족시킬만큼 유연하지 않기 때문입니다. 과
+  [최소 (x), 최대 (x)]에 걸쳐 동일한 제약 조건이 퍼지면 완벽하게됩니다.
+  일관된.
+* 더 균등하게 제약 조건이 [min (x), max (x)]에 퍼지면 더 많은
+  그들이 일관성있게 일할 수있는 기회
+* M이 클수록 (고정 된 제약 조건이 주어짐), 더 많은 기회가 주어진다.
+  제약 조건은 일관성이있다.
+* 일반적으로 제약 조건의 일관성은 보장되지 않습니다.
+* 몇 가지 특수한 경우에는 일관성을 보장 할 수 있습니다.
+*이 경우 중 하나는 함수 값에 대한 제약 및 / 또는
+  간격 경계에서 파생 상품.
+* 또 다른 특별한 경우는 함수 값에 대한 하나의 제약입니다 (OR, 그러나
+  AND, 파생물이 아님)
+
+우리의 최종 권고는 언제 어디서나 제약 조건을 사용하는 것입니다.
+그것들 없이는 당신의 과제를 해결할 수 없습니다. 주어진 특별한 경우를 넘어선 것
+상기 보증은 보장되지 않으며 불일치가 발생할 수 있습니다.
+
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 18.08.2009
+**************************************************************************/
 void spline1dfitcubicwc(/* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
      /* Real    */ ae_vector* w,
@@ -19253,6 +28219,110 @@ above is not guaranteed and may result in inconsistency.
   -- ALGLIB PROJECT --
      Copyright 18.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/************************************************** **********************
+Hermite 스플라인에 의한 가중치 피팅, 함수 값에 대한 제약 조건 포함
+또는 일차 파생 상품.
+
+[min (x, xc), max (x, xc)]에 M 노드가있는 등전위 그리드를 사용하여
+기초 기능. 기본 함수는 Hermite 스플라인입니다. 작은 정규화
+용어는 제한된 작업을 해결할 때 (안정성 향상을 위해) 사용됩니다.
+
+작업은 선형이므로 선형 최소 자 솔버가 사용됩니다. 이 복잡성
+계산 방식은 O (N * M ^ 2)이며, 대부분 최소 자승법이 지배합니다
+
+관련 항목
+    Spline1DFitCubicWC () - 큐빅 스플라인으로 피팅 (덜 유연한,
+                                더 부드럽게)
+    Spline1DFitHermite () -없는 "경량"Hermite 피팅
+                                무의미한 가중치 및 제약
+
+입력 매개 변수 :
+    X- 점, 배열 [0..N-1].
+    Y - 함수 값, array [0..N-1].
+    W - 가중치, 배열 [0..N-1]
+            근사 편차의 제곱합에있는 각 summand
+            주어진 값에 해당하는 제곱을 곱합니다.
+            무게. 가중치를 풀고 싶지 않은 경우 1로 채우기
+            태스크.
+    N - 점수 (선택 사항) :
+            * N> 0
+            * 주어진 경우 X / Y / W의 처음 N 개 요소 만 처리됩니다.
+            * 지정하지 않으면 X / Y / W 크기에서 자동 결정
+    XC - 스플라인 값 / 파생물이 제한되는 지점,
+            배열 [0..K-1].
+    YC - 제약 조건 값, array [0..K-1]
+    DC - 배열 [0..K-1], 제약 유형 :
+            * DC [i] = 0은 S (XC [i]) = YC [i]
+            * DC [i] = 1은 S '(XC [i]) = YC [i]
+            제약 조건에 대한 중요한 정보는 아래를보십시오.
+    K - 제약 조건 수 (선택 사항) :
+            * 0 <= K <M.
+            * K = 0은 제약이 없음을 의미합니다 (XC / YC / DC가 사용되지 않음)
+            * 주어진 경우 XC / YC / DC의 첫 번째 K 요소 만 사용됩니다.
+            * 지정하지 않으면 XC / YC / DC에서 자동으로 결정됩니다.
+    M - 기본 함수의 수 (= 2 * 노드 수),
+            M> = 4,
+            나도 그래!
+
+출력 매개 변수 :
+    LSFitLinearW () 서브 루틴에서와 같은 정보 포맷 :
+            * 정보> 0 작업이 해결되었습니다.
+            * 정보 <= 0 오류가 발생했습니다 :
+                        -4는 내부 SVD의 불일치를 의미합니다.
+                        -3은 일관성없는 제약 조건을 의미합니다.
+                        -2는 홀수 M이 전달되었음을 의미합니다 (지원되지 않음).
+                        -1은 전달 된 매개 변수의 다른 오류를 의미합니다.
+                           (예 : N <= 0)
+    S - 스플라인 보간.
+    Rep -보고, LSFitLinearW () 서브 루틴과 동일한 형식.
+            다음 필드가 설정됩니다.
+            * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+            * (X, Y)에 대한 AvgError 평균 오류.
+            * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+            * MaxError 최대 오류
+                            중요하지 않은 오류가 계산됩니다.
+
+중대한:
+    이 서브 루틴은 K <> 0에 대한 작업의 조건 번호를 계산하지 않습니다.
+
+중대한:
+    이 서브 루틴은 M
+
+
+요점 순서
+
+서브 루틴은 점을 자동으로 정렬하므로 호출자는 정렬되지 않은 배열을 전달할 수 있습니다.
+
+제약 조건 설정 - 위험 및 기회 :
+
+제약 조건 설정은 부적절한 결과처럼 바람직하지 않은 결과를 초래할 수 있습니다.
+행동 또는 불일치가 감지됩니다. 다른면에서 보면
+우리는 착용감을 향상시킬 수 있습니다. 여기에 우리는
+구속 회귀 스플라인 :
+* 과도한 제약 조건이 일치하지 않을 수 있습니다. 스플라인은 조각 별 입방체입니다.
+  함수를 사용하고 예제를 만드는 것이 쉽습니다.
+  작은 영역에 제약이 집중되면 불일치가 발생합니다.
+  스플라인은 모든 것을 만족시킬만큼 유연하지 않기 때문입니다. 과
+  [최소 (x), 최대 (x)]에 걸쳐 동일한 제약 조건이 퍼지면 완벽하게됩니다.
+  일관된.
+* 더 균등하게 제약 조건이 [min (x), max (x)]에 퍼지면 더 많은
+  그들이 일관성있게 일할 수있는 기회
+* M이 클수록 (고정 된 제약 조건이 주어짐), 더 많은 기회가 주어진다.
+  제약 조건은 일관성이있다.
+* 일반적으로 제약 조건의 일관성은 보장되지 않습니다.
+* 몇몇 특별한 경우에는 일관성을 보장 할 수 있습니다.
+*이 경우 중 하나는 M> = 4이고 함수 값에 대한 제약
+  (AND / OR 그 파생물)을 간격 경계에서 찾는다.
+* 또 다른 특별한 경우는 M> = 4이고 함수 값에 대한 하나의 제약 조건입니다
+  [최소 (x), 최대 (x)]의 모든 위치에서 (OR, BUT NOT AND, 파생)
+
+우리의 최종 권고는 제약 조건을 언제 어디서나 사용하는 것입니다.
+그것들 없이는 당신의 과제를 해결할 수 없습니다. 주어진 특별한 경우를 넘어선 것
+상기 보증은 보장되지 않으며 불일치가 발생할 수 있습니다.
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 18.08.2009
+**************************************************************************/
 void spline1dfithermitewc(/* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
      /* Real    */ ae_vector* w,
@@ -19307,6 +28377,16 @@ about subroutine parameters (we don't duplicate it here because of length)
   -- ALGLIB PROJECT --
      Copyright 18.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+큐빅 스플라인으로 피팅 된 최소 제곱.
+
+이 서브 루틴은 좀 더 복잡하고 기능이 많은 "
+rich Spline1DFitCubicWC (). 자세한 내용은 Spline1DFitCubicWC ()를 참조하십시오.
+서브 루틴 매개 변수에 대해 (길이 때문에 여기에 중복되지 않습니다)
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 18.08.2009
+**************************************************************************/
 void spline1dfitcubic(/* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
      ae_int_t n,
@@ -19359,6 +28439,17 @@ because of length).
   -- ALGLIB PROJECT --
      Copyright 18.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+Hermite 스플라인으로 피팅 된 최소 제곱.
+
+이 서브 루틴은 좀 더 복잡하고 기능이 많은 "
+rich Spline1DFitHermiteWC (). 자세한 내용은 Spline1DFitHermiteWC () 설명을 참조하십시오.
+서브 루틴 매개 변수에 대한 자세한 정보 (여기에 중복되지 않습니다.
+길이 때문에).
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 18.08.2009
+**************************************************************************/
 void spline1dfithermite(/* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
      ae_int_t n,
@@ -19481,6 +28572,86 @@ NOTE:       covariance matrix is estimated using  correction  for  degrees
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+가중치가 적용된 선형 최소 제곱 피팅.
+
+QR 분해는 작업을 MxM으로 줄이기 위해 사용 된 다음 삼각 솔버 또는
+SVD 기반 솔버는 시스템의 조건 번호에 따라 사용됩니다. 그것
+속도를 극대화하고 적절한 정확성을 유지할 수 있습니다.
+
+중요 : 다항식 피팅을 수행하려는 경우
+           PolynomialFit () 함수를 사용하면 편리합니다. 이 함수는
+           다항식 문제에 대한 최상의 결과 및 수치 해석
+           당신이 높은 학위에 맞을 때 발생하는 안정성 문제
+           다항식을 데이터에 적용합니다.
+
+입력 매개 변수 :
+    Y - 배열 [0..N-1] N 개의 함수 값.
+    W - 배열 [0..N-1] 함수 값에 해당하는 가중치.
+                각 summand 근사치 편차의 제곱합
+                주어진 값으로부터 제곱의
+                해당 무게.
+    FMatrix - 기본 함수 값의 테이블, array [0..N-1, 0..M-1].
+                FMatrix [I, J] - I 번째 점에서 J 번째 기초 함수의 값.
+    N - 사용 된 점의 수. N> = 1이다.
+    M - 기저 함수의 수, M> = 1.
+
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                * -4 내부 SVD 분해 서브 루틴 실패 (매우
+                        희귀 및 퇴화 시스템 전용)
+                * -1 잘못된 N / M이 지정되었습니다.
+                * 1 과제 해결
+    C - 분해 계수, 배열 [0..M-1]
+    신고서 제출. 다음 필드가 설정됩니다.
+                * Rep.TaskRCond 조건 수의 역수
+                * R2 비 조정 계수
+                                    (가중치 제외)
+                * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+                * (X, Y)에 대한 AvgError 평균 오류.
+                * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+                * MaxError 최대 오류
+                                    중요하지 않은 오류가 계산됩니다.
+                
+매개 변수의 오류                
+                
+이 솔버는 또한 매개 변수에서 다양한 종류의 오류를 계산하고
+보고서의 해당 필드를 채 웁니다.
+* 매개 변수에 대한 Rep.CovPar 공분산 행렬, 배열 [K, K].
+매개 변수의 Rep.ErrPar 오류, 배열 [K],
+                    errpar = sqrt (diag (CovPar))
+* Rep.ErrCurve 적합 오차 벡터 - 경험적 표준 편차
+                    내장 된 "이상적인"최적 곡선의 최적 곡선
+                    무한 개수의 샘플, 배열 [N].
+                    errcurve = sqrt (diag (F * CovPar * F ')),
+                    여기서 F는 함수 행렬입니다.
+* Rep. 잡음 당 포인트 추정치의 잡음 벡터, 배열 [N]
+            
+참고 : 데이터의 노이즈는 다음과 같이 추정됩니다.
+            * 사용자가 제공하는 무게없이 모든 피팅을 맞추기 위해
+              동일한 수준의 잡음을 갖는 것으로 가정하며,
+              자료
+            * 사용자가 제공 한 무게로 피팅하기 위해 우리는 소음
+              레벨은 Ith 가중치에 반비례합니다.
+              비례 계수는 데이터로부터 추정됩니다.
+            
+참고 : 우리는 제곱을 반전 할 때 소량의 정규화를 적용합니다.
+            자 코비안 (Jacobian)을 선택하고 공분산 행렬을 계산합니다. 그것은
+            알고리즘은 반전시 0으로 나누지 않지만 비뚤어 짐
+            오류 추정 조금 (분수 오류 약 10 ^ -9)입니다.
+            
+            그러나 우리는이 차이가
+            원하는 상황을 제외한 모든 실제적인 목적
+            ALGLIB 결과를 "참조"구현과 비교
+            마지막 유효 숫자로
+            
+참고 : 공분산 행렬은도에 대한 보정을 사용하여 추정됩니다.
+            자유의 (공분산은 나누기 대신에 NM으로 나누어진다.
+            N에 의해).
+                                    
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+**************************************************************************/
 void lsfitlinearw(/* Real    */ ae_vector* y,
      /* Real    */ ae_vector* w,
      /* Real    */ ae_matrix* fmatrix,
@@ -19605,6 +28776,102 @@ NOTE:       covariance matrix is estimated using  correction  for  degrees
   -- ALGLIB --
      Copyright 07.09.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+가중치 부여 된 선형 최소 자승 피팅.
+
+이것은 LSFitLinearW ()의 변형으로 min | A * x = b |를 검색합니다. 주어진
+그 K 추가 constaints C * x = bc가 만족된다. 원본을 줄입니다.
+수정 된 작업 : min | B * yd | 제약없이 LSFitLinearW ()
+호출됩니다.
+
+중요 : 다항식 피팅을 수행하려는 경우
+           PolynomialFit () 함수를 사용하면 편리합니다. 이 함수는
+           다항식 문제에 대한 최상의 결과 및 수치 해석
+           당신이 높은 학위에 맞을 때 발생하는 안정성 문제
+           다항식을 데이터에 적용합니다.
+
+입력 매개 변수 :
+    Y - 배열 [0..N-1] N 개의 함수 값.
+    W - 배열 [0..N-1] 함수 값에 해당하는 가중치.
+                각 summand 근사치 편차의 제곱합
+                주어진 값으로부터 제곱의
+                해당 무게.
+    FMatrix - 기본 함수 값의 테이블, array [0..N-1, 0..M-1].
+                FMatrix [I, J] - I 번째 점에서 J 번째 기초 함수의 값.
+    CMatrix - constaints 테이블, 배열 [0..K-1.0..M].
+                CMatrix의 I 번째 행은 I 번째 선형 제약에 해당합니다.
+                CMatrix [I, M] * C [M-1] = CMatrix [I, M]
+    N - 사용 된 점의 수. N> = 1이다.
+    M - 기저 함수의 수, M> = 1.
+    K - 제약 수, 0 <= K <M
+                K = 0은 제약 조건 없음에 해당합니다.
+
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                * -4 내부 SVD 분해 서브 루틴 실패 (매우
+                        희귀 및 퇴화 시스템 전용)
+                * -3 너무 많은 제약 조건 (M 이상),
+                        축퇴 제약 조건 (일부 제약 조건은
+                        반복 두 번) 또는 일관성없는 제약 조건
+                        지정된.
+                * 1 과제 해결
+    C - 분해 계수, 배열 [0..M-1]
+    신고서 제출. 다음 필드가 설정됩니다.
+                * R2 비 조정 계수
+                                    (가중치 제외)
+                * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+                * (X, Y)에 대한 AvgError 평균 오류.
+                * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+                * MaxError 최대 오류
+                                    중요하지 않은 오류가 계산됩니다.
+
+중대한:
+    이 서브 루틴은 K <> 0에 대한 작업의 조건 번호를 계산하지 않습니다.
+                
+매개 변수의 오류                
+                
+이 솔버는 또한 매개 변수에서 다양한 종류의 오류를 계산하고
+보고서의 해당 필드를 채 웁니다.
+* 매개 변수에 대한 Rep.CovPar 공분산 행렬, 배열 [K, K].
+매개 변수의 Rep.ErrPar 오류, 배열 [K],
+                    errpar = sqrt (diag (CovPar))
+* Rep.ErrCurve 적합 오차 벡터 - 경험적 표준 편차
+                    내장 된 "이상적인"최적 곡선의 최적 곡선
+                    무한 개수의 샘플, 배열 [N].
+                    errcurve = sqrt (diag (F * CovPar * F ')),
+                    여기서 F는 함수 행렬입니다.
+* Rep. 잡음 당 포인트 추정치의 잡음 벡터, 배열 [N]
+
+중요 : 매개 변수의 오류는
+            계정 경계 / 선형 제약! 제약 조건의 존재
+            오류 배포를 변경하지만 쉬운 방법은 없습니다.
+            공분산 행렬을 계산할 때 제약 조건을 설명합니다.
+            
+참고 : 데이터의 노이즈는 다음과 같이 추정됩니다.
+            * 사용자가 제공하는 무게없이 모든 피팅을 맞추기 위해
+              동일한 수준의 잡음을 갖는 것으로 가정하며,
+              자료
+            * 사용자가 제공 한 무게로 피팅하기 위해 우리는 소음
+              레벨은 Ith 가중치에 반비례합니다.
+              비례 계수는 데이터로부터 추정됩니다.
+            
+참고 : 우리는 제곱을 반전 할 때 소량의 정규화를 적용합니다.
+            자 코비안 (Jacobian)을 선택하고 공분산 행렬을 계산합니다. 그것은
+            알고리즘은 반전시 0으로 나누지 않지만 비뚤어 짐
+            오류 추정 조금 (분수 오류 약 10 ^ -9)입니다.
+            
+            그러나 우리는이 차이가
+            원하는 상황을 제외한 모든 실제적인 목적
+            ALGLIB 결과를 "참조"구현과 비교
+            마지막 유효 숫자로
+            
+참고 : 공분산 행렬은도에 대한 보정을 사용하여 추정됩니다.
+            자유의 (공분산은 나누기 대신에 NM으로 나누어진다.
+            N에 의해).
+
+  - ALGLIB -
+     저작권 07.09.2009 Bochkanov Sergey
+**************************************************************************/
 void lsfitlinearwc(/* Real    */ ae_vector* y,
      /* Real    */ ae_vector* w,
      /* Real    */ ae_matrix* fmatrix,
@@ -19666,11 +28933,19 @@ void lsfitlinearwc(/* Real    */ ae_vector* y,
     /*
      * Solve
      */
+    
+    /*
+     * 해결
+     */
     if( k==0 )
     {
         
         /*
          * no constraints
+         */
+        
+        /*
+         * 제한 없음
          */
         lsfit_lsfitlinearinternal(y, w, fmatrix, n, m, info, c, rep, _state);
     }
@@ -19684,6 +28959,14 @@ void lsfitlinearwc(/* Real    */ ae_vector* y,
          * * fill upper part of C with zeros (for RCond)
          *
          * We got C=C0+Q2'*y where Q2 is lower M-K rows of Q.
+         */
+        /*
+         * 첫째, 제약 시스템의 일반적인 형태의 해결책을 찾는다.
+         * * factorize C = L * Q
+         * * Q 포장 풀기
+         * * C의 윗부분을 0으로 채 웁니다 (RCond의 경우).
+         *
+         * C = C0 + Q2 '* y 여기서 Q2는 Q의 MK 행보다 낮습니다.
          */
         rmatrixlq(cmatrix, k, m, &tau, _state);
         rmatrixlqunpackq(cmatrix, k, m, &tau, m, &q, _state);
@@ -19727,6 +29010,9 @@ void lsfitlinearwc(/* Real    */ ae_vector* y,
         /*
          * Second, prepare modified matrix F2 = F*Q2' and solve modified task
          */
+        /*
+         * 둘째, 변형 된 행렬 F2 = F * Q2 '를 준비하고 수정 된 작업을 해결합니다.
+         */
         ae_vector_set_length(&tmp, ae_maxint(n, m, _state)+1, _state);
         ae_matrix_set_length(&f2, n, m-k, _state);
         matrixvectormultiply(fmatrix, 0, n-1, 0, m-1, ae_false, &c0, 0, m-1, -1.0, y, 0, n-1, 1.0, _state);
@@ -19741,6 +29027,9 @@ void lsfitlinearwc(/* Real    */ ae_vector* y,
         
         /*
          * then, convert back to original answer: C = C0 + Q2'*Y0
+         */
+        /*
+         * 그런 다음 원래 응답으로 다시 변환하십시오. C = C0 + Q2 '* Y0
          */
         ae_vector_set_length(c, m, _state);
         ae_v_move(&c->ptr.p_double[0], 1, &c0.ptr.p_double[0], 1, ae_v_len(0,m-1));
@@ -19825,6 +29114,81 @@ NOTE:       covariance matrix is estimated using  correction  for  degrees
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+선형 최소 제곱합.
+
+QR 분해는 작업을 MxM으로 줄이기 위해 사용 된 다음 삼각 솔버 또는
+SVD 기반 솔버는 시스템의 조건 번호에 따라 사용됩니다. 그것
+속도를 극대화하고 적절한 정확성을 유지할 수 있습니다.
+
+중요 : 다항식 피팅을 수행하려는 경우
+           PolynomialFit () 함수를 사용하면 편리합니다. 이 함수는
+           다항식 문제에 대한 최상의 결과 및 수치 해석
+           당신이 높은 학위에 맞을 때 발생하는 안정성 문제
+           다항식을 데이터에 적용합니다.
+
+입력 매개 변수 :
+    Y - 배열 [0..N-1] N 개의 함수 값.
+    FMatrix - 기본 함수 값의 테이블, array [0..N-1, 0..M-1].
+                FMatrix [I, J] - I 번째 점에서 J 번째 기초 함수의 값.
+    N - 사용 된 점의 수. N> = 1이다.
+    M - 기저 함수의 수, M> = 1.
+
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                * -4 내부 SVD 분해 서브 루틴 실패 (매우
+                        희귀 및 퇴화 시스템 전용)
+                * 1 과제 해결
+    C - 분해 계수, 배열 [0..M-1]
+    신고서 제출. 다음 필드가 설정됩니다.
+                * Rep.TaskRCond 조건 수의 역수
+                * R2 비 조정 계수
+                                    (가중치 제외)
+                * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+                * (X, Y)에 대한 AvgError 평균 오류.
+                * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+                * MaxError 최대 오류
+                                    중요하지 않은 오류가 계산됩니다.
+                
+매개 변수의 오류                
+                
+이 솔버는 또한 매개 변수에서 다양한 종류의 오류를 계산하고
+보고서의 해당 필드를 채 웁니다.
+* 매개 변수에 대한 Rep.CovPar 공분산 행렬, 배열 [K, K].
+매개 변수의 Rep.ErrPar 오류, 배열 [K],
+                    errpar = sqrt (diag (CovPar))
+* Rep.ErrCurve 적합 오차 벡터 - 경험적 표준 편차
+                    내장 된 "이상적인"최적 곡선의 최적 곡선
+                    무한 개수의 샘플, 배열 [N].
+                    errcurve = sqrt (diag (F * CovPar * F ')),
+                    여기서 F는 함수 행렬입니다.
+* Rep. 잡음 당 포인트 추정치의 잡음 벡터, 배열 [N]
+            
+참고 : 데이터의 노이즈는 다음과 같이 추정됩니다.
+            * 사용자가 제공하는 무게없이 모든 피팅을 맞추기 위해
+              동일한 수준의 잡음을 갖는 것으로 가정하며,
+              자료
+            * 사용자가 제공 한 무게로 피팅하기 위해 우리는 소음
+              레벨은 Ith 가중치에 반비례합니다.
+              비례 계수는 데이터로부터 추정됩니다.
+            
+참고 : 우리는 제곱을 반전 할 때 소량의 정규화를 적용합니다.
+            자 코비안 (Jacobian)을 선택하고 공분산 행렬을 계산합니다. 그것은
+            알고리즘은 반전시 0으로 나누지 않지만 비뚤어 짐
+            오류 추정 조금 (분수 오류 약 10 ^ -9)입니다.
+            
+            그러나 우리는이 차이가
+            원하는 상황을 제외한 모든 실제적인 목적
+            ALGLIB 결과를 "참조"구현과 비교
+            마지막 유효 숫자로
+            
+참고 : 공분산 행렬은도에 대한 보정을 사용하여 추정됩니다.
+            자유의 (공분산은 나누기 대신에 NM으로 나누어진다.
+            N에 의해).
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+**************************************************************************/
 void lsfitlinear(/* Real    */ ae_vector* y,
      /* Real    */ ae_matrix* fmatrix,
      ae_int_t n,
@@ -19953,6 +29317,98 @@ NOTE:       covariance matrix is estimated using  correction  for  degrees
   -- ALGLIB --
      Copyright 07.09.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+Constained 선형 최소 제곱 피팅.
+
+이것은 min | A * x = b |를 검색하는 LSFitLinear ()의 변형입니다. 주어진
+그 K 추가 constaints C * x = bc가 만족된다. 원본을 줄입니다.
+수정 된 작업 : min | B * yd | 제약없이 LSFitLinear ()
+호출됩니다.
+
+중요 : 다항식 피팅을 수행하려는 경우
+           PolynomialFit () 함수를 사용하면 편리합니다. 이 함수는
+           다항식 문제에 대한 최상의 결과 및 수치 해석
+           당신이 높은 학위에 맞을 때 발생하는 안정성 문제
+           다항식을 데이터에 적용합니다.
+
+입력 매개 변수 :
+    Y - 배열 [0..N-1] N 개의 함수 값.
+    FMatrix - 기본 함수 값의 테이블, array [0..N-1, 0..M-1].
+                FMatrix [I, J] - I 번째 점에서 J 번째 기초 함수의 값.
+    CMatrix - constaints 테이블, 배열 [0..K-1.0..M].
+                CMatrix의 I 번째 행은 I 번째 선형 제약에 해당합니다.
+                CMatrix [I, M] * C [M-1] = CMatrix [I, M]
+    N - 사용 된 점의 수. N> = 1이다.
+    M - 기저 함수의 수, M> = 1.
+    K - 제약 수, 0 <= K <M
+                K = 0은 제약 조건 없음에 해당합니다.
+
+출력 매개 변수 :
+    정보 - 오류 코드 :
+                * -4 내부 SVD 분해 서브 루틴 실패 (매우
+                        희귀 및 퇴화 시스템 전용)
+                * -3 너무 많은 제약 조건 (M 이상),
+                        축퇴 제약 조건 (일부 제약 조건은
+                        반복 두 번) 또는 일관성없는 제약 조건
+                        지정된.
+                * 1 과제 해결
+    C - 분해 계수, 배열 [0..M-1]
+    신고서 제출. 다음 필드가 설정됩니다.
+                * R2 비 조정 계수
+                                    (가중치 제외)
+                * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+                * (X, Y)에 대한 AvgError 평균 오류.
+                * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+                * MaxError 최대 오류
+                                    중요하지 않은 오류가 계산됩니다.
+
+중대한:
+    이 서브 루틴은 K <> 0에 대한 작업의 조건 번호를 계산하지 않습니다.
+                
+매개 변수의 오류                
+                
+이 솔버는 또한 매개 변수에서 다양한 종류의 오류를 계산하고
+보고서의 해당 필드를 채 웁니다.
+* 매개 변수에 대한 Rep.CovPar 공분산 행렬, 배열 [K, K].
+매개 변수의 Rep.ErrPar 오류, 배열 [K],
+                    errpar = sqrt (diag (CovPar))
+* Rep.ErrCurve 적합 오차 벡터 - 경험적 표준 편차
+                    내장 된 "이상적인"최적 곡선의 최적 곡선
+                    무한 개수의 샘플, 배열 [N].
+                    errcurve = sqrt (diag (F * CovPar * F ')),
+                    여기서 F는 함수 행렬입니다.
+* Rep. 잡음 당 포인트 추정치의 잡음 벡터, 배열 [N]
+
+중요 : 매개 변수의 오류는
+            계정 경계 / 선형 제약! 제약 조건의 존재
+            오류 배포를 변경하지만 쉬운 방법은 없습니다.
+            공분산 행렬을 계산할 때 제약 조건을 설명합니다.
+            
+참고 : 데이터의 노이즈는 다음과 같이 추정됩니다.
+            * 사용자가 제공하는 무게없이 모든 피팅을 맞추기 위해
+              동일한 수준의 잡음을 갖는 것으로 가정하며,
+              자료
+            * 사용자가 제공 한 무게로 피팅하기 위해 우리는 소음
+              레벨은 Ith 가중치에 반비례합니다.
+              비례 계수는 데이터로부터 추정됩니다.
+            
+참고 : 우리는 제곱을 반전 할 때 소량의 정규화를 적용합니다.
+            자 코비안 (Jacobian)을 선택하고 공분산 행렬을 계산합니다. 그것은
+            알고리즘은 반전시 0으로 나누지 않지만 비뚤어 짐
+            오류 추정 조금 (분수 오류 약 10 ^ -9)입니다.
+            
+            그러나 우리는이 차이가
+            원하는 상황을 제외한 모든 실제적인 목적
+            ALGLIB 결과를 "참조"구현과 비교
+            마지막 유효 숫자로
+            
+참고 : 공분산 행렬은도에 대한 보정을 사용하여 추정됩니다.
+            자유의 (공분산은 나누기 대신에 NM으로 나누어진다.
+            N에 의해).
+
+  - ALGLIB -
+     저작권 07.09.2009 Bochkanov Sergey
+**************************************************************************/
 void lsfitlinearc(/* Real    */ ae_vector* y,
      /* Real    */ ae_matrix* fmatrix,
      /* Real    */ ae_matrix* cmatrix,
@@ -20036,6 +29492,44 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 18.10.2008 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+함수 값만 사용하여 가중치가있는 비선형 최소 제곱 피팅.
+
+숫자 차별화와 시컨트 업데이트의 조합은
+함수 Jacobian을 얻는다.
+
+비선형 작업 min (F (c))가 풀린다.
+
+    2 + ... + (w [n-1] * (f (c, x [0]) - n-1]) - y [n-1])) ^ 2,
+
+    * N은 포인트의 숫자입니다,
+    * M은 공간 점의 차원이며,
+    * K는 맞는 매개 변수 공간의 차원입니다.
+    * w는 가중 계수의 N 차원 벡터이며,
+    * x는 N 점의 집합이며, 각각은 M 차원 벡터이며,
+    * c는 맞는 매개 변수의 K 차원 벡터입니다.
+
+이 서브 루틴은 f (c, x [i]) 만 사용합니다.
+
+입력 매개 변수 :
+    X- 어레이 [0..N-1.0..M-1], 포인트 (1 행 = 1 포인트)
+    Y- 배열 [0..N-1], 함수 값.
+    W - 가중치, 배열 [0..N-1]
+    C - 배열 [0..K-1], 솔루션에 대한 초기 근사,
+    N - 점의 수, N> 1
+    M - 공간의 차원
+    K - 맞는 매개 변수의 수
+    DiffStep- 수치 차별화 단계;
+                아주 작거나 크지 않아야한다.
+                큰 = 정확성의 상실
+                작은 = 반올림 오류 증가
+
+출력 매개 변수 :
+    State - 알고리즘 상태를 저장하는 구조
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 18.10.2008
+**************************************************************************/
 void lsfitcreatewf(/* Real    */ ae_matrix* x,
      /* Real    */ ae_vector* y,
      /* Real    */ ae_vector* w,
@@ -20144,6 +29638,43 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 18.10.2008 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+함수 값만 사용하는 비선형 최소 자승 피팅.
+
+숫자 차별화와 시컨트 업데이트의 조합은
+함수 Jacobian을 얻는다.
+
+비선형 작업 min (F (c))가 풀린다.
+
+    2 + ... + (f (c, x [n-1]) - y [n-1]) ^ 2 (f (c) ,
+
+    * N은 포인트의 숫자입니다,
+    * M은 공간 점의 차원이며,
+    * K는 맞는 매개 변수 공간의 차원입니다.
+    * w는 가중 계수의 N 차원 벡터이며,
+    * x는 N 점의 집합이며, 각각은 M 차원 벡터이며,
+    * c는 맞는 매개 변수의 K 차원 벡터입니다.
+
+이 서브 루틴은 f (c, x [i]) 만 사용합니다.
+
+입력 매개 변수 :
+    X- 어레이 [0..N-1.0..M-1], 포인트 (1 행 = 1 포인트)
+    Y- 배열 [0..N-1], 함수 값.
+    C - 배열 [0..K-1], 솔루션에 대한 초기 근사,
+    N - 점의 수, N> 1
+    M - 공간의 차원
+    K - 맞는 매개 변수의 수
+    DiffStep- 수치 차별화 단계;
+                아주 작거나 크지 않아야한다.
+                큰 = 정확성의 상실
+                작은 = 반올림 오류 증가
+
+출력 매개 변수 :
+    State - 알고리즘 상태를 저장하는 구조
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 18.10.2008
+**************************************************************************/
 void lsfitcreatef(/* Real    */ ae_matrix* x,
      /* Real    */ ae_vector* y,
      /* Real    */ ae_vector* c,
@@ -20257,6 +29788,51 @@ See also:
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+그라디언트 만 사용하는 가중치가있는 비선형 최소 제곱합입니다.
+
+비선형 작업 min (F (c))가 풀린다.
+
+    2 + ... + (w [n-1] * (f (c, x [0]) - n-1]) - y [n-1])) ^ 2,
+    
+    * N은 포인트의 숫자입니다,
+    * M은 공간 점의 차원이며,
+    * K는 맞는 매개 변수 공간의 차원입니다.
+    * w는 가중 계수의 N 차원 벡터이며,
+    * x는 N 점의 집합이며, 각각은 M 차원 벡터이며,
+    * c는 맞는 매개 변수의 K 차원 벡터입니다.
+    
+이 서브 루틴은 f (c, x [i])와 그 그라디언트 만 사용합니다.
+    
+입력 매개 변수 :
+    X- 어레이 [0..N-1.0..M-1], 포인트 (1 행 = 1 포인트)
+    Y- 배열 [0..N-1], 함수 값.
+    W - 가중치, 배열 [0..N-1]
+    C - 배열 [0..K-1], 솔루션에 대한 초기 근사,
+    N - 점의 수, N> 1
+    M - 공간의 차원
+    K - 맞는 매개 변수의 수
+    CheapFG - 부울 값 플래그는 다음과 같습니다.
+                * 함수 및 그래디언트 계산의 복잡성이 둘 다 맞다면 참입니다.
+                        O (M ^ 2)보다 작다. 향상된 알고리즘으로
+                        에서 FGJ 체계에 해당하는 사용
+                        MINLM 장치.
+                * 그렇지 않으면 거짓.
+                        표준 Jaciberian-bases Levenberg-Marquardt algo
+                        (FJ 체계)가 사용될 것입니다.
+
+출력 매개 변수 :
+    State - 알고리즘 상태를 저장하는 구조
+
+참조 :
+    LSFitResults
+    LSFitCreateFG (가중치없이 피팅)
+    LSFitCreateWFGH (헤 시안을 사용하여 피팅)
+    LSFitCreateFGH (가중치없이 헤 시안을 사용하여 피팅)
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+**************************************************************************/
 void lsfitcreatewfg(/* Real    */ ae_matrix* x,
      /* Real    */ ae_vector* y,
      /* Real    */ ae_vector* w,
@@ -20372,6 +29948,44 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+그라디언트 만 사용하는 비선형 최소 제곱 피팅, 개별 없음
+무게.
+
+비선형 작업 min (F (c))가 풀린다.
+
+    2 + ... + (f (c, x [n-1]) - y [n-1] )) ^ 2,
+
+    * N은 포인트의 숫자입니다,
+    * M은 공간 점의 차원이며,
+    * K는 맞는 매개 변수 공간의 차원입니다.
+    * x는 N 점의 집합이며, 각각은 M 차원 벡터이며,
+    * c는 맞는 매개 변수의 K 차원 벡터입니다.
+
+이 서브 루틴은 f (c, x [i])와 그 그라디언트 만 사용합니다.
+
+입력 매개 변수 :
+    X- 어레이 [0..N-1.0..M-1], 포인트 (1 행 = 1 포인트)
+    Y- 배열 [0..N-1], 함수 값.
+    C - 배열 [0..K-1], 솔루션에 대한 초기 근사,
+    N - 점의 수, N> 1
+    M - 공간의 차원
+    K - 맞는 매개 변수의 수
+    CheapFG - 부울 값 플래그는 다음과 같습니다.
+                * 함수 및 그래디언트 계산의 복잡성이 둘 다 맞다면 참입니다.
+                        O (M ^ 2)보다 작다. 향상된 알고리즘으로
+                        에서 FGJ 체계에 해당하는 사용
+                        MINLM 장치.
+                * 그렇지 않으면 거짓.
+                        표준 Jaciberian-bases Levenberg-Marquardt algo
+                        (FJ 체계)가 사용될 것입니다.
+
+출력 매개 변수 :
+    State - 알고리즘 상태를 저장하는 구조
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+**************************************************************************/
 void lsfitcreatefg(/* Real    */ ae_matrix* x,
      /* Real    */ ae_vector* y,
      /* Real    */ ae_vector* c,
@@ -20477,6 +30091,37 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+그라디언트 / 헤 시안을 사용한 가중 비선형 최소 제곱 피팅.
+
+비선형 작업 min (F (c))가 풀린다.
+
+    2 + ... + (w [n-1] * (f (c, x [0]) - n-1]) - y [n-1])) ^ 2,
+
+    * N은 포인트의 숫자입니다,
+    * M은 공간 점의 차원이며,
+    * K는 맞는 매개 변수 공간의 차원입니다.
+    * w는 가중 계수의 N 차원 벡터이며,
+    * x는 N 점의 집합이며, 각각은 M 차원 벡터이며,
+    * c는 맞는 매개 변수의 K 차원 벡터입니다.
+
+이 서브 루틴은 f (c, x [i]), 그 그라데이션 및 헤 시안을 사용합니다.
+
+입력 매개 변수 :
+    X- 어레이 [0..N-1.0..M-1], 포인트 (1 행 = 1 포인트)
+    Y- 배열 [0..N-1], 함수 값.
+    W - 가중치, 배열 [0..N-1]
+    C - 배열 [0..K-1], 솔루션에 대한 초기 근사,
+    N - 점의 수, N> 1
+    M - 공간의 차원
+    K - 맞는 매개 변수의 수
+
+출력 매개 변수 :
+    State - 알고리즘 상태를 저장하는 구조
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+**************************************************************************/
 void lsfitcreatewfgh(/* Real    */ ae_matrix* x,
      /* Real    */ ae_vector* y,
      /* Real    */ ae_vector* w,
@@ -20578,6 +30223,37 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+그라디언트 / 헤 시안을 사용하는 비선형 최소 제곱 피팅
+무게.
+
+비선형 작업 min (F (c))가 풀린다.
+
+    2 + ... + (f (c, x [n-1]) - y [n-1] )) ^ 2,
+
+    * N은 포인트의 숫자입니다,
+    * M은 공간 점의 차원이며,
+    * K는 맞는 매개 변수 공간의 차원입니다.
+    * x는 N 점의 집합이며, 각각은 M 차원 벡터이며,
+    * c는 맞는 매개 변수의 K 차원 벡터입니다.
+
+이 서브 루틴은 f (c, x [i]), 그 그라데이션 및 헤 시안을 사용합니다.
+
+입력 매개 변수 :
+    X- 어레이 [0..N-1.0..M-1], 포인트 (1 행 = 1 포인트)
+    Y- 배열 [0..N-1], 함수 값.
+    C - 배열 [0..K-1], 솔루션에 대한 초기 근사,
+    N - 점의 수, N> 1
+    M - 공간의 차원
+    K - 맞는 매개 변수의 수
+
+출력 매개 변수 :
+    State - 알고리즘 상태를 저장하는 구조
+
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+**************************************************************************/
 void lsfitcreatefgh(/* Real    */ ae_matrix* x,
      /* Real    */ ae_vector* y,
      /* Real    */ ae_vector* c,
@@ -20671,6 +30347,35 @@ stopping criterion selection (according to the scheme used by MINLM unit).
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+비선형 최소 제곱 피팅을위한 정지 조건.
+
+입력 매개 변수 :
+    State - 알고리즘 상태를 저장하는 구조
+    EpsF - 중지 기준. 알고리즘 중지되는 경우
+                | F (k + 1) -F (k) | <= EpsF * max {| F (k) |, | F (k + 1) |, 1}
+    EpsX -> = 0
+                서브 루틴은 k + 1 번째 반복에서 작업을 마칩니다.
+                | v | <= EpsX 조건이 충족됩니다. 여기서,
+                * |. | 유클리드 규범을 의미한다.
+                * v - 스케일 된 스텝 벡터, v [i] = dx [i] / s [i]
+                * dx - ste pvector, dx = X (k + 1) -X (k)
+                * s - LSFitSetScale ()에 의해 설정된 스케일링 계수
+    MaxIts - 최대 반복 횟수입니다. MaxIts = 0이면,
+                반복은 무제한입니다. Levenberg-Marquardt 만
+                반복 횟수가 계산됩니다 (L-BFGS / CG 반복은 불가능 함).
+                그들의 비용이 그것의 비용에 비해 매우 낮기 때문에 계산됩니다.
+                LM).
+
+노트
+
+EpsF = 0, EpsX = 0 및 MaxIts = 0 (동시에)을 전달하면 자동
+정지 기준 선택 (MINLM 장치에서 사용되는 구성에 따라).
+
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+**************************************************************************/
 void lsfitsetcond(lsfitstate* state,
      double epsf,
      double epsx,
@@ -20711,6 +30416,27 @@ with limits on step size.
   -- ALGLIB --
      Copyright 02.04.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 최대 스텝 길이를 설정합니다.
+
+입력 매개 변수 :
+    State - 알고리즘 상태를 저장하는 구조
+    StpMax - 최대 스텝 길이,> = 0. StpMax를 0.0으로 설정하십시오.
+                스텝 길이를 제한하고 싶다.
+
+exp ()가 포함 된 대상 함수를 최적화 할 때이 서브 루틴을 사용하십시오.
+또는 다른 빠른 성장 기능 및 최적화 알고리즘을 만듭니다
+오버 플로우로 이어지는 큰 단계. 이 기능을 사용하면 거부 할 수 있습니다.
+너무 큰 단계 (가능한 한 우리를 노출시킵니다.
+overflow) x + stp * d에서 실제로 함수 값을 계산하지 않아도된다.
+
+참고 : 0이 아닌 StpMax는 성능 저하를 완화합니다.
+사전 조건화 된 L-BFGS 최적화의 중간 단계는 호환되지 않습니다.
+단계 크기에 제한이 있습니다.
+
+  - ALGLIB -
+     저작권 02.04.2010 Bochkanov Sergey
+**************************************************************************/
 void lsfitsetstpmax(lsfitstate* state, double stpmax, ae_state *_state)
 {
 
@@ -20734,6 +30460,20 @@ value of fitting function) are reported.
   -- ALGLIB --
      Copyright 15.08.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 기능은보고 기능을 켜거나 끕니다.
+
+입력 매개 변수 :
+    State - 알고리즘 상태를 저장하는 구조
+    NeedXRep - 반복 보고서가 필요한지 아닌지
+    
+보고서가 필요할 때 State.C (현재 매개 변수) 및 State.F (현재
+피팅 함수의 값)이보고됩니다.
+
+
+  - ALGLIB -
+     저작권 15.08.2010 Bochkanov Sergey
+**************************************************************************/
 void lsfitsetxrep(lsfitstate* state, ae_bool needxrep, ae_state *_state)
 {
     (void)_state;
@@ -20769,6 +30509,33 @@ INPUT PARAMETERS:
   -- ALGLIB --
      Copyright 14.01.2011 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 기본 최적화 프로그램의 크기 조정 계수를 설정합니다.
+
+ALGLIB 최적화 프로그램은 스케일링 매트릭스를 사용하여 정지 조건을 테스트합니다 (단계
+크기 및 그래디언트는 공차와 비교하기 전에 크기가 조정됩니다.) 규모
+I 번째 변수는 다음에 대한 변환 불변성 측정 값입니다.
+a) 변수의 "크기"
+b) 함수에서 중요한 변화를 만드는 단계는 얼마나 커야 하는가?
+
+일반적으로 규모는 전제 조건의 한 형태로 간주되지 않습니다. 하지만 LM
+최적화 프로그램은 멈춤에서 스케일링 매트릭스를 사용한다는 점에서 독특합니다.
+상태 테스트 및 마커드 댐핑 팩터로 사용됩니다.
+
+적절한 스케일링은 알고리즘 성능에 매우 중요합니다. 그것은 적다.
+결과의 품질에 중요하지만 여전히 영향력이 있습니다 (
+변수가 적절하게 조정될 때 수렴하기 쉽기 때문에 조기에
+매우 잘못된 scalled 변수가
+완화 된 정지 조건).
+
+입력 매개 변수 :
+    상태 - 구조 알고리즘 상태 저장
+    S - 배열 [N], 0이 아닌 스케일링 계수
+                S [i]는 음수 일 수 있습니다. 부호는 중요하지 않습니다.
+
+  - ALGLIB -
+     저작권 14.01.2011 Bochkanov Sergey
+**************************************************************************/
 void lsfitsetscale(lsfitstate* state,
      /* Real    */ ae_vector* s,
      ae_state *_state)
@@ -20814,6 +30581,34 @@ following useful properties:
   -- ALGLIB --
      Copyright 14.01.2011 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 기본 최적화 프로그램의 경계 제약 조건을 설정합니다.
+
+경계 제약 조건은 기본적으로 비활성화됩니다 (초기 생성 후).
+다른 SetBC () 호출로 명시 적으로 해제 될 때까지 보존됩니다.
+
+입력 매개 변수 :
+    상태 - 구조 알고리즘 상태 저장
+    BndL - 하한, 배열 [K].
+                일부 (모든) 변수에 제한이없는 경우,
+                매우 작은 수 또는 -INF (후자가 권장됩니다.
+                그것은 솔버가 더 나은 알고리즘을 사용할 수있게 해줍니다).
+    BndU - 상한, 배열 [K].
+                일부 (모든) 변수에 제한이없는 경우,
+                매우 큰 숫자 또는 + INF (후자가 권장됩니다.
+                그것은 솔버가 더 나은 알고리즘을 사용할 수있게 해줍니다).
+
+비고 1 : BndL [i] = BndU [i]를 지정할 수있다. 이 경우 I-th
+변수는 X [i] = BndL [i] = BndU [i]에서 "고정"됩니다.
+
+NOTE 2 : 다른 제약 최적화 알고리즘과는 달리,이 해는 다음과 같다.
+유용한 속성 다음 :
+* 경계 제약은 항상 정확하게 만족된다.
+* 함수는 바인딩 된 제약 조건에 의해 지정된 INSIDE 영역에서만 평가됩니다.
+
+  - ALGLIB -
+     저작권 14.01.2011 Bochkanov Sergey
+**************************************************************************/
 void lsfitsetbc(lsfitstate* state,
      /* Real    */ ae_vector* bndl,
      /* Real    */ ae_vector* bndu,
@@ -20878,6 +30673,44 @@ NOTES:
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+노트:
+
+1.이 알고리즘은 다음과 같이 작동하기 때문에 다소 이상합니다.   매개 변수화 된
+   함수 f (C, X), 여기서 X는 함수 인수입니다 (우리는 많은 점을 가지고 있습니다
+   다른 인수 값으로 특징 지어 짐), C는
+   매개 변수가 적합합니다.
+
+   예를 들어, f (c0, c1, x) = c0 * x + c1에 의해 선형 피팅을 수행하려는 경우
+   x는 인수가되고 {c0, c1}은 매개 변수가됩니다.
+   
+   이 알고리즘이 최소값을 찾는다는 것을 이해하는 것이 중요합니다.
+   함수 PARAMETERS (인수가 아님)의 공간이므로 파생물이 필요합니다.
+   X가 아니라 C에 대한 f ()
+   
+   위의 예제에서 f = c0 * x + c1과 {df / dc0, df / dc1} = {x, 1}
+   {df / dx} = {c0} 대신.
+
+2. 콜백 함수는 C를 첫 번째 매개 변수로 사용하고 X를 두 번째 매개 변수로 사용합니다.
+
+3. 상태가 LSFitCreateFG ()로 생성 된 경우 알고리즘은
+   함수와 그레디언트가 있지만 상태가
+   LSFitCreateFGH (), 알고리즘은 함수, 그라데이션 및 헤 시안을 필요로합니다.
+   
+   위에서 말한 바에 따르면이 버전의 여러 버전이 있습니다.
+   함수는 서로 다른 콜백 세트를 허용합니다.
+   
+   이러한 유연성 덕분에 미묘한 오류가 발생합니다.
+   LSFitCreateFGH () (Hessian을 사용하여 최적화)를 호출하지만,
+   헤 시안을 받아들이지 않는다. 알고리즘이 헤 시안을 요청할 때, 거기에
+   전화 할 콜백이 없습니다. 이 경우 예외가 발생합니다.
+   
+   그러한 오류를 피하는 방법은 없기 때문에 이러한 오류를 피하십시오.
+   컴파일 타임 - 런타임에만 볼 수 있습니다.
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+**************************************************************************/
 ae_bool lsfititeration(lsfitstate* state, ae_state *_state)
 {
     double lx;
@@ -20909,6 +30742,16 @@ ae_bool lsfititeration(lsfitstate* state, ae_state *_state)
      * * random values determined during code
      *   generation - on first subroutine call
      * * values from previous call - on subsequent calls
+     */
+    /*
+     * 역방향 커뮤니케이션 준비
+     * 나는 못 생겼다는 것을 알고 있지만, 같은 방식으로 작동한다.
+     * C ++에서 Python까지 모든 곳.
+     *
+     *이 코드는 지역 주민을 다음과 같이 초기화합니다.
+     * * 코드에서 결정된 임의의 값
+     * 생성 - 첫 번째 서브 루틴 호출
+     * * 이전 통화의 값 - 이후 통화시
      */
     if( state->rstate.stage>=0 )
     {
@@ -21008,9 +30851,14 @@ ae_bool lsfititeration(lsfitstate* state, ae_state *_state)
     /*
      * Routine body
      */
-    
+    /*
+     * 일상적인 신체
+     */
     /*
      * Init
+     */
+    /*
+     * 초기화
      */
     if( state->wkind==1 )
     {
@@ -21028,6 +30876,9 @@ ae_bool lsfititeration(lsfitstate* state, ae_state *_state)
     
     /*
      *  Check that user-supplied gradient is correct
+     */
+    /*
+     * 사용자 제공 그래디언트가 올바른지 확인하십시오.
      */
     lsfit_lsfitclearrequestfields(state, _state);
     if( !(ae_fp_greater(state->teststep,0)&&state->optalgo==1) )
@@ -21117,6 +30968,11 @@ lbl_14:
      * * for WKind=0 unit weights are chosen
      * * for WKind=1 we use user-supplied weights stored in State.TaskW
      */
+    /*
+     WCur 채우기 :
+     * * WKind = 0 단위 가중치가 선택됨
+     * * WKind = 1 인 경우 State.TaskW에 저장된 사용자 제공 가중치를 사용합니다.
+     */
     rvectorsetlengthatleast(&state->wcur, n, _state);
     for(i=0; i<=n-1; i++)
     {
@@ -21130,6 +30986,9 @@ lbl_14:
     /*
      * Optimize
      */
+    /*
+     * 최적화
+     */
 lbl_22:
     if( !minlmiteration(&state->optstate, _state) )
     {
@@ -21142,6 +31001,9 @@ lbl_22:
     
     /*
      * calculate f[] = wi*(f(xi,c)-yi)
+     */
+    /*
+     * f [] = wi * (f (xi, c) -yi)를 계산한다.
      */
     i = 0;
 lbl_26:
@@ -21173,6 +31035,9 @@ lbl_24:
     /*
      * calculate F = sum (wi*(f(xi,c)-yi))^2
      */
+    /*
+     * F = sum (wi * (f (xi, c) -yi)) ^ 2를 계산하라.
+     */
     state->optstate.f = 0;
     i = 0;
 lbl_31:
@@ -21203,6 +31068,9 @@ lbl_29:
     
     /*
      * calculate F/gradF
+     */
+    /*
+     * 계산 F / gradF
      */
     state->optstate.f = 0;
     for(i=0; i<=k-1; i++)
@@ -21241,6 +31109,9 @@ lbl_34:
     /*
      * calculate Fi/jac(Fi)
      */
+    /*
+     * Fi / jac (Fi) 계산
+     */
     i = 0;
 lbl_41:
     if( i>n-1 )
@@ -21271,6 +31142,9 @@ lbl_39:
     
     /*
      * calculate F/grad(F)/hess(F)
+     */
+    /*
+     * F / grad (F) / hess (F)를 계산합니다.
      */
     state->optstate.f = 0;
     for(i=0; i<=k-1; i++)
@@ -21323,6 +31197,9 @@ lbl_44:
     /*
      * Report new iteration
      */
+    /*
+     * 새로운 반복 보고서
+     */
     ae_v_move(&state->c.ptr.p_double[0], 1, &state->optstate.x.ptr.p_double[0], 1, ae_v_len(0,k-1));
     state->f = state->optstate.f;
     lsfit_lsfitclearrequestfields(state, _state);
@@ -21342,6 +31219,10 @@ lbl_23:
     /*
      * calculate errors
      */
+    
+    /*
+     * 오류 계산
+     */
     if( state->repterminationtype<=0 )
     {
         goto lbl_51;
@@ -21349,6 +31230,9 @@ lbl_23:
     
     /*
      * Calculate RMS/Avg/Max/... errors
+     */
+    /*
+     * RMS / 평균 / 최대 / ... 오류 계산
      */
     state->reprmserror = 0;
     state->repwrmserror = 0;
@@ -21396,6 +31280,9 @@ lbl_55:
     /*
      * Calculate covariance matrix
      */
+    /*
+     * 공분산 행렬 계산
+     */
     rmatrixsetlengthatleast(&state->tmpjac, n, k, _state);
     rvectorsetlengthatleast(&state->tmpf, n, _state);
     rvectorsetlengthatleast(&state->tmp, k, _state);
@@ -21406,6 +31293,9 @@ lbl_55:
     
     /*
      * Compute Jacobian by means of numerical differentiation
+     */
+    /*
+     * 수치 차별화를 통한 자 코비안 계산
      */
     lsfit_lsfitclearrequestfields(state, _state);
     state->needf = ae_true;
@@ -21470,6 +31360,9 @@ lbl_56:
     /*
      * Jacobian is calculated with user-provided analytic gradient
      */
+    /*
+     * Jacobian은 사용자 제공 분석 그라디언트로 계산됩니다.
+     */
     lsfit_lsfitclearrequestfields(state, _state);
     state->needfg = ae_true;
     i = 0;
@@ -21504,6 +31397,9 @@ lbl_51:
     
     /*
      * Saving state
+     */
+    /*
+     * 저장 상태
      */
 lbl_rcomm:
     result = ae_true;
@@ -21601,6 +31497,80 @@ NOTE:       covariance matrix is estimated using  correction  for  degrees
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+비선형 최소 자승 피팅 결과.
+
+LSFitFit ()에서 반환 된 후에 호출됩니다.
+
+입력 매개 변수 :
+    상태 - 알고리즘 상태
+
+출력 매개 변수 :
+    정보 - 완료 코드 :
+                    * -7 그래디언트 확인에 실패했습니다.
+                            자세한 내용은 LSFitSetGradientCheck ()를 참조하십시오.
+                    * 1 상대 기능 개선은
+                            EpsF.
+                    * 2 상대 단계는 EpsX 이상입니다.
+                    * 4 그래디언트 표준은 EpsG 이상입니다.
+                    * 5 MaxIts 단계가 수행되었습니다.
+                    * 7 정지 조건은 너무 엄격합니다.
+                            더 이상의 개선은 불가능하다.
+    C- 어레이 [0..K-1], 용액
+    담당자 최적화 보고서. 성공시 다음 필드가 설정됩니다.
+                * R2 비 조정 계수
+                                    (가중치 제외)
+                * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+                * (X, Y)에 대한 AvgError 평균 오류.
+                * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+                * MaxError 최대 오류
+                                    중요하지 않은 오류가 계산됩니다.
+                * (X, Y)에서 WRMSError 가중치 rms 오류.
+                
+매개 변수의 오류                
+                
+이 솔버는 또한 매개 변수에서 다양한 종류의 오류를 계산하고
+보고서의 해당 필드를 채 웁니다.
+* 매개 변수에 대한 Rep.CovPar 공분산 행렬, 배열 [K, K].
+매개 변수의 Rep.ErrPar 오류, 배열 [K],
+                    errpar = sqrt (diag (CovPar))
+* Rep.ErrCurve 적합 오차 벡터 - 경험적 표준 편차
+                    내장 된 "이상적인"최적 곡선의 최적 곡선
+                    무한 개수의 샘플, 배열 [N].
+                    errcurve = sqrt (diag (J * CovPar * J ')),
+                    여기서 J는 자 코비안 행렬입니다.
+* Rep. 잡음 당 포인트 추정치의 잡음 벡터, 배열 [N]
+
+중요 : 매개 변수의 오류는
+            계정 경계 / 선형 제약! 제약 조건의 존재
+            오류 배포를 변경하지만 쉬운 방법은 없습니다.
+            공분산 행렬을 계산할 때 제약 조건을 설명합니다.
+            
+참고 : 데이터의 노이즈는 다음과 같이 추정됩니다.
+            * 사용자가 제공하는 무게없이 모든 피팅을 맞추기 위해
+              동일한 수준의 잡음을 갖는 것으로 가정하며,
+              자료
+            * 사용자가 제공 한 무게로 피팅하기 위해 우리는 소음
+              레벨은 Ith 가중치에 반비례합니다.
+              비례 계수는 데이터로부터 추정됩니다.
+            
+참고 : 우리는 제곱을 반전 할 때 소량의 정규화를 적용합니다.
+            자 코비안 (Jacobian)을 선택하고 공분산 행렬을 계산합니다. 그것은
+            알고리즘은 반전시 0으로 나누지 않지만 비뚤어 짐
+            오류 추정 조금 (분수 오류 약 10 ^ -9)입니다.
+            
+            그러나 우리는이 차이가
+            원하는 상황을 제외한 모든 실제적인 목적
+            ALGLIB 결과를 "참조"구현과 비교
+            마지막 유효 숫자로
+            
+참고 : 공분산 행렬은도에 대한 보정을 사용하여 추정됩니다.
+            자유의 (공분산은 나누기 대신에 NM으로 나누어진다.
+            N에 의해).
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+**************************************************************************/
 void lsfitresults(lsfitstate* state,
      ae_int_t* info,
      /* Real    */ ae_vector* c,
@@ -21700,6 +31670,59 @@ INPUT PARAMETERS:
   -- ALGLIB --
      Copyright 15.06.2012 by Bochkanov Sergey
 *************************************************************************/
+
+/*************************************************************************
+이 서브 루틴은 사용자가 제공 한 분석의 검증을 켭니다.
+구배:
+* 사용자가 피팅이 시작되기 전에이 서브 루틴을 호출합니다.
+* LSFitFit ()가 호출되었습니다.
+* 실제 피팅에 앞서, 데이터 세트 X_i의 각 포인트에 대해
+  C_j 알고리즘은 다음과 같이 수행됩니다.
+  단계 :
+  * C_j-TestStep * S [j]와 C_j + TestStep * S [j]에 대해 두 가지 시험 단계가 수행됩니다.
+    여기서 C_j는 j 번째 매개 변수이고 S [j]는 j 번째 매개 변수의 눈금
+  * 필요한 경우 단계는 C []의 제약 조건에 따라 제한됩니다.
+  * F (X_i | C)는 이러한 시험 포인트에서 평가됩니다.
+  * 간격의 중간 지점에서 또 하나의 평가를 수행합니다.
+  * 우리는 함수 값과 파생 상품을 사용하여 삼차원 모델을 시험해 보았다.
+    우리는 예측치를 중간의 실제 값과 비교합니다
+    포인트
+  * 예상 값과 실제 값의 차이가
+    소정의 소정의 임계 값, 알고리즘은 완료 코드 -7로 정지한다;
+    Rep.VarIdx가 잘못된 파생어로 매개 변수의 인덱스로 설정됩니다.
+* 검증이 끝나면 알고리즘은 실제 최적화로 진행합니다.
+
+비고 1 : 검증에는 N * K (포인트 카운트 * 파라미터 카운트) 그라디언트가 필요하다.
+        평가. 그것은 매우 비싸고 당신은 낮은 것에 대해서만 사용해야합니다.
+        3 차원 문제, 당신이 당신이
+        올바르게 계산 된 파생 상품. 너는 그것을 사용하면 안된다.
+        생산 코드에서 (파생 상품을 확인하고 싶지 않다면)
+        제 3 자 제공).
+
+참고 2 : TestStep을 신중하게 선택해야합니다. 너무 큰 값
+        (너무 커서 함수의 동작은 상당히 비 큐빅이다.)
+        거짓 경보로 연결됩니다. 다른 단계를 사용할 수도 있습니다.
+        LSFitSetScale ()을 사용하여 축척을 설정하여 매개 변수를 설정합니다.
+
+참고 3 :이 기능은 위양성을 유발할 수 있습니다. 보고서에
+        I 차수 미분이 잘못 계산되었으므로 테스트를 줄일 수 있습니다.
+        한 번 더 시도해보십시오. 아마도 기능이 변경 될 수도 있습니다.
+        급격하게 그리고 당신의 발걸음이 그렇게 급속히 챈드하기에는 너무 큽니다.
+        기능.
+
+참고 4 :이 함수는 LSFitCreateWFG ()로 만든 최적화 프로그램에서만 작동합니다.
+        또는 LSFitCreateFG () 생성자.
+        
+입력 매개 변수 :
+    상태 - 알고리즘 상태를 저장하는 데 사용되는 구조
+    TestStep - 확인 단계 :
+                    * TestStep = 0으로 설정하면 인증이 해제됩니다.
+                    * TestStep> 0으로 인증이 활성화됩니다.
+
+  - ALGLIB -
+     저작권 15.06.2012 Bochkanov Sergey
+**************************************************************************/
+
 void lsfitsetgradientcheck(lsfitstate* state,
      double teststep,
      ae_state *_state)
@@ -21731,6 +31754,25 @@ Transformations performed:
   -- ALGLIB PROJECT --
      Copyright 08.09.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+내부 서브 루틴 : LLS 작업을위한 자동 크기 조정.
+직접 전화하지 마십시오!
+
+횡좌표를 [-1,1]로 매핑하고 세로 좌표를 상응하고 그에 맞게 조정합니다.
+제약 조건. 또한 max (W [i]) = 1이되도록 가중치를 조정합니다.
+
+수행 된 변환 :
+* X, XC [XA, XB] => [-1, + 1]
+                변환은 min (X) = - 1, max (X) = + 1
+
+* Y [SA, SB] => [0,1]
+                변환은 mean (Y) = 0, stddev (Y) = 1
+                
+* YC는 SA, SB, DC [I]
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 08.09.2009
+**************************************************************************/
 void lsfitscalexy(/* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
      /* Real    */ ae_vector* w,
@@ -21765,6 +31807,10 @@ void lsfitscalexy(/* Real    */ ae_vector* x,
     /*
      * Calculate xmin/xmax.
      * Force xmin<>xmax.
+     */
+    /*
+     * xmin / xmax를 계산하십시오.
+     * Force xmin <> xmax.
      */
     xmin = x->ptr.p_double[0];
     xmax = x->ptr.p_double[0];
@@ -21804,6 +31850,12 @@ void lsfitscalexy(/* Real    */ ae_vector* x,
      * Store old X[] in XOriginal[] (it will be used
      * to calculate relative error).
      */
+    /*
+     * 가로 좌표 변환 : [XA, XB]를 [0,1]에 매핑
+     *
+     * XOriginal []에 오래된 X []를 저장하십시오 (사용됩니다
+     * 상대 오차를 계산).
+     */
     ae_vector_set_length(xoriginal, n, _state);
     ae_v_move(&xoriginal->ptr.p_double[0], 1, &x->ptr.p_double[0], 1, ae_v_len(0,n-1));
     *xa = xmin;
@@ -21826,6 +31878,15 @@ void lsfitscalexy(/* Real    */ ae_vector* x,
      *
      * Store old Y[] in YOriginal[] (it will be used
      * to calculate relative error).
+     */
+    
+    /*
+     * 함수 값 변환 : [SA, SB]를 [0,1]로 매핑
+     * SA = 평균 (Y),
+     * SB = SA + stddev (Y).
+     *
+     * 이전 Y []를 (를) 사용할 수 있습니다.
+     * 상대 오차를 계산).
      */
     ae_vector_set_length(yoriginal, n, _state);
     ae_v_move(&yoriginal->ptr.p_double[0], 1, &y->ptr.p_double[0], 1, ae_v_len(0,n-1));
@@ -21868,6 +31929,9 @@ void lsfitscalexy(/* Real    */ ae_vector* x,
     /*
      * Scale weights
      */
+    /*
+     * 가중치 조정
+     */
     mx = 0;
     for(i=0; i<=n-1; i++)
     {
@@ -21889,6 +31953,13 @@ Internal spline fitting subroutine
   -- ALGLIB PROJECT --
      Copyright 08.09.2009 by Bochkanov Sergey
 *************************************************************************/
+
+/*************************************************************************
+내부 스플라인 피팅 서브 루틴
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 08.09.2009
+**************************************************************************/
 static void lsfit_spline1dfitinternal(ae_int_t st,
      /* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
@@ -22006,6 +32077,9 @@ static void lsfit_spline1dfitinternal(ae_int_t st,
         /*
          * Hermite fitter must have even number of basis functions
          */
+        /*
+         * Hermite 피터는 기본 함수가 짝수 여야합니다.
+         */
         *info = -2;
         ae_frame_leave(_state);
         return;
@@ -22015,10 +32089,17 @@ static void lsfit_spline1dfitinternal(ae_int_t st,
      * weight decay for correct handling of task which becomes
      * degenerate after constraints are applied
      */
+    /*
+     * 작업의 올바른 처리를위한 중량 감소
+     제약이 적용된 후에 축퇴
+     */
     decay = 10000*ae_machineepsilon;
     
     /*
      * Scale X, Y, XC, YC
+     */
+    /*
+     * 스케일 X, Y, XC, YC
      */
     lsfitscalexy(x, y, w, n, xc, yc, dc, k, &xa, &xb, &sa, &sb, &xoriginal, &yoriginal, _state);
     
@@ -22028,6 +32109,13 @@ static void lsfit_spline1dfitinternal(ae_int_t st,
      * * SY     -   values of basis functions at grid points
      * * FMatrix-   values of basis functions at X[]
      * * CMatrix-   values (derivatives) of basis functions at XC[]
+     */
+    /*
+     * 공간 할당, 초기화 :
+     * * SX - 기준 기능을위한 그리드
+     * * SY - 격자 점에서의 기저 함수의 값
+     * * FMatrix- X []에서의 기저 함수의 값
+     * * CMatrix - XC에서 기저 함수의 값 (미분) []
      */
     ae_vector_set_length(&y2, n+m, _state);
     ae_vector_set_length(&w2, n+m, _state);
@@ -22042,6 +32130,9 @@ static void lsfit_spline1dfitinternal(ae_int_t st,
         /*
          * allocate space for cubic spline
          */
+        /*
+         * 큐빅 스플라인을위한 공간 할당
+         */
         ae_vector_set_length(&sx, m-2, _state);
         ae_vector_set_length(&sy, m-2, _state);
         for(j=0; j<=m-2-1; j++)
@@ -22054,6 +32145,9 @@ static void lsfit_spline1dfitinternal(ae_int_t st,
         
         /*
          * allocate space for Hermite spline
+         */
+        /*
+         Hermite 스플라인을위한 공간 할당
          */
         ae_vector_set_length(&sx, m/2, _state);
         ae_vector_set_length(&sy, m/2, _state);
@@ -22072,17 +32166,31 @@ static void lsfit_spline1dfitinternal(ae_int_t st,
      * * append M zeros to Y
      * * append M elements, mean(abs(W)) each, to W
      */
+    /*
+     * 디자인 및 제약 조건 행렬 준비 :
+     * * 제약 조건 채우기 행렬
+     * * 처음 N 행의 디자인 행렬을 값으로 채 웁니다.
+     * * 디자인 매트릭스의 다음 M 행을 정규화 용어로 채 웁니다.
+     * * M에 제로를 덧붙입니다.
+     * * W에 M 개의 요소 mean (abs (W))을 추가합니다.
+     */
     for(j=0; j<=m-1; j++)
     {
         
         /*
          * prepare Jth basis function
          */
+        /*
+         * Jth 기본 함수 준비
+         */
         if( st==0 )
         {
             
             /*
              * cubic spline basis
+             */
+            /*
+             * 3 차 스플라인 기준
              */
             for(i=0; i<=m-2-1; i++)
             {
@@ -22110,6 +32218,9 @@ static void lsfit_spline1dfitinternal(ae_int_t st,
             /*
              * Hermite basis
              */
+            /*
+             * 허미 타이트 기준
+             */
             for(i=0; i<=m/2-1; i++)
             {
                 sy.ptr.p_double[i] = 0;
@@ -22128,6 +32239,9 @@ static void lsfit_spline1dfitinternal(ae_int_t st,
         
         /*
          * values at X[], XC[]
+         */
+        /*
+         * X [], XC []의 값
          */
         for(i=0; i<=n-1; i++)
         {
@@ -22188,11 +32302,17 @@ static void lsfit_spline1dfitinternal(ae_int_t st,
     /*
      * Solve constrained task
      */
+    /*
+     * 제한된 과제 해결
+     */
     if( k>0 )
     {
         
         /*
          * solve using regularization
+         */
+        /*
+         정규화를 사용하여 해결하십시오.
          */
         lsfitlinearwc(&y2, &w2, &fmatrix, &cmatrix, n+m, m, k, info, &tmp, &lrep, _state);
     }
@@ -22202,6 +32322,10 @@ static void lsfit_spline1dfitinternal(ae_int_t st,
         /*
          * no constraints, no regularization needed
          */
+        /*
+         * 제약이없고 정규화가 필요하지 않습니다.
+         */
+
         lsfitlinearwc(y, w, &fmatrix, &cmatrix, n, m, k, info, &tmp, &lrep, _state);
     }
     if( *info<0 )
@@ -22213,11 +32337,17 @@ static void lsfit_spline1dfitinternal(ae_int_t st,
     /*
      * Generate spline and scale it
      */
+    /*
+     * 스플라인 생성 및 크기 조정
+     */
     if( st==0 )
     {
         
         /*
          * cubic spline basis
+         */
+        /*
+         * 3 차 스플라인 기준
          */
         ae_v_move(&sy.ptr.p_double[0], 1, &tmp.ptr.p_double[0], 1, ae_v_len(0,m-2-1));
         spline1dbuildcubic(&sx, &sy, m-2, 1, tmp.ptr.p_double[m-2], 1, tmp.ptr.p_double[m-1], s, _state);
@@ -22227,6 +32357,9 @@ static void lsfit_spline1dfitinternal(ae_int_t st,
         
         /*
          * Hermite basis
+         */
+        /*
+         * 허미 타이트 기준
          */
         for(i=0; i<=m/2-1; i++)
         {
@@ -22242,6 +32375,11 @@ static void lsfit_spline1dfitinternal(ae_int_t st,
      * Scale absolute errors obtained from LSFitLinearW.
      * Relative error should be calculated separately
      * (because of shifting/scaling of the task)
+     */
+    /*
+     * LSFitLinearW에서 얻은 절대 오류의 크기를 조정합니다.
+     * 상대 오차는 별도로 계산해야합니다.
+     * (작업 이동 / 크기 조정 때문에)
      */
     rep->taskrcond = lrep.taskrcond;
     rep->rmserror = lrep.rmserror*(sb-sa);
@@ -22268,6 +32406,9 @@ static void lsfit_spline1dfitinternal(ae_int_t st,
 /*************************************************************************
 Internal fitting subroutine
 *************************************************************************/
+/*************************************************************************
+내부 피팅 서브 루틴
+**************************************************************************/
 static void lsfit_lsfitlinearinternal(/* Real    */ ae_vector* y,
      /* Real    */ ae_vector* w,
      /* Real    */ ae_matrix* fmatrix,
@@ -22333,11 +32474,17 @@ static void lsfit_lsfitlinearinternal(/* Real    */ ae_vector* y,
     /*
      * Degenerate case, needs special handling
      */
+    /*
+     * 축축한 경우, 특별한 취급이 필요합니다.
+     */
     if( n<m )
     {
         
         /*
          * Create design matrix.
+         */
+        /*
+         * 디자인 매트릭스를 만듭니다.
          */
         ae_matrix_set_length(&ft, n, m, _state);
         ae_vector_set_length(&b, n, _state);
@@ -22352,6 +32499,9 @@ static void lsfit_lsfitlinearinternal(/* Real    */ ae_vector* y,
         
         /*
          * LQ decomposition and reduction to M=N
+         */
+        /*
+         * LQ 분해 및 M = N으로 감소
          */
         ae_vector_set_length(c, m, _state);
         for(i=0; i<=m-1; i++)
@@ -22380,6 +32530,10 @@ static void lsfit_lsfitlinearinternal(/* Real    */ ae_vector* y,
     /*
      * N>=M. Generate design matrix and reduce to N=M using
      * QR decomposition.
+     */
+    /*
+     * N> = M이다. 디자인 행렬을 생성하고를 사용하여 N = M으로 줄이십시오.
+     * QR 분해.
      */
     ae_matrix_set_length(&ft, n, m, _state);
     ae_vector_set_length(&b, n, _state);
@@ -22415,12 +32569,25 @@ static void lsfit_lsfitlinearinternal(/* Real    */ ae_vector* y,
      *
      * We can use LU-based RCond estimator for this task.
      */
+    /*
+     * R은 축소 된 MxM 디자인 상 삼각 행렬을 포함하며,
+     * B는 축소 된 Mx1 오른쪽 부분을 포함합니다.
+     *
+     * 시스템 상태 번호를 결정하고 결정합니다.
+     * 우리는 삼각형 솔버 (더 빠름) 또는
+     * SVD 기반 솔버 (보다 안정적).
+     *
+     * 우리는이 작업을 위해 LU 기반 RCond 평가기를 사용할 수 있습니다.
+     */
     rep->taskrcond = rmatrixlurcondinf(&r, m, _state);
     if( ae_fp_greater(rep->taskrcond,threshold) )
     {
         
         /*
          * use QR-based solver
+         */
+        /*
+         * QR 기반 솔버 사용
          */
         ae_vector_set_length(c, m, _state);
         c->ptr.p_double[m-1] = b.ptr.p_double[m-1]/r.ptr.pp_double[m-1][m-1];
@@ -22436,6 +32603,9 @@ static void lsfit_lsfitlinearinternal(/* Real    */ ae_vector* y,
         /*
          * use SVD-based solver
          */
+        /*
+         * SVD 기반 솔버 사용
+         */      
         if( !rmatrixsvd(&r, m, m, 1, 1, 2, &sv, &u, &vt, _state) )
         {
             *info = -4;
@@ -22490,6 +32660,9 @@ static void lsfit_lsfitlinearinternal(/* Real    */ ae_vector* y,
     
     /*
      * calculate errors
+     */
+    /*
+     * 오류 계산
      */
     rep->rmserror = 0;
     rep->avgerror = 0;
@@ -22547,6 +32720,9 @@ static void lsfit_lsfitlinearinternal(/* Real    */ ae_vector* y,
 /*************************************************************************
 Internal subroutine
 *************************************************************************/
+/*************************************************************************
+내부 서브 루틴
+**************************************************************************/
 static void lsfit_lsfitclearrequestfields(lsfitstate* state,
      ae_state *_state)
 {
@@ -22566,6 +32742,13 @@ Used for efficient simultaneous calculation of N basis functions.
   -- ALGLIB --
      Copyright 17.08.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+내부 서브 루틴은 barycentric basis 함수를 계산합니다.
+N 기저 함수의 효율적인 동시 계산에 사용됩니다.
+
+  - ALGLIB -
+     Bochkanov Sergey의 Copyright 17.08.2009
+**************************************************************************/
 static void lsfit_barycentriccalcbasis(barycentricinterpolant* b,
      double t,
      /* Real    */ ae_vector* y,
@@ -22582,6 +32765,9 @@ static void lsfit_barycentriccalcbasis(barycentricinterpolant* b,
     /*
      * special case: N=1
      */
+    /*
+     * 특별한 경우 : N = 1
+     */
     if( b->n==1 )
     {
         y->ptr.p_double[0] = 1;
@@ -22596,6 +32782,15 @@ static void lsfit_barycentriccalcbasis(barycentricinterpolant* b,
      *
      * First, we decide: should we use "safe" formula (guarded
      * against overflow) or fast one?
+     */
+    /*
+     * 여기서 우리는 작업이 정규화되어 있다고 가정합니다. 즉 :
+     * 1. abs (Y [i]) <= 1
+     * 2. abs (W [i]) <= 1
+     * 3. X []가 주문되었습니다.
+     *
+     * 첫째, 우리는 다음을 결정합니다. "안전한"공식을 사용해야합니까?
+     * 오버플로) 또는 빠른 하나?
      */
     s = ae_fabs(t-b->x.ptr.p_double[0], _state);
     for(i=0; i<=b->n-1; i++)
@@ -22677,6 +32872,54 @@ IMPORTANT:
   -- ALGLIB PROJECT --
      Copyright 10.12.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+Chebyshev 피팅을위한 내부 기능입니다.
+
+입력 데이터가 정규화되었다고 가정합니다.
+* X / XC는 [-1, + 1]에 속합니다.
+* mean (Y) = 0, stddev (Y) = 1.
+
+입력에 오류가 있는지 확인하지 않습니다.
+
+이 함수는 일반적인 (이동 된) Chebyshev 모델, 힘
+기본 모델 또는 중점 모델.
+
+입력 매개 변수 :
+    X- 점, 배열 [0..N-1].
+    Y - 함수 값, array [0..N-1].
+    W - 가중치, 배열 [0..N-1]
+    N - 포인트 수, N> 0.
+    XC - 다항식 값 / 미분 값이 제한되는 지점,
+            배열 [0..K-1].
+    YC - 제약 조건 값, array [0..K-1]
+    DC - 배열 [0..K-1], 제약 유형 :
+            * DC [i] = 0은 P (XC [i]) = YC [i]
+            * DC [i] = 1은 P '(XC [i]) = YC [i]
+    K - 제약 수, 0 <= K <M.
+            K = 0은 제약이 없음을 의미합니다 (XC / YC / DC는 이러한 경우 사용되지 않음)
+    M - 기저 함수의 수 (= polynomial_degree + 1), M> = 1
+
+출력 매개 변수 :
+    LSFitLinearW () 서브 루틴에서와 같은 정보 포맷 :
+            * 정보> 0 작업이 해결되었습니다.
+            * 정보 <= 0 오류가 발생했습니다 :
+                        -4는 내부 SVD의 불일치를 의미합니다.
+                        -3은 일관성없는 제약 조건을 의미합니다.
+    C - Chebyshev 형식의 보간법; [-1, + 1]은 기본 간격으로 사용됩니다.
+    Rep -보고, LSFitLinearW () 서브 루틴과 동일한 형식.
+            다음 필드가 설정됩니다.
+            * (X, Y)에서 RMSError rms 오류가 발생했습니다.
+            * (X, Y)에 대한 AvgError 평균 오류.
+            * AvgRelError 0이 아닌 Y에 대한 평균 상대 오차
+            * MaxError 최대 오류
+                            중요하지 않은 오류가 계산됩니다.
+
+중대한:
+    이 서브 루틴은 K <> 0에 대한 작업의 조건 번호를 계산하지 않습니다.
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 10.12.2009
+**************************************************************************/
 static void lsfit_internalchebyshevfit(/* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
      /* Real    */ ae_vector* w,
@@ -22734,6 +32977,10 @@ static void lsfit_internalchebyshevfit(/* Real    */ ae_vector* x,
      * weight decay for correct handling of task which becomes
      * degenerate after constraints are applied
      */
+    /*
+     * 작업의 올바른 처리를위한 중량 감소
+     제약이 적용된 후에 축퇴
+     */
     decay = 10000*ae_machineepsilon;
     
     /*
@@ -22746,6 +32993,17 @@ static void lsfit_internalchebyshevfit(/* Real    */ ae_vector* x,
      * * append M zeros to Y
      * * append M elements, mean(abs(W)) each, to W
      */
+    /*
+     * 공간 할당, 초기화 / 채우기 :
+     * * FMatrix- X []에서의 기저 함수의 값
+     * * CMatrix - XC에서 기저 함수의 값 (미분) []
+     * * 제약 조건 채우기 행렬
+     * * 처음 N 행의 디자인 행렬을 값으로 채 웁니다.
+     * * 디자인 매트릭스의 다음 M 행을 정규화 용어로 채 웁니다.
+     * * M에 제로를 덧붙입니다.
+     * * W에 M 개의 요소 mean (abs (W))을 추가합니다.
+     */
+
     ae_vector_set_length(&y2, n+m, _state);
     ae_vector_set_length(&w2, n+m, _state);
     ae_vector_set_length(&tmp, m, _state);
@@ -22761,12 +33019,21 @@ static void lsfit_internalchebyshevfit(/* Real    */ ae_vector* x,
      * * first N rows with basis functions for original points
      * * next M rows with decay terms
      */
+    /*
+     * 채우기 설계 행렬, Y2, W2 :
+     * 원래 점에 대한 기초 함수가있는 처음 N 개의 행
+     * 쇠퇴 기간을 가진 * M 개의 다음 행
+     */
     for(i=0; i<=n-1; i++)
     {
         
         /*
          * prepare Ith row
          * use Tmp for calculations to avoid multidimensional arrays overhead
+         */
+        /*
+         * Ith 행 준비
+         * 다차원 배열 오버 헤드를 피하기 위해 Tmp를 계산에 사용하십시오.
          */
         for(j=0; j<=m-1; j++)
         {
@@ -22819,6 +33086,9 @@ static void lsfit_internalchebyshevfit(/* Real    */ ae_vector* x,
     /*
      * fill constraints matrix
      */
+    /*
+     * 채우기 제약 조건 행렬
+     */
     for(i=0; i<=k-1; i++)
     {
         
@@ -22826,6 +33096,11 @@ static void lsfit_internalchebyshevfit(/* Real    */ ae_vector* x,
          * prepare Ith row
          * use Tmp for basis function values,
          * TmpDiff for basos function derivatives
+         */
+        /*
+         * Ith 행 준비
+         * Tmp를 기본 함수 값으로 사용하고,
+         * 기저 함수 파생 ​​상품에 대한 TmpDiff
          */
         for(j=0; j<=m-1; j++)
         {
@@ -22862,11 +33137,17 @@ static void lsfit_internalchebyshevfit(/* Real    */ ae_vector* x,
     /*
      * Solve constrained task
      */
+    /*
+     * 제한된 과제 해결
+     */
     if( k>0 )
     {
         
         /*
          * solve using regularization
+         */
+        /*
+         정규화를 사용하여 해결하십시오.
          */
         lsfitlinearwc(&y2, &w2, &fmatrix, &cmatrix, n+m, m, k, info, c, rep, _state);
     }
@@ -22875,6 +33156,10 @@ static void lsfit_internalchebyshevfit(/* Real    */ ae_vector* x,
         
         /*
          * no constraints, no regularization needed
+         */
+        
+        /*
+         * 제약이없고 정규화가 필요하지 않습니다.
          */
         lsfitlinearwc(y, w, &fmatrix, &cmatrix, n, m, 0, info, c, rep, _state);
     }
@@ -22890,6 +33175,9 @@ static void lsfit_internalchebyshevfit(/* Real    */ ae_vector* x,
 /*************************************************************************
 Internal Floater-Hormann fitting subroutine for fixed D
 *************************************************************************/
+/*************************************************************************
+고정 D에 대한 내부 플로터 - 호르 른 피팅 서브 루틴
+**************************************************************************/
 static void lsfit_barycentricfitwcfixedd(/* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
      /* Real    */ ae_vector* w,
@@ -22990,10 +33278,17 @@ static void lsfit_barycentricfitwcfixedd(/* Real    */ ae_vector* x,
      * weight decay for correct handling of task which becomes
      * degenerate after constraints are applied
      */
+    /*
+     * 작업의 올바른 처리를위한 중량 감소
+     * 제약이 적용된 후에 축퇴
+     */
     decay = 10000*ae_machineepsilon;
     
     /*
      * Scale X, Y, XC, YC
+     */
+    /*
+     * 스케일 X, Y, XC, YC
      */
     lsfitscalexy(x, y, w, n, xc, yc, dc, k, &xa, &xb, &sa, &sb, &xoriginal, &yoriginal, _state);
     
@@ -23001,6 +33296,11 @@ static void lsfit_barycentricfitwcfixedd(/* Real    */ ae_vector* x,
      * allocate space, initialize:
      * * FMatrix-   values of basis functions at X[]
      * * CMatrix-   values (derivatives) of basis functions at XC[]
+     */
+    /*
+     * 공간 할당, 초기화 :
+     * * FMatrix- X []에서의 기저 함수의 값
+     * * CMatrix - XC에서 기저 함수의 값 (미분) []
      */
     ae_vector_set_length(&y2, n+m, _state);
     ae_vector_set_length(&w2, n+m, _state);
@@ -23019,6 +33319,14 @@ static void lsfit_barycentricfitwcfixedd(/* Real    */ ae_vector* x,
      * * fill next M rows of design matrix with regularizing term
      * * append M zeros to Y
      * * append M elements, mean(abs(W)) each, to W
+     */
+    /*
+     * 디자인 및 제약 조건 행렬 준비 :
+     * * 제약 조건 채우기 행렬
+     * * 처음 N 행의 디자인 행렬을 값으로 채 웁니다.
+     * * 디자인 매트릭스의 다음 M 행을 정규화 용어로 채 웁니다.
+     * * M에 제로를 덧붙입니다.
+     * * W에 M 개의 요소 mean (abs (W))을 추가합니다.
      */
     ae_vector_set_length(&sx, m, _state);
     ae_vector_set_length(&sy, m, _state);
@@ -23090,11 +33398,17 @@ static void lsfit_barycentricfitwcfixedd(/* Real    */ ae_vector* x,
     /*
      * Solve constrained task
      */
+    /*
+     * 제한된 과제 해결
+     */
     if( k>0 )
     {
         
         /*
          * solve using regularization
+         */
+        /*
+         정규화를 사용하여 해결하십시오.
          */
         lsfitlinearwc(&y2, &w2, &fmatrix, &cmatrix, n+m, m, k, info, &tmp, &lrep, _state);
     }
@@ -23103,6 +33417,9 @@ static void lsfit_barycentricfitwcfixedd(/* Real    */ ae_vector* x,
         
         /*
          * no constraints, no regularization needed
+         */
+        /*
+         * 제약이없고 정규화가 필요하지 않습니다.
          */
         lsfitlinearwc(y, w, &fmatrix, &cmatrix, n, m, k, info, &tmp, &lrep, _state);
     }
@@ -23115,6 +33432,9 @@ static void lsfit_barycentricfitwcfixedd(/* Real    */ ae_vector* x,
     /*
      * Generate interpolant and scale it
      */
+    /*
+     * 보간을 생성하고 크기를 조정하십시오.
+     */
     ae_v_move(&sy.ptr.p_double[0], 1, &tmp.ptr.p_double[0], 1, ae_v_len(0,m-1));
     barycentricbuildfloaterhormann(&sx, &sy, m, d, b, _state);
     barycentriclintransx(b, 2/(xb-xa), -(xa+xb)/(xb-xa), _state);
@@ -23124,6 +33444,11 @@ static void lsfit_barycentricfitwcfixedd(/* Real    */ ae_vector* x,
      * Scale absolute errors obtained from LSFitLinearW.
      * Relative error should be calculated separately
      * (because of shifting/scaling of the task)
+     */
+    /*
+     * LSFitLinearW에서 얻은 절대 오류의 크기를 조정합니다.
+     * 상대 오차는 별도로 계산해야합니다.
+     * (작업 이동 / 크기 조정 때문에)
      */
     rep->taskrcond = lrep.taskrcond;
     rep->rmserror = lrep.rmserror*(sb-sa);
@@ -23255,6 +33580,94 @@ NOTE:       we apply small amount of regularization when we invert squared
   -- ALGLIB PROJECT --
      Copyright 10.12.2009 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 내부 함수는 공분산 행렬 및 기타 오류 관련
+선형 / 비선형 최소 자승 모델에 대한 정보.
+
+그것은 조금 어색한 인터페이스를 가지고 있지만, 선형 및
+비선형 문제.
+
+입력 매개 변수 :
+    F1 - 배열 [0..N-1.0..K-1] :
+            선형 문제의 경우 - 함수 값 행렬
+            * 비선형 문제 - Jacobian 행렬
+    F0 - 배열 [0..N-1] :
+            * 선형 문제의 경우 - 0으로 채워야합니다.
+            * 비선형 문제의 경우 - 함수의 값을 저장해야합니다.
+              장착 된
+    Y- 배열 [0..N-1] :
+            * 선형 및 비선형 문제의 경우 - 목표 값을 저장해야합니다.
+    W - 가중치, 배열 [0..N-1] :
+            선형 및 비선형 문제에 대한 * 가중치
+    X- 배열 [0..K-1] :
+            선형 및 비선형 문제에 대한 * 현재 솔루션
+    S- 어레이 [0..K-1] :
+            * 해당 구성 요소는 엄격하게 긍정적이어야합니다.
+            *이 대각선 행렬의 역 제곱은 댐핑으로 사용됩니다.
+              공분산 행렬의 인자 (선형 및 비선형 문제)
+            * 변수의 크기가 대개 비선형 문제 인 경우
+              사용자에 의해 명시 적으로 주어지면, 이것에 스케일 벡터를 사용할 수 있습니다
+              매개 변수
+            * 선형 문제의 경우이 매개 변수를로 설정할 수 있습니다.
+              S = sqrt (1 / diag (F '* F))
+            *이 매개 변수는이 함수에 의해 자동으로 재조정됩니다.
+              그 구성 요소의 상대적 크기 만 (
+              서로) 문제.
+    N - 포인트 수, N> 0.
+    K - 차원 수
+    결과 저장에 사용되는 Rep 구조
+    Z - ZKind에 따라 일부를 포함 할 수있는 추가 행렬
+            계산을 가속화하는 데 사용되는 정보 - 또는
+            임시 버퍼 :
+            * ZKind = 0 인 경우 Z에는 정보가 포함되지 않고 일시적입니다.
+                                필요에 따라 크기를 조정하고 사용할 수있는 버퍼
+            * ZKind = 1 인 경우 Z는 QR의 삼각 행렬을 포함합니다.
+                                W * F1의 분해. 이 행렬을 사용할 수 있습니다.
+                                공분산 행렬의 계산 속도를 높입니다.
+                                알고리즘에 의해 변경되어서는 안됩니다.
+    ZKind - Z 내용
+
+출력 매개 변수 :
+
+* 매개 변수에 대한 Rep.CovPar 공분산 행렬, 배열 [K, K].
+매개 변수의 Rep.ErrPar 오류, 배열 [K],
+                    errpar = sqrt (diag (CovPar))
+* Rep.ErrCurve 적합 오차 벡터 - 경험적 표준 편차
+                    내장 된 "이상적인"최적 곡선의 최적 곡선
+                    무한 개수의 샘플, 배열 [N].
+                    errcurve = sqrt (diag (J * CovPar * J ')),
+                    여기서 J는 자 코비안 행렬입니다.
+* Rep. 잡음 당 포인트 추정치의 잡음 벡터, 배열 [N]
+* Rep.R2 결정 계수 (가중치가 없음)
+
+Rep의 다른 필드는 변경되지 않습니다.
+
+중요 : 매개 변수의 오류는
+            계정 경계 / 선형 제약! 제약 조건의 존재
+            오류 배포를 변경하지만 쉬운 방법은 없습니다.
+            공분산 행렬을 계산할 때 제약 조건을 설명합니다.
+            
+참고 : 데이터의 노이즈는 다음과 같이 추정됩니다.
+            * 사용자가 제공하는 무게없이 모든 피팅을 맞추기 위해
+              동일한 수준의 잡음을 갖는 것으로 가정하며,
+              자료
+            * 사용자가 제공 한 무게로 피팅하기 위해 우리는 소음
+              레벨은 Ith 가중치에 반비례합니다.
+              비례 계수는 데이터로부터 추정됩니다.
+            
+참고 : 우리는 제곱을 반전 할 때 소량의 정규화를 적용합니다.
+            자 코비안 (Jacobian)을 선택하고 공분산 행렬을 계산합니다. 그것은
+            알고리즘은 반전시 0으로 나누지 않지만 비뚤어 짐
+            오류 추정 조금 (분수 오류 약 10 ^ -9)입니다.
+            
+            그러나 우리는이 차이가
+            원하는 상황을 제외한 모든 실제적인 목적
+            ALGLIB 결과를 "참조"구현과 비교
+            마지막 유효 숫자로
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 10.12.2009
+**************************************************************************/
 static void lsfit_estimateerrors(/* Real    */ ae_matrix* f1,
      /* Real    */ ae_vector* f0,
      /* Real    */ ae_vector* y,
@@ -23293,6 +33706,9 @@ static void lsfit_estimateerrors(/* Real    */ ae_matrix* f1,
     /*
      * Compute NZCnt - count of non-zero weights
      */
+    /*
+     * Compute NZCnt - 0이 아닌 가중치의 수
+     */
     nzcnt = 0;
     for(i=0; i<=n-1; i++)
     {
@@ -23304,6 +33720,9 @@ static void lsfit_estimateerrors(/* Real    */ ae_matrix* f1,
     
     /*
      * Compute R2
+     */
+    /*
+     * R2 계산
      */
     if( nzcnt>0 )
     {
@@ -23347,6 +33766,11 @@ static void lsfit_estimateerrors(/* Real    */ ae_matrix* f1,
      *     NoiseC = mean(per-point-noise*per-point-weight)
      * Noise level (standard deviation) at each point is equal to NoiseC/W[I].
      */
+    /*
+     * 데이터의 잡음과 가중치 간의 비례 추정치 계산 :
+     * NoiseC = 평균 (포인트 노이즈 당 * 포인트 웨이트)
+     * 각 지점의 소음 수준 (표준 편차)은 NoiseC / W [I]와 같습니다.
+     */
     if( nzcnt>k )
     {
         noisec = 0.0;
@@ -23371,12 +33795,20 @@ static void lsfit_estimateerrors(/* Real    */ ae_matrix* f1,
      * * NoiseC>0   normal situation
      * * NoiseC=0   degenerate case CovPar is filled by zeros
      */
+    /*
+     * 소음 수준에 2 개의 분지 :
+     * * NoiseC> 0 정상 상황
+     * * NoiseC = 0 degenerate case CovPar는 0으로 채워집니다.
+     */
     rmatrixsetlengthatleast(&rep->covpar, k, k, _state);
     if( ae_fp_greater(noisec,0) )
     {
         
         /*
          * Normal situation: non-zero noise level
+         */
+        /*
+         * 정상 상황 : 0이 아닌 잡음 수준
          */
         ae_assert(zkind==0||zkind==1, "LSFit: internal error in EstimateErrors() function", _state);
         if( zkind==0 )
@@ -23391,6 +33823,15 @@ static void lsfit_estimateerrors(/* Real    */ ae_matrix* f1,
              *   In case inverse failed, increase regularization parameter and try
              *   again.
              */
+            /*
+             * Z에는 속도 향상에 사용할 수있는 추가 정보가 없습니다.
+             * 계산. 우리는 우리 자신의 공분산 행렬을 계산해야합니다.
+             * * N [i, i] = WCur [I] / NoiseC, Z에 저장되는 스케일 된 Jacobian N * J를 계산합니다.
+             * * Z '* Z를 계산하고, CovPar에 저장합니다.
+             * * CovPar에 적절한 정규화를 적용하고 역행렬을 계산합니다.
+             * inverse가 실패한 경우 정규화 매개 변수를 늘리고
+             * 다시.
+             */
             rmatrixsetlengthatleast(z, n, k, _state);
             for(i=0; i<=n-1; i++)
             {
@@ -23404,6 +33845,13 @@ static void lsfit_estimateerrors(/* Real    */ ae_matrix* f1,
              * * calculate SS - sum of diagonal elements of S^(-2)
              * * overwrite S by (SZ/SS)*S^(-2)
              * * now S has approximately same magnitude as giagonal of Z'*Z
+             */
+            /*
+             * S를 자동으로 스케일 된 감쇠 된 행렬로 변환 :
+             * * SZ 계산 - Z '* Z의 대각선 요소의 합
+             * * SS 계산 - S ^ (- 2)의 대각선 요소의 합
+             * *는 S를 (SZ / SS) * S ^ (- 2)
+             * * 이제 S는 Z '* Z의 대각선과 거의 동일한 크기를가집니다.
              */
             sz = 0;
             for(i=0; i<=n-1; i++)
@@ -23430,6 +33878,10 @@ static void lsfit_estimateerrors(/* Real    */ ae_matrix* f1,
             /*
              * Calculate damped inverse inv(Z'*Z+S).
              * We increase damping factor V until Z'*Z become well-conditioned.
+             */
+            /*
+             * 감쇠 역 Inv (Z '* Z + S)를 계산하십시오.
+             * Z '* Z가 잘 조절 될 때까지 댐핑 팩터 V를 증가시킵니다.
              */
             v = 1.0E3*ae_machineepsilon;
             do
@@ -23470,6 +33922,22 @@ static void lsfit_estimateerrors(/* Real    */ ae_matrix* f1,
              * * overwrite S by (SZ/SS)*S^(-1)
              * * now S has approximately same magnitude as giagonal of Z'*Z
              */
+            /*
+             * 추가 정보를 재사용 할 수 있습니다.
+             * * Z는 W * F1의 QR 분해로부터 R 행렬을 포함한다. 
+             * 1 / NoiseC에 의한 곱셈 후에 우리는 Z_mod = N * F1을 얻는다. 여기서 diag (N) = w [i] / NoiseC
+             * * 이러한 삼각형 Z_mod는 J '* N'* N * J의 분해에서 콜레 스키 요인입니다.
+             따라서 공분산 행렬은 다음과 같은 행렬의 역함수로 계산할 수 있습니다.
+             * 콜레 스키 분해. 시간 소모적 인 계산을 피할 수 있습니다.
+             CovPar에서 J '* N'* N * J의 * * 복잡성은 O (N * K ^ 2)에서 O (K ^ 3)로 감소합니다.
+             * K는 보통 N보다 작은 크기의 주문이기 때문에 * 꽤 좋습니다.
+             *
+             * 먼저 S를 자동으로 스케일 된 감쇠 된 행렬로 변환합니다.
+             * * SZ 계산 - Z / NoiseC의 대각선 요소의 크기 합
+             * * SS 계산 - S ^ (- 1)의 대각선 요소의 합
+             * *는 S를 (SZ / SS) * S ^ (- 1)
+             * * 이제 S는 Z '* Z의 대각선과 거의 동일한 크기를가집니다.
+             */
             sz = 0;
             for(j=0; j<=k-1; j++)
             {
@@ -23492,6 +33960,10 @@ static void lsfit_estimateerrors(/* Real    */ ae_matrix* f1,
             /*
              * Calculate damped inverse of inv((Z+v*S)'*(Z+v*S))
              * We increase damping factor V until matrix become well-conditioned.
+             */
+            /*
+             * inv의 감쇠 역수를 계산합니다 ((Z + v * S) '* (Z + v * S))
+             * 행렬이 잘 조절 될 때까지 댐핑 팩터 V를 증가시킵니다.
              */
             v = 1.0E3*ae_machineepsilon;
             do
@@ -23523,6 +33995,9 @@ static void lsfit_estimateerrors(/* Real    */ ae_matrix* f1,
         /*
          * Degenerate situation: zero noise level, covariance matrix is zero.
          */
+        /*
+         * 축축한 상황 : 제로 노이즈 레벨, 공분산 행렬은 0입니다.
+         */
         for(i=0; i<=k-1; i++)
         {
             for(j=0; j<=k-1; j++)
@@ -23534,6 +34009,9 @@ static void lsfit_estimateerrors(/* Real    */ ae_matrix* f1,
     
     /*
      * Estimate erorrs in parameters, curve and per-point noise
+     */
+    /*
+     * 매개 변수, 곡선 및 포인트 별 잡음에서 오류를 추정합니다.
      */
     rvectorsetlengthatleast(&rep->errpar, k, _state);
     rvectorsetlengthatleast(&rep->errcurve, n, _state);
@@ -23548,6 +34026,9 @@ static void lsfit_estimateerrors(/* Real    */ ae_matrix* f1,
         /*
          * ErrCurve[I] is sqrt(P[i,i]) where P=J*CovPar*J'
          */
+        /*
+         * ErrCurve [I]는 sqrt (P [i, i])입니다. 여기서 P = J * CovPar * J '
+         */
         v = 0.0;
         for(j=0; j<=k-1; j++)
         {
@@ -23560,6 +34041,9 @@ static void lsfit_estimateerrors(/* Real    */ ae_matrix* f1,
         
         /*
          * Noise[i] is filled using weights and current estimate of noise level
+         */
+        /*
+         * 노이즈 [i]는 가중치와 현재 소음 수준을 사용하여 채워집니다.
          */
         if( ae_fp_neq(w->ptr.p_double[i],0) )
         {
@@ -23976,6 +34460,38 @@ NOTES:
   -- ALGLIB PROJECT --
      Copyright 28.05.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 비주기적인 2 차원 파라 메트릭 스플라인을 만듭니다.
+(X [0], Y [0])에서 시작하여 (X [N-1], Y [N-1])에서 끝납니다.
+
+입력 매개 변수 :
+    XY - 점, 배열 [0..N-1,0..1].
+            XY [I, 0 : 1]은 I 포인트에 해당합니다.
+            포인트 순서가 중요합니다!
+    N 점 수, Akima 스플라인의 경우 N> = 5, 다른 유형의 경우 N> = 2
+            스플라인.
+    ST - 스플라인 유형 :
+            * 0 아키마 스플라인
+            * 1 Catmull-Rom 스플라인 포락선 (장력 = 0)
+            * 2 파라볼 릭 종료 입방 스플라인
+    PT - 매개 변수화 유형 :
+            * 0 유니폼
+            * 1 코드 길이
+            * 2 구심
+
+출력 매개 변수 :
+    P - 파라 메트릭 스플라인 보간
+
+
+노트:
+*이 함수는 모든 결과 포인트가 구별되어 있다고 가정합니다.
+  즉 (x0, y0) <> (x1, y1), (x1, y1) <> (x2, y2), (x2, y2) <> (x3, y3) 등이다.
+  그러나 비 연속적인 점들이 일치 할 수 있습니다. 즉, (x0, y0) =
+  = (x2, y2)이다.
+
+  - ALGLIB 프로젝트 -
+     Copyright 28.05.2010 Bochkanov Sergey
+**************************************************************************/
 void pspline2build(/* Real    */ ae_matrix* xy,
      ae_int_t n,
      ae_int_t st,
@@ -24007,6 +34523,9 @@ void pspline2build(/* Real    */ ae_matrix* xy,
     /*
      * Prepare
      */
+    /*
+     * 준비
+     */
     p->n = n;
     p->periodic = ae_false;
     ae_vector_set_length(&tmp, n, _state);
@@ -24014,11 +34533,17 @@ void pspline2build(/* Real    */ ae_matrix* xy,
     /*
      * Build parameterization, check that all parameters are distinct
      */
+    /*
+     빌드 매개 변수화, 모든 매개 변수가 뚜렷한 지 확인
+     */
     pspline_pspline2par(xy, n, pt, &p->p, _state);
     ae_assert(aredistinct(&p->p, n, _state), "PSpline2Build: consequent points are too close!", _state);
     
     /*
      * Build splines
+     */
+    /*
+     * 스플라인 빌드
      */
     if( st==0 )
     {
@@ -24055,6 +34580,16 @@ description here.
   -- ALGLIB PROJECT --
      Copyright 28.05.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 비주기적인 3 차원 파라 메트릭 스플라인을 만듭니다.
+(X [0], Y [0], Z [0])에서 시작하여 (X [N-1], Y [N-1], Z [N-1])에서 끝난다.
+
+PSpline2Build () 함수와 동일하지만 3D 용이므로 복제하지 않습니다.
+여기에 설명.
+
+  - ALGLIB 프로젝트 -
+     Copyright 28.05.2010 Bochkanov Sergey
+**************************************************************************/
 void pspline3build(/* Real    */ ae_matrix* xy,
      ae_int_t n,
      ae_int_t st,
@@ -24086,6 +34621,9 @@ void pspline3build(/* Real    */ ae_matrix* xy,
     /*
      * Prepare
      */
+    /*
+     * 준비
+     */
     p->n = n;
     p->periodic = ae_false;
     ae_vector_set_length(&tmp, n, _state);
@@ -24093,11 +34631,17 @@ void pspline3build(/* Real    */ ae_matrix* xy,
     /*
      * Build parameterization, check that all parameters are distinct
      */
+    /*
+     빌드 매개 변수화, 모든 매개 변수가 뚜렷한 지 확인
+     */
     pspline_pspline3par(xy, n, pt, &p->p, _state);
     ae_assert(aredistinct(&p->p, n, _state), "PSpline3Build: consequent points are too close!", _state);
     
     /*
      * Build splines
+     */
+    /*
+     * 스플라인 빌드
      */
     if( st==0 )
     {
@@ -24164,6 +34708,40 @@ NOTES:
   -- ALGLIB PROJECT --
      Copyright 28.05.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는주기적인 2 차원 매개 변수 스플라인을 만듭니다.
+(X [0], Y [0])에서 시작하여 모든 점을 통과하여 (X [N-1], Y [N-1])
+back to (X [0], Y [0]).
+
+입력 매개 변수 :
+    XY - 점, 배열 [0..N-1,0..1].
+            XY [I, 0 : 1]은 I 포인트에 해당합니다.
+            XY [N-1,0 : 1]은 XY [0,0 : 1]과 달라야합니다.
+            포인트 순서가 중요합니다!
+    다른 유형의 스플라인의 경우 N 포인트 수, N> = 3입니다.
+    ST - 스플라인 유형 :
+            * 1 순환 경계 조건이있는 Catmull-Rom 스플라인 (인장 = 0)
+            순환 경계 조건을 갖는 * 2 입체 스플라인
+    PT - 매개 변수화 유형 :
+            * 0 유니폼
+            * 1 코드 길이
+            * 2 구심
+
+출력 매개 변수 :
+    P - 파라 메트릭 스플라인 보간
+
+
+노트:
+*이 함수는 모든 결과 포인트가 구별되어 있다고 가정합니다.
+  즉 (x0, y0) <> (x1, y1), (x1, y1) <> (x2, y2), (x2, y2) <> (x3, y3) 등이다.
+  그러나 비 연속적인 점들이 일치 할 수 있습니다. 즉, (x0, y0) =
+  = (x2, y2)이다.
+* 순서의 마지막 점은 첫 번째 점과 동일하지 않습니다. 너는 안된다.
+  그것들을 동일하게함으로써 "명시 적으로주기적인"곡선을 만든다.
+
+  - ALGLIB 프로젝트 -
+     Copyright 28.05.2010 Bochkanov Sergey
+**************************************************************************/
 void pspline2buildperiodic(/* Real    */ ae_matrix* xy,
      ae_int_t n,
      ae_int_t st,
@@ -24190,6 +34768,9 @@ void pspline2buildperiodic(/* Real    */ ae_matrix* xy,
     /*
      * Prepare
      */
+    /*
+     * 준비
+     */
     p->n = n;
     p->periodic = ae_true;
     ae_vector_set_length(&tmp, n+1, _state);
@@ -24201,11 +34782,17 @@ void pspline2buildperiodic(/* Real    */ ae_matrix* xy,
     /*
      * Build parameterization, check that all parameters are distinct
      */
+    /*
+     빌드 매개 변수화, 모든 매개 변수가 뚜렷한 지 확인
+     */
     pspline_pspline2par(&xyp, n+1, pt, &p->p, _state);
     ae_assert(aredistinct(&p->p, n+1, _state), "PSpline2BuildPeriodic: consequent (or first and last) points are too close!", _state);
     
     /*
      * Build splines
+     */
+    /*
+     * 스플라인 빌드
      */
     if( st==1 )
     {
@@ -24236,6 +34823,17 @@ description here.
   -- ALGLIB PROJECT --
      Copyright 28.05.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는주기적인 3 차원 매개 변수 스플라인을 빌드합니다.
+(X [0], Y [0], Z [0])에서 시작하여 모든 점을 (X [N-1], Y [N-1], Z [N-1])
+(X [0], Y [0], Z [0])로 돌아 간다.
+
+PSpline2Build () 함수와 동일하지만 3D 용이므로 복제하지 않습니다.
+여기에 설명.
+
+  - ALGLIB 프로젝트 -
+     Copyright 28.05.2010 Bochkanov Sergey
+**************************************************************************/
 void pspline3buildperiodic(/* Real    */ ae_matrix* xy,
      ae_int_t n,
      ae_int_t st,
@@ -24262,6 +34860,9 @@ void pspline3buildperiodic(/* Real    */ ae_matrix* xy,
     /*
      * Prepare
      */
+    /*
+     * 준비
+     */
     p->n = n;
     p->periodic = ae_true;
     ae_vector_set_length(&tmp, n+1, _state);
@@ -24274,11 +34875,17 @@ void pspline3buildperiodic(/* Real    */ ae_matrix* xy,
     /*
      * Build parameterization, check that all parameters are distinct
      */
+    /*
+     빌드 매개 변수화, 모든 매개 변수가 뚜렷한 지 확인
+     */
     pspline_pspline3par(&xyp, n+1, pt, &p->p, _state);
     ae_assert(aredistinct(&p->p, n+1, _state), "PSplineBuild2Periodic: consequent (or first and last) points are too close!", _state);
     
     /*
      * Build splines
+     */
+    /*
+     * 스플라인 빌드
      */
     if( st==1 )
     {
@@ -24327,6 +34934,31 @@ NOTES:
   -- ALGLIB PROJECT --
      Copyright 28.05.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 점에 해당하는 매개 변수 값의 벡터를 반환합니다.
+
+즉, (X [0], Y [0]) ... (X [N-1], Y [N-1]) 및 U = TValues ​​(P)로부터 생성 된 P
+있다
+    (X [0], Y [0]) = PSpline2Calc (P, U [0]),
+    (X [1], Y [1]) = PSpline2Calc (P, U [1]),
+    (X [2], Y [2]) = PSpline2Calc (P, U [2]),
+    ...
+
+입력 매개 변수 :
+    P - 파라 메트릭 스플라인 보간
+
+출력 매개 변수 :
+    N - 배열 크기
+    T- 어레이 [0..N-1]
+
+
+노트:
+* 비 정기 스플라인 U [0] = 0, U [0] <U [1] <... <U [N-1], U [N-1] = 1
+*주기 스프 라인 U [0] = 0, U [0] <U [1] <... <U [N-1], U [N-1] <1
+
+  - ALGLIB 프로젝트 -
+     Copyright 28.05.2010 Bochkanov Sergey
+**************************************************************************/
 void pspline2parametervalues(pspline2interpolant* p,
      ae_int_t* n,
      /* Real    */ ae_vector* t,
@@ -24356,6 +34988,14 @@ Same as PSpline2ParameterValues(), but for 3D.
   -- ALGLIB PROJECT --
      Copyright 28.05.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 점에 해당하는 매개 변수 값의 벡터를 반환합니다.
+
+PSpline2ParameterValues ​​()와 동일하지만 3D에 해당합니다.
+
+  - ALGLIB 프로젝트 -
+     Copyright 28.05.2010 Bochkanov Sergey
+**************************************************************************/
 void pspline3parametervalues(pspline3interpolant* p,
      ae_int_t* n,
      /* Real    */ ae_vector* t,
@@ -24398,6 +35038,27 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 28.05.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 주어진 파라 메트릭 스플라인의 값을 계산합니다.
+파라미터 T의 값
+
+입력 매개 변수 :
+    P - 파라 메트릭 스플라인 보간
+    T- 포인트 :
+            * [0,1]의 T는 점들 사이의 간격에 해당합니다.
+            * 비주기 스프 라인 T <0 (또는 T> 1)은
+              첫 번째 (마지막 점 이후) 지점 앞의 곡선
+            *주기 스프 라인 T <0 (또는 T> 1)은 [0,1]
+              T = T-floor (T)로 만듦.
+
+출력 매개 변수 :
+    X - X 위치
+    Y - Y 위치
+
+
+  - ALGLIB 프로젝트 -
+     Copyright 28.05.2010 Bochkanov Sergey
+**************************************************************************/
 void pspline2calc(pspline2interpolant* p,
      double t,
      double* x,
@@ -24439,6 +35100,28 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 28.05.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 주어진 파라 메트릭 스플라인의 값을 계산합니다.
+파라미터 T의 값.
+
+입력 매개 변수 :
+    P - 파라 메트릭 스플라인 보간
+    T- 포인트 :
+            * [0,1]의 T는 점들 사이의 간격에 해당합니다.
+            * 비주기 스프 라인 T <0 (또는 T> 1)은
+              첫 번째 (마지막 점 이후) 지점 앞의 곡선
+            *주기 스프 라인 T <0 (또는 T> 1)은 [0,1]
+              T = T-floor (T)로 만듦.
+
+출력 매개 변수 :
+    X - X 위치
+    Y - Y 위치
+    Z - Z 위치
+
+
+  - ALGLIB 프로젝트 -
+     Copyright 28.05.2010 Bochkanov Sergey
+**************************************************************************/
 void pspline3calc(pspline3interpolant* p,
      double t,
      double* x,
@@ -24484,6 +35167,29 @@ NOTE:
   -- ALGLIB PROJECT --
      Copyright 28.05.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 매개 변수 T의 주어진 값에 대한 접선 벡터를 계산합니다.
+
+입력 매개 변수 :
+    P - 파라 메트릭 스플라인 보간
+    T- 포인트 :
+            * [0,1]의 T는 점들 사이의 간격에 해당합니다.
+            * 비주기 스프 라인 T <0 (또는 T> 1)은
+              첫 번째 (마지막 점 이후) 지점 앞의 곡선
+            *주기 스프 라인 T <0 (또는 T> 1)은 [0,1]
+              T = T-floor (T)로 만듦.
+
+출력 매개 변수 :
+    X - 접선 벡터의 X- 성분 (정규화)
+    Y - 접선 벡터의 Y 성분 (정규화)
+    
+노트:
+    X ^ 2 + Y ^ 2는 1 (0이 아닌 탄젠트 벡터의 경우) 또는 0입니다.
+
+
+  - ALGLIB 프로젝트 -
+     Copyright 28.05.2010 Bochkanov Sergey
+**************************************************************************/
 void pspline2tangent(pspline2interpolant* p,
      double t,
      double* x,
@@ -24508,6 +35214,10 @@ void pspline2tangent(pspline2interpolant* p,
         /*
          * this code is a bit more complex than X^2+Y^2 to avoid
          * overflow for large values of X and Y.
+         */
+        /*
+         *이 코드는 X ^ 2 + Y ^ 2보다 약간 복잡하여 피하기 어렵습니다.
+         * X 및 Y 값이 큰 경우 오버플로가 발생합니다.
          */
         v = safepythag2(*x, *y, _state);
         *x = *x/v;
@@ -24540,6 +35250,30 @@ NOTE:
   -- ALGLIB PROJECT --
      Copyright 28.05.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 매개 변수 T의 주어진 값에 대한 접선 벡터를 계산합니다.
+
+입력 매개 변수 :
+    P - 파라 메트릭 스플라인 보간
+    T- 포인트 :
+            * [0,1]의 T는 점들 사이의 간격에 해당합니다.
+            * 비주기 스프 라인 T <0 (또는 T> 1)은
+              첫 번째 (마지막 점 이후) 지점 앞의 곡선
+            *주기 스프 라인 T <0 (또는 T> 1)은 [0,1]
+              T = T-floor (T)로 만듦.
+
+출력 매개 변수 :
+    X - 접선 벡터의 X- 성분 (정규화)
+    Y - 접선 벡터의 Y 성분 (정규화)
+    Z - 접선 벡터의 Z- 성분 (정규화)
+
+노트:
+    X ^ 2 + Y ^ 2 + Z ^ 2는 1 (0이 아닌 탄젠트 벡터의 경우) 또는 0입니다.
+
+
+  - ALGLIB 프로젝트 -
+     Copyright 28.05.2010 Bochkanov Sergey
+**************************************************************************/
 void pspline3tangent(pspline3interpolant* p,
      double t,
      double* x,
@@ -24593,6 +35327,28 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 28.05.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 미분을 계산합니다. 즉, (dX / dT, dY / dT)를 반환합니다.
+
+입력 매개 변수 :
+    P - 파라 메트릭 스플라인 보간
+    T- 포인트 :
+            * [0,1]의 T는 점들 사이의 간격에 해당합니다.
+            * 비주기 스프 라인 T <0 (또는 T> 1)은
+              첫 번째 (마지막 점 이후) 지점 앞의 곡선
+            *주기 스프 라인 T <0 (또는 T> 1)은 [0,1]
+              T = T-floor (T)로 만듦.
+
+출력 매개 변수 :
+    X - X 값
+    DX - X 미분
+    Y - Y 값
+    DY - Y 파생 상품
+
+
+  - ALGLIB 프로젝트 -
+     Copyright 28.05.2010 Bochkanov Sergey
+**************************************************************************/
 void pspline2diff(pspline2interpolant* p,
      double t,
      double* x,
@@ -24641,6 +35397,30 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 28.05.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 미분을 계산합니다. 즉, (dX / dT, dY / dT, dZ / dT)를 반환합니다.
+
+입력 매개 변수 :
+    P - 파라 메트릭 스플라인 보간
+    T- 포인트 :
+            * [0,1]의 T는 점들 사이의 간격에 해당합니다.
+            * 비주기 스프 라인 T <0 (또는 T> 1)은
+              첫 번째 (마지막 점 이후) 지점 앞의 곡선
+            *주기 스프 라인 T <0 (또는 T> 1)은 [0,1]
+              T = T-floor (T)로 만듦.
+
+출력 매개 변수 :
+    X - X 값
+    DX - X 미분
+    Y - Y 값
+    DY - Y 파생 상품
+    Z - Z 값
+    DZ - Z 미분
+
+
+  - ALGLIB 프로젝트 -
+     Copyright 28.05.2010 Bochkanov Sergey
+**************************************************************************/
 void pspline3diff(pspline3interpolant* p,
      double t,
      double* x,
@@ -24694,6 +35474,30 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 28.05.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 T에 대해 1 차 및 2 차 미분을 계산합니다.
+
+입력 매개 변수 :
+    P - 파라 메트릭 스플라인 보간
+    T- 포인트 :
+            * [0,1]의 T는 점들 사이의 간격에 해당합니다.
+            * 비주기 스프 라인 T <0 (또는 T> 1)은
+              첫 번째 (마지막 점 이후) 지점 앞의 곡선
+            *주기 스프 라인 T <0 (또는 T> 1)은 [0,1]
+              T = T-floor (T)로 만듦.
+
+출력 매개 변수 :
+    X - X 값
+    DX - 파생물
+    D2X - 2 차 미분
+    Y - Y 값
+    DY - 파생 상품
+    D2Y - 2 차 미분
+
+
+  - ALGLIB 프로젝트 -
+     Copyright 28.05.2010 Bochkanov Sergey
+**************************************************************************/
 void pspline2diff2(pspline2interpolant* p,
      double t,
      double* x,
@@ -24748,6 +35552,33 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 28.05.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 T에 대해 1 차 및 2 차 미분을 계산합니다.
+
+입력 매개 변수 :
+    P - 파라 메트릭 스플라인 보간
+    T- 포인트 :
+            * [0,1]의 T는 점들 사이의 간격에 해당합니다.
+            * 비주기 스프 라인 T <0 (또는 T> 1)은
+              첫 번째 (마지막 점 이후) 지점 앞의 곡선
+            *주기 스프 라인 T <0 (또는 T> 1)은 [0,1]
+              T = T-floor (T)로 만듦.
+
+출력 매개 변수 :
+    X - X 값
+    DX - 파생물
+    D2X - 2 차 미분
+    Y - Y 값
+    DY - 파생 상품
+    D2Y - 2 차 미분
+    Z - Z 값
+    DZ - 파생 상품
+    D2Z - 2 차 미분
+
+
+  - ALGLIB 프로젝트 -
+     Copyright 28.05.2010 Bochkanov Sergey
+**************************************************************************/
 void pspline3diff2(pspline3interpolant* p,
      double t,
      double* x,
@@ -24799,6 +35630,23 @@ RESULT:
   -- ALGLIB PROJECT --
      Copyright 30.05.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 호 길이, 즉 t = a 사이의 곡선 길이를 계산합니다.
+그리고 t = b.
+
+입력 매개 변수 :
+    P - 파라 메트릭 스플라인 보간
+    A, B - 호 끝에 해당하는 매개 변수 값 :
+            * B> A는 양의 길이를 반환합니다.
+            * B <A는 음의 길이를 반환합니다.
+
+결과:
+    T = A에서 시작하여 T = B에서 끝나는 호의 길이.
+
+
+  - ALGLIB 프로젝트 -
+     Copyright 30.05.2010 Bochkanov Sergey
+**************************************************************************/
 double pspline2arclength(pspline2interpolant* p,
      double a,
      double b,
@@ -24850,6 +35698,23 @@ RESULT:
   -- ALGLIB PROJECT --
      Copyright 30.05.2010 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 호 길이, 즉 t = a 사이의 곡선 길이를 계산합니다.
+그리고 t = b.
+
+입력 매개 변수 :
+    P - 파라 메트릭 스플라인 보간
+    A, B - 호 끝에 해당하는 매개 변수 값 :
+            * B> A는 양의 길이를 반환합니다.
+            * B <A는 음의 길이를 반환합니다.
+
+결과:
+    T = A에서 시작하여 T = B에서 끝나는 호의 길이.
+
+
+  - ALGLIB 프로젝트 -
+     Copyright 30.05.2010 Bochkanov Sergey
+**************************************************************************/
 double pspline3arclength(pspline3interpolant* p,
      double a,
      double b,
@@ -24891,6 +35756,9 @@ double pspline3arclength(pspline3interpolant* p,
 /*************************************************************************
 Builds non-periodic parameterization for 2-dimensional spline
 *************************************************************************/
+/*************************************************************************
+2 차원 스플라인에 대한 비 주기적 매개 변수화 구축
+**************************************************************************/
 static void pspline_pspline2par(/* Real    */ ae_matrix* xy,
      ae_int_t n,
      ae_int_t pt,
@@ -24908,6 +35776,11 @@ static void pspline_pspline2par(/* Real    */ ae_matrix* xy,
      * Build parameterization:
      * * fill by non-normalized values
      * * normalize them so we have P[0]=0, P[N-1]=1.
+     */
+    /*
+     * 빌드 매개 변수화 :
+     * 정규화되지 않은 값으로 채우기
+     * * P [0] = 0, P [N-1] = 1이되도록 정규화하십시오.
      */
     ae_vector_set_length(p, n, _state);
     if( pt==0 )
@@ -24941,6 +35814,9 @@ static void pspline_pspline2par(/* Real    */ ae_matrix* xy,
 /*************************************************************************
 Builds non-periodic parameterization for 3-dimensional spline
 *************************************************************************/
+/*************************************************************************
+3 차원 스플라인에 대한 비 주기적 매개 변수화 구축
+**************************************************************************/
 static void pspline_pspline3par(/* Real    */ ae_matrix* xy,
      ae_int_t n,
      ae_int_t pt,
@@ -24958,6 +35834,11 @@ static void pspline_pspline3par(/* Real    */ ae_matrix* xy,
      * Build parameterization:
      * * fill by non-normalized values
      * * normalize them so we have P[0]=0, P[N-1]=1.
+     */
+    /*
+     * 빌드 매개 변수화 :
+     * 정규화되지 않은 값으로 채우기
+     * * P [0] = 0, P [N-1] = 1이되도록 정규화하십시오.
      */
     ae_vector_set_length(p, n, _state);
     if( pt==0 )
@@ -25145,6 +36026,55 @@ NOTE 1: memory requirements. RBF models require amount of memory  which is
   -- ALGLIB --
      Copyright 13.12.2011 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 스칼라 (NY = 1) 또는 벡터 (NY> 1)에 대한 RBF 모델을 만듭니다.
+기능을 NX 차원 공간 (NX = 2 또는 NX = 3)에서 사용할 수 있습니다.
+
+새로 생성 된 모델이 비어 있습니다. 다음 보간 직후에 사용할 수 있습니다.
+생성하지만 단지 0을 반환합니다. 모델에 포인트를 추가해야합니다.
+보간 설정을 조정 한 다음 모델 구성 함수를 호출합니다.
+RBFBuildModel ()은 사양에 따라 모델을 업데이트합니다.
+
+용법:
+1. 사용자가 RBFCreate ()로 모델을 생성합니다.
+2. 사용자가 RBFSetPoints ()를 사용하여 데이터 세트를 추가합니다 (포인트는
+   정규 그리드)
+3. (선택 사항) 사용자는 다음을 호출하여 다항식 항을 선택합니다.
+   * 선형 항을 설정하는 RBFLinTerm ()
+   * 상수를 설정하는 RBFConstTerm ()
+   * 제로 기간을 설정하는 RBFZeroTerm ()
+   기본적으로 선형 항이 사용됩니다.
+4. 사용자가 사용할 특정 RBF 알고리즘을 선택합니다 : QNN (RBFSetAlgoQNN)
+   또는 ML (RBFSetAlgoMultiLayer).
+5. 사용자는 모델을 다시 빌드하는 RBFBuildModel () 함수를 호출합니다.
+   명세
+6. 사용자는 지정된 점에서 모델 값을 계산하기 위해 RBFCalc ()를 호출 할 수 있습니다.
+   RBFGridCalc ()를 사용하여 일반 지점의 모델 값을 계산합니다.
+   그리드. 사용자는 RBFUnpack () 호출로 모델 계수를 추출 할 수 있습니다.
+   
+입력 매개 변수 :
+    NX - 공간 치수, NX = 2 또는 NX = 3
+    NY - 함수 차원, NY> = 1
+
+출력 매개 변수 :
+    S - RBF 모델 (초기에는 0 임)
+
+참고 1 : 메모리 요구 사항. RBF 모델은
+        데이터 포인트의 수에 비례합니다. 메모리가 할당 됨
+        모델을 만드는 동안이 메모리의 대부분은
+        모델 계수가 계산됩니다.
+        
+        기본 설정이있는 N 개의 센터에 대한 대략적인 추정치는 다음과 같습니다.
+        아래에 주어진다 :
+        * 약 250 * N * (sizeof (double) + 2 * sizeof (int)) 바이트의 메모리가 있습니다.
+          모델 제작 단계에서 필요합니다.
+        * 모델 제작 후 약 15 * N * sizeof (double) 바이트가 필요합니다.
+        예를 들어, N = 100000의 경우 빌드하는 데 0.6GB의 메모리가 필요할 수 있습니다.
+        모델이지만 0.012GB 정도만 저장할 수 있습니다.
+
+  - ALGLIB -
+     저작권 13.12.2011 Bochkanov Sergey
+**************************************************************************/
 void rbfcreate(ae_int_t nx, ae_int_t ny, rbfmodel* s, ae_state *_state)
 {
     ae_int_t i;
@@ -25178,6 +36108,9 @@ void rbfcreate(ae_int_t nx, ae_int_t ny, rbfmodel* s, ae_state *_state)
     /*
      * stopping criteria
      */
+    /*
+     * 정지 기준
+     */
     s->epsort = rbf_eps;
     s->epserr = rbf_eps;
     s->maxits = 0;
@@ -25210,6 +36143,32 @@ NOTE: this   function  has   some   serialization-related  subtleties.  We
   -- ALGLIB --
      Copyright 13.12.2011 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 데이터 집합을 추가합니다.
+
+이 함수는 이전 호출의 결과, 즉 여러 호출을 무시합니다.
+이 기능을 사용하면 마지막 세트 만 추가됩니다.
+
+입력 매개 변수 :
+    S - RBF 모델 (RBFCreate () 호출로 초기화 됨).
+    XY - 점, 배열 [N, NX + NY]. 한 행은 한 점에 해당합니다.
+                데이터 세트에서. 첫 번째 NX 요소는 좌표이며, 다음
+                NY 요소는 함수 값입니다. 배열은 다음보다 클 수 있습니다.
+                이 경우에는 [N, NX + NY] 요소 만 이끌어냅니다 
+                사용하게 될 것이다.
+    N - 데이터 세트의 포인트 수
+
+데이터 집합 및 (선택적으로) 조정 된 알고리즘 설정을 추가 한 후에는
+모델을 빌드하기 위해 RBFBuildModel ()을 호출해야합니다.
+
+참고 :이 함수에는 몇 가지 serialization 관련 미묘한 차이가 있습니다. 우리
+      ALGLIB Reference에서 직렬화 예제를 공부하도록 권장합니다.
+      모델의 직렬화를 수행하려면 수동으로하십시오.
+      
+
+  - ALGLIB -
+     저작권 13.12.2011 Bochkanov Sergey
+**************************************************************************/
 void rbfsetpoints(rbfmodel* s,
      /* Real    */ ae_matrix* xy,
      ae_int_t n,
@@ -25296,6 +36255,59 @@ NOTE: this   function  has   some   serialization-related  subtleties.  We
   -- ALGLIB --
      Copyright 13.12.2011 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 RBF 보간 알고리즘을 설정합니다. ALGLIB는 몇 가지를 지원합니다
+다른 속성을 가진 RBF 알고리즘.
+
+이 알고리즘은 RBF-QNN이라고하며,
+다음 속성 :
+a) 모든 점은 뚜렷하다.
+b) 모든 점들은 잘 분리되어있다.
+c) 점 분포는 거의 균일하다. '윤곽선이 없습니다.
+   라인 ", 포인트 클러스터 또는 기타 소규모 구조.
+
+알고리즘 설명 :
+1) 보간 중심을 데이터 포인트에 할당
+2) 보간 반경은 가장 가까운 중심까지의 거리로 계산됩니다
+   시간 Q 계수 (여기서 Q는 [0.75,1.50]의 값).
+3) (2) 반지름을 수행 한 후 상황을 피하기 위해 변환됩니다
+   단일 이상치가 매우 큰 반경을 갖고 많은 점에 영향을 미칠 때
+   모든 데이터 세트에서 변환 형식은 다음과 같습니다.
+       new_r [i] = min (r [i], Z * median (r []))
+   여기서 r [i]는 I 번째 반지름, median ()은 전체 반지름의 중앙 반지름
+   데이터 세트에서 Z는 편차의 양을 제어하는 ​​사용자 지정 값입니다.
+   중앙 반경에서.
+
+(a)를 위반하면 RBF 모델을 구축 할 수 없습니다. (b) 또는
+(c)를 위반하면 모델이 만들어 지지만 보간 품질은
+낮은. 이에 대한 더 자세한 정보는 http://www.alglib.net/interpolation/을 참조하십시오.
+제목.
+
+이 알고리즘은 기본적으로 사용됩니다.
+
+추가 Q 매개 변수는 RBF 기초의 부드러움 특성을 제어합니다.
+* Q <0.75는 완벽하게 컨디셔닝 된 기초를 제공하지만 끔찍한 부드러움
+  속성 (RBF 보간은 함수 값 주위에 날카로운 피크를 가짐)
+* Q 약 1.0은 매끈함과 조건 수 사이에 좋은 균형을 제공합니다.
+* Q> 1.5는 나쁘게 컨디셔닝 된 시스템과
+  기본 선형 솔버 (부드러움은 아주 좋음)
+* Q> 2.0은 효과적으로 수렴하지 않기 때문에 유용하지 않게 만듭니다.
+  합리적인 양의 반복. 그러한 큰 값을 설정할 수 있습니다.
+  Q,하지만 그렇게하지 않는 것이 좋습니다.
+
+입력 매개 변수 :
+    RBFCreate () 호출로 초기화 된 S - RBF 모델
+    Q - Q 매개 변수, Q> 0, 권장 값 - 1.0
+    Z - Z 매개 변수, Z> 0, 권장 값 - 5.0
+
+참고 :이 함수에는 몇 가지 serialization 관련 미묘한 차이가 있습니다. 우리
+      ALGLIB Reference에서 직렬화 예제를 공부하도록 권장합니다.
+      모델의 직렬화를 수행하려면 수동으로하십시오.
+
+
+  - ALGLIB -
+     저작권 13.12.2011 Bochkanov Sergey
+**************************************************************************/
 void rbfsetalgoqnn(rbfmodel* s, double q, double z, ae_state *_state)
 {
 
@@ -25398,6 +36410,96 @@ TYPICAL ERRORS
   -- ALGLIB --
      Copyright 02.03.2012 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 RBF 보간 알고리즘을 설정합니다. ALGLIB는 몇 가지를 지원합니다
+다른 속성을 가진 RBF 알고리즘.
+
+이 알고리즘을 RBF-ML이라고합니다. 다층 RBF 모델, 즉
+우리가 결합 할 수있게하는 반경을 줄이는 모델
+정확도 (제 1 층의 큰 반경으로 인한)
+마지막 층의 작은 반경) 및 빠른 수렴.
+
+내부적으로 RBF-ML은 스파 스로부터 많은 다른 가속화 방법을 사용합니다.
+행렬을 KD- 트리에 적용하면 알고리즘이 작동 시간이
+대략적으로 N * log (N)에 비례 * 밀도 * RBase ^ 2 * NLayers, 여기서 N은
+점의 수, 밀도는 단위의 점 당 평균 밀도입니다.
+보간 공간, RBase는 초기 반경, NLayers는
+레이어.
+
+RBF-ML은 다음 종류의 보간 문제에 유용합니다.
+1. 잘 맞는 점들로 "정확한"문제들 (완벽한 적합성)
+2. 점의 임의적 분포에 대한 최소 제곱 문제 (알고리즘
+   가능한 곳에서 완벽한 적합성을 제공하고 최소 제곱에 가깝다.
+   단단한 지역에서 적합하십시오).
+3. 우리가 통제 된 양을 적용하기를 원하는 시끄러운 문제
+   부드럽게.
+
+입력 매개 변수 :
+    RBFCreate () 호출로 초기화 된 S - RBF 모델
+    RBase - RBase 매개 변수, RBase> 0
+    NLayers - NLayers 매개 변수, NLayers> 0, 시작할 값 권장
+                약 5.
+    LambdaV - 정규화 값, 문제를 해결할 때 유용 할 수 있습니다.
+                최소 제곱의 의미로. 최적의 람다는 문제 -
+                의존적이어서 시행 착오가 필요합니다. 우리의 경험에서,
+                좋은 람다는 0.1만큼 클 수 있으며, 0.001
+                초기 추측으로.
+                기본값 - 0.01, LambdaV가 아닌 경우 사용됩니다.
+                주어진. 0 값을 지정할 수는 있지만 0은 아닙니다.
+                그렇게하는 것이 좋습니다.
+
+튜닝 알고리즘
+
+이 알고리즘을 사용하려면 세 가지 매개 변수를 선택해야합니다.
+* 초기 반지름 RBase
+* 모델 NLayers의 레이어 수
+* 정규화 계수 LambdaV
+
+초기 반경은 선택하기가 쉽습니다. 몇 번이라도 선택할 수 있습니다.
+점 사이의 평균 거리보다 큽니다. 알고리즘이 중단되지 않습니다.
+반경이 너무 큰 경우 모델 생성 시간이 단축됩니다.
+증가하지만 모델은 올바르게 구축됩니다).
+
+RLast = RBase / 2 ^ (NLayers-1) (사용한 반경)과 같은 레이어 수를 선택합니다.
+마지막 레이어에 의해)은 일반적인 거리보다 작을 것입니다.
+전철기. 모델 오류가 너무 큰 경우,
+레이어. 더 많은 레이어가 있으면 모델 구성 및 평가가 가능합니다.
+비례 적으로 느리지 만, 정확하게 모델을 가질 수 있습니다.
+귀하의 데이터에 적합합니다. 다른 쪽에서는 소음을 억제하려면
+모델의 유연성을 떨어 뜨리기 위해 레이어 수를 줄일 수 있습니다.
+
+정규화 계수 LambdaV는 개인의 부드러움을 제어합니다.
+각 레이어에 대해 만들어진 모델. 경우에 따라 기본값을 사용하는 것이 좋습니다.
+이 매개 변수를 조정하고 싶지는 않습니다. 왜냐하면 0이 아닌 LambdaV
+내부 반복 알고리즘을 가속화하고 안정화시킵니다. 원하는 경우에
+노이즈를 억제하기 위해 LambdaV를 추가 매개 변수로 사용할 수 있습니다 (더 큰
+값 = 더 부드러움)을 조정합니다.
+
+일반적인 오류
+
+1. 초기 반경이 너무 큽니다. 메모리 요구 사항
+   RBF-ML은 대략적으로 N * Density * RBase ^ 2에 비례합니다 (여기서 밀도는
+   보간 공간의 단위 당 평균 포인트 밀도). 에서
+   매우 큰 RBase의 극단적 인 경우 우리는 O (N ^ 2) 단위의
+   메모리 - 여러 레이어를 반경을 합리적으로 줄이기 위해
+   작은 값.
+
+2. 너무 적은 수의 레이어 사용 - 반경이 큰 RBF 모델은 그렇지 않습니다.
+   목표 함수의 작은 변화를 재현 할만큼 충분히 유연합니다.
+   큰 반지름에서 작은 반지름으로 여러 레이어가 필요합니다.
+   좋은 모델을 갖기 위해서.
+
+3. 초기 반경이 너무 작습니다. 당신은 모델을 얻을 것이다.
+   보간 센터에서 너무 멀리 떨어져있는 영역에 "구멍"이 생깁니다.
+   그러나 알고리즘은이 경우 올바르게 (그리고 빨리) 작동합니다.
+
+4. 너무 많은 레이어를 사용하여 - 당신은 너무 크고 너무 느린 모델을 얻을 것이다. 이
+   모델이 완벽하게 기능을 재현하지만 어쩌면 당신은
+   더 적은 레이어 (그리고 적은 메모리)로 비슷한 결과를 얻을 수 있습니다.
+   
+  - ALGLIB -
+     저작권 02.03.2012 Bochkanov Sergey
+**************************************************************************/
 void rbfsetalgomultilayer(rbfmodel* s,
      double rbase,
      ae_int_t nlayers,
@@ -25433,6 +36535,21 @@ NOTE: this   function  has   some   serialization-related  subtleties.  We
   -- ALGLIB --
      Copyright 13.12.2011 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 선형 항을 설정합니다 (모델은 방사형 기본 함수
+플러스 선형 다항식). 이 기능은 다음 호출 때까지 적용되지 않습니다.
+RBFBuildModel ().
+
+입력 매개 변수 :
+    RBFCreate () 호출로 초기화 된 S - RBF 모델
+
+참고 :이 함수에는 몇 가지 serialization 관련 미묘한 차이가 있습니다. 우리
+      ALGLIB Reference에서 직렬화 예제를 공부하도록 권장합니다.
+      모델의 직렬화를 수행하려면 수동으로하십시오.
+
+  - ALGLIB -
+     저작권 13.12.2011 Bochkanov Sergey
+**************************************************************************/
 void rbfsetlinterm(rbfmodel* s, ae_state *_state)
 {
     (void)_state;
@@ -25456,6 +36573,21 @@ NOTE: this   function  has   some   serialization-related  subtleties.  We
   -- ALGLIB --
      Copyright 13.12.2011 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 상수 항을 설정합니다 (모델은 방사형 기본 함수
+상수). 이 함수는 다음에 호출 할 때까지 적용되지 않습니다.
+RBFBuildModel ().
+
+입력 매개 변수 :
+    RBFCreate () 호출로 초기화 된 S - RBF 모델
+
+참고 :이 함수에는 몇 가지 serialization 관련 미묘한 차이가 있습니다. 우리
+      ALGLIB Reference에서 직렬화 예제를 공부하도록 권장합니다.
+      모델의 직렬화를 수행하려면 수동으로하십시오.
+
+  - ALGLIB -
+     저작권 13.12.2011 Bochkanov Sergey
+**************************************************************************/
 void rbfsetconstterm(rbfmodel* s, ae_state *_state)
 {
     (void)_state;
@@ -25479,6 +36611,21 @@ NOTE: this   function  has   some   serialization-related  subtleties.  We
   -- ALGLIB --
      Copyright 13.12.2011 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 0 항을 설정합니다 (모델은 방사형 기본 함수 
+다항식 용어 없음). 이 기능은 다음 호출 때까지 적용되지 않습니다.
+RBFBuildModel ().
+
+입력 매개 변수 :
+    RBFCreate () 호출로 초기화 된 S - RBF 모델
+
+참고 :이 함수에는 몇 가지 serialization 관련 미묘한 차이가 있습니다. 우리
+      ALGLIB Reference에서 직렬화 예제를 공부하도록 권장합니다.
+      모델의 직렬화를 수행하려면 수동으로하십시오.
+
+  - ALGLIB -
+     저작권 13.12.2011 Bochkanov Sergey
+**************************************************************************/
 void rbfsetzeroterm(rbfmodel* s, ae_state *_state)
 {
     (void)_state;
@@ -25525,6 +36672,44 @@ NOTE: this   function  has   some   serialization-related  subtleties.  We
   -- ALGLIB --
      Copyright 13.12.2011 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 기본 선형 해법의 정지 기준을 설정합니다.
+
+입력 매개 변수 :
+    RBFCreate () 호출로 초기화 된 S - RBF 모델
+    EpsOrt - 직교성 정지 기준, EpsOrt> = 0. 알고리즘 의지
+                || A '* r || <= EpsOrt 여기서 A'는 
+                시스템 행렬, r은 잔차 벡터이다.
+                EpsOrt의 권장 값은 1E-6과 같습니다.
+                이 기준은 알고리즘이 "불량"일 때 중지됩니다.
+                상황, 즉 우리가 큰 지점에서 멈춰야 할 때,
+                0이 아닌 나머지.
+    EpsErr - 잔여 정지 기준. 알고리즘은 언제 멈 춥니 다.
+                || r || <= EpsErr * || b ||, r은 잔차 벡터, b는 a
+                시스템의 오른쪽 부분 (기능 값).
+                EpsErr의 권장 값은 1E-3 또는 1E-6과 같습니다.
+                이 기준은 알고리즘을 "적합" 
+                우리가 원하는 근처에 거의 0의 잔류 물을 가질 때의 상황
+                해결책.
+    MaxIts -이 기준은 MaxIts 반복 후 알고리즘을 중지합니다.
+                디버깅 목적으로 만 사용해야합니다!
+                제로 맥스 (Zero MaxIts) 란 숫자에 제한이 없음을 의미합니다.
+                반복.
+
+보통 0이 아닌 값 EpsOrt 및 EpsErr을 설정하는 것이 좋습니다. 
+동시에. 10E-6과 같은 값으로 시작하는 것이 좋습니다. 당신이
+고성능이 필요하고 고정밀도가 필요하지 않은 경우,
+0.001까지 EpsErr. 그러나 EpsOrt를 줄이는 것은 권장하지 않습니다.
+
+MaxIts에 관해서는, 당신이하는 일을 알지 못하는 한 제로를 남겨 둘 것을 권한다.
+
+참고 :이 함수에는 몇 가지 serialization 관련 미묘한 차이가 있습니다. 우리
+      ALGLIB Reference에서 직렬화 예제를 공부하도록 권장합니다.
+      모델의 직렬화를 수행하려면 수동으로하십시오.
+
+  - ALGLIB -
+     저작권 13.12.2011 Bochkanov Sergey
+**************************************************************************/
 void rbfsetcond(rbfmodel* s,
      double epsort,
      double epserr,
@@ -25585,6 +36770,40 @@ unchanged.
   -- ALGLIB --
      Copyright 13.12.2011 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 RBF 모델을 구축하고 보고서를 반환합니다 (일부 포함). 
+알고리즘 특성의 평가에 사용될 수있는 정보).
+
+이 함수를 호출하면 RBF 모델의 중심 / 반지름 /
+RBFModel 구조에 저장합니다. 처음에는 RBFModel
+제로 계수를 포함하지만이 함수를 호출 한 후에는
+계수는 우리의 데이터 세트에 적합하도록 계산되었습니다.
+
+이 함수를 호출 한 후에는 RBFCalc (), RBFGridCalc () 및
+다른 모델 계산 기능.
+
+입력 매개 변수 :
+    RBFCreate () 호출로 초기화 된 S - RBF 모델
+    담당자 - 신고 :
+                * Rep.TerminationType :
+                  * -5 - 뚜렷하지 않은 기저 기능 센터가 발견되었습니다.
+                         보간이 중단되었습니다.
+                  * -4 - 내부 SVD 솔버의 비 집중
+                  * 1 - 성공적인 종료
+                필드는 디버깅 목적으로 사용됩니다.
+                * Rep.IterationsCount - LSQR 솔버의 반복 횟수
+                * Rep.NMV - 매트릭스 - 벡터 제품의 수
+                * Rep.ARows - 시스템 행의 행 수
+                * Rep.ACols - 시스템 행렬에 대한 열 수
+                * Rep.ANNZ - 상당히 0이 아닌 요소의 수
+                  (일부 알고리즘 결정 임계 값을 초과하는 요소)
+
+참고 : 모델을 작성하지 않으면 구조의 현재 상태가 그대로 유지됩니다.
+변하지 않은.
+
+  - ALGLIB -
+     저작권 13.12.2011 Bochkanov Sergey
+**************************************************************************/
 void rbfbuildmodel(rbfmodel* s, rbfreport* rep, ae_state *_state)
 {
     ae_frame _frame_block;
@@ -25643,6 +36862,9 @@ void rbfbuildmodel(rbfmodel* s, rbfreport* rep, ae_state *_state)
     /*
      * Quick exit when we have no points
      */
+    /*
+     * 포인트가 없을 때 빠른 출구
+     */
     if( s->n==0 )
     {
         rep->terminationtype = 1;
@@ -25670,6 +36892,9 @@ void rbfbuildmodel(rbfmodel* s, rbfreport* rep, ae_state *_state)
     /*
      * General case, N>0
      */
+    /*
+     * 일반적인 경우, N> 0
+     */
     rep->annz = 0;
     rep->iterationscount = 0;
     rep->nmv = 0;
@@ -25679,6 +36904,11 @@ void rbfbuildmodel(rbfmodel* s, rbfreport* rep, ae_state *_state)
      * First model in a sequence - linear model.
      * Residuals from linear regression are stored in the ResidualY variable
      * (used later to build RBF models).
+     */
+    /*
+     * 시퀀스의 첫 번째 모델 - 선형 모델.
+     * 선형 회귀로부터의 잔차는 ResidualY 변수에 저장됩니다.
+     * (나중에 RBF 모델을 만드는 데 사용됨).
      */
     ae_matrix_set_length(&residualy, s->n, s->ny, _state);
     for(i=0; i<=s->n-1; i++)
@@ -25698,6 +36928,10 @@ void rbfbuildmodel(rbfmodel* s, rbfreport* rep, ae_state *_state)
     /*
      * Handle special case: multilayer model with NLayers=0.
      * Quick exit.
+     */
+    /*
+     * 특수 케이스 처리 : NLayers = 0 인 다층 모델.
+     * 빠른 출구.
      */
     if( s->algorithmtype==2&&s->nlayers==0 )
     {
@@ -25729,6 +36963,12 @@ void rbfbuildmodel(rbfmodel* s, rbfreport* rep, ae_state *_state)
      * NOTE: assignments below are not necessary, but without them
      *       MSVC complains about unitialized variables.
      */
+    /*
+     * 시퀀스의 두 번째 모델 - RBF 용어.
+     *
+     * 참고 : 아래의 과제는 필수는 아니지만 과제가없는 경우
+     * MSVC는 단위 화 된 변수에 대해 불평합니다.
+     */
     nc = 0;
     rmax = 0;
     layerscnt = 0;
@@ -25738,6 +36978,10 @@ void rbfbuildmodel(rbfmodel* s, rbfreport* rep, ae_state *_state)
         /*
          * Add RBF model.
          * This model uses local KD-trees to speed-up nearest neighbor searches.
+         */
+        /*
+         * RBF 모델을 추가하십시오.
+         *이 모델은 가장 가까운 이웃 검색 속도를 높이기 위해 로컬 KD 트리를 사용합니다.
          */
         if( s->gridtype==1 )
         {
@@ -25859,6 +37103,9 @@ void rbfbuildmodel(rbfmodel* s, rbfreport* rep, ae_state *_state)
             /*
              * Fixed radius
              */
+            /*
+             * 고정 반경
+             */
             for(i=0; i<=nc-1; i++)
             {
                 radius.ptr.p_double[i] = s->radvalue;
@@ -25870,6 +37117,9 @@ void rbfbuildmodel(rbfmodel* s, rbfreport* rep, ae_state *_state)
             
             /*
              * Dynamic radius
+             */
+            /*
+             * 동적 반경
              */
             if( nc==0 )
             {
@@ -25887,6 +37137,9 @@ void rbfbuildmodel(rbfmodel* s, rbfreport* rep, ae_state *_state)
                     
                     /*
                      * NC>1, calculate radii using distances to nearest neigbors
+                     */
+                    /*
+                     * NC> 1, 가까운 근점 거리를 사용하여 반지름 계산
                      */
                     for(i=0; i<=nc-1; i++)
                     {
@@ -25906,12 +37159,20 @@ void rbfbuildmodel(rbfmodel* s, rbfreport* rep, ae_state *_state)
                              * No neighbors found (it will happen when we have only one center).
                              * Initialize radius with default value.
                              */
+                            
+                            /*
+                             * 이웃이 없습니다 (센터가 하나 밖에없는 경우에 발생합니다).
+                             * 반지름을 기본값으로 초기화하십시오.
+                             */
                             radius.ptr.p_double[i] = 1.0;
                         }
                     }
                     
                     /*
                      * Apply filtering
+                     */
+                    /*
+                     * 필터링 적용
                      */
                     rvectorsetlengthatleast(&tmp0, nc, _state);
                     for(i=0; i<=nc-1; i++)
@@ -25926,6 +37187,9 @@ void rbfbuildmodel(rbfmodel* s, rbfreport* rep, ae_state *_state)
                     
                     /*
                      * Calculate RMax, check that all radii are non-zero
+                     */
+                    /*
+                     * RMax를 계산하고 모든 반지름이 0이 아닌지 확인하십시오.
                      */
                     for(i=0; i<=nc-1; i++)
                     {
@@ -25973,6 +37237,9 @@ void rbfbuildmodel(rbfmodel* s, rbfreport* rep, ae_state *_state)
     
     /*
      * Model is built
+     */
+    /*
+     * 모델 구축
      */
     s->nc = nc/layerscnt;
     s->rmax = rmax;
@@ -26046,6 +37313,34 @@ RESULT:
   -- ALGLIB --
      Copyright 13.12.2011 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 주어진 점에서 RBF 모델의 값을 계산합니다.
+
+이 함수는 NY = 1 (스칼라 함수)이고 NX = 2 일 때 사용해야합니다.
+(2 차원 공간). 3 차원 공간이 있다면 RBFCalc3 ()을 사용하십시오. 만약
+당신은 일반적인 상황 (NX 차원 공간, NY 차원 함수)
+RBFCalc ()를 덜 효율적으로 구현해야합니다.
+
+함수 값을 여러 번 계산하려면 다음을 사용하십시오. 
+이후의 많은 호출보다 훨씬 효율적인 RBFGridCalc2 ()
+RBFCalc2 ().
+
+이 함수는 다음의 경우 0.0을 반환합니다.
+* 모델이 초기화되지 않았습니다.
+* NX <> 2
+ * NY <> 1
+
+입력 매개 변수 :
+    S - RBF 모델
+    X0 - 첫 번째 좌표, 유한 수
+    X1 - 두 번째 좌표, 유한 수
+
+결과:
+    모델의 값 또는 0.0 (위에 정의 된대로)
+
+  - ALGLIB -
+     저작권 13.12.2011 Bochkanov Sergey
+**************************************************************************/
 double rbfcalc2(rbfmodel* s, double x0, double x1, ae_state *_state)
 {
     ae_int_t i;
@@ -26124,6 +37419,31 @@ RESULT:
   -- ALGLIB --
      Copyright 13.12.2011 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 주어진 점에서 RBF 모델의 값을 계산합니다.
+
+이 함수는 NY = 1 (스칼라 함수)이고 NX = 3 일 때 사용해야합니다.
+(3 차원 공간). 2 차원 공간이 있다면 RBFCalc2 ()를 사용하십시오. 만약
+당신은 일반적인 상황 (NX 차원 공간, NY 차원 함수)
+RBFCalc ()를 덜 효율적으로 구현해야합니다.
+
+이 함수는 다음의 경우 0.0을 반환합니다.
+* 모델이 초기화되지 않았습니다.
+* NX <> 3
+ * NY <> 1
+
+입력 매개 변수 :
+    S - RBF 모델
+    X0 - 첫 번째 좌표, 유한 수
+    X1 - 두 번째 좌표, 유한 수
+    X2 - 세 번째 좌표, 유한 수
+
+결과:
+    모델의 값 또는 0.0 (위에 정의 된대로)
+
+  - ALGLIB -
+     저작권 13.12.2011 Bochkanov Sergey
+**************************************************************************/
 double rbfcalc3(rbfmodel* s,
      double x0,
      double x1,
@@ -26156,6 +37476,9 @@ double rbfcalc3(rbfmodel* s,
     
     /*
      * calculating value for F(X)
+     */
+    /*
+     * F (X)에 대한 계산 값
      */
     rvectorsetlengthatleast(&s->calcbufxcx, rbf_mxnx, _state);
     for(i=0; i<=rbf_mxnx-1; i++)
@@ -26209,6 +37532,31 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 13.12.2011 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 주어진 지점에서 RBF 모델의 값을 계산합니다.
+
+이것은 임의의 NX (dimension of of NX)에 사용될 수있는 일반적인 함수입니다. 
+인수의 공간)과 NY (함수 자체의 차원). 하나
+NY = 1 일 때 RBFCalc2 () 또는 
+RBFCalc3 ().
+
+모델이 초기화되지 않은 경우이 함수는 0.0을 반환합니다.
+
+입력 매개 변수 :
+    S - RBF 모델
+    X 좌표, 배열 [NX].
+                X는 NX 개 이상의 요소를 가질 수 있습니다.이 경우에만 
+                선도적 인 NX가 사용됩니다.
+
+출력 매개 변수 :
+    Y - 함수 값, array [NY]. Y는 매개 변수가 아니며
+                이 함수를 호출 한 후 다시 할당됩니다. 원하는 경우에
+                이전에 할당 된 Y를 재사용하려면 RBFCalcBuf ()를 사용할 수 있습니다.
+                Y가 너무 작을 때만 Y를 재 할당합니다.
+
+  - ALGLIB -
+     저작권 13.12.2011 Bochkanov Sergey
+**************************************************************************/
 void rbfcalc(rbfmodel* s,
      /* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
@@ -26243,6 +37591,26 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 13.12.2011 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 주어진 지점에서 RBF 모델의 값을 계산합니다.
+
+RBFCalc ()와 동일하지만 in이 충분히 큰 경우 Y를 재 할당하지 않습니다. 
+함수 값을 저장하십시오.
+
+입력 매개 변수 :
+    S - RBF 모델
+    X 좌표, 배열 [NX].
+                X는 NX 개 이상의 요소를 가질 수 있습니다.이 경우에만 
+                선도적 인 NX가 사용됩니다.
+    Y - 아마 사전 할당 된 배열
+
+출력 매개 변수 :
+    Y - 함수 값, array [NY]. Y는 재 할당되지 않습니다.
+                NY보다 큽니다.
+
+  - ALGLIB -
+     저작권 13.12.2011 Bochkanov Sergey
+**************************************************************************/
 void rbfcalcbuf(rbfmodel* s,
      /* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
@@ -26330,6 +37698,30 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 13.12.2011 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 정규 그리드에서 RBF 모델의 값을 계산합니다.
+
+Grid는 Point [I, J] = (X0 [I], X1 [J])와 함께 N0 * N1 점을 가진다.
+
+이 함수는 다음의 경우 0.0을 반환합니다.
+* 모델이 초기화되지 않았습니다.
+* NX <> 2
+ * NY <> 1
+
+입력 매개 변수 :
+    S - RBF 모델
+    X0 - 그리드 노드의 배열, 첫 번째 좌표, 배열 [N0]
+    N0 - 첫 번째 차원의 격자 크기 (노드 수)
+    X1 - 그리드 노드의 배열, 두 번째 좌표, 배열 [N1]
+    N1 - 두 번째 차원의 격자 크기 (노드 수)
+
+출력 매개 변수 :
+    Y - 함수 값, 배열 [N0, N1]. Y는 변수가 아니며
+                이 함수에 의해 재 할당됩니다.
+
+  - ALGLIB -
+     저작권 13.12.2011 Bochkanov Sergey
+**************************************************************************/
 void rbfgridcalc2(rbfmodel* s,
      /* Real    */ ae_vector* x0,
      ae_int_t n0,
@@ -26392,6 +37784,9 @@ void rbfgridcalc2(rbfmodel* s,
     /*
      *create and sort arrays
      */
+    /*
+     배열 만들기 및 정렬
+     */
     ae_vector_set_length(&cpx0, n0, _state);
     for(i=0; i<=n0-1; i++)
     {
@@ -26408,6 +37803,9 @@ void rbfgridcalc2(rbfmodel* s,
     /*
      *calculate function's value
      */
+    /*
+     * 함수의 값 계산
+     */
     for(i=0; i<=s->nc-1; i++)
     {
         radius = s->wr.ptr.pp_double[i][0];
@@ -26418,6 +37816,9 @@ void rbfgridcalc2(rbfmodel* s,
             
             /*
              *search lower and upper indexes
+             */
+            /*
+             * 하위 및 상위 색인 검색
              */
             i00 = lowerbound(&cpx0, n0, s->xc.ptr.pp_double[i][0]-rlimit, _state);
             i01 = upperbound(&cpx0, n0, s->xc.ptr.pp_double[i][0]+rlimit, _state);
@@ -26444,6 +37845,9 @@ void rbfgridcalc2(rbfmodel* s,
     
     /*
      *add linear term
+     */
+    /*
+     * 선형 항을 더함
      */
     for(i=0; i<=n0-1; i++)
     {
@@ -26481,6 +37885,31 @@ OUTPUT PARAMETERS:
   -- ALGLIB --
      Copyright 13.12.2011 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 계수를 추출하여 RBF 모델을 "압축 해제"합니다.
+
+입력 매개 변수 :
+    S - RBF 모델
+
+출력 매개 변수 :
+    NX - 인수의 차원
+    NY - 대상 함수의 차원
+    XWR - 모델 정보, 배열 [NC, NX + NY + 1].
+                배열의 한 행은 하나의 기저 함수에 해당합니다.
+                * 첫 번째 NX 열 - 중심 좌표 
+                * 다음 뉴욕 칼럼 - 가중치, 
+                                      기능을 모델링하고있다.
+                * 마지막 열 - 반경, 모든 치수에서 동일
+                                      함수가 모델링되고있다.
+    노스 캐롤라이나 - 센터의 수
+    V - 다항식 항, array [NY, NX + 1]. 하나당 한 행
+                모델링되는 함수의 차원. 첫 번째 NX
+                요소는 선형 계수이며, V [NX]는 
+                일정 부분.
+
+  - ALGLIB -
+     저작권 13.12.2011 Bochkanov Sergey
+**************************************************************************/
 void rbfunpack(rbfmodel* s,
      ae_int_t* nx,
      ae_int_t* ny,
@@ -26506,6 +37935,9 @@ void rbfunpack(rbfmodel* s,
     /*
      * Fill V
      */
+    /*
+     * 채우기 V
+     */
     ae_matrix_set_length(v, s->ny, s->nx+1, _state);
     for(i=0; i<=s->ny-1; i++)
     {
@@ -26515,6 +37947,9 @@ void rbfunpack(rbfmodel* s,
     
     /*
      * Fill XWR and V
+     */
+    /*
+     * XWR 및 V 채우기
      */
     if( *nc*s->nl>0 )
     {
@@ -26540,6 +37975,12 @@ Serializer: allocation
   -- ALGLIB --
      Copyright 02.02.2012 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+직렬화 기 : 할당
+
+  - ALGLIB -
+     저작권 02.02.2012에 의해 Bochkanov Sergey
+**************************************************************************/
 void rbfalloc(ae_serializer* s, rbfmodel* model, ae_state *_state)
 {
 
@@ -26572,6 +38013,12 @@ Serializer: serialization
   -- ALGLIB --
      Copyright 02.02.2012 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+직렬화 기 : 직렬화
+
+  - ALGLIB -
+     저작권 02.02.2012에 의해 Bochkanov Sergey
+**************************************************************************/
 void rbfserialize(ae_serializer* s, rbfmodel* model, ae_state *_state)
 {
 
@@ -26604,6 +38051,12 @@ Serializer: unserialization
   -- ALGLIB --
      Copyright 02.02.2012 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+직렬화 기 : 직렬화 해제
+
+  - ALGLIB -
+     저작권 02.02.2012에 의해 Bochkanov Sergey
+**************************************************************************/
 void rbfunserialize(ae_serializer* s, rbfmodel* model, ae_state *_state)
 {
     ae_int_t i0;
@@ -26627,6 +38080,12 @@ void rbfunserialize(ae_serializer* s, rbfmodel* model, ae_state *_state)
      *
      * It is necessary to call RBFCreate() because some internal fields
      * which are NOT unserialized will need initialization.
+     */
+    /*
+     * 기본 모델 매개 변수를 직렬화 해제하고 모델을 초기화합니다.
+     *
+     * RBFCreate ()를 호출 할 필요가 있습니다. 일부 내부 필드
+     * 비 직렬화되지 않은 초기화는 필요합니다.
      */
     ae_serializer_unserialize_int(s, &nx, _state);
     ae_serializer_unserialize_int(s, &ny, _state);
@@ -26656,6 +38115,21 @@ NOTE: this   function  has   some   serialization-related  subtleties.  We
   -- ALGLIB --
      Copyright 13.12.2011 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 센터 할당 알고리즘을 할당하는 알고리즘으로 변경합니다.
+데이터 세트 포인트 (하나의 입력 포인트 = 하나의 중심)에 정확하게 중심을 맞 춥니 다. 이
+함수는 RBFBuildModel ()에 대한 다음 호출 때까지 적용되지 않습니다.
+
+입력 매개 변수 :
+    RBFCreate () 호출로 초기화 된 S - RBF 모델
+
+참고 :이 함수에는 몇 가지 serialization 관련 미묘한 차이가 있습니다. 우리
+      ALGLIB Reference에서 직렬화 예제를 공부하도록 권장합니다.
+      모델의 직렬화를 수행하려면 수동으로하십시오.
+
+  - ALGLIB -
+     저작권 13.12.2011 Bochkanov Sergey
+**************************************************************************/
 static void rbf_rbfgridpoints(rbfmodel* s, ae_state *_state)
 {
     (void)_state;
@@ -26710,6 +38184,52 @@ NOTE: this   function  has   some   serialization-related  subtleties.  We
   -- ALGLIB --
      Copyright 13.12.2011 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 함수는 반지름 계산 알고리즘을
+R [i] = DistNN [i] * Q와 같은 I 번째 노드의 반지름
+* R [i]는 알고리즘에 의해 계산 된 반지름
+* DistNN [i]는 I 번째 중심에서 가장 가까운 이웃 중심까지의 거리입니다.
+* Q는 척도 매개 변수이며 [0.75,1.50] 이내 여야합니다.
+  권장 값은 1.0입니다.
+* 반지름 계산을 수행 한 후 반지름이
+  단일 이상 치가 매우 큰 반경과 영향을 미칠 때 상황을 피하십시오
+  전체 데이터 세트의 많은 점. 변환 형식은 다음과 같습니다.
+       new_r [i] = min (r [i], Z * median (r []))
+   여기서 r [i]는 I 번째 반지름, median ()은 전체 반지름의 중앙 반지름
+   데이터 세트에서 Z는 편차의 양을 제어하는 ​​사용자 지정 값입니다.
+   중앙 반경에서.
+
+이 함수는 RBFBuildModel ()에 대한 다음 호출 때까지 적용되지 않습니다.
+
+이 알고리즘의 배경은 기초에 해당하는 반경을 선택하는 것입니다.
+함수는 I 번째 반경이 거리와 거의 같은 방식입니다.
+I-th 센터에서 가장 가까운 이웃까지. 이 경우
+먼 지점은 중요하지 않을 것이며, 우리는 잘 조절 될 것이다.
+기초.
+
+이 기초의 속성은 Q의 값에 따라 달라집니다.
+* Q <0.75는 완벽하게 컨디셔닝 된 기초를 제공하지만 끔찍한 부드러움
+  속성 (RBF 보간은 함수 값 주위에 날카로운 피크를 가짐)
+* Q> 1.5는 나쁘게 컨디셔닝 된 시스템과
+  기본 선형 솔버 (부드러움은 아주 좋음)
+* Q 약 1.0은 매끈함과 조건 수 사이에 좋은 균형을 제공합니다.
+
+
+입력 매개 변수 :
+    RBFCreate () 호출로 초기화 된 S - RBF 모델
+    Q - 반경 계수, Q> 0
+    Z - Z 매개 변수, Z> 0
+    
+Q의 기본값은 1.0입니다.
+Z의 기본값은 5.0과 같습니다.
+
+참고 :이 함수에는 몇 가지 serialization 관련 미묘한 차이가 있습니다. 우리
+      ALGLIB Reference에서 직렬화 예제를 공부하도록 권장합니다.
+      모델의 직렬화를 수행하려면 수동으로하십시오.
+
+  - ALGLIB -
+     저작권 13.12.2011 Bochkanov Sergey
+**************************************************************************/
 static void rbf_rbfradnn(rbfmodel* s,
      double q,
      double z,
@@ -26762,6 +38282,9 @@ static ae_bool rbf_buildlinearmodel(/* Real    */ ae_matrix* x,
     /*
      * Handle degenerate case (N=0)
      */
+    /*
+     * 축퇴 사례 처리 (N = 0)
+     */
     result = ae_true;
     ae_matrix_set_length(v, ny, rbf_mxnx+1, _state);
     if( n==0 )
@@ -26780,16 +38303,25 @@ static ae_bool rbf_buildlinearmodel(/* Real    */ ae_matrix* x,
     /*
      * Allocate temporaries
      */
+    /*
+     * 임시 직원 할당
+     */
     ae_vector_set_length(&tmpy, n, _state);
     
     /*
      * General linear model.
+     */
+    /*
+     * 일반 선형 모델.
      */
     if( modeltype==1 )
     {
         
         /*
          * Calculate scaling/shifting, transform variables, prepare LLS problem
+         */
+        /*
+         * 스케일링 / 시프 팅 계산, 변수 변환, LLS 문제 준비
          */
         ae_matrix_set_length(&a, n, rbf_mxnx+1, _state);
         ae_vector_set_length(&shifting, rbf_mxnx, _state);
@@ -26835,6 +38367,9 @@ static ae_bool rbf_buildlinearmodel(/* Real    */ ae_matrix* x,
         /*
          * Solve linear system in transformed variables, make backward 
          */
+        /*
+         * 선형 시스템을 변형 된 변수로 풀고, 역으로 만든다. 
+         */
         for(i=0; i<=ny-1; i++)
         {
             for(j=0; j<=n-1; j++)
@@ -26873,6 +38408,9 @@ static ae_bool rbf_buildlinearmodel(/* Real    */ ae_matrix* x,
     /*
      * Constant model, very simple
      */
+    /*
+     * 일정한 모델, 매우 간단합니다.
+     */
     if( modeltype==2 )
     {
         for(i=0; i<=ny-1; i++)
@@ -26900,6 +38438,9 @@ static ae_bool rbf_buildlinearmodel(/* Real    */ ae_matrix* x,
     
     /*
      * Zero model
+     */
+    /*
+     * 제로 모델
      */
     ae_assert(modeltype==3, "BuildLinearModel: unknown model type", _state);
     for(i=0; i<=ny-1; i++)
@@ -27020,6 +38561,9 @@ static void rbf_buildrbfmodellsqr(/* Real    */ ae_matrix* x,
     /*
      * Handle special cases: NC=0
      */
+    /*
+     * 특수 케이스 처리 : NC = 0
+     */
     if( nc==0 )
     {
         *info = 1;
@@ -27031,6 +38575,9 @@ static void rbf_buildrbfmodellsqr(/* Real    */ ae_matrix* x,
     
     /*
      * Prepare for general case, NC>0
+     */
+    /*
+     * 일반적인 경우 준비, NC> 0
      */
     ae_vector_set_length(&xcx, rbf_mxnx, _state);
     ae_vector_set_length(&pointstags, n, _state);
@@ -27049,6 +38596,17 @@ static void rbf_buildrbfmodellsqr(/* Real    */ ae_matrix* x,
      * * SumNearCentersCnt  -   sum(NearCentersCnt)
      * * SumNearPointsCnt   -   sum(NearPointsCnt)
      * * SumFarPointsCnt    -   sum(FarPointsCnt)
+     */
+    /*
+     *이 블록은 대략적인 추기 기본 함수 (ACBF)를 계산하는 데 사용되는 수량을 준비합니다.
+     * * NearCentersCnt [] - ACBF를 구축하는 데 사용 된 거의 중심의 수를 저장하는 요소를 포함하는 배열 [NC]입니다.
+     * * NearPointsCnt [] - 배열 [NC], ACBF를 빌드하는 데 사용 된 근점 수
+     * * FarPointsCnt [] - 배열 [NC], 먼 점의 수 (ACBF가 0이 아닌 수)
+     * * MaxNearCentersCnt - 최대 (NearCentersCnt)
+     * * MaxNearPointsCnt - 최대 (NearPointsCnt)
+     * * SumNearCentersCnt - 합계 (NearCentersCnt)
+     * * SumNearPointsCnt - 합계 (NearPointsCnt)
+     * * SumFarPointsCnt - 합계 (FarPointsCnt)
      */
     ae_vector_set_length(&nearcenterscnt, nc, _state);
     ae_vector_set_length(&nearpointscnt, nc, _state);
@@ -27070,6 +38628,10 @@ static void rbf_buildrbfmodellsqr(/* Real    */ ae_matrix* x,
         /*
          * Determine number of near centers and maximum radius of near centers
          */
+        
+        /*
+         * 가까운 센터의 수와 가까운 센터의 최대 반경을 결정하십시오.
+         */
         nearcenterscnt.ptr.p_int[i] = kdtreequeryrnn(centerstree, &xcx, r->ptr.p_double[i]*rbf_rbfnearradius, ae_true, _state);
         kdtreequeryresultstags(centerstree, &centerstags, _state);
         maxrad = 0;
@@ -27083,6 +38645,11 @@ static void rbf_buildrbfmodellsqr(/* Real    */ ae_matrix* x,
          * and skipped points (the most near points which are NOT used to build ACBF
          * and are NOT included in the near points count
          */
+        /*
+         * 가까운 지점 수 결정 (ACBF를 구축하는 데 사용 된 지점 수)
+         * 및 생략 된 점 (ACBF를 작성하는 데 사용되지 않는 가장 가까운 점
+         * 와 가까운 점수 계산에 포함되지 않습니다
+         */
         skipnearpointscnt.ptr.p_int[i] = kdtreequeryrnn(pointstree, &xcx, 0.1*r->ptr.p_double[i], ae_true, _state);
         nearpointscnt.ptr.p_int[i] = kdtreequeryrnn(pointstree, &xcx, (r->ptr.p_double[i]+maxrad)*rbf_rbfnearradius, ae_true, _state)-skipnearpointscnt.ptr.p_int[i];
         ae_assert(nearpointscnt.ptr.p_int[i]>=0, "BuildRBFModelLSQR: internal error", _state);
@@ -27090,10 +38657,16 @@ static void rbf_buildrbfmodellsqr(/* Real    */ ae_matrix* x,
         /*
          * Determine number of far points
          */
+        /*
+         * 먼 지점의 수를 결정하십시오
+         */
         farpointscnt.ptr.p_int[i] = kdtreequeryrnn(pointstree, &xcx, ae_maxreal(r->ptr.p_double[i]*rbf_rbfnearradius+maxrad*rbf_rbffarradius, r->ptr.p_double[i]*rbf_rbffarradius, _state), ae_true, _state);
         
         /*
          * calculate sum and max, make some basic checks
+         */
+        /*
+         * sum과 max를 계산하고, 몇 가지 기본적인 검사를합니다.
          */
         ae_assert(nearcenterscnt.ptr.p_int[i]>0, "BuildRBFModelLSQR: internal error", _state);
         maxnearcenterscnt = ae_maxint(maxnearcenterscnt, nearcenterscnt.ptr.p_int[i], _state);
@@ -27114,6 +38687,13 @@ static void rbf_buildrbfmodellsqr(/* Real    */ ae_matrix* x,
      *       use max(desired_size,1) instead of desired_size when performing
      *       memory allocation.
      */
+    /*
+     * 임시직을 할당하십시오.
+     *
+     * 참고 : 크기가 0 인 배열을 할당하지 않으려 고하므로
+     * 수행 할 때 desired_size 대신 max (desired_size, 1)를 사용하십시오.
+     * 메모리 할당.
+     */
     ae_matrix_set_length(&a, maxnearpointscnt+maxnearcenterscnt, maxnearcenterscnt, _state);
     ae_vector_set_length(&tmpy, maxnearpointscnt+maxnearcenterscnt, _state);
     ae_vector_set_length(&g, maxnearcenterscnt, _state);
@@ -27125,6 +38705,10 @@ static void rbf_buildrbfmodellsqr(/* Real    */ ae_matrix* x,
     /*
      * fill matrix SpG
      */
+    
+    /*
+     * 행렬 채우기 SpG
+     */
     sparsecreate(n, nc, *gnnz, &spg, _state);
     sparsecreate(nc, nc, *snnz, &sps, _state);
     for(i=0; i<=nc-1; i++)
@@ -27134,6 +38718,9 @@ static void rbf_buildrbfmodellsqr(/* Real    */ ae_matrix* x,
         /*
          * main center
          */
+        /*
+         * 주요 센터
+         */
         for(j=0; j<=rbf_mxnx-1; j++)
         {
             xcx.ptr.p_double[j] = xc->ptr.pp_double[i][j];
@@ -27142,6 +38729,9 @@ static void rbf_buildrbfmodellsqr(/* Real    */ ae_matrix* x,
         /*
          * center's tree
          */
+        /*
+         * 센터의 나무
+         */
         tmpi = kdtreequeryknn(centerstree, &xcx, centerscnt, ae_true, _state);
         ae_assert(tmpi==centerscnt, "BuildRBFModelLSQR: internal error", _state);
         kdtreequeryresultsx(centerstree, &cx, _state);
@@ -27149,6 +38739,9 @@ static void rbf_buildrbfmodellsqr(/* Real    */ ae_matrix* x,
         
         /*
          * point's tree
+         */
+        /*
+         * 포인트 트리
          */
         mrad = 0;
         for(j=0; j<=centerscnt-1; j++)
@@ -27159,6 +38752,10 @@ static void rbf_buildrbfmodellsqr(/* Real    */ ae_matrix* x,
         /*
          * we need to be sure that 'CTree' contains
          * at least one side center
+         */
+        /*
+         * 우리는 'CTree'가
+         * 적어도 하나의 사이드 센터
          */
         sparseset(&sps, i, i, 1, _state);
         c.ptr.p_double[0] = 1.0;
@@ -27171,6 +38768,9 @@ static void rbf_buildrbfmodellsqr(/* Real    */ ae_matrix* x,
             
             /*
              * first KDTree request for points
+             */
+            /*
+             * 포인트에 대한 KDTree 첫 요청
              */
             pointscnt = nearpointscnt.ptr.p_int[i];
             tmpi = kdtreequeryknn(pointstree, &xcx, skipnearpointscnt.ptr.p_int[i]+nearpointscnt.ptr.p_int[i], ae_true, _state);
@@ -27202,6 +38802,9 @@ static void rbf_buildrbfmodellsqr(/* Real    */ ae_matrix* x,
             
             /*
              * calculate the problem
+             */
+            /*
+             * 문제를 계산하십시오.
              */
             gnorm2 = ae_v_dotproduct(&g.ptr.p_double[0], 1, &g.ptr.p_double[0], 1, ae_v_len(0,centerscnt-1));
             for(j=0; j<=pointscnt-1; j++)
@@ -27236,6 +38839,9 @@ static void rbf_buildrbfmodellsqr(/* Real    */ ae_matrix* x,
         /*
          * second KDTree request for points
          */
+        /*
+         * 포인트에 대한 두 번째 KD 트리 요청
+         */
         pointscnt = farpointscnt.ptr.p_int[i];
         tmpi = kdtreequeryknn(pointstree, &xcx, pointscnt, ae_true, _state);
         ae_assert(tmpi==pointscnt, "BuildRBFModelLSQR: internal error", _state);
@@ -27244,6 +38850,9 @@ static void rbf_buildrbfmodellsqr(/* Real    */ ae_matrix* x,
         
         /*
          *fill SpG matrix
+         */
+        /*
+         * SpG 행렬 채우기
          */
         for(j=0; j<=pointscnt-1; j++)
         {
@@ -27272,6 +38881,9 @@ static void rbf_buildrbfmodellsqr(/* Real    */ ae_matrix* x,
     
     /*
      * solve by LSQR method
+     */
+    /*
+     LSQR 방식으로 해결
      */
     ae_vector_set_length(&tmpy, n, _state);
     ae_vector_set_length(&tc, nc, _state);
@@ -27410,6 +39022,9 @@ static void rbf_buildrbfmlayersmodellsqr(/* Real    */ ae_matrix* x,
     /*
      * calculate number of non-zero elements for sparse matrix
      */
+    /*
+     * 스파 스 매트릭스에 대해 0이 아닌 요소의 수를 계산합니다.
+     */
     for(i=0; i<=n-1; i++)
     {
         for(j=0; j<=rbf_mxnx-1; j++)
@@ -27423,6 +39038,9 @@ static void rbf_buildrbfmlayersmodellsqr(/* Real    */ ae_matrix* x,
         
         /*
          * Fill sparse matrix, calculate norm(A)
+         */
+        /*
+         * 스파 스 매트릭스 채우기, 표준 (A) 계산
          */
         anorm = 0.0;
         sparsecreate(n, n, *annz, &spa, _state);
@@ -27449,6 +39067,10 @@ static void rbf_buildrbfmlayersmodellsqr(/* Real    */ ae_matrix* x,
          * Calculate maximum residual before adding new layer.
          * This value is not used by algorithm, the only purpose is to make debugging easier.
          */
+        /*
+         * 새 레이어를 추가하기 전에 최대 잔차를 계산하십시오.
+         *이 값은 알고리즘에 의해 사용되지 않으며 유일한 목적은 디버깅을 쉽게하는 것입니다.
+         */
         rmaxbefore = 0.0;
         for(j=0; j<=n-1; j++)
         {
@@ -27461,6 +39083,9 @@ static void rbf_buildrbfmlayersmodellsqr(/* Real    */ ae_matrix* x,
         /*
          * Process NY dimensions of the target function
          */
+        /*
+         * 대상 함수의 NY 차원 처리
+         */
         for(i=0; i<=ny-1; i++)
         {
             for(j=0; j<=n-1; j++)
@@ -27470,6 +39095,9 @@ static void rbf_buildrbfmlayersmodellsqr(/* Real    */ ae_matrix* x,
             
             /*
              * calculate Omega for current layer
+             */
+            /*
+             * 현재 레이어에 대해 오메가를 계산합니다.
              */
             linlsqrsetlambdai(&state, lambdav*anorm/n, _state);
             linlsqrsolvesparse(&state, &spa, &tmpy, _state);
@@ -27483,6 +39111,9 @@ static void rbf_buildrbfmlayersmodellsqr(/* Real    */ ae_matrix* x,
             
             /*
              * calculate error for current layer
+             */
+            /*
+             * 현재 레이어의 오류 계산
              */
             for(j=0; j<=n-1; j++)
             {
@@ -27504,6 +39135,9 @@ static void rbf_buildrbfmlayersmodellsqr(/* Real    */ ae_matrix* x,
             /*
              * write Omega in out parameter W
              */
+            /*
+             * 출력 매개 변수 W에 Omega를 씁니다.
+             */
             for(j=0; j<=n-1; j++)
             {
                 w->ptr.pp_double[layer*n+j][i] = omega.ptr.p_double[j];
@@ -27515,6 +39149,10 @@ static void rbf_buildrbfmlayersmodellsqr(/* Real    */ ae_matrix* x,
         /*
          * Calculate maximum residual before adding new layer.
          * This value is not used by algorithm, the only purpose is to make debugging easier.
+         */
+        /*
+         * 새 레이어를 추가하기 전에 최대 잔차를 계산하십시오.
+         *이 값은 알고리즘에 의해 사용되지 않으며 유일한 목적은 디버깅을 쉽게하는 것입니다.
          */
         rmaxafter = 0.0;
         for(j=0; j<=n-1; j++)
@@ -27691,6 +39329,21 @@ Result:
   -- ALGLIB PROJECT --
      Copyright 05.07.2007 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은에서 bilinear 또는 bicubic 스플라인의 값을 계산합니다.
+주어진 점 X.
+
+입력 매개 변수 :
+    C - 계수 테이블.
+            BuildBilinearSpline 또는 BuildBicubicSpline에 의해 작성됩니다.
+    X, Y- 포인트
+
+결과:
+    S (x, y)
+
+  - ALGLIB 프로젝트 -
+     저작권 05.07.2007 Bochkanov Sergey
+**************************************************************************/
 double spline2dcalc(spline2dinterpolant* c,
      double x,
      double y,
@@ -27733,6 +39386,23 @@ Output parameters:
   -- ALGLIB PROJECT --
      Copyright 05.07.2007 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은에서 bilinear 또는 bicubic 스플라인의 값을 계산합니다.
+주어진 점 X와 그 파생물
+
+입력 매개 변수 :
+    C - 스플라인 보간.
+    X, Y- 포인트
+
+출력 매개 변수 :
+    F - S (x, y)
+    FX - dS (x, y) / dX
+    FY - dS (x, y) / dY
+    FXY - d2S (x, y) / dXdY
+
+  - ALGLIB 프로젝트 -
+     저작권 05.07.2007 Bochkanov Sergey
+**************************************************************************/
 void spline2ddiff(spline2dinterpolant* c,
      double x,
      double y,
@@ -27783,6 +39453,9 @@ void spline2ddiff(spline2dinterpolant* c,
     /*
      * Prepare F, dF/dX, dF/dY, d2F/dXdY
      */
+    /*
+     * 준비 F, dF / dX, dF / dY, d2F / dXdY
+     */
     *f = 0;
     *fx = 0;
     *fy = 0;
@@ -27794,6 +39467,9 @@ void spline2ddiff(spline2dinterpolant* c,
     
     /*
      * Binary search in the [ x[0], ..., x[n-2] ] (x[n-1] is not included)
+     */
+    /*
+     * [x [0], ..., x [n-2]] (x [n-1])의 이진 검색은 포함되지 않습니다.
      */
     l = 0;
     r = c->n-1;
@@ -27816,6 +39492,9 @@ void spline2ddiff(spline2dinterpolant* c,
     /*
      * Binary search in the [ y[0], ..., y[m-2] ] (y[m-1] is not included)
      */
+    /*
+     * [y [0], ..., y [m-2]]의 이진 검색 (y [m-1]은 포함되지 않음)
+     */
     l = 0;
     r = c->m-1;
     while(l!=r-1)
@@ -27837,6 +39516,9 @@ void spline2ddiff(spline2dinterpolant* c,
     /*
      * Bilinear interpolation
      */
+    /*
+     * 쌍 선형 보간법
+     */
     if( c->stype==-1 )
     {
         y1 = c->f.ptr.p_double[c->n*iy+ix];
@@ -27853,11 +39535,17 @@ void spline2ddiff(spline2dinterpolant* c,
     /*
      * Bicubic interpolation
      */
+    /*
+     * 바이 큐빅 보간법
+     */
     if( c->stype==-3 )
     {
         
         /*
          * Prepare info
+         */
+        /*
+         * 정보 준비
          */
         t0 = 1;
         t1 = t;
@@ -27877,6 +39565,9 @@ void spline2ddiff(spline2dinterpolant* c,
         
         /*
          * Calculate
+         */
+        /*
+         * 계산하다
          */
         v = c->f.ptr.p_double[s1];
         *f = *f+v*t0*u0;
@@ -27961,6 +39652,19 @@ Result:
   -- ALGLIB PROJECT --
      Copyright 30.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 스플라인 인수의 선형 변환을 수행합니다.
+
+입력 매개 변수 :
+    C - 스플라인 보간
+    AX, BX - 변환 계수 : x = A * t + B
+    AY, BY - 변환 계수 : y = A * u + B
+결과:
+    C - 변형 된 스플라인
+
+  - ALGLIB 프로젝트 -
+     저작권 30.06.2007 Bochkanov Sergey
+**************************************************************************/
 void spline2dlintransxy(spline2dinterpolant* c,
      double ax,
      double bx,
@@ -28012,6 +39716,9 @@ void spline2dlintransxy(spline2dinterpolant* c,
     
     /*
      * Handle different combinations of AX/AY
+     */
+    /*
+     * AX / AY의 다른 조합을 다루십시오
      */
     if( ae_fp_eq(ax,0)&&ae_fp_neq(ay,0) )
     {
@@ -28072,6 +39779,9 @@ void spline2dlintransxy(spline2dinterpolant* c,
     /*
      * Rebuild spline
      */
+    /*
+     * 스플라인 재구성
+     */
     if( c->stype==-3 )
     {
         spline2dbuildbicubicv(&x, c->n, &y, c->m, &f, c->d, c, _state);
@@ -28097,6 +39807,19 @@ Output parameters:
   -- ALGLIB PROJECT --
      Copyright 30.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 스플라인의 선형 변환을 수행합니다.
+
+입력 매개 변수 :
+    C - 스플라인 보간.
+    A, B 변환 계수 : S2 (x, y) = A * S (x, y) + B
+    
+출력 매개 변수 :
+    C - 변형 된 스플라인
+
+  - ALGLIB 프로젝트 -
+     저작권 30.06.2007 Bochkanov Sergey
+**************************************************************************/
 void spline2dlintransf(spline2dinterpolant* c,
      double a,
      double b,
@@ -28154,6 +39877,18 @@ Output parameters:
   -- ALGLIB PROJECT --
      Copyright 29.06.2007 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 스플라인 모델의 복사본을 만듭니다.
+
+입력 매개 변수 :
+    C - 스플라인 보간
+
+출력 매개 변수 :
+    CC - 스플라인 복사본
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 29.06.2007
+**************************************************************************/
 void spline2dcopy(spline2dinterpolant* c,
      spline2dinterpolant* cc,
      ae_state *_state)
@@ -28206,6 +39941,25 @@ Output parameters:
      15 May, 2007
      Copyright by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+바이 큐빅 스플라인 리샘플링
+
+입력 매개 변수 :
+    A - 기존 그리드에서의 함수 값,
+                    배열 [0..OldHeight-1, 0..OldWidth-1]
+    OldHeight - 오래된 그리드 높이, OldHeight> 1
+    OldWidth - 이전 그리드 폭, OldWidth> 1
+    NewHeight - 새로운 그리드 높이, NewHeight> 1
+    NewWidth - 새로운 그리드 폭, NewWidth> 1
+    
+출력 매개 변수 :
+    B - 새로운 그리드에서의 함수 값,
+                    배열 [0..NewHeight-1, 0..NewWidth-1]
+
+  - ALGLIB 루틴 -
+     2007 년 5 월 15 일
+     Bochkanov Sergey의 저작권
+**************************************************************************/
 void spline2dresamplebicubic(/* Real    */ ae_matrix* a,
      ae_int_t oldheight,
      ae_int_t oldwidth,
@@ -28237,6 +39991,9 @@ void spline2dresamplebicubic(/* Real    */ ae_matrix* a,
     /*
      * Prepare
      */
+    /*
+     * 준비
+     */
     mw = ae_maxint(oldwidth, newwidth, _state);
     mh = ae_maxint(oldheight, newheight, _state);
     ae_matrix_set_length(b, newheight, newwidth, _state);
@@ -28247,11 +40004,17 @@ void spline2dresamplebicubic(/* Real    */ ae_matrix* a,
     /*
      * Horizontal interpolation
      */
+    /*
+     * 수평 보간법
+     */
     for(i=0; i<=oldheight-1; i++)
     {
         
         /*
          * Fill X, Y
+         */
+        /*
+         * X, Y 채우기
          */
         for(j=0; j<=oldwidth-1; j++)
         {
@@ -28261,6 +40024,9 @@ void spline2dresamplebicubic(/* Real    */ ae_matrix* a,
         
         /*
          * Interpolate and place result into temporary matrix
+         */
+        /*
+         * 임시 매트릭스에 보간 및 결과 배치
          */
         spline1dbuildcubic(&x, &y, oldwidth, 0, 0.0, 0, 0.0, &c, _state);
         for(j=0; j<=newwidth-1; j++)
@@ -28272,11 +40038,17 @@ void spline2dresamplebicubic(/* Real    */ ae_matrix* a,
     /*
      * Vertical interpolation
      */
+    /*
+     * 수직 보간법
+     */
     for(j=0; j<=newwidth-1; j++)
     {
         
         /*
          * Fill X, Y
+         */
+        /*
+         * X, Y 채우기
          */
         for(i=0; i<=oldheight-1; i++)
         {
@@ -28286,6 +40058,9 @@ void spline2dresamplebicubic(/* Real    */ ae_matrix* a,
         
         /*
          * Interpolate and place result into B
+         */
+        /*
+         * 임시 매트릭스에 보간 및 결과 배치
          */
         spline1dbuildcubic(&x, &y, oldheight, 0, 0.0, 0, 0.0, &c, _state);
         for(i=0; i<=newheight-1; i++)
@@ -28316,6 +40091,25 @@ Output parameters:
      09.07.2007
      Copyright by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+쌍 선형 스플라인 재 샘플링
+
+입력 매개 변수 :
+    A - 기존 그리드에서의 함수 값,
+                    배열 [0..OldHeight-1, 0..OldWidth-1]
+    OldHeight - 오래된 그리드 높이, OldHeight> 1
+    OldWidth - 이전 그리드 폭, OldWidth> 1
+    NewHeight - 새로운 그리드 높이, NewHeight> 1
+    NewWidth - 새로운 그리드 폭, NewWidth> 1
+
+출력 매개 변수 :
+    B - 새로운 그리드에서의 함수 값,
+                    배열 [0..NewHeight-1, 0..NewWidth-1]
+
+  - ALGLIB 루틴 -
+     09.07.2007
+     Bochkanov Sergey의 저작권
+**************************************************************************/
 void spline2dresamplebilinear(/* Real    */ ae_matrix* a,
      ae_int_t oldheight,
      ae_int_t oldwidth,
@@ -28378,6 +40172,26 @@ Output parameters:
   -- ALGLIB PROJECT --
      Copyright 16.04.2012 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 쌍 선형 벡터 값 스플라인을 작성합니다.
+
+입력 매개 변수 :
+    X - 스플라인 가로 좌표, 배열 [0..N-1]
+    Y - 스플라인 세로 좌표, array [0..M-1]
+    F - 함수 값, array [0..M * N * D-1] :
+            * 첫 번째 D 요소는 D 값을 (X [0], Y [0])에 저장합니다.
+            * 다음 D 요소는 D 값을 (X [1], Y [0])에 저장합니다.
+            * 일반 형식 - (X [i], Y [j])의 D 함수 값이 저장됩니다.
+              F (D * (J * N + I) ... D * (J * N + I) + D-1).
+    M, N - 격자 크기, M> = 2, N> = 2
+    D - 벡터 차원, D> = 1
+
+출력 매개 변수 :
+    C - 스플라인 보간
+
+  - ALGLIB 프로젝트 -
+     Copyright 16.04.2012 Bochkanov Sergey
+**************************************************************************/
 void spline2dbuildbilinearv(/* Real    */ ae_vector* x,
      ae_int_t n,
      /* Real    */ ae_vector* y,
@@ -28407,6 +40221,9 @@ void spline2dbuildbilinearv(/* Real    */ ae_vector* x,
     /*
      * Fill interpolant
      */
+    /*
+     * 보간법 채우기
+     */
     c->k = 1;
     c->n = n;
     c->m = m;
@@ -28430,6 +40247,9 @@ void spline2dbuildbilinearv(/* Real    */ ae_vector* x,
     
     /*
      * Sort points
+     */
+    /*
+     * 정렬 지점
      */
     for(j=0; j<=c->n-1; j++)
     {
@@ -28506,6 +40326,26 @@ Output parameters:
   -- ALGLIB PROJECT --
      Copyright 16.04.2012 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 바이 큐빅 벡터 값 스플라인을 만듭니다.
+
+입력 매개 변수 :
+    X - 스플라인 가로 좌표, 배열 [0..N-1]
+    Y - 스플라인 세로 좌표, array [0..M-1]
+    F - 함수 값, array [0..M * N * D-1] :
+            * 첫 번째 D 요소는 D 값을 (X [0], Y [0])에 저장합니다.
+            * 다음 D 요소는 D 값을 (X [1], Y [0])에 저장합니다.
+            * 일반 형식 - (X [i], Y [j])의 D 함수 값이 저장됩니다.
+              F (D * (J * N + I) ... D * (J * N + I) + D-1).
+    M, N - 격자 크기, M> = 2, N> = 2
+    D - 벡터 차원, D> = 1
+
+출력 매개 변수 :
+    C - 스플라인 보간
+
+  - ALGLIB 프로젝트 -
+     Copyright 16.04.2012 Bochkanov Sergey
+**************************************************************************/
 void spline2dbuildbicubicv(/* Real    */ ae_vector* x,
      ae_int_t n,
      /* Real    */ ae_vector* y,
@@ -28547,6 +40387,7 @@ void spline2dbuildbicubicv(/* Real    */ ae_vector* x,
     
     /*
      * Fill interpolant:
+     * 채우기 보간 :
      *  F[0]...F[N*M*D-1]:
      *      f(i,j) table. f(0,0), f(0, 1), f(0,2) and so on...
      *  F[N*M*D]...F[2*N*M*D-1]:
@@ -28577,6 +40418,9 @@ void spline2dbuildbicubicv(/* Real    */ ae_vector* x,
     
     /*
      * Sort points
+     */
+    /*
+     * 정렬 지점
      */
     for(j=0; j<=c->n-1; j++)
     {
@@ -28673,6 +40517,23 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 16.04.2012 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 bilinear 또는 bicubic 벡터 값 스플라인을
+주어진 점 (X, Y).
+
+입력 매개 변수 :
+    C - 스플라인 보간.
+    X, Y- 포인트
+    F - 출력 버퍼, 사전 할당 된 배열. 배열 크기
+            결과를 저장할만큼 충분히 크면 다시 할당되지 않습니다. 정렬
+            너무 짧으면 재 할당됩니다.
+
+출력 매개 변수 :
+    F - 함수 값을 저장하는 배열 [D] (또는 그 이상)
+
+  - ALGLIB 프로젝트 -
+     Copyright 16.04.2012 Bochkanov Sergey
+**************************************************************************/
 void spline2dcalcvbuf(spline2dinterpolant* c,
      double x,
      double y,
@@ -28718,6 +40579,9 @@ void spline2dcalcvbuf(spline2dinterpolant* c,
     /*
      * Binary search in the [ x[0], ..., x[n-2] ] (x[n-1] is not included)
      */
+    /*
+     * [x [0], ..., x [n-2]] (x [n-1])의 이진 검색은 포함되지 않습니다.
+     */
     l = 0;
     r = c->n-1;
     while(l!=r-1)
@@ -28738,6 +40602,9 @@ void spline2dcalcvbuf(spline2dinterpolant* c,
     
     /*
      * Binary search in the [ y[0], ..., y[m-2] ] (y[m-1] is not included)
+     */
+    /*
+     * [y [0], ..., y [m-2]]의 이진 검색 (y [m-1]은 포함되지 않음)
      */
     l = 0;
     r = c->m-1;
@@ -28760,6 +40627,9 @@ void spline2dcalcvbuf(spline2dinterpolant* c,
     /*
      * Bilinear interpolation
      */
+    /*
+     * 쌍 선형 보간법
+     */
     if( c->stype==-1 )
     {
         for(i=0; i<=c->d-1; i++)
@@ -28776,11 +40646,17 @@ void spline2dcalcvbuf(spline2dinterpolant* c,
     /*
      * Bicubic interpolation
      */
+    /*
+     * 바이 큐빅 보간법
+     */
     if( c->stype==-3 )
     {
         
         /*
          * Prepare info
+         */
+        /*
+         * 정보 준비
          */
         t0 = 1;
         t1 = t;
@@ -28799,6 +40675,9 @@ void spline2dcalcvbuf(spline2dinterpolant* c,
             /*
              * Prepare F, dF/dX, dF/dY, d2F/dXdY
              */
+            /*
+             * 준비 F, dF / dX, dF / dY, d2F / dXdY
+             */
             f->ptr.p_double[i] = 0;
             s1 = c->d*(c->n*iy+ix)+i;
             s2 = c->d*(c->n*iy+(ix+1))+i;
@@ -28807,6 +40686,9 @@ void spline2dcalcvbuf(spline2dinterpolant* c,
             
             /*
              * Calculate
+             */
+            /*
+             * 계산하다
              */
             v = c->f.ptr.p_double[s1];
             f->ptr.p_double[i] = f->ptr.p_double[i]+v*t0*u0;
@@ -28864,6 +40746,24 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 16.04.2012 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 bilinear 또는 bicubic 벡터 값 스플라인을
+주어진 점 (X, Y).
+
+입력 매개 변수 :
+    C - 스플라인 보간.
+    X, Y- 포인트
+
+출력 매개 변수 :
+    F - 함수 값을 저장하는 배열 [D]. F는 매개 변수가 아니며
+            이 함수를 호출 한 후에 재 할당됩니다. 당신이
+            이전에 할당 된 F를 다시 사용하려면
+            Spline2DCalcVBuf () : F가있을 때만 F를 다시 할당합니다.
+            작은.
+
+  - ALGLIB 프로젝트 -
+     Copyright 16.04.2012 Bochkanov Sergey
+**************************************************************************/
 void spline2dcalcv(spline2dinterpolant* c,
      double x,
      double y,
@@ -28918,6 +40818,44 @@ Result:
   -- ALGLIB PROJECT --
      Copyright 16.04.2012 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 2 차원 스플라인을 계수 테이블에 압축을 풉니 다.
+
+입력 매개 변수 :
+    C - 스플라인 보간.
+
+결과:
+    M, N- 그리드 크기 (x 축 및 y 축)
+    D - 구성 요소의 수
+    Tbl - 계수 테이블, 압축 해제 된 형식,
+            D- 성분 : [0 .. (N-1) * (M-1) * D-1, 0..19].
+            T = 0..D-1 (구성 요소 색인), I = 0 ... N-2 (x 색인),
+            J = 0..M-2 (y 지수) :
+                K : = T + I * D + J * D * (N-1)
+                
+                K 번째 행은 T 번째 구성 요소에 대한 분해를 저장합니다.
+                벡터 값 함수
+                
+                Tbl [K, 0] = X [i]
+                Tbl [K, 1] = X [i + 1]
+                Tbl [K, 2] = Y [j]
+                Tbl [K, 3] = Y [j + 1]
+                Tbl [K, 4] = C00
+                Tbl [K, 5] = C01
+                Tbl [K, 6] = CO2
+                Tbl [K, 7] = C03
+                Tbl [K, 8] = C10
+                Tbl [K, 9] = C11
+                ...
+                Tbl [K, 19] = C33
+            각 격자 스퀘어에서 스플라인은 다음과 같습니다.
+                S (x) = SUM (c [i, j] * (t ^ i) * (u ^ j), i = 0..3, j = 0..3)
+                t = xx [j]
+                u = yy [i]
+
+  - ALGLIB 프로젝트 -
+     Copyright 16.04.2012 Bochkanov Sergey
+**************************************************************************/
 void spline2dunpackv(spline2dinterpolant* c,
      ae_int_t* m,
      ae_int_t* n,
@@ -28976,6 +40914,9 @@ void spline2dunpackv(spline2dinterpolant* c,
                 /*
                  * Bilinear interpolation
                  */
+                /*
+                 * 쌍 선형 보간법
+                 */
                 if( c->stype==-1 )
                 {
                     for(k0=4; k0<=19; k0++)
@@ -28994,6 +40935,9 @@ void spline2dunpackv(spline2dinterpolant* c,
                 
                 /*
                  * Bicubic interpolation
+                 */
+                /*
+                 * 바이 큐빅 보간법
                  */
                 if( c->stype==-3 )
                 {
@@ -29044,6 +40988,15 @@ flexible and accepts its arguments in more convenient order.
   -- ALGLIB PROJECT --
      Copyright 05.07.2007 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 ALGLIB 3.6.0에서 더 이상 사용되지 않습니다.
+
+Spline2DBuildBilinearV ()로 전환하는 것이 좋습니다.
+유연하고 인수를보다 편리한 순서로 받아들입니다.
+
+  - ALGLIB 프로젝트 -
+     저작권 05.07.2007 Bochkanov Sergey
+**************************************************************************/
 void spline2dbuildbilinear(/* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
      /* Real    */ ae_matrix* f,
@@ -29068,6 +41021,9 @@ void spline2dbuildbilinear(/* Real    */ ae_vector* x,
     
     /*
      * Fill interpolant
+     */
+    /*
+     * 보간법 채우기
      */
     c->k = 1;
     c->n = n;
@@ -29095,6 +41051,9 @@ void spline2dbuildbilinear(/* Real    */ ae_vector* x,
     
     /*
      * Sort points
+     */
+    /*
+     * 정렬 지점
      */
     for(j=0; j<=c->n-1; j++)
     {
@@ -29154,6 +41113,15 @@ flexible and accepts its arguments in more convenient order.
   -- ALGLIB PROJECT --
      Copyright 05.07.2007 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 ALGLIB 3.6.0에서 더 이상 사용되지 않습니다.
+
+Spline2DBuildBicubicV ()로 전환하는 것이 좋습니다.
+유연하고 인수를보다 편리한 순서로 받아들입니다.
+
+  - ALGLIB 프로젝트 -
+     저작권 05.07.2007 Bochkanov Sergey
+**************************************************************************/
 void spline2dbuildbicubic(/* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
      /* Real    */ ae_matrix* f,
@@ -29192,6 +41160,7 @@ void spline2dbuildbicubic(/* Real    */ ae_vector* x,
     
     /*
      * Fill interpolant:
+     * 채우기 보간 :
      *  F[0]...F[N*M-1]:
      *      f(i,j) table. f(0,0), f(0, 1), f(0,2) and so on...
      *  F[N*M]...F[2*N*M-1]:
@@ -29223,6 +41192,9 @@ void spline2dbuildbicubic(/* Real    */ ae_vector* x,
     
     /*
      * Sort points
+     */
+    /*
+     * 정렬 지점
      */
     for(j=0; j<=c->n-1; j++)
     {
@@ -29295,6 +41267,16 @@ and accepts its arguments in more convenient order.
   -- ALGLIB PROJECT --
      Copyright 29.06.2007 by Bochkanov Sergey
 *************************************************************************/
+
+/*************************************************************************
+이 서브 루틴은 ALGLIB 3.6.0에서 더 이상 사용되지 않습니다.
+
+유연한 Spline2DUnpackV ()로 전환하는 것이 좋습니다.
+그 주장을보다 편리한 순서로 받아 들인다.
+
+  - ALGLIB 프로젝트 -
+     Bochkanov Sergey의 Copyright 29.06.2007
+**************************************************************************/
 void spline2dunpack(spline2dinterpolant* c,
      ae_int_t* m,
      ae_int_t* n,
@@ -29342,6 +41324,9 @@ void spline2dunpack(spline2dinterpolant* c,
     /*
      * Fill
      */
+    /*
+     * 채우기
+     */
     for(i=0; i<=*m-2; i++)
     {
         for(j=0; j<=*n-2; j++)
@@ -29356,6 +41341,9 @@ void spline2dunpack(spline2dinterpolant* c,
             
             /*
              * Bilinear interpolation
+             */
+            /*
+             * 쌍 선형 보간법
              */
             if( c->stype==-1 )
             {
@@ -29375,6 +41363,9 @@ void spline2dunpack(spline2dinterpolant* c,
             
             /*
              * Bicubic interpolation
+             */
+            /*
+             * 바이 큐빅 보간법
              */
             if( c->stype==-3 )
             {
@@ -29419,6 +41410,10 @@ void spline2dunpack(spline2dinterpolant* c,
 Internal subroutine.
 Calculation of the first derivatives and the cross-derivative.
 *************************************************************************/
+/*************************************************************************
+내부 서브 루틴.
+1 차 미분과 교차 미분의 계산.
+**************************************************************************/
 static void spline2d_bicubiccalcderivatives(/* Real    */ ae_matrix* a,
      /* Real    */ ae_vector* x,
      /* Real    */ ae_vector* y,
@@ -29585,6 +41580,22 @@ Result:
   -- ALGLIB PROJECT --
      Copyright 26.04.2012 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은에서 삼선 형 또는 삼차 정형 스플라인의 값을 계산합니다.
+주어진 점 (X, Y, Z).
+
+입력 매개 변수 :
+    C - 계수 테이블.
+            BuildBilinearSpline 또는 BuildBicubicSpline에 의해 작성됩니다.
+    X, Y,
+    Z- 지점
+
+결과:
+    S (x, y, z)
+
+  - ALGLIB 프로젝트 -
+     Copyright 26.04.2012 Bochkanov Sergey
+**************************************************************************/
 double spline3dcalc(spline3dinterpolant* c,
      double x,
      double y,
@@ -29626,6 +41637,21 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 26.04.2012 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 스플라인 인수의 선형 변환을 수행합니다.
+
+입력 매개 변수 :
+    C - 스플라인 보간
+    AX, BX - 변환 계수 : x = A * u + B
+    AY, BY - 변환 계수 : y = A * v + B
+    AZ, BZ - 변환 계수 : z = A * w + B
+    
+출력 매개 변수 :
+    C - 변형 된 스플라인
+
+  - ALGLIB 프로젝트 -
+     Copyright 26.04.2012 Bochkanov Sergey
+**************************************************************************/
 void spline3dlintransxyz(spline3dinterpolant* c,
      double ax,
      double bx,
@@ -29673,6 +41699,9 @@ void spline3dlintransxyz(spline3dinterpolant* c,
     
     /*
      * Handle different combinations of zero/nonzero AX/AY/AZ
+     */
+    /*
+     * 0 / 0이 아닌 다른 조합을 처리 AX / AY / AZ
      */
     if( (ae_fp_neq(ax,0)&&ae_fp_neq(ay,0))&&ae_fp_neq(az,0) )
     {
@@ -29826,6 +41855,10 @@ void spline3dlintransxyz(spline3dinterpolant* c,
      * General case: AX<>0, AY<>0, AZ<>0
      * Unpack, scale and pack again.
      */
+    /*
+     * 일반적인 경우 : AX <> 0, AY <> 0, AZ <> 0
+     * 포장을 풀고, 다시 크기를 조절하고 포장하십시오.
+     */
     for(i=0; i<=c->n-1; i++)
     {
         x.ptr.p_double[i] = (x.ptr.p_double[i]-bx)/ax;
@@ -29859,6 +41892,19 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 26.04.2012 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 스플라인의 선형 변환을 수행합니다.
+
+입력 매개 변수 :
+    C - 스플라인 보간.
+    A, B- 변환 계수 : S2 (x, y) = A * S (x, y, z) + B
+    
+출력 매개 변수 :
+    C - 변형 된 스플라인
+
+  - ALGLIB 프로젝트 -
+     Copyright 26.04.2012 Bochkanov Sergey
+**************************************************************************/
 void spline3dlintransf(spline3dinterpolant* c,
      double a,
      double b,
@@ -29919,6 +41965,18 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 26.04.2012 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 스플라인 모델의 복사본을 만듭니다.
+
+입력 매개 변수 :
+    C - 스플라인 보간
+
+출력 매개 변수 :
+    CC - 스플라인 복사본
+
+  - ALGLIB 프로젝트 -
+     Copyright 26.04.2012 Bochkanov Sergey
+**************************************************************************/
 void spline3dcopy(spline3dinterpolant* c,
      spline3dinterpolant* cc,
      ae_state *_state)
@@ -29981,6 +42039,41 @@ OUTPUT PARAMETERS:
      26.04.2012
      Copyright by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+삼선 형 스플라인 리샘플링
+
+입력 매개 변수 :
+    A - 배열 [0..OldXCount * OldYCount * OldZCount-1], 함수
+                    이전 그리드의 값 :
+                        A [0] x = 0, y = 0, z = 0
+                        A [1] x = 1, y = 0, z = 0
+                        [...] ...
+                        A [..] x = oldxcount-1, y = 0, z = 0
+                        A [..] x = 0, y = 1, z = 0
+                        [...] ...
+                        ...
+    OldZCount - 오래된 Z- 카운트, OldZCount> 1
+    OldYCount - 이전 Y- 계수, OldYCount> 1
+    OldXCount - 이전 X- 개수, OldXCount> 1
+    NewZCount - 새로운 Z- 카운트, NewZCount> 1
+    NewYCount - 새로운 Y- 카운트, NewYCount> 1
+    NewXCount - 새로운 X- 카운트, NewXCount> 1
+
+출력 매개 변수 :
+    B- 배열 [0..NewXCount * NewYCount * NewZCount-1], 함수
+                    새 그리드의 값 :
+                        B [0] x = 0, y = 0, z = 0
+                        B [1] x = 1, y = 0, z = 0
+                        B [..] ...
+                        B [..] x = newxcount-1, y = 0, z = 0
+                        B [..] x = 0, y = 1, z = 0
+                        B [..] ...
+                        ...
+
+  - ALGLIB 루틴 -
+     26.04.2012
+     Bochkanov Sergey의 저작권
+**************************************************************************/
 void spline3dresampletrilinear(/* Real    */ ae_vector* a,
      ae_int_t oldzcount,
      ae_int_t oldycount,
@@ -30080,6 +42173,38 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 26.04.2012 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 삼선 형 벡터 값 스플라인을 작성합니다.
+
+입력 매개 변수 :
+    X - 스플라인 가로 좌표, 배열 [0..N-1]
+    Y - 스플라인 세로 좌표, array [0..M-1]
+    Z-spline applicates, array [0..L-1] 
+    F - 함수 값, array [0..M * N * L * D-1] :
+            * 첫 번째 D 요소는 (X [0], Y [0], Z [0])에 D 값을 저장합니다.
+            * 다음 D 요소는 D 값을 (X [1], Y [0], Z [0])에 저장합니다.
+            * 다음 D 요소는 D 값을 (X [2], Y [0], Z [0])에 저장합니다.
+            * ...
+            * 다음 D 요소는 D 값을 (X [0], Y [1], Z [0])에 저장합니다.
+            * 다음 D 요소는 D 값을 (X [1], Y [1], Z [0])에 저장합니다.
+            * 다음 D 요소는 D 값을 (X [2], Y [1], Z [0])에 저장합니다.
+            * ...
+            * 다음 D 요소는 D 값을 (X [0], Y [0], Z [1])에 저장합니다.
+            * 다음 D 요소는 D 값을 (X [1], Y [0], Z [1])에 저장합니다.
+            * 다음 D 요소는 D 값을 (X [2], Y [0], Z [1])에 저장합니다.
+            * ...
+            * 일반 형식 - (X [i], Y [j])의 D 함수 값이 저장됩니다.
+              D * (N * (M * K + J) + I) + D-1]에서 F [D * (N * (M * K + J) + I)
+    M, N,
+    L - 그리드 크기, M> = 2, N> = 2, L> = 2
+    D - 벡터 차원, D> = 1
+
+출력 매개 변수 :
+    C - 스플라인 보간
+
+  - ALGLIB 프로젝트 -
+     Copyright 26.04.2012 Bochkanov Sergey
+**************************************************************************/
 void spline3dbuildtrilinearv(/* Real    */ ae_vector* x,
      ae_int_t n,
      /* Real    */ ae_vector* y,
@@ -30114,6 +42239,9 @@ void spline3dbuildtrilinearv(/* Real    */ ae_vector* x,
     /*
      * Fill interpolant
      */
+    /*
+     * 보간법 채우기
+     */
     c->k = 1;
     c->n = n;
     c->m = m;
@@ -30146,6 +42274,12 @@ void spline3dbuildtrilinearv(/* Real    */ ae_vector* x,
      *  * sort x;
      *  * sort y;
      *  * sort z.
+     */
+    /*
+     * 정렬 지점 :
+     * * sort x;
+     * * 정렬 y;
+     * * sort z.
      */
     for(j=0; j<=c->n-1; j++)
     {
@@ -30255,6 +42389,24 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 26.04.2012 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 bilinear 또는 bicubic 벡터 값 스플라인을
+주어진 점 (X, Y, Z).
+
+입력 매개 변수 :
+    C - 스플라인 보간.
+    X, Y,
+    Z- 지점
+    F - 출력 버퍼, 사전 할당 된 배열. 배열 크기
+            결과를 저장할만큼 충분히 크면 다시 할당되지 않습니다. 정렬
+            너무 짧으면 재 할당됩니다.
+
+출력 매개 변수 :
+    F - 함수 값을 저장하는 배열 [D] (또는 그 이상)
+
+  - ALGLIB 프로젝트 -
+     Copyright 26.04.2012 Bochkanov Sergey
+**************************************************************************/
 void spline3dcalcvbuf(spline3dinterpolant* c,
      double x,
      double y,
@@ -30285,6 +42437,9 @@ void spline3dcalcvbuf(spline3dinterpolant* c,
     /*
      * Binary search in the [ x[0], ..., x[n-2] ] (x[n-1] is not included)
      */
+    /*
+     * [x [0], ..., x [n-2]] (x [n-1])의 이진 검색은 포함되지 않습니다.
+     */
     l = 0;
     r = c->n-1;
     while(l!=r-1)
@@ -30304,6 +42459,9 @@ void spline3dcalcvbuf(spline3dinterpolant* c,
     /*
      * Binary search in the [ y[0], ..., y[n-2] ] (y[n-1] is not included)
      */
+    /*
+     * [y [0], ..., y [n-2]]의 이진 검색 (y [n-1]은 포함되지 않음)
+     */
     l = 0;
     r = c->m-1;
     while(l!=r-1)
@@ -30322,6 +42480,9 @@ void spline3dcalcvbuf(spline3dinterpolant* c,
     
     /*
      * Binary search in the [ z[0], ..., z[n-2] ] (z[n-1] is not included)
+     */
+    /*
+     * [z [0], ..., z [n-2]] (z [n-1])의 이진 검색은 포함되지 않습니다.
      */
     l = 0;
     r = c->l-1;
@@ -30346,6 +42507,9 @@ void spline3dcalcvbuf(spline3dinterpolant* c,
         
         /*
          * Trilinear interpolation
+         */
+        /*
+         * 삼각 보간법
          */
         if( c->stype==-1 )
         {
@@ -30380,6 +42544,25 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 26.04.2012 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 삼각형 또는 삼차 벡터 벡터 값 스플라인을
+주어진 점 (X, Y, Z).
+
+입력 매개 변수 :
+    C - 스플라인 보간.
+    X, Y,
+    Z- 지점
+
+출력 매개 변수 :
+    F - 함수 값을 저장하는 배열 [D]. F는 매개 변수가 아니며
+            이 함수를 호출 한 후에 재 할당됩니다. 당신이
+            이전에 할당 된 F를 다시 사용하려면
+            Spline2DCalcVBuf () : F가있을 때만 F를 다시 할당합니다.
+            작은.
+
+  - ALGLIB 프로젝트 -
+     Copyright 26.04.2012 Bochkanov Sergey
+**************************************************************************/
 void spline3dcalcv(spline3dinterpolant* c,
      double x,
      double y,
@@ -30446,6 +42629,55 @@ Result:
   -- ALGLIB PROJECT --
      Copyright 26.04.2012 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 3 차원 스플라인을 계수 테이블에 압축을 풉니 다.
+
+입력 매개 변수 :
+    C - 스플라인 보간.
+
+결과:
+    N - 그리드 크기 (X)
+    M - 격자 크기 (Y)
+    L - 그리드 크기 (Z)
+    D - 구성 요소의 수
+    SType- 스플라인 유형. 현재 하나의 스플라인 유형 만 지원됩니다.
+            SType = 1로 표시된 것처럼 삼선 형 스플라인
+    Tbl- 스플라인 계수 : [0 .. (N-1) * (M-1) * (L-1) * D-1, 0..13].
+            T = 0..D-1 (구성 요소 색인), I = 0 ... N-2 (x 색인),
+            J = 0..M-2 (y 인덱스), K = 0..L-2 (z 인덱스)
+                Q : = T + I * D + J * D * (N-1) + K * D * (N-1) * (M-1)
+                
+                Q 번째 행은 T 번째 열의 분해를 저장합니다.
+                벡터 값 함수
+                
+                Tbl [Q, 0] = X [i]
+                Tbl [Q, 1] = X [i + 1]
+                Tbl [Q, 2] = Y [j]
+                Tbl [Q, 3] = Y [j + 1]
+                Tbl [Q, 4] = Z [k]
+                Tbl [Q, 5] = Z [k + 1]
+                
+                Tbl [Q, 6] = C000
+                Tbl [Q, 7] = C100
+                Tbl [Q, 8] = C010
+                Tbl [Q, 9] = C110
+                Tbl [Q, 10] = C001
+                Tbl [Q, 11] = C101
+                Tbl [Q, 12] = C011
+                Tbl [Q, 13] = C111
+            각 격자 스퀘어에서 스플라인은 다음과 같습니다.
+                S (x) = SUM (c [i, j, k) * (x ^ i) * (y ^ j) * (z ^ k), i = 0..1, j = 0..1, k = 0..1)
+                t = xx [j]
+                u = yy [i]
+                v = zz [k]
+            
+            참고 : Tbl의 형식은 SType = 1에 대해 제공됩니다. 다음 버전의
+                  ALGLIB는 다양한 값에 대해 다른 형식을 사용할 수 있습니다.
+                  SType.
+
+  - ALGLIB 프로젝트 -
+     Copyright 26.04.2012 Bochkanov Sergey
+**************************************************************************/
 void spline3dunpackv(spline3dinterpolant* c,
      ae_int_t* n,
      ae_int_t* m,
@@ -30486,6 +42718,9 @@ void spline3dunpackv(spline3dinterpolant* c,
     /*
      * Fill
      */
+    /*
+     * 채우기
+     */
     for(i=0; i<=*n-2; i++)
     {
         for(j=0; j<=*m-2; j++)
@@ -30507,6 +42742,9 @@ void spline3dunpackv(spline3dinterpolant* c,
                     
                     /*
                      * Trilinear interpolation
+                     */
+                    /*
+                     * 삼각 보간법
                      */
                     if( c->stype==-1 )
                     {
@@ -30562,6 +42800,24 @@ OUTPUT PARAMETERS:
   -- ALGLIB PROJECT --
      Copyright 26.04.2012 by Bochkanov Sergey
 *************************************************************************/
+/*************************************************************************
+이 서브 루틴은 삼선 형 (또는 삼각 형;
+나중에 될 것입니다.) 주어진 점에서 스플라인 X (및 그 파생물;
+나중에있을 것이다).
+
+입력 매개 변수 :
+    C - 스플라인 보간.
+    X, Y, Z- 점
+
+출력 매개 변수 :
+    F - S (x, y, z)
+    FX - dS (x, y, z) / dX
+    FY - dS (x, y, z) / dY
+    FXY - d2S (x, y, z) / dXdY
+
+  - ALGLIB 프로젝트 -
+     Copyright 26.04.2012 Bochkanov Sergey
+**************************************************************************/
 static void spline3d_spline3ddiff(spline3dinterpolant* c,
      double x,
      double y,
@@ -30597,6 +42853,9 @@ static void spline3d_spline3ddiff(spline3dinterpolant* c,
     /*
      * Prepare F, dF/dX, dF/dY, d2F/dXdY
      */
+    /*
+     * 준비 F, dF / dX, dF / dY, d2F / dXdY
+     */
     *f = 0;
     *fx = 0;
     *fy = 0;
@@ -30608,6 +42867,9 @@ static void spline3d_spline3ddiff(spline3dinterpolant* c,
     
     /*
      * Binary search in the [ x[0], ..., x[n-2] ] (x[n-1] is not included)
+     */
+    /*
+     * [x [0], ..., x [n-2]] (x [n-1])의 이진 검색은 포함되지 않습니다.
      */
     l = 0;
     r = c->n-1;
@@ -30628,6 +42890,9 @@ static void spline3d_spline3ddiff(spline3dinterpolant* c,
     /*
      * Binary search in the [ y[0], ..., y[n-2] ] (y[n-1] is not included)
      */
+    /*
+     * [y [0], ..., y [n-2]]의 이진 검색 (y [n-1]은 포함되지 않음)
+     */
     l = 0;
     r = c->m-1;
     while(l!=r-1)
@@ -30646,6 +42911,9 @@ static void spline3d_spline3ddiff(spline3dinterpolant* c,
     
     /*
      * Binary search in the [ z[0], ..., z[n-2] ] (z[n-1] is not included)
+     */
+    /*
+     * [z [0], ..., z [n-2]] (z [n-1])의 이진 검색은 포함되지 않습니다.
      */
     l = 0;
     r = c->l-1;
@@ -30668,6 +42936,9 @@ static void spline3d_spline3ddiff(spline3dinterpolant* c,
     
     /*
      * Trilinear interpolation
+     */
+    /*
+     * 삼각 보간법
      */
     if( c->stype==-1 )
     {
